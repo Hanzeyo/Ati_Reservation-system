@@ -36,10 +36,10 @@ const bookingState = {
    1. Facility Selection & Dormitory Room Floor Data (Modal Popup)
    ========================================================================== */
 const dormFloorData = {
-  'dormitory-suites': {
-    title: 'Dormitory Suites (Building B)',
-    floor: '1st Floor — Accessible & Guest Lodging',
-    desc: 'Ground level units with wider doorways and ramp access for senior officers and PWD guests.',
+  'dorm-floor-1': {
+    title: '1st Floor: Sampaguita Dormitory',
+    floor: '1st Floor (Sampaguita)',
+    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
     rate: '₱500 / night',
     rooms: [
       { num: '101', available: true },
@@ -56,38 +56,18 @@ const dormFloorData = {
       { num: '112', available: true }
     ]
   },
-  'executive-vip-suite': {
-    title: 'Executive VIP Suite',
-    floor: '4th Floor — Executive Suites & VIP Lodging',
-    desc: 'Private air-conditioned rooms with ensuite bath and mini-fridge.',
-    rate: '₱1,800 / night',
-    rooms: [
-      { num: '401', available: false },
-      { num: '402', available: true },
-      { num: '403', available: false },
-      { num: '404', available: false },
-      { num: '405', available: false },
-      { num: '406', available: true },
-      { num: '407', available: false },
-      { num: '408', available: false },
-      { num: '409', available: false },
-      { num: '410', available: true },
-      { num: '411', available: false },
-      { num: '412', available: false }
-    ]
-  },
-  'trainee-quad-quarters': {
-    title: 'Trainee Quad Quarters',
-    floor: '2nd Floor — Standard Shared Dormitories',
-    desc: 'Quad-sharing room setup with study tables and lockers for training participants.',
-    rate: '₱600 / night',
+  'dorm-floor-2': {
+    title: '2nd Floor: Ilang-Ilang Dormitory',
+    floor: '2nd Floor (Ilang-Ilang)',
+    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
+    rate: '₱500 / night',
     rooms: [
       { num: '201', available: true },
       { num: '202', available: false },
       { num: '203', available: false },
       { num: '204', available: false },
       { num: '205', available: false },
-      { num: '206', available: false },
+      { num: '206', available: true },
       { num: '207', available: false },
       { num: '208', available: false },
       { num: '209', available: false },
@@ -96,17 +76,17 @@ const dormFloorData = {
       { num: '212', available: true }
     ]
   },
-  'twin-deluxe': {
-    title: 'Twin Deluxe Accommodation',
-    floor: '3rd Floor — VIP Deluxe Rooms',
-    desc: 'Twin-bed configuration for visiting resource speakers and guest lecturers.',
-    rate: '₱1,200 / night',
+  'dorm-floor-3': {
+    title: '3rd Floor: Gumamela Dormitory',
+    floor: '3rd Floor (Gumamela)',
+    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
+    rate: '₱500 / night',
     rooms: [
       { num: '301', available: false },
       { num: '302', available: true },
       { num: '303', available: false },
       { num: '304', available: false },
-      { num: '305', available: false },
+      { num: '305', available: true },
       { num: '306', available: false },
       { num: '307', available: false },
       { num: '308', available: false },
@@ -115,9 +95,68 @@ const dormFloorData = {
       { num: '311', available: false },
       { num: '312', available: false }
     ]
+  },
+  'dorm-floor-4': {
+    title: '4th Floor: Rosal Dormitory',
+    floor: '4th Floor (Rosal)',
+    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
+    rate: '₱500 / night',
+    rooms: [
+      { num: '401', available: false },
+      { num: '402', available: false },
+      { num: '403', available: true },
+      { num: '404', available: false },
+      { num: '405', available: false },
+      { num: '406', available: false },
+      { num: '407', available: true },
+      { num: '408', available: false },
+      { num: '409', available: false },
+      { num: '410', available: false },
+      { num: '411', available: true },
+      { num: '412', available: false }
+    ]
+  },
+  'dorm-floor-5': {
+    title: '5th Floor: Waling-Waling Dormitory',
+    floor: '5th Floor (Waling-Waling)',
+    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
+    rate: '₱500 / night',
+    rooms: [
+      { num: '501', available: false },
+      { num: '502', available: true },
+      { num: '503', available: false },
+      { num: '504', available: false },
+      { num: '505', available: false },
+      { num: '506', available: true },
+      { num: '507', available: false },
+      { num: '508', available: false },
+      { num: '509', available: false },
+      { num: '510', available: true },
+      { num: '511', available: false },
+      { num: '512', available: false }
+    ]
+  },
+  'dorm-floor-6': {
+    title: '6th Floor: Tayabak Dormitory',
+    floor: '6th Floor (Tayabak)',
+    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
+    rate: '₱500 / night',
+    rooms: [
+      { num: '601', available: true },
+      { num: '602', available: false },
+      { num: '603', available: false },
+      { num: '604', available: true },
+      { num: '605', available: false },
+      { num: '606', available: false },
+      { num: '607', available: false },
+      { num: '608', available: true },
+      { num: '609', available: false },
+      { num: '610', available: false },
+      { num: '611', available: false },
+      { num: '612', available: true }
+    ]
   }
 };
-
 let currentModalDormId = null;
 let modalTempSelectedRoom = null;
 
@@ -126,16 +165,14 @@ function initFacilitySelection() {
 
   cards.forEach(card => {
     const selectBtn = card.querySelector('.btn-select-facility');
-    const isDorm = card.dataset.facilityType === 'dormitories' ||
-                   ['dormitory-suites', 'executive-vip-suite', 'trainee-quad-quarters', 'twin-deluxe'].includes(card.dataset.id);
+    const isDorm = card.dataset.facilityType === 'dormitories' || card.dataset.id.startsWith('dorm-floor-');
 
     function selectCard(openModalIfDorm = true) {
       cards.forEach(c => {
         c.classList.remove('selected');
         const btn = c.querySelector('.btn-select-facility');
         if (btn) {
-          const isCDorm = c.dataset.facilityType === 'dormitories' ||
-                          ['dormitory-suites', 'executive-vip-suite', 'trainee-quad-quarters', 'twin-deluxe'].includes(c.dataset.id);
+          const isCDorm = c.dataset.facilityType === 'dormitories' || c.dataset.id.startsWith('dorm-floor-');
           if (isCDorm) {
             btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Room &amp; View Floor Plan`;
           } else {
@@ -262,7 +299,7 @@ function openRoomModal(dormId) {
         <div class="dorm-room-status">${r.available ? 'AVAILABLE' : 'RESERVED'}</div>
       `;
 
-      // If this room was previously selected for this facility, highlight it
+      // If previously selected, highlight it
       if (bookingState.selectedFacility?.id === dormId && String(bookingState.selectedFacility?.roomNumber) === String(r.num)) {
         box.classList.add('selected');
         modalTempSelectedRoom = r.num;
@@ -373,20 +410,10 @@ function confirmRoomSelection() {
   }
 }
 
-
 /* ==========================================================================
    2. Filter & Category Selection (Halls vs Dormitories)
    ========================================================================== */
-function initFacilityFilters() {
-  const categoryCards = document.querySelectorAll('.category-pick-card');
-  const exploreButtons = document.querySelectorAll('.btn-explore-category');
-  const filterPills = document.querySelectorAll('.filter-pill');
-  const facilityCards = document.querySelectorAll('.facility-choice-card');
-  const sectionHeading = document.getElementById('categorySectionHeading');
-  const activeCategoryName = document.getElementById('activeCategoryName');
-  const anchorSection = document.getElementById('facilitiesSectionAnchor');
-
-  function switchCategory(catName, shouldScroll = false) {
+function switchCategory(catName, shouldScroll = false) {
     // 1. Update Category Cards Active State (if present)
     categoryCards.forEach(card => {
       const isTarget = card.dataset.category === catName;
@@ -411,9 +438,9 @@ function initFacilityFilters() {
       if (catName === 'halls') {
         activeCategoryName.textContent = 'Halls (4 Available)';
       } else if (catName === 'dormitories') {
-        activeCategoryName.textContent = 'Dormitories (4 Room Types)';
+        activeCategoryName.textContent = 'Dormitories (6 Floors)';
       } else {
-        activeCategoryName.textContent = 'All Facilities (8 Total)';
+        activeCategoryName.textContent = 'All Facilities (10 Total)';
       }
     }
 
@@ -421,9 +448,9 @@ function initFacilityFilters() {
       if (catName === 'halls') {
         sectionHeading.textContent = 'AVAILABLE HALLS & VENUES (4):';
       } else if (catName === 'dormitories') {
-        sectionHeading.textContent = 'AVAILABLE DORMITORY ROOMS & SUITES (4):';
+        sectionHeading.textContent = 'AVAILABLE DORMITORY FLOORS (6):';
       } else {
-        sectionHeading.textContent = 'ALL AVAILABLE FACILITIES & ROOMS (8):';
+        sectionHeading.textContent = 'ALL AVAILABLE FACILITIES & ROOMS (10):';
       }
     }
 
@@ -506,7 +533,7 @@ function initStepperNavigation() {
       const isDorm = bookingState.selectedFacility?.type === 'dormitories' ||
                      ['dormitory-suites', 'executive-vip-suite', 'trainee-quad-quarters', 'twin-deluxe'].includes(bookingState.selectedFacility?.id);
       if (isDorm && !bookingState.selectedFacility?.roomNumber) {
-        alert('Please choose an AVAILABLE room unit (highlighted in green, e.g. Room 402, 302, 201, 101) inside your chosen suite card before proceeding to Date & Time Selection.');
+        alert('Please choose an AVAILABLE room unit (highlighted in green, e.g. Room 101, 201, 302) inside your chosen dormitory floor before proceeding to Date & Time Selection.');
         const selectedCard = document.querySelector('.facility-choice-card.selected');
         if (selectedCard) {
           selectedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
