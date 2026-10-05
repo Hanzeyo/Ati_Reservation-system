@@ -268,7 +268,7 @@ function handleRegistrationSubmit(event) {
   const name = document.getElementById('regFullName')?.value;
 
   alert(`Account Registration Successful!\n\nName: ${name}\nCategory: ${activeCategory}\n\nYour account has been submitted for official authorization. You can now sign in.`);
-  
+
   // Switch to sign in tab
   const tabSignIn = document.getElementById('tabBtnSignIn');
   if (tabSignIn) tabSignIn.click();
@@ -276,7 +276,15 @@ function handleRegistrationSubmit(event) {
 
 function handleLoginSubmit(event) {
   event.preventDefault();
-  const email = document.getElementById('loginEmailInput')?.value;
+  const email = (document.getElementById('loginEmailInput')?.value || '').trim();
+
+  // Role-based routing: if email contains 'admin' redirect to Super Admin Dashboard
+  if (email.toLowerCase().includes('admin')) {
+    alert(`Super Administrator authorized: ${email}\nRedirecting to Executive Admin Dashboard...`);
+    window.location.href = 'admin_dashboard.php';
+    return;
+  }
+
   alert(`Sign in simulation successful for: ${email}\nRedirecting to reservation portal...`);
   window.location.href = 'home.php';
 }
