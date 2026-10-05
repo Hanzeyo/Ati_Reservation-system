@@ -330,26 +330,26 @@
     <div class="stepper-bar-card">
       <!-- Desktop Stepper (5 Tabs) -->
       <div class="stepper-grid">
-        <button type="button" class="step-tab-btn active" data-step="1">
+        <div class="step-tab-btn active" data-step="1">
           <span class="step-number">1</span>
           <span>Facility</span>
-        </button>
-        <button type="button" class="step-tab-btn" data-step="2">
+        </div>
+        <div class="step-tab-btn" data-step="2">
           <span class="step-number">2</span>
           <span>Date & Time</span>
-        </button>
-        <button type="button" class="step-tab-btn" data-step="3">
+        </div>
+        <div class="step-tab-btn" data-step="3">
           <span class="step-number">3</span>
           <span>Event Details</span>
-        </button>
-        <button type="button" class="step-tab-btn" data-step="4">
+        </div>
+        <div class="step-tab-btn" data-step="4">
           <span class="step-number">4</span>
           <span>Documents</span>
-        </button>
-        <button type="button" class="step-tab-btn" data-step="5">
+        </div>
+        <div class="step-tab-btn" data-step="5">
           <span class="step-number">5</span>
           <span>Review & Submit</span>
-        </button>
+        </div>
       </div>
 
       <!-- Compact Mobile Stepper Indicator -->
@@ -365,11 +365,11 @@
           <div class="mobile-progress-fill" id="mobileProgressFill" style="width: 20%;"></div>
         </div>
         <div class="mobile-step-dots">
-          <button type="button" class="mobile-dot active" data-step="1" title="Facility">1</button>
-          <button type="button" class="mobile-dot" data-step="2" title="Date & Time">2</button>
-          <button type="button" class="mobile-dot" data-step="3" title="Event Details">3</button>
-          <button type="button" class="mobile-dot" data-step="4" title="Documents">4</button>
-          <button type="button" class="mobile-dot" data-step="5" title="Review">5</button>
+          <span class="mobile-dot active" data-step="1" title="Facility">1</span>
+          <span class="mobile-dot" data-step="2" title="Date & Time">2</span>
+          <span class="mobile-dot" data-step="3" title="Event Details">3</span>
+          <span class="mobile-dot" data-step="4" title="Documents">4</span>
+          <span class="mobile-dot" data-step="5" title="Review">5</span>
         </div>
       </div>
     </div>

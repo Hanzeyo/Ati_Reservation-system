@@ -308,7 +308,9 @@ body.booking-body {
   color: #647b6e;
   font-weight: 600;
   font-size: 0.92rem;
-  cursor: pointer;
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
   transition: var(--transition);
 }
 
@@ -324,11 +326,6 @@ body.booking-body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-
-.step-tab-btn:hover {
-  background: #eef6f1;
-  color: var(--primary-green);
 }
 
 .step-tab-btn.active {
@@ -445,14 +442,11 @@ body.booking-body {
   font-size: 0.78rem;
   font-weight: 700;
   color: #647b6e;
-  cursor: pointer;
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
   transition: all 0.2s ease;
   padding: 0;
-}
-
-.mobile-dot:hover {
-  background: #e6f2e9;
-  color: #175432;
 }
 
 .mobile-dot.active {

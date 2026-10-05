@@ -302,24 +302,7 @@ function initStepperNavigation() {
     updateReviewSummary();
   }
 
-  // Desktop step buttons click
-  stepButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetStep = parseInt(btn.dataset.step, 10);
-      goToStep(targetStep);
-    });
-  });
-
-  // Mobile step dots click
-  const mobileDots = document.querySelectorAll('.mobile-dot');
-  if (mobileDots) {
-    mobileDots.forEach(dot => {
-      dot.addEventListener('click', () => {
-        const targetStep = parseInt(dot.dataset.step, 10);
-        goToStep(targetStep);
-      });
-    });
-  }
+  // Stepper buttons are purely display progress indicators (navigation is controlled via Back and Proceed buttons)
 
   if (proceedBtn) {
     proceedBtn.addEventListener('click', () => {
@@ -339,7 +322,7 @@ function initStepperNavigation() {
   if (finalSubmitBtn) {
     finalSubmitBtn.addEventListener('click', () => {
       alert(`Reservation Request Submitted Successfully!\n\nReference: ATI-RES-2026-${Math.floor(1000 + Math.random() * 9000)}\nFacility: ${bookingState.selectedFacility.name}\nDate: ${bookingState.date}\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`);
-      window.location.href = 'booking.php';
+      window.location.href = 'my_reservations.php';
     });
   }
 }
