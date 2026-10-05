@@ -1,0 +1,523 @@
+/* ==========================================================================
+   ATI Reservation System - Master Schedule Stylesheet
+   ========================================================================== */
+@import url('mobile-drawer.css');
+
+:root {
+  --primary-green: #174d2f;
+  --primary-dark: #0f331f;
+  --primary-light: #246a42;
+  --accent-green: #2e7d32;
+  --bg-page: #f8faf8;
+  --text-main: #182c20;
+  --text-muted: #576d60;
+  --border-light: #e1e9e3;
+
+  /* Facility Event Badges */
+  --badge-function: #107545;
+  --badge-training: #2563eb;
+  --badge-mess: #d97706;
+  --badge-boardroom: #7c3aed;
+  --badge-dormitory: #0d9488;
+}
+
+body.schedule-body {
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-main-wrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  flex-grow: 1;
+  width: 100%;
+}
+
+/* Header Section */
+.schedule-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.schedule-header-text h2 {
+  font-family: var(--font-serif);
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #142a1d;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
+}
+
+.schedule-header-text p {
+  font-size: 0.98rem;
+  color: #556c5e;
+  max-width: 720px;
+}
+
+.schedule-top-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #175432;
+  background: #e7f4eb;
+  padding: 0.3rem 0.85rem;
+  border-radius: 9999px;
+  margin-bottom: 0.65rem;
+  border: 1px solid #cfe6d6;
+}
+
+.btn-book-from-schedule {
+  background-color: #175432;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.75rem 1.6rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 14px rgba(23, 84, 50, 0.25);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.btn-book-from-schedule:hover {
+  background-color: #0f3f24;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(23, 84, 50, 0.35);
+}
+
+/* Stats Ribbon */
+.schedule-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2.25rem;
+}
+
+.schedule-stat-card {
+  background: #ffffff;
+  border: 1.5px solid #e1e9e3;
+  border-radius: 14px;
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+}
+
+.stat-icon-box {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-icon-box.green { background: #eaf5ee; color: #175432; }
+.stat-icon-box.blue { background: #eff6ff; color: #2563eb; }
+.stat-icon-box.amber { background: #fef3c7; color: #d97706; }
+.stat-icon-box.purple { background: #f3e8ff; color: #7c3aed; }
+
+.stat-icon-box svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #152c1e;
+  line-height: 1.2;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #637a6d;
+}
+
+/* Calendar Controls Bar */
+.calendar-controls-bar {
+  background: #ffffff;
+  border: 1.5px solid #e1e9e3;
+  border-radius: 14px 14px 0 0;
+  padding: 1.15rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  border-bottom: 1px solid #e5ede7;
+}
+
+/* Month Navigation */
+.month-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-arrow-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #f1f6f2;
+  border: 1px solid #d5e3da;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #244130;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.nav-arrow-btn:hover {
+  background: #175432;
+  color: #ffffff;
+  border-color: #175432;
+}
+
+.current-month-display {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #142e1f;
+  min-width: 170px;
+  text-align: center;
+}
+
+.btn-today-pill {
+  padding: 0.4rem 0.9rem;
+  background: #edf5ef;
+  color: #175432;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: 9999px;
+  border: 1px solid #cde4d4;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-today-pill:hover {
+  background: #175432;
+  color: #ffffff;
+}
+
+/* Facility Legend Pills in Controls Bar */
+.facility-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.fac-pill {
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1.5px solid #dbe6de;
+  background: #ffffff;
+  color: #4b6254;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.fac-pill:hover {
+  border-color: #175432;
+  color: #175432;
+}
+
+.fac-pill.active {
+  background: #175432;
+  color: #ffffff;
+  border-color: #175432;
+}
+
+/* Master Calendar Board */
+.master-calendar-board {
+  background: #ffffff;
+  border: 1.5px solid #e1e9e3;
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+}
+
+/* Day Names Header */
+.board-weekdays-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #f8faf8;
+  border-bottom: 1px solid #e5ece7;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #4f6658;
+  text-transform: uppercase;
+}
+
+.weekday-header-cell {
+  padding: 0.85rem 0.5rem;
+  border-right: 1px solid #e9f0eb;
+}
+
+.weekday-header-cell:last-child {
+  border-right: none;
+}
+
+/* Board Days Grid */
+.board-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.board-day-box {
+  min-height: 125px;
+  border-right: 1px solid #e9f0eb;
+  border-bottom: 1px solid #e9f0eb;
+  padding: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  transition: var(--transition);
+  position: relative;
+}
+
+.board-day-box:nth-child(7n) {
+  border-right: none;
+}
+
+.board-day-box:hover {
+  background-color: #fafdff;
+}
+
+.board-day-box.outside-month {
+  background-color: #fafbfa;
+  opacity: 0.45;
+}
+
+.day-header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+}
+
+.day-num {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #2b3e33;
+}
+
+.board-day-box.today .day-num {
+  background: #175432;
+  color: #ffffff;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+}
+
+.day-status-indicator {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+}
+
+.day-status-indicator.full {
+  background: #fde8e8;
+  color: #c81e1e;
+}
+
+.day-status-indicator.open {
+  background: #def7ec;
+  color: #03543f;
+}
+
+/* Event Chips inside calendar days */
+.day-event-chips-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  overflow: hidden;
+}
+
+.event-chip {
+  padding: 0.28rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: var(--transition);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.event-chip:hover {
+  transform: scale(1.02);
+  filter: brightness(1.08);
+}
+
+/* Event color badges */
+.event-chip.function-hall { background-color: var(--badge-function); }
+.event-chip.training-hall { background-color: var(--badge-training); }
+.event-chip.mess-hall { background-color: var(--badge-mess); }
+.event-chip.boardroom { background-color: var(--badge-boardroom); }
+.event-chip.dormitory { background-color: var(--badge-dormitory); }
+
+/* Event Detail Modal */
+.schedule-modal-content {
+  padding: 1.75rem 2rem 2rem;
+}
+
+.event-detail-banner {
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+}
+
+.event-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.event-meta-item {
+  background: #f5f8f6;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #e2ece5;
+}
+
+.meta-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #61776b;
+  text-transform: uppercase;
+}
+
+.meta-val {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #192f23;
+  margin-top: 0.2rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .schedule-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .schedule-main-wrapper {
+    padding: 1.5rem 1rem 4rem;
+  }
+
+  .schedule-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .btn-book-from-schedule {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .schedule-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .schedule-stat-card {
+    padding: 0.85rem 1rem;
+  }
+
+  .calendar-controls-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .facility-filter-pills {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    padding-bottom: 0.25rem;
+  }
+
+  .facility-filter-pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  .fac-pill {
+    flex-shrink: 0;
+  }
+
+  .month-nav-group {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .master-calendar-board {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .board-weekdays-row,
+  .board-days-grid {
+    min-width: 600px;
+  }
+
+  .board-day-box {
+    min-height: 80px;
+    padding: 0.35rem;
+  }
+
+  .event-chip {
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .schedule-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

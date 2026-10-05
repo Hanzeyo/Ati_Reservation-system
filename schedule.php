@@ -1,0 +1,436 @@
+<?php
+/**
+ * Agriculture Training Institute - Facility and Dormitory Reservation System
+ * Master Schedule & Institution-Wide Calendar View
+ */
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Master Schedule - Agriculture Training Institute</title>
+  <meta name="description" content="Official institution-wide master schedule and facility reservation calendar for ATI halls, meeting rooms, and dormitory suites.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/booking.css">
+  <link rel="stylesheet" href="css/schedule.css">
+  <link rel="stylesheet" href="css/mobile-drawer.css?v=<?php echo time(); ?>">
+  <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
+</head>
+<body class="schedule-body">
+
+  <!-- ==========================================================================
+       TOPBAR NAVIGATION
+       ========================================================================== -->
+  <header class="booking-topbar">
+    <div class="booking-topbar-container">
+      <a href="booking.php" class="booking-brand">
+        <img src="assets/images/ATI_Logo.png" alt="ATI Official Logo" class="booking-brand-logo">
+        <div class="booking-brand-text">
+          <h1>Agriculture Training Institute</h1>
+          <p>Facility and Dormitory Reservation System</p>
+        </div>
+      </a>
+
+      <nav class="booking-nav-center">
+        <!-- New Reservation -->
+        <a href="booking.php" class="booking-nav-item">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          <span>New Reservation</span>
+        </a>
+
+        <!-- My Reservations -->
+        <a href="my_reservations.php" class="booking-nav-item">
+          <svg viewBox="0 0 24 24" fill="none">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
+          <span>My Reservations</span>
+          <span class="nav-badge-count">2</span>
+        </a>
+
+        <!-- Master Schedule (Active) -->
+        <a href="schedule.php" class="booking-nav-item active">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>Master Schedule</span>
+        </a>
+
+        <!-- User Profile Badge & Dropdown -->
+        <div class="user-profile-menu">
+          <div class="user-profile-badge" id="userProfileBadge" role="button" aria-haspopup="true">
+            <div class="user-avatar-circle">JD</div>
+            <div class="user-details">
+              <div class="user-name">Juan Dela Cruz</div>
+              <div class="user-role">ATI Staff (CDD)</div>
+            </div>
+          </div>
+
+          <div class="profile-dropdown" id="profileDropdown">
+            <a href="javascript:void(0)" class="dropdown-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              <span>My Profile</span>
+            </a>
+            <a href="my_reservations.php" class="dropdown-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span>Booking History</span>
+            </a>
+            <div style="height: 1px; background: #e5ede7; margin: 0.35rem 0;"></div>
+            <a href="index.php" class="dropdown-item danger">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              <span>Sign Out</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Mobile Hamburger Menu Button -->
+      <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileDrawer(true)" aria-label="Open Navigation Menu" aria-expanded="false">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       MOBILE NAVIGATION DRAWER OVERLAY
+       ========================================================================== -->
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay" onclick="if(event.target===this) toggleMobileDrawer(false);" style="display: none;">
+    <div class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
+      
+      <!-- Drawer Header -->
+      <div class="drawer-header">
+        <div class="drawer-brand">
+          <img src="assets/images/ATI_Logo.png" alt="ATI Logo" class="drawer-logo" style="width: 36px; height: 36px; object-fit: contain;">
+          <div>
+            <h4>ATI Portal</h4>
+            <p>Central Office</p>
+          </div>
+        </div>
+        <button type="button" class="drawer-close-btn" id="mobileDrawerClose" onclick="toggleMobileDrawer(false)" aria-label="Close Navigation Menu">&times;</button>
+      </div>
+
+      <!-- Drawer Body -->
+      <div class="drawer-body">
+        <!-- User Profile Card -->
+        <div class="drawer-profile-card">
+          <div class="drawer-avatar">JD</div>
+          <div class="drawer-profile-info">
+            <h5>Juan Dela Cruz</h5>
+            <p>ATI Staff (CDD)</p>
+            <span class="drawer-badge">Verified Personnel</span>
+          </div>
+        </div>
+
+        <!-- Main Navigation Section -->
+        <div class="drawer-nav-section">
+          <div class="drawer-section-label">PORTAL NAVIGATION</div>
+          
+          <a href="booking.php" class="drawer-nav-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+            </div>
+            <span class="drawer-link-text">New Reservation</span>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+
+          <a href="my_reservations.php" class="drawer-nav-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            </div>
+            <span class="drawer-link-text">My Reservations</span>
+            <span class="drawer-badge-count">2</span>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+
+          <a href="schedule.php" class="drawer-nav-link active">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </div>
+            <span class="drawer-link-text">Master Schedule</span>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+        </div>
+
+        <!-- Account Settings Section -->
+        <div class="drawer-nav-section">
+          <div class="drawer-section-label">ACCOUNT & SETTINGS</div>
+          
+          <a href="javascript:void(0)" class="drawer-nav-link" onclick="alert('Profile management available in next administrative release.');">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <span class="drawer-link-text">My Profile</span>
+          </a>
+
+          <a href="my_reservations.php" class="drawer-nav-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <span class="drawer-link-text">Booking History</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Drawer Footer -->
+      <div class="drawer-footer">
+        <a href="index.php" class="drawer-logout-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+          <span>Sign Out</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleMobileDrawer(open) {
+      var overlay = document.getElementById('mobileDrawerOverlay');
+      var toggleBtn = document.getElementById('mobileMenuToggle');
+      if (!overlay) return;
+
+      if (open) {
+        overlay.style.display = 'block';
+        void overlay.offsetHeight; // trigger reflow
+        overlay.classList.add('show');
+        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      } else {
+        overlay.classList.remove('show');
+        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+        setTimeout(function() {
+          if (!overlay.classList.contains('show')) {
+            overlay.style.display = 'none';
+          }
+        }, 280);
+      }
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        var overlay = document.getElementById('mobileDrawerOverlay');
+        if (overlay && overlay.classList.contains('show')) {
+          toggleMobileDrawer(false);
+        }
+      }
+    });
+
+    window.addEventListener('resize', function() {
+      if (window.innerWidth > 900) {
+        var overlay = document.getElementById('mobileDrawerOverlay');
+        if (overlay && overlay.classList.contains('show')) {
+          toggleMobileDrawer(false);
+        }
+      }
+    });
+  </script>
+
+
+  <!-- ==========================================================================
+       MAIN CONTENT
+       ========================================================================== -->
+  <main class="schedule-main-wrapper">
+    <!-- Header Title & Action -->
+    <section class="schedule-header">
+      <div class="schedule-header-text">
+        <div class="schedule-top-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+          </svg>
+          <span>Institution-Wide Calendar View</span>
+        </div>
+        <h2>ATI Facilities & Dormitory Master Schedule</h2>
+        <p>Comprehensive real-time overview of official schedules, venue occupancy, and reserved activities across all ATI facilities.</p>
+      </div>
+
+      <a href="booking.php" class="btn-book-from-schedule">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        <span>Reserve a Venue</span>
+      </a>
+    </section>
+
+    <!-- Summary Stats Strip -->
+    <div class="schedule-stats-grid">
+      <div class="schedule-stat-card">
+        <div class="stat-icon-box green">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">18 Events</span>
+          <span class="stat-label">Scheduled this Month</span>
+        </div>
+      </div>
+
+      <div class="schedule-stat-card">
+        <div class="stat-icon-box blue">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">Function Hall</span>
+          <span class="stat-label">Highest Demand Venue</span>
+        </div>
+      </div>
+
+      <div class="schedule-stat-card">
+        <div class="stat-icon-box amber">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">68%</span>
+          <span class="stat-label">Overall Monthly Occupancy</span>
+        </div>
+      </div>
+
+      <div class="schedule-stat-card">
+        <div class="stat-icon-box purple">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value">12 Days</span>
+          <span class="stat-label">With Available Slots</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar Controls Bar -->
+    <div class="calendar-controls-bar">
+      <!-- Month Navigation Controls -->
+      <div class="month-nav-group">
+        <button type="button" class="nav-arrow-btn" id="btnPrevMonth" aria-label="Previous Month">
+          &lsaquo;
+        </button>
+        <span class="current-month-display" id="currentMonthDisplay">October 2026</span>
+        <button type="button" class="nav-arrow-btn" id="btnNextMonth" aria-label="Next Month">
+          &rsaquo;
+        </button>
+        <button type="button" class="btn-today-pill" id="btnToday">Today</button>
+      </div>
+
+      <!-- Facility Filter Pills -->
+      <div class="facility-filter-pills">
+        <button type="button" class="fac-pill active" data-facility="all">All Facilities</button>
+        <button type="button" class="fac-pill" data-facility="function-hall">Function Hall</button>
+        <button type="button" class="fac-pill" data-facility="training-hall">Training Hall A</button>
+        <button type="button" class="fac-pill" data-facility="mess-hall">Mess Hall</button>
+        <button type="button" class="fac-pill" data-facility="boardroom">Boardroom</button>
+        <button type="button" class="fac-pill" data-facility="dormitory">Dormitory</button>
+      </div>
+    </div>
+
+    <!-- Master Calendar Board -->
+    <div class="master-calendar-board">
+      <!-- Day Headers (Sun - Sat) -->
+      <div class="board-weekdays-row">
+        <div class="weekday-header-cell">Sun</div>
+        <div class="weekday-header-cell">Mon</div>
+        <div class="weekday-header-cell">Tue</div>
+        <div class="weekday-header-cell">Wed</div>
+        <div class="weekday-header-cell">Thu</div>
+        <div class="weekday-header-cell">Fri</div>
+        <div class="weekday-header-cell">Sat</div>
+      </div>
+
+      <!-- Days Grid (Dynamically Populated via JS) -->
+      <div class="board-days-grid" id="boardDaysGrid"></div>
+    </div>
+  </main>
+
+  <!-- ==========================================================================
+       EVENT DETAILS MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="scheduleEventModal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-lg">
+      <button class="modal-close-btn js-close-modal" aria-label="Close modal">&times;</button>
+      
+      <div class="modal-header-banner" id="modalEventBanner">
+        <span style="font-size: 0.78rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.9;" id="modalEventFacility">Function Hall</span>
+        <h3 id="modalEventTitle" style="font-size: 1.5rem; margin-top: 0.35rem; color: #ffffff;">Regional Rice Specialists Briefing</h3>
+      </div>
+
+      <div class="schedule-modal-content">
+        <div class="event-meta-grid">
+          <div class="event-meta-item">
+            <span class="meta-label">Schedule Date</span>
+            <div class="meta-val" id="modalEventDate">2026-10-15</div>
+          </div>
+          <div class="event-meta-item">
+            <span class="meta-label">Time Window</span>
+            <div class="meta-val" id="modalEventTime">08:00 AM - 05:00 PM</div>
+          </div>
+          <div class="event-meta-item">
+            <span class="meta-label">Requesting Unit / Division</span>
+            <div class="meta-val" id="modalEventDivision">Career Development Division</div>
+          </div>
+          <div class="event-meta-item">
+            <span class="meta-label">Estimated Attendees</span>
+            <div class="meta-val" id="modalEventAttendees">200 Delegates</div>
+          </div>
+        </div>
+
+        <div style="background: #edf8f1; padding: 1rem 1.25rem; border-radius: 10px; border-left: 4px solid #175432; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <strong style="color: #175432;">Status:</strong>
+            <span id="modalEventStatus" style="font-weight: 700; color: #175432; margin-left: 0.35rem;">Approved & Confirmed</span>
+          </div>
+          <span style="font-size: 0.8rem; color: #526f5e;">Authorized by ATI Admin Services</span>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+          <button type="button" class="btn-step-back js-close-modal">Close</button>
+          <a href="booking.php" class="btn-proceed-step" style="padding: 0.8rem 1.5rem; border-radius: 9999px;">
+            <span>Book Another Date</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/schedule.js?v=<?php echo time(); ?>"></script>
+</body>
+</html>

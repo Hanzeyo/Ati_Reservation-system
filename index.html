@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agricultural Training Institute - Facility and Dormitory Reservation System</title>
+  <meta name="description"
+    content="Reserve ATI facilities easily for seminars, training sessions, meetings, and events. Check real-time hall availability and submit reservation requests.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
+</head>
+
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="site-header">
+    <div class="nav-container">
+      <a href="#home" class="brand-wrapper">
+        <div class="brand-logo-img">
+          <img src="assets/images/ATI_Logo.png" alt="Agricultural Training Institute Logo" class="brand-img">
+        </div>
+        <div class="brand-text">
+          <h1>Agricultural Training Institute</h1>
+          <p>Facility and Dormitory Reservation System</p>
+        </div>
+      </a>
+
+      <button class="mobile-toggle" id="mobileMenuToggle" aria-label="Toggle navigation menu">
+        &#9776;
+      </button>
+
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="#home" class="nav-link active">Home</a></li>
+        <li><a href="#facilities" class="nav-link">Facilities</a></li>
+        <li><a href="#availability" class="nav-link">Availability</a></li>
+        <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+        <li><a href="#about" class="nav-link">About</a></li>
+        <li><a href="login.php" class="btn-sign-in">Sign up</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero-section" id="home">
+      <div class="container hero-grid">
+        <div class="hero-content">
+          <h2 class="hero-title">Welcome to the<br>ATI Reservation<br>System</h2>
+          <p class="hero-subtitle">
+            Easily reserve our facilities for your training sessions, conferences, workshops, and official institutional
+            events.
+          </p>
+          <div class="hero-actions">
+            <a href="login.php" class="btn-hero-primary" id="heroLoginBtn">Login</a>
+            <a href="#availability" class="btn-hero-secondary" id="heroCheckBtn">Check Availability</a>
+          </div>
+        </div>
+
+        <div class="hero-showcase">
+          <div class="hero-card" id="heroShowcaseCard">
+            <div class="showcase-slider">
+              <div class="showcase-slide active">
+                <img src="assets/images/function_hall.jpg" alt="Function Hall - Agriculture Training Institute">
+              </div>
+              <div class="showcase-slide">
+                <img src="assets/images/training_hall.jpg" alt="Training Hall - Agriculture Training Institute">
+              </div>
+              <div class="showcase-slide">
+                <img src="assets/images/mess_hall.jpg" alt="Mess Hall Dining - Agriculture Training Institute">
+              </div>
+            </div>
+
+            <!-- Carousel navigation dots -->
+            <div class="showcase-controls">
+              <span class="showcase-dot active" data-index="0" title="Function Hall"></span>
+              <span class="showcase-dot" data-index="1" title="Training Hall"></span>
+              <span class="showcase-dot" data-index="2" title="Mess Hall"></span>
+            </div>
+          </div>
+
+          <div class="hero-pill-badge" id="heroPillBadge">
+            Function Hall
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Our Facilities Section -->
+    <section class="section" id="facilities">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Our Facilities</h2>
+          <p class="section-subtitle">Choose from our available facilities for your reservation.</p>
+        </div>
+
+        <div class="facilities-grid">
+          <!-- Facility 1: Function Hall -->
+          <article class="facility-card">
+            <div class="facility-img-wrapper">
+              <img src="assets/images/function_hall.jpg" alt="Function Hall" loading="lazy">
+              <span class="facility-badge">Cap: 250 Pax</span>
+            </div>
+            <div class="facility-body">
+              <h3 class="facility-name">Function Hall</h3>
+              <p class="facility-desc">Suitable for seminars, meetings, and large events.</p>
+              <div class="facility-footer">
+                <span class="facility-meta">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  250 Capacity
+                </span>
+                <button type="button" class="facility-btn js-view-facility" data-facility="function-hall">
+                  Details &rarr;
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Facility 2: Training Hall -->
+          <article class="facility-card">
+            <div class="facility-img-wrapper">
+              <img src="assets/images/training_hall.jpg" alt="Training Hall" loading="lazy">
+              <span class="facility-badge">Cap: 80 Pax</span>
+            </div>
+            <div class="facility-body">
+              <h3 class="facility-name">Training Hall</h3>
+              <p class="facility-desc">For training sessions, workshops, and educational activities.</p>
+              <div class="facility-footer">
+                <span class="facility-meta">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                  </svg>
+                  Interactive Lab
+                </span>
+                <button type="button" class="facility-btn js-view-facility" data-facility="training-hall">
+                  Details &rarr;
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Facility 3: Mess Hall -->
+          <article class="facility-card">
+            <div class="facility-img-wrapper">
+              <img src="assets/images/mess_hall.jpg" alt="Mess Hall" loading="lazy">
+              <span class="facility-badge">Cap: 150 Pax</span>
+            </div>
+            <div class="facility-body">
+              <h3 class="facility-name">Mess Hall</h3>
+              <p class="facility-desc">For meals, gatherings, and related activities.</p>
+              <div class="facility-footer">
+                <span class="facility-meta">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                    <line x1="6" y1="1" x2="6" y2="4"></line>
+                    <line x1="10" y1="1" x2="10" y2="4"></line>
+                    <line x1="14" y1="1" x2="14" y2="4"></line>
+                  </svg>
+                  Dining & Buffet
+                </span>
+                <button type="button" class="facility-btn js-view-facility" data-facility="mess-hall">
+                  Details &rarr;
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Check Facility Availability Section -->
+    <section class="section availability-section" id="availability">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Check Facility Availability</h2>
+          <p class="section-subtitle">Select a date to see available facilities.</p>
+        </div>
+
+        <div class="availability-grid">
+          <!-- Calendar Card -->
+          <div class="calendar-card">
+            <div class="calendar-header">
+              <button type="button" class="calendar-nav-btn" id="prevMonthBtn"
+                aria-label="Previous Month">&lsaquo;</button>
+              <span class="calendar-current-month" id="calendarCurrentMonth">October 2026</span>
+              <button type="button" class="calendar-nav-btn" id="nextMonthBtn" aria-label="Next Month">&rsaquo;</button>
+            </div>
+
+            <div class="calendar-weekdays">
+              <span>Sun</span>
+              <span>Mon</span>
+              <span>Tue</span>
+              <span>Wed</span>
+              <span>Thu</span>
+              <span>Fri</span>
+              <span>Sat</span>
+            </div>
+
+            <div class="calendar-days-grid" id="calendarDaysGrid">
+              <!-- Dynamically populated via JavaScript -->
+            </div>
+
+            <!-- Status Legend -->
+            <div class="calendar-legend">
+              <div class="legend-item">
+                <span class="legend-dot available"></span>
+                <span>Available</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot reserved"></span>
+                <span>Reserved</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot pending"></span>
+                <span>Pending</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot suspended"></span>
+                <span>Suspended</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dynamic Details Preview Card -->
+          <div class="availability-preview-card" id="availabilityPreviewCard">
+            <!-- Empty state when no date is selected -->
+            <div class="preview-state-empty" id="previewEmptyState">
+              <div class="preview-icon-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                  <circle cx="8" cy="15" r="1" fill="currentColor"></circle>
+                  <circle cx="12" cy="15" r="1" fill="currentColor"></circle>
+                  <circle cx="16" cy="15" r="1" fill="currentColor"></circle>
+                </svg>
+              </div>
+              <h3 class="preview-title">Select a date</h3>
+              <p class="preview-sub">to view the availability of our facilities.</p>
+            </div>
+
+            <!-- Active date selected state -->
+            <div class="preview-state-active" id="previewActiveState">
+              <div class="preview-date-header">
+                <h3 class="preview-date-title" id="previewDateTitle">October 15, 2026</h3>
+                <p class="preview-date-day" id="previewDateDay">Schedule overview for Thursday</p>
+              </div>
+
+              <div class="hall-slot-list" id="previewSlotList">
+                <!-- Injected via JavaScript based on selected day -->
+              </div>
+
+              <button type="button" class="btn-reserve-slot js-open-login">
+                Proceed to Reservation
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="section" id="how-it-works">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">How It Works</h2>
+          <p class="section-subtitle">Reserve in just a few simple steps.</p>
+        </div>
+
+        <div class="how-it-works-grid">
+          <!-- Step 1 -->
+          <div class="step-card">
+            <div class="step-icon-bubble">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <h3 class="step-title">1. Login</h3>
+            <p class="step-desc">Sign in using your authorized account.</p>
+          </div>
+
+          <div class="step-arrow">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="step-card">
+            <div class="step-icon-bubble">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <h3 class="step-title">2. Check Availability</h3>
+            <p class="step-desc">Select a date and view available facilities.</p>
+          </div>
+
+          <div class="step-arrow">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="step-card">
+            <div class="step-icon-bubble">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+            </div>
+            <h3 class="step-title">3. Submit Request</h3>
+            <p class="step-desc">Choose a facility and fill out the reservation form.</p>
+          </div>
+
+          <div class="step-arrow">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="step-card">
+            <div class="step-icon-bubble">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <h3 class="step-title">4. Wait for Approval</h3>
+            <p class="step-desc">The assigned approver will review and approve or reject your request.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer" id="about">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="footer-logo-box">
+            <img src="assets/images/ATI_Logo.png" alt="Agriculture Training Institute Logo" class="footer-img">
+          </div>
+          <div class="footer-brand-text">
+            <h2>Agricultural Training Institute</h2>
+            <p>Facility Reservation System</p>
+          </div>
+        </div>
+
+        <ul class="footer-links">
+          <li><a href="#home" class="footer-link">Home</a></li>
+          <li class="footer-divider">|</li>
+          <li><a href="#facilities" class="footer-link">Facilities</a></li>
+          <li class="footer-divider">|</li>
+          <li><a href="#about" class="footer-link">About</a></li>
+          <li class="footer-divider">|</li>
+          <li><a href="#about" class="footer-link">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 Agricultural Training Institute. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Login Modal (Ready for the login phase) -->
+  <div class="modal-overlay" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <div class="modal-card">
+      <button class="modal-close-btn js-close-modal" aria-label="Close modal">&times;</button>
+      <div class="modal-header-banner">
+        <h3 id="loginTitle">Sign in to ATI Portal</h3>
+        <p>Facility Reservation System</p>
+      </div>
+      <div class="modal-body">
+        <form id="loginForm"
+          onsubmit="event.preventDefault(); alert('Login submission simulation successful! Ready for backend authentication.');">
+          <div class="form-group">
+            <label class="form-label" for="loginEmail">Email / Username</label>
+            <input type="text" id="loginEmail" class="form-input" placeholder="e.g. employee@ati.da.gov.ph" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required>
+          </div>
+          <div class="form-helper">
+            <label class="remember-label">
+              <input type="checkbox" checked>
+              <span>Remember me</span>
+            </label>
+            <a href="#" class="forgot-link">Forgot password?</a>
+          </div>
+          <button type="submit" class="btn-modal-submit">Sign In</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Facility Details Modal -->
+  <div class="modal-overlay" id="facilityModal" role="dialog" aria-modal="true" aria-labelledby="modalFacilityTitle">
+    <div class="modal-card modal-lg">
+      <button class="modal-close-btn js-close-modal" aria-label="Close modal">&times;</button>
+      <img src="assets/images/function_hall.jpg" alt="Facility Image" class="modal-facility-img" id="modalFacilityImg">
+      <div class="modal-facility-content">
+        <h3 id="modalFacilityTitle" class="section-title" style="margin-bottom: 0.25rem;">Function Hall</h3>
+        <p id="modalFacilityCap" style="color: #2e7d32; font-weight: 700; margin-bottom: 0.75rem;">Up to 250 Persons</p>
+        <p id="modalFacilityDesc" style="color: #4b5e52; font-size: 0.95rem; line-height: 1.6;">Suitable for seminars,
+          meetings, and large events.</p>
+
+        <h4 style="margin-top: 1.25rem; font-size: 0.95rem; color: #174227;">Included Amenities & Equipment</h4>
+        <div class="facility-amenities-list" id="modalFacilityAmenities">
+          <!-- Injected via JavaScript -->
+        </div>
+
+        <button type="button" class="btn-reserve-slot js-open-login" style="margin-top: 1rem;">
+          Book this Facility
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+
+</html>
