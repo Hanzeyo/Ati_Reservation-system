@@ -495,7 +495,15 @@
                     Range</button>
                 </div>
               </div>
-              <span class="slot-month-pill">Month: October 2026</span>
+              <div class="slot-month-nav" id="slotMonthNav">
+                <button type="button" class="slot-month-nav-btn" id="btnPrevMonth" title="Previous Month" aria-label="Previous Month" disabled>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </button>
+                <span class="slot-month-pill" id="slotMonthDisplay">October 2026</span>
+                <button type="button" class="slot-month-nav-btn" id="btnNextMonth" title="Next Month" aria-label="Next Month">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                </button>
+              </div>
             </div>
 
             <div class="slot-calendar-wrapper">
@@ -515,13 +523,13 @@
                 <div class="slot-day-btn empty"></div>
                 <div class="slot-day-btn empty"></div>
                 <div class="slot-day-btn empty"></div>
-                <button type="button" class="slot-day-btn past-date" data-day="1" title="Past Date: October 1, 2026 (Cannot be selected)" disabled>1</button>
-                <button type="button" class="slot-day-btn past-date" data-day="2" title="Past Date: October 2, 2026 (Cannot be selected)" disabled>2</button>
-                <button type="button" class="slot-day-btn past-date" data-day="3" title="Past Date: October 3, 2026 (Cannot be selected)" disabled>3</button>
+                <button type="button" class="slot-day-btn past-date" data-day="1" title="Unavailable" disabled>1</button>
+                <button type="button" class="slot-day-btn past-date" data-day="2" title="Unavailable" disabled>2</button>
+                <button type="button" class="slot-day-btn past-date" data-day="3" title="Unavailable" disabled>3</button>
 
-                <button type="button" class="slot-day-btn past-date" data-day="4" title="Past Date: October 4, 2026 (Cannot be selected)" disabled>4</button>
-                <button type="button" class="slot-day-btn available today" data-day="5" title="Today: October 5, 2026 (Available)">5</button>
-                <button type="button" class="slot-day-btn reserved" data-day="6">6</button>
+                <button type="button" class="slot-day-btn past-date" data-day="4" title="Unavailable" disabled>4</button>
+                <button type="button" class="slot-day-btn selected today" data-day="5" title="Today: October 5, 2026 (Selected)">5</button>
+                <button type="button" class="slot-day-btn available" data-day="6">6</button>
                 <button type="button" class="slot-day-btn available" data-day="7">7</button>
                 <button type="button" class="slot-day-btn available" data-day="8">8</button>
                 <button type="button" class="slot-day-btn available" data-day="9">9</button>
@@ -530,7 +538,7 @@
                 <button type="button" class="slot-day-btn available" data-day="11">11</button>
                 <button type="button" class="slot-day-btn reserved" data-day="12">12</button>
                 <button type="button" class="slot-day-btn available" data-day="13">13</button>
-                <button type="button" class="slot-day-btn selected" data-day="14">14</button>
+                <button type="button" class="slot-day-btn available" data-day="14">14</button>
                 <button type="button" class="slot-day-btn available" data-day="15">15</button>
                 <button type="button" class="slot-day-btn available" data-day="16">16</button>
                 <button type="button" class="slot-day-btn available" data-day="17">17</button>
@@ -554,12 +562,8 @@
               </div>
             </div>
 
-            <!-- Legend with Past Date & Suspended Added -->
+            <!-- Legend with Available, Reserved, Suspended, Selected (Past Date text removed per request) -->
             <div class="slot-legend-row">
-              <div class="slot-legend-tag">
-                <span class="legend-circle past"></span>
-                <span>Past Date</span>
-              </div>
               <div class="slot-legend-tag">
                 <span class="legend-circle available"></span>
                 <span>Available</span>
@@ -585,7 +589,7 @@
             <div class="dt-field-group">
               <label class="dt-field-label" for="startDateInput">START DATE</label>
               <div class="dt-input-icon-wrap">
-                <input type="text" id="startDateInput" value="10/14/2026">
+                <input type="text" id="startDateInput" value="10/05/2026">
                 <svg class="dt-calendar-svg" viewBox="0 0 24 24" fill="none">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -599,7 +603,7 @@
             <div class="dt-field-group">
               <label class="dt-field-label" for="endDateInput">END DATE</label>
               <div class="dt-input-icon-wrap" id="endDateWrap">
-                <input type="text" id="endDateInput" value="10/14/2026">
+                <input type="text" id="endDateInput" value="10/05/2026">
                 <svg class="dt-calendar-svg" viewBox="0 0 24 24" fill="none">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -730,23 +734,27 @@
 
         <div
           style="background: #f7faf8; border: 1.5px solid #dce8e0; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.25rem;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
             <div>
               <span style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Selected
                 Venue</span>
-              <h4 id="summaryVenueName" style="color: #175432; font-size: 1.2rem; margin-top: 0.2rem;">Function Hall
+              <h4 id="summaryVenueName" style="color: #175432; font-size: 1.15rem; margin-top: 0.2rem;">Function Hall
               </h4>
             </div>
             <div>
               <span
                 style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Capacity</span>
-              <h4 id="summaryVenueCapacity" style="color: #192e22; font-size: 1.1rem; margin-top: 0.2rem;">150 - 200 PAX
+              <h4 id="summaryVenueCapacity" style="color: #192e22; font-size: 1.05rem; margin-top: 0.2rem;">150 - 200 PAX
               </h4>
             </div>
             <div>
               <span style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Rate /
                 Tariff</span>
-              <h4 id="summaryVenueRate" style="color: #192e22; font-size: 1.1rem; margin-top: 0.2rem;">₱5,000/day</h4>
+              <h4 id="summaryVenueRate" style="color: #192e22; font-size: 1.05rem; margin-top: 0.2rem;">₱5,000/day</h4>
+            </div>
+            <div>
+              <span style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Reservation Date</span>
+              <h4 id="summaryReservationDate" style="color: #175432; font-size: 1.05rem; margin-top: 0.2rem;">10/05/2026</h4>
             </div>
           </div>
           <div style="font-size: 0.88rem; color: #435b4d; border-top: 1px solid #e1ece4; padding-top: 1rem;">

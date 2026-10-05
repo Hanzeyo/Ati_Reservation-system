@@ -20,9 +20,11 @@ const bookingState = {
     rate: '₱5,000/day',
     capacity: '150 - 200 PAX'
   },
-  selectedStartDay: 14,
-  selectedEndDay: 14,
-  date: '10/14/2026',
+  selectedStartDate: { year: 2026, month: 9, day: 5 },
+  selectedEndDate: { year: 2026, month: 9, day: 5 },
+  selectedStartDay: 5,
+  selectedEndDay: 5,
+  date: '10/05/2026',
   timeSlot: 'Whole Day (8:00 AM - 5:00 PM)',
   eventTitle: '',
   participants: '',
@@ -115,9 +117,19 @@ function initStepperNavigation() {
 
     // Restriction: Cannot advance past Step 2 if a past date is selected
     if (stepNumber > 2 && bookingState.currentStep === 2) {
-      if (bookingState.selectedStartDay < 5) {
-        alert('Past Date Restriction: The selected reservation date has already passed. Please select today (October 5) or an upcoming available date before proceeding.');
-        return;
+      if (bookingState.selectedStartDate) {
+        const s = bookingState.selectedStartDate;
+        if (s.year < 2026 || (s.year === 2026 && s.month < 9) || (s.year === 2026 && s.month === 9 && s.day < 5)) {
+          alert('Cannot proceed with a date that has already passed. Please select today or an upcoming available date.');
+          return;
+        }
+      }
+    }
+
+    // When advancing to Step 2 (Date & Time Selection), automatically select current date (October 5, 2026)
+    if (stepNumber === 2 && bookingState.currentStep === 1) {
+      if (typeof window.selectCurrentDate === 'function') {
+        window.selectCurrentDate();
       }
     }
 
@@ -202,36 +214,18 @@ function updateReviewSummary() {
   const summaryVenue = document.getElementById('summaryVenueName');
   const summaryCap = document.getElementById('summaryVenueCapacity');
   const summaryRate = document.getElementById('summaryVenueRate');
+  const summaryDate = document.getElementById('summaryReservationDate');
 
   if (summaryVenue) summaryVenue.textContent = bookingState.selectedFacility.name;
   if (summaryCap) summaryCap.textContent = bookingState.selectedFacility.capacity;
   if (summaryRate) summaryRate.textContent = bookingState.selectedFacility.rate;
+  if (summaryDate) summaryDate.textContent = bookingState.date;
 }
 
 /* ==========================================================================
-   5. Profile Dropdown Toggle
-   ========================================================================== */
-function initProfileDropdown() {
-  const badge = document.getElementById('userProfileBadge');
-  const dropdown = document.getElementById('profileDropdown');
-
-  if (!badge || !dropdown) return;
-
-  badge.addEventListener('click', (e) => {
-    e.stopPropagation();
-    dropdown.classList.toggle('show');
-  });
-
-  document.addEventListener('click', () => {
-    dropdown.classList.remove('show');
-  });
-}
-
-/* ==========================================================================
-   6. Interactive Date & Slot Selection (Step 2)
+   5. Interactive Date & Slot Selection (Step 2)
    ========================================================================== */
 function initDateSlotInteractions() {
-  const dayButtons = document.querySelectorAll('.slot-day-btn:not(.empty)');
   const startInput = document.getElementById('startDateInput');
   const endInput = document.getElementById('endDateInput');
   const endDateWrap = document.getElementById('endDateWrap');
@@ -239,47 +233,331 @@ function initDateSlotInteractions() {
   const statusDesc = document.getElementById('slotStatusDesc');
   const btnModeSingle = document.getElementById('btnModeSingle');
   const btnModeRange = document.getElementById('btnModeRange');
+  const btnPrevMonth = document.getElementById('btnPrevMonth');
+  const btnNextMonth = document.getElementById('btnNextMonth');
+  const monthDisplay = document.getElementById('slotMonthDisplay');
+  const grid = document.getElementById('slotDaysGrid');
 
+  const TODAY = { year: 2026, month: 9, day: 5 }; // October 5, 2026 (0-indexed month)
+  let viewYear = 2026;
+  let viewMonth = 9; // October
+
+  let selectedStart = { year: 2026, month: 9, day: 5 };
+  let selectedEnd = { year: 2026, month: 9, day: 5 };
   let mode = 'single'; // 'single' or 'range'
-  let selectedStart = 14;
-  let selectedEnd = 14;
   let rangeWaitingForEnd = false;
 
-  function renderSelection() {
-    dayButtons.forEach(btn => {
-      const day = parseInt(btn.dataset.day, 10);
-      if (btn.classList.contains('reserved') || btn.classList.contains('suspended') || btn.classList.contains('past-date')) return;
+  const MONTH_NAMES = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
-      if (day >= selectedStart && day <= selectedEnd) {
-        btn.classList.add('selected');
-        btn.classList.remove('available');
-      } else {
-        btn.classList.remove('selected');
-        btn.classList.add('available');
-      }
-    });
+  // Reserved & maintenance dates database for realistic simulation
+  const RESERVED_DATES = new Set([
+    '2026-10-06', '2026-10-12', '2026-10-19', '2026-10-27',
+    '2026-11-04', '2026-11-10', '2026-11-17', '2026-11-25',
+    '2026-12-08', '2026-12-15', '2026-12-22', '2026-12-29'
+  ]);
+  const SUSPENDED_DATES = new Set([
+    '2026-10-29', '2026-11-13', '2026-12-24', '2026-12-25'
+  ]);
 
-    const formattedStart = `10/${String(selectedStart).padStart(2, '0')}/2026`;
-    const formattedEnd = `10/${String(selectedEnd).padStart(2, '0')}/2026`;
+  function dateToKey(y, m, d) {
+    return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  }
+
+  function compareDates(d1, d2) {
+    if (d1.year !== d2.year) return d1.year - d2.year;
+    if (d1.month !== d2.month) return d1.month - d2.month;
+    return d1.day - d2.day;
+  }
+
+  function isPastDate(y, m, d) {
+    return compareDates({ year: y, month: m, day: d }, TODAY) < 0;
+  }
+
+  function isTodayDate(y, m, d) {
+    return compareDates({ year: y, month: m, day: d }, TODAY) === 0;
+  }
+
+  function isDateInRange(target, start, end) {
+    return compareDates(target, start) >= 0 && compareDates(target, end) <= 0;
+  }
+
+  function formatInputDate(d) {
+    return `${String(d.month + 1).padStart(2, '0')}/${String(d.day).padStart(2, '0')}/${d.year}`;
+  }
+
+  function formatDisplayDate(d) {
+    return `${MONTH_NAMES[d.month]} ${d.day}, ${d.year}`;
+  }
+
+  function updateMonthHeader() {
+    if (monthDisplay) {
+      monthDisplay.textContent = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
+    }
+
+    if (btnPrevMonth) {
+      // Disable previous month button if we are on or before the current month (October 2026)
+      const isCurrentMonthOrEarlier = (viewYear < TODAY.year) || (viewYear === TODAY.year && viewMonth <= TODAY.month);
+      btnPrevMonth.disabled = isCurrentMonthOrEarlier;
+    }
+  }
+
+  function renderSelectionDetails() {
+    const formattedStart = formatInputDate(selectedStart);
+    const formattedEnd = formatInputDate(selectedEnd);
 
     if (startInput) startInput.value = formattedStart;
     if (endInput) endInput.value = formattedEnd;
 
-    bookingState.selectedStartDay = selectedStart;
-    bookingState.selectedEndDay = selectedEnd;
+    const startDateObj = new Date(selectedStart.year, selectedStart.month, selectedStart.day);
+    const endDateObj = new Date(selectedEnd.year, selectedEnd.month, selectedEnd.day);
+    const diffTime = Math.abs(endDateObj - startDateObj);
+    const durationDays = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
 
-    const durationDays = (selectedEnd - selectedStart) + 1;
+    bookingState.selectedStartDate = selectedStart;
+    bookingState.selectedEndDate = selectedEnd;
+    bookingState.selectedStartDay = selectedStart.day;
+    bookingState.selectedEndDay = selectedEnd.day;
+
     if (statusTitle) statusTitle.textContent = 'Selected Slot Available!';
     if (statusDesc) {
       if (durationDays === 1) {
-        statusDesc.textContent = `No venue conflicts detected for 1 day duration (October ${selectedStart}, 2026).`;
+        statusDesc.textContent = `No venue conflicts detected for 1 day duration (${formatDisplayDate(selectedStart)}).`;
       } else {
-        statusDesc.textContent = `No venue conflicts detected for ${durationDays} days duration (Oct ${selectedStart} – Oct ${selectedEnd}, 2026).`;
+        statusDesc.textContent = `No venue conflicts detected for ${durationDays} days duration (${formatDisplayDate(selectedStart)} – ${formatDisplayDate(selectedEnd)}).`;
       }
     }
 
     bookingState.date = durationDays === 1 ? formattedStart : `${formattedStart} to ${formattedEnd}`;
   }
+
+  function updateGridHighlights() {
+    const buttons = document.querySelectorAll('.slot-day-btn:not(.empty)');
+    buttons.forEach(b => {
+      const y = parseInt(b.dataset.year, 10);
+      const m = parseInt(b.dataset.month, 10);
+      const d = parseInt(b.dataset.day, 10);
+      if (b.classList.contains('reserved') || b.classList.contains('suspended') || b.classList.contains('past-date')) return;
+
+      const inRange = isDateInRange({ year: y, month: m, day: d }, selectedStart, selectedEnd);
+      if (inRange) {
+        b.classList.add('selected');
+        b.classList.remove('available');
+      } else {
+        b.classList.remove('selected');
+        b.classList.add('available');
+      }
+    });
+  }
+
+  function handleDayClick(dateObj, btn) {
+    const key = dateToKey(dateObj.year, dateObj.month, dateObj.day);
+
+    if (btn.classList.contains('past-date') || isPastDate(dateObj.year, dateObj.month, dateObj.day)) {
+      return;
+    }
+
+    if (btn.classList.contains('suspended') || SUSPENDED_DATES.has(key)) {
+      alert(`${formatDisplayDate(dateObj)} is currently suspended for scheduled facility maintenance.`);
+      return;
+    }
+
+    if (btn.classList.contains('reserved') || RESERVED_DATES.has(key)) {
+      alert(`${formatDisplayDate(dateObj)} is already reserved for another official event. Please select an available green slot.`);
+      return;
+    }
+
+    // Single Day Mode
+    if (mode === 'single') {
+      selectedStart = { ...dateObj };
+      selectedEnd = { ...dateObj };
+      renderSelectionDetails();
+      updateGridHighlights();
+      return;
+    }
+
+    // Multi-Day Range Mode
+    if (mode === 'range') {
+      if (!rangeWaitingForEnd) {
+        selectedStart = { ...dateObj };
+        selectedEnd = { ...dateObj };
+        rangeWaitingForEnd = true;
+        if (endDateWrap) endDateWrap.classList.add('active-focus');
+        if (statusDesc) {
+          statusDesc.textContent = `Start date set to ${formatDisplayDate(dateObj)}. Now click an end date on the calendar.`;
+        }
+        renderSelectionDetails();
+        updateGridHighlights();
+      } else {
+        if (compareDates(dateObj, selectedStart) < 0) {
+          selectedStart = { ...dateObj };
+          selectedEnd = { ...dateObj };
+          rangeWaitingForEnd = true;
+          if (statusDesc) {
+            statusDesc.textContent = `Start date changed to ${formatDisplayDate(dateObj)}. Click an end date on or after this date.`;
+          }
+          renderSelectionDetails();
+          updateGridHighlights();
+          return;
+        }
+
+        if (compareDates(dateObj, selectedStart) === 0) {
+          selectedEnd = { ...dateObj };
+          rangeWaitingForEnd = false;
+          if (endDateWrap) endDateWrap.classList.remove('active-focus');
+          renderSelectionDetails();
+          updateGridHighlights();
+          return;
+        }
+
+        // Validate range conflicts
+        let conflict = null;
+        let cur = new Date(selectedStart.year, selectedStart.month, selectedStart.day);
+        const endD = new Date(dateObj.year, dateObj.month, dateObj.day);
+
+        while (cur <= endD) {
+          const cY = cur.getFullYear();
+          const cM = cur.getMonth();
+          const cD = cur.getDate();
+          const cKey = dateToKey(cY, cM, cD);
+          if (isPastDate(cY, cM, cD)) {
+            conflict = `${formatDisplayDate({year: cY, month: cM, day: cD})} has already passed`;
+            break;
+          }
+          if (RESERVED_DATES.has(cKey)) {
+            conflict = `${formatDisplayDate({year: cY, month: cM, day: cD})} is reserved for another event`;
+            break;
+          }
+          if (SUSPENDED_DATES.has(cKey)) {
+            conflict = `${formatDisplayDate({year: cY, month: cM, day: cD})} is suspended for facility maintenance`;
+            break;
+          }
+          cur.setDate(cur.getDate() + 1);
+        }
+
+        if (conflict) {
+          alert(`Cannot select date range: ${conflict}. Please select consecutive available dates.`);
+          selectedStart = { ...dateObj };
+          selectedEnd = { ...dateObj };
+          rangeWaitingForEnd = true;
+          renderSelectionDetails();
+          updateGridHighlights();
+          return;
+        }
+
+        selectedEnd = { ...dateObj };
+        rangeWaitingForEnd = false;
+        if (endDateWrap) endDateWrap.classList.remove('active-focus');
+        renderSelectionDetails();
+        updateGridHighlights();
+      }
+    }
+  }
+
+  function renderCalendarGrid() {
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay();
+    const totalDaysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+    // Leading spacer slots
+    for (let i = 0; i < firstDayOfWeek; i++) {
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'slot-day-btn empty';
+      grid.appendChild(emptyDiv);
+    }
+
+    // Month day buttons
+    for (let day = 1; day <= totalDaysInMonth; day++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.dataset.year = viewYear;
+      btn.dataset.month = viewMonth;
+      btn.dataset.day = day;
+      btn.textContent = day;
+
+      const dateObj = { year: viewYear, month: viewMonth, day: day };
+      const key = dateToKey(viewYear, viewMonth, day);
+      const isPast = isPastDate(viewYear, viewMonth, day);
+      const isToday = isTodayDate(viewYear, viewMonth, day);
+      const isSuspended = SUSPENDED_DATES.has(key);
+      const isReserved = RESERVED_DATES.has(key);
+      const isSelected = isDateInRange(dateObj, selectedStart, selectedEnd);
+
+      if (isPast) {
+        btn.className = 'slot-day-btn past-date';
+        btn.disabled = true;
+        btn.title = 'Unavailable';
+      } else if (isSuspended) {
+        btn.className = 'slot-day-btn suspended';
+        btn.title = 'Suspended: Scheduled Facility Maintenance';
+      } else if (isReserved) {
+        btn.className = 'slot-day-btn reserved';
+        btn.title = 'Reserved for Official Event';
+      } else {
+        if (isSelected) {
+          btn.className = 'slot-day-btn selected';
+        } else {
+          btn.className = 'slot-day-btn available';
+        }
+      }
+
+      if (isToday) {
+        btn.classList.add('today');
+        if (!btn.title) btn.title = `Today: ${formatDisplayDate(dateObj)}`;
+      }
+
+      btn.addEventListener('click', () => handleDayClick(dateObj, btn));
+
+      grid.appendChild(btn);
+    }
+  }
+
+  // Month navigation button handlers
+  if (btnNextMonth) {
+    btnNextMonth.addEventListener('click', () => {
+      viewMonth++;
+      if (viewMonth > 11) {
+        viewMonth = 0;
+        viewYear++;
+      }
+      updateMonthHeader();
+      renderCalendarGrid();
+    });
+  }
+
+  if (btnPrevMonth) {
+    btnPrevMonth.addEventListener('click', () => {
+      const isCurrentMonthOrEarlier = (viewYear < TODAY.year) || (viewYear === TODAY.year && viewMonth <= TODAY.month);
+      if (isCurrentMonthOrEarlier) return;
+      viewMonth--;
+      if (viewMonth < 0) {
+        viewMonth = 11;
+        viewYear--;
+      }
+      updateMonthHeader();
+      renderCalendarGrid();
+    });
+  }
+
+  // Explicit helper to select current date (October 5, 2026)
+  window.selectCurrentDate = function() {
+    viewYear = 2026;
+    viewMonth = 9;
+    selectedStart = { year: 2026, month: 9, day: 5 };
+    selectedEnd = { year: 2026, month: 9, day: 5 };
+    mode = 'single';
+    rangeWaitingForEnd = false;
+    if (btnModeSingle) btnModeSingle.classList.add('active');
+    if (btnModeRange) btnModeRange.classList.remove('active');
+    if (endDateWrap) endDateWrap.classList.remove('active-focus');
+    updateMonthHeader();
+    renderCalendarGrid();
+    renderSelectionDetails();
+  };
 
   // Mode Toggle listeners
   if (btnModeSingle && btnModeRange) {
@@ -289,9 +567,9 @@ function initDateSlotInteractions() {
       btnModeSingle.classList.add('active');
       btnModeRange.classList.remove('active');
       if (endDateWrap) endDateWrap.classList.remove('active-focus');
-      // Collapse to single start date
-      selectedEnd = selectedStart;
-      renderSelection();
+      selectedEnd = { ...selectedStart };
+      renderSelectionDetails();
+      updateGridHighlights();
     });
 
     btnModeRange.addEventListener('click', () => {
@@ -301,12 +579,12 @@ function initDateSlotInteractions() {
       btnModeSingle.classList.remove('active');
       if (endDateWrap) endDateWrap.classList.add('active-focus');
       if (statusDesc) {
-        statusDesc.textContent = `Start date is Oct ${selectedStart}. Click another date on the calendar to set your End Date.`;
+        statusDesc.textContent = `Start date is ${formatDisplayDate(selectedStart)}. Click another date on the calendar to set your End Date.`;
       }
     });
   }
 
-  // If user clicks directly on END DATE input box, switch to range end selection
+  // Click on END DATE input box opens range mode
   if (endInput && endDateWrap) {
     endInput.addEventListener('click', () => {
       mode = 'range';
@@ -315,134 +593,34 @@ function initDateSlotInteractions() {
       if (btnModeSingle) btnModeSingle.classList.remove('active');
       endDateWrap.classList.add('active-focus');
       if (statusDesc) {
-        statusDesc.textContent = `End Date picker active: Click an end date after October ${selectedStart} on the calendar.`;
+        statusDesc.textContent = `End Date picker active: Click an end date on or after ${formatDisplayDate(selectedStart)} on the calendar.`;
       }
     });
   }
 
-  // Handle Calendar Day Clicks
-  dayButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const day = parseInt(btn.dataset.day, 10);
-
-      // 1. Guard Past Dates (Cannot select dates before October 5, 2026)
-      if (btn.classList.contains('past-date') || day < 5) {
-        alert(`Past Date Restriction: October ${day}, 2026 has already passed. Reservation requests must be made for today (October 5) or future dates.`);
-        return;
-      }
-
-      // 2. Guard Suspended
-      if (btn.classList.contains('suspended')) {
-        alert(`October ${day}, 2026 is SUSPENDED for scheduled facility maintenance / administrative sanitation. Booking is not available on this date.`);
-        return;
-      }
-
-      // 3. Guard Reserved
-      if (btn.classList.contains('reserved')) {
-        alert(`October ${day}, 2026 is currently reserved for another official event. Please select an available green slot.`);
-        return;
-      }
-
-      // 4. Single Day Mode: 
-      // ALWAYS select ONLY this single date! 
-      // Guarantees zero multiplying / spreading bug when clicking dates!
-      if (mode === 'single') {
-        selectedStart = day;
-        selectedEnd = day;
-        renderSelection();
-        return;
-      }
-
-      // 5. Multi-Day Range Mode:
-      if (mode === 'range') {
-        if (!rangeWaitingForEnd) {
-          // First click in range mode: pick new start date
-          selectedStart = day;
-          selectedEnd = day;
-          rangeWaitingForEnd = true;
-          renderSelection();
-          if (endDateWrap) endDateWrap.classList.add('active-focus');
-          if (statusDesc) {
-            statusDesc.textContent = `Start date set to Oct ${day}. Now click an end date on the calendar.`;
-          }
-        } else {
-          // Second click: user is picking the end date
-          if (day < selectedStart) {
-            // Clicked a date before start -> make it the new start date instead
-            selectedStart = day;
-            selectedEnd = day;
-            rangeWaitingForEnd = true;
-            renderSelection();
-            if (statusDesc) {
-              statusDesc.textContent = `Start date changed to Oct ${day}. Click an end date after Oct ${day}.`;
-            }
-            return;
-          }
-
-          if (day === selectedStart) {
-            // Selected same day
-            selectedEnd = day;
-            rangeWaitingForEnd = false;
-            if (endDateWrap) endDateWrap.classList.remove('active-focus');
-            renderSelection();
-            return;
-          }
-
-          // Check if range spans over any past, reserved, or suspended dates!
-          let conflict = null;
-          for (let d = selectedStart; d <= day; d++) {
-            const checkBtn = document.querySelector(`.slot-day-btn[data-day="${d}"]`);
-            if (checkBtn) {
-              if (checkBtn.classList.contains('past-date') || d < 5) {
-                conflict = `October ${d} has already passed`;
-                break;
-              }
-              if (checkBtn.classList.contains('reserved')) {
-                conflict = `October ${d} is Reserved for another event`;
-                break;
-              }
-              if (checkBtn.classList.contains('suspended')) {
-                conflict = `October ${d} is Suspended for facility maintenance`;
-                break;
-              }
-            }
-          }
-
-          if (conflict) {
-            alert(`Cannot select range: ${conflict}. Please select consecutive available dates without conflicts.`);
-            // Reset to just the clicked day to avoid stuck state
-            selectedStart = day;
-            selectedEnd = day;
-            rangeWaitingForEnd = true;
-            renderSelection();
-            return;
-          }
-
-          // Valid range!
-          selectedEnd = day;
-          rangeWaitingForEnd = false;
-          if (endDateWrap) endDateWrap.classList.remove('active-focus');
-          renderSelection();
-        }
-      }
-    });
-  });
-
-  // Guard manual inputs against past dates
+  // Input change validation
   if (startInput) {
     startInput.addEventListener('change', () => {
       const parts = startInput.value.split('/');
       if (parts.length === 3) {
-        const day = parseInt(parts[1], 10);
-        if (day < 5) {
-          alert('Past Date Restriction: Cannot enter a date in the past (before October 5, 2026). Reverting to today.');
-          selectedStart = 5;
-          if (selectedEnd < 5) selectedEnd = 5;
-          renderSelection();
-        } else if (day >= 5 && day <= 31) {
-          selectedStart = day;
-          if (selectedEnd < day) selectedEnd = day;
-          renderSelection();
+        const m = parseInt(parts[0], 10) - 1;
+        const d = parseInt(parts[1], 10);
+        const y = parseInt(parts[2], 10);
+        if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+          if (isPastDate(y, m, d)) {
+            alert('Cannot enter a date in the past. Reverting to today.');
+            window.selectCurrentDate();
+          } else {
+            selectedStart = { year: y, month: m, day: d };
+            if (compareDates(selectedEnd, selectedStart) < 0) {
+              selectedEnd = { ...selectedStart };
+            }
+            viewYear = y;
+            viewMonth = m;
+            updateMonthHeader();
+            renderCalendarGrid();
+            renderSelectionDetails();
+          }
         }
       }
     });
@@ -452,21 +630,30 @@ function initDateSlotInteractions() {
     endInput.addEventListener('change', () => {
       const parts = endInput.value.split('/');
       if (parts.length === 3) {
-        const day = parseInt(parts[1], 10);
-        if (day < selectedStart) {
-          alert('End date must be on or after the start date.');
-          selectedEnd = selectedStart;
-          renderSelection();
-        } else if (day <= 31) {
-          selectedEnd = day;
-          renderSelection();
+        const m = parseInt(parts[0], 10) - 1;
+        const d = parseInt(parts[1], 10);
+        const y = parseInt(parts[2], 10);
+        if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
+          const newEnd = { year: y, month: m, day: d };
+          if (compareDates(newEnd, selectedStart) < 0) {
+            alert('End date must be on or after the start date.');
+            selectedEnd = { ...selectedStart };
+            renderSelectionDetails();
+            updateGridHighlights();
+          } else {
+            selectedEnd = newEnd;
+            renderSelectionDetails();
+            updateGridHighlights();
+          }
         }
       }
     });
   }
 
-  // Initial render
-  renderSelection();
+  // Initial Calendar Setup
+  updateMonthHeader();
+  renderCalendarGrid();
+  renderSelectionDetails();
 }
 
 /* ==========================================================================
