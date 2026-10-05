@@ -413,7 +413,16 @@ function confirmRoomSelection() {
 /* ==========================================================================
    2. Filter & Category Selection (Halls vs Dormitories)
    ========================================================================== */
-function switchCategory(catName, shouldScroll = false) {
+function initFacilityFilters() {
+  const categoryCards = document.querySelectorAll('.category-pick-card, .portal-cat-card');
+  const exploreButtons = document.querySelectorAll('.btn-explore-category');
+  const filterPills = document.querySelectorAll('.filter-pill');
+  const facilityCards = document.querySelectorAll('.facility-choice-card');
+  const sectionHeading = document.getElementById('categorySectionHeading');
+  const activeCategoryName = document.getElementById('activeCategoryName');
+  const anchorSection = document.getElementById('facilitiesSectionAnchor');
+
+  function switchCategory(catName, shouldScroll = false) {
     // 1. Update Category Cards Active State (if present)
     categoryCards.forEach(card => {
       const isTarget = card.dataset.category === catName;
@@ -512,8 +521,9 @@ function switchCategory(catName, shouldScroll = false) {
   if (requestedCat === 'dormitories' || requestedCat === 'halls' || requestedCat === 'all') {
     switchCategory(requestedCat, false);
   } else {
-    // Default to halls
-    switchCategory('halls', false);
+    const activePill = document.querySelector('.filter-pill.active');
+    const defaultCat = activePill ? activePill.dataset.categoryFilter : 'dormitories';
+    switchCategory(defaultCat, false);
   }
 }
 

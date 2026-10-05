@@ -3,6 +3,10 @@
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Step-by-Step Facility Booking Portal
  */
+$reqCategory = isset($_GET['category']) ? strtolower(trim($_GET['category'])) : 'dormitories';
+if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
+    $reqCategory = 'dormitories';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -390,14 +394,18 @@
           </a>
           <span class="active-category-indicator" id="activeCategoryBadge">
             <span class="indicator-dot"></span>
-            <span id="activeCategoryName">Halls View</span>
+            <span id="activeCategoryName"><?php 
+              if ($reqCategory === 'dormitories') echo 'Dormitories (6 Floors)';
+              elseif ($reqCategory === 'halls') echo 'Halls (4 Available)';
+              else echo 'All Facilities (10 Total)';
+            ?></span>
           </span>
         </div>
 
         <div class="filter-pills-list">
-          <button type="button" class="filter-pill active" id="btnFilterHalls" data-category-filter="halls">Halls (4)</button>
-          <button type="button" class="filter-pill" id="btnFilterDormitories" data-category-filter="dormitories">Dormitories (6)</button>
-          <button type="button" class="filter-pill" id="btnFilterAll" data-category-filter="all">Show All (10)</button>
+          <button type="button" class="filter-pill <?php echo $reqCategory === 'halls' ? 'active' : ''; ?>" id="btnFilterHalls" data-category-filter="halls">Halls (4)</button>
+          <button type="button" class="filter-pill <?php echo $reqCategory === 'dormitories' ? 'active' : ''; ?>" id="btnFilterDormitories" data-category-filter="dormitories">Dormitories (6)</button>
+          <button type="button" class="filter-pill <?php echo $reqCategory === 'all' ? 'active' : ''; ?>" id="btnFilterAll" data-category-filter="all">Show All (10)</button>
         </div>
       </div>
 
@@ -407,7 +415,11 @@
           <svg viewBox="0 0 24 24" fill="none">
             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
           </svg>
-          <span id="categorySectionHeading">AVAILABLE HALLS & VENUES (4):</span>
+          <span id="categorySectionHeading"><?php 
+            if ($reqCategory === 'dormitories') echo 'AVAILABLE DORMITORY FLOORS (6):';
+            elseif ($reqCategory === 'halls') echo 'AVAILABLE HALLS & VENUES (4):';
+            else echo 'ALL AVAILABLE FACILITIES & ROOMS (10):';
+          ?></span>
         </div>
         <p class="select-instruction-text">Select one facility card below to proceed with your booking.</p>
       </div>
@@ -416,7 +428,7 @@
       <div class="facility-selection-grid" id="facilitySelectionGrid">
         <!-- =================== 1. HALLS CATEGORY (4 VENUES) =================== -->
         <!-- Hall 1: Function Hall (Selected by default) -->
-        <article class="facility-choice-card selected" data-id="function-hall" data-name="Function Hall"
+        <article class="facility-choice-card <?php echo $reqCategory === 'halls' ? 'selected' : ''; ?>" data-id="function-hall" style="<?php echo $reqCategory === 'dormitories' ? 'display: none;' : ''; ?>" data-name="Function Hall"
           data-rate="₱5,000/day" data-capacity="150 - 200 PAX" data-facility-type="halls">
           <div class="facility-card-image">
             <img src="assets/images/function_hall.jpg" alt="Function Hall" loading="lazy">
@@ -443,7 +455,7 @@
         </article>
 
         <!-- Hall 2: Training Hall A -->
-        <article class="facility-choice-card" data-id="training-hall-a" data-name="Training Hall A"
+        <article class="facility-choice-card" data-id="training-hall-a" style="<?php echo $reqCategory === 'dormitories' ? 'display: none;' : ''; ?>" data-name="Training Hall A"
           data-rate="₱3,000/day" data-capacity="50 - 80 PAX" data-facility-type="halls">
           <div class="facility-card-image">
             <img src="assets/images/training_hall.jpg" alt="Training Hall A" loading="lazy">
@@ -489,7 +501,7 @@
         </article>
 
         <!-- Hall 4: Executive Boardroom -->
-        <article class="facility-choice-card" data-id="executive-boardroom" data-name="Executive Boardroom"
+        <article class="facility-choice-card" data-id="executive-boardroom" style="<?php echo $reqCategory === 'dormitories' ? 'display: none;' : ''; ?>" data-name="Executive Boardroom"
           data-rate="₱2,500/day" data-capacity="20 - 30 PAX" data-facility-type="halls">
           <div class="facility-card-image">
             <img src="assets/images/boardroom.jpg" alt="Executive Boardroom" loading="lazy">
@@ -513,8 +525,8 @@
 
         <!-- =================== 2. DORMITORIES CATEGORY (6 ORDERED FLOORS: PHILIPPINE FLOWERS) =================== -->
         <!-- 1st Floor: Sampaguita Dormitory -->
-        <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-1" data-name="1st Floor: Sampaguita Dormitory"
-          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories" style="display: none;">
+        <article class="facility-choice-card dorm-suite-card <?php echo $reqCategory === 'dormitories' ? 'selected' : ''; ?>" data-id="dorm-floor-1" data-name="1st Floor: Sampaguita Dormitory"
+          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories" style="<?php echo $reqCategory === 'halls' ? 'display: none;' : ''; ?>">
           <div class="facility-card-image">
             <img src="assets/images/dormitory.jpg" alt="1st Floor: Sampaguita Dormitory" loading="lazy">
             <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
@@ -541,7 +553,7 @@
 
         <!-- 2nd Floor: Ilang-Ilang Dormitory -->
         <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-2" data-name="2nd Floor: Ilang-Ilang Dormitory"
-          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories" style="display: none;">
+          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories" style="<?php echo $reqCategory === 'halls' ? 'display: none;' : ''; ?>">
           <div class="facility-card-image">
             <img src="assets/images/dormitory.jpg" alt="2nd Floor: Ilang-Ilang Dormitory" loading="lazy">
             <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
@@ -568,7 +580,7 @@
 
         <!-- 3rd Floor: Gumamela Dormitory -->
         <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-3" data-name="3rd Floor: Gumamela Dormitory"
-          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories" style="display: none;">
+          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories" style="<?php echo $reqCategory === 'halls' ? 'display: none;' : ''; ?>">
           <div class="facility-card-image">
             <img src="assets/images/dormitory.jpg" alt="3rd Floor: Gumamela Dormitory" loading="lazy">
             <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
@@ -595,7 +607,7 @@
 
         <!-- 4th Floor: Rosal Dormitory -->
         <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-4" data-name="4th Floor: Rosal Dormitory"
-          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories" style="display: none;">
+          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories" style="<?php echo $reqCategory === 'halls' ? 'display: none;' : ''; ?>">
           <div class="facility-card-image">
             <img src="assets/images/dormitory.jpg" alt="4th Floor: Rosal Dormitory" loading="lazy">
             <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
@@ -622,7 +634,7 @@
 
         <!-- 5th Floor: Waling-Waling Dormitory -->
         <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-5" data-name="5th Floor: Waling-Waling Dormitory"
-          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories" style="display: none;">
+          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories" style="<?php echo $reqCategory === 'halls' ? 'display: none;' : ''; ?>">
           <div class="facility-card-image">
             <img src="assets/images/dormitory.jpg" alt="5th Floor: Waling-Waling Dormitory" loading="lazy">
             <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
@@ -649,7 +661,7 @@
 
         <!-- 6th Floor: Tayabak Dormitory -->
         <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-6" data-name="6th Floor: Tayabak Dormitory"
-          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories" style="display: none;">
+          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories" style="<?php echo $reqCategory === 'halls' ? 'display: none;' : ''; ?>">
           <div class="facility-card-image">
             <img src="assets/images/dormitory.jpg" alt="6th Floor: Tayabak Dormitory" loading="lazy">
             <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
