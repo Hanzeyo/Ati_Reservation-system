@@ -1801,10 +1801,295 @@ body.booking-body {
     gap: 0.75rem !important;
   }
 
-  .slot-legend-row {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 0.5rem 0.75rem !important;
-    justify-items: center;
+    .slot-legend-row {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 0.5rem 0.75rem !important;
+      justify-items: center;
+    }
+}
+
+/* ==========================================================================
+   Dormitory Floor & Room Availability Layout (Exact Match to User Reference)
+   ========================================================================== */
+.dorm-floor-plans-section {
+  margin-top: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  animation: fadeIn 0.28s ease-in-out;
+}
+
+/* Active Building Banner */
+.dorm-selected-building-banner {
+  background: linear-gradient(135deg, #174d2f 0%, #0f3620 100%);
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 1.35rem 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  box-shadow: 0 8px 24px rgba(23, 77, 47, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  flex-wrap: wrap;
+}
+
+.sbb-tag {
+  display: inline-block;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #86efac;
+  margin-bottom: 0.25rem;
+}
+
+.dorm-selected-building-banner h3 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+  color: #ffffff;
+}
+
+.dorm-selected-building-banner p {
+  font-size: 0.85rem;
+  color: #d1fae5;
+  margin: 0;
+}
+
+.sbb-pill {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  padding: 0.45rem 1.15rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: #ffffff;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+}
+
+/* Selected Room Feedback Notice */
+.dorm-selected-feedback-bar {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 14px;
+  padding: 0.95rem 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.08);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.selected-feedback-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.feedback-bed-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #175432;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.feedback-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #14532d;
+}
+
+.feedback-sub {
+  font-size: 0.8rem;
+  color: #166534;
+}
+
+.badge-assigned-ok {
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Floor Card */
+.dorm-floor-card {
+  background: #ffffff;
+  border: 1.5px solid #dce8e0;
+  border-radius: 18px;
+  padding: 1.6rem 1.75rem;
+  box-shadow: 0 4px 20px rgba(23, 77, 47, 0.03);
+}
+
+.dorm-floor-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.35rem;
+  flex-wrap: wrap;
+}
+
+.dorm-floor-name {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.22rem;
+  font-weight: 700;
+  color: #123820;
+  margin: 0 0 0.3rem;
+}
+
+.dorm-floor-desc {
+  font-size: 0.85rem;
+  color: #557262;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.dorm-price-pill {
+  background: #daf2e5;
+  color: #046c4e;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0.35rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid #c2e8d3;
+  white-space: nowrap;
+}
+
+/* Rooms Grid: 6 columns */
+.dorm-rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+}
+
+/* Room Box */
+.dorm-room-box {
+  border-radius: 14px;
+  padding: 1.15rem 0.5rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  position: relative;
+}
+
+.dorm-bed-icon {
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dorm-room-num {
+  font-size: 1.18rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 0.2rem;
+}
+
+.dorm-room-status {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* AVAILABLE STATE (Green - Exact match to user screenshot) */
+.dorm-room-box.available {
+  background: #ebfbf2;
+  border: 1.5px solid #86efac;
+  color: #16a34a;
+  cursor: pointer;
+}
+
+.dorm-room-box.available:hover {
+  transform: translateY(-3px);
+  border-color: #15803d;
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.16);
+  background: #e1f9eb;
+}
+
+.dorm-room-box.available.selected {
+  background: #dcfce7;
+  border: 2.5px solid #175432;
+  box-shadow: 0 0 0 3.5px rgba(23, 84, 50, 0.2), 0 8px 22px rgba(23, 84, 50, 0.18);
+  transform: translateY(-3px) scale(1.03);
+}
+
+.dorm-room-box.available.selected .dorm-room-num {
+  color: #175432;
+}
+
+.dorm-room-box.available.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  background: #175432;
+  color: #ffffff;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* RESERVED STATE (Red/Pink - Exact match to user screenshot) */
+.dorm-room-box.reserved {
+  background: #fef2f2;
+  border: 1.5px solid #fecaca;
+  color: #dc2626;
+  cursor: not-allowed;
+  opacity: 0.95;
+}
+
+.dorm-room-box.reserved:hover {
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.12);
+}
+
+@media (max-width: 1040px) {
+  .dorm-rooms-grid {
+    grid-template-columns: repeat(4, 1fr);
   }
 }
+
+@media (max-width: 680px) {
+  .dorm-rooms-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+  }
+  .dorm-floor-card {
+    padding: 1.25rem 1rem;
+  }
+  .dorm-floor-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 440px) {
+  .dorm-rooms-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+}

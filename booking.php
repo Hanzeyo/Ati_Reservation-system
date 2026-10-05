@@ -604,6 +604,577 @@
           </div>
         </article>
       </div>
+
+      <!-- ==========================================================================
+           DORMITORY FLOOR PLANS & INTERACTIVE ROOM SELECTION (Floors 4, 3, 2, 1)
+           ========================================================================== -->
+      <div class="dorm-floor-plans-section" id="dormFloorPlansSection" style="display: none;">
+        <!-- Selected Suite/Building Info Banner -->
+        <div class="dorm-selected-building-banner" id="dormSelectedBuildingBanner">
+          <div>
+            <span class="sbb-tag">Selected Accommodation Building</span>
+            <h3 id="sbbBuildingTitle">Dormitory Suites &amp; Rooms</h3>
+            <p>Please click any green <strong style="color: #86efac;">AVAILABLE</strong> room unit below before proceeding to Date &amp; Time.</p>
+          </div>
+          <div class="sbb-pill" id="sbbRate">Select an Available Room Below</div>
+        </div>
+
+        <!-- Room Selected Confirmation Bar -->
+        <div class="dorm-selected-feedback-bar" id="dormSelectedFeedbackBar" style="display: none;">
+          <div class="selected-feedback-left">
+            <div class="feedback-bed-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+              </svg>
+            </div>
+            <div>
+              <div class="feedback-title" id="dormSelectedFeedbackTitle">Room Selected</div>
+              <div class="feedback-sub" id="dormSelectedFeedbackSub">Available for reservation</div>
+            </div>
+          </div>
+          <span class="badge-assigned-ok">✓ Room Assigned for Booking</span>
+        </div>
+
+        <!-- 4th Floor: Executive Suites & VIP Lodging -->
+        <div class="dorm-floor-card" data-floor="4" id="dormFloor4">
+          <div class="dorm-floor-header">
+            <div>
+              <h4 class="dorm-floor-name">4th Floor &mdash; Executive Suites &amp; VIP Lodging</h4>
+              <p class="dorm-floor-desc">Private air-conditioned rooms with ensuite bath and mini-fridge.</p>
+            </div>
+            <span class="dorm-price-pill">P1,800 / night</span>
+          </div>
+
+          <div class="dorm-rooms-grid">
+            <!-- Row 1: 401 to 406 -->
+            <div class="dorm-room-box reserved" data-room="401" data-floor="4th Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">401</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="402" data-floor="4th Floor" data-rate="₱1,800 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">402</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="403" data-floor="4th Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">403</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="404" data-floor="4th Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">404</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="405" data-floor="4th Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">405</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="406" data-floor="4th Floor" data-rate="₱1,800 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">406</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <!-- Row 2: 407 to 412 -->
+            <div class="dorm-room-box reserved" data-room="407" data-floor="4th Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">407</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="408" data-floor="4th Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">408</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="409" data-floor="4th Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">409</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="410" data-floor="4th Floor" data-rate="₱1,800 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">410</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="411" data-floor="4th Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">411</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="412" data-floor="4th Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">412</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3rd Floor: VIP Deluxe Rooms -->
+        <div class="dorm-floor-card" data-floor="3" id="dormFloor3">
+          <div class="dorm-floor-header">
+            <div>
+              <h4 class="dorm-floor-name">3rd Floor &mdash; VIP Deluxe Rooms</h4>
+              <p class="dorm-floor-desc">Twin-bed configuration for visiting resource speakers and guest lecturers.</p>
+            </div>
+            <span class="dorm-price-pill">P1,200 / night</span>
+          </div>
+
+          <div class="dorm-rooms-grid">
+            <!-- Row 1: 301 to 306 -->
+            <div class="dorm-room-box reserved" data-room="301" data-floor="3rd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">301</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="302" data-floor="3rd Floor" data-rate="₱1,200 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">302</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="303" data-floor="3rd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">303</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="304" data-floor="3rd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">304</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="305" data-floor="3rd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">305</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="306" data-floor="3rd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">306</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <!-- Row 2: 307 to 312 -->
+            <div class="dorm-room-box reserved" data-room="307" data-floor="3rd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">307</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="308" data-floor="3rd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">308</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="309" data-floor="3rd Floor" data-rate="₱1,200 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">309</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="310" data-floor="3rd Floor" data-rate="₱1,200 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">310</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="311" data-floor="3rd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">311</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="312" data-floor="3rd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">312</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2nd Floor: Standard Shared Dormitories -->
+        <div class="dorm-floor-card" data-floor="2" id="dormFloor2">
+          <div class="dorm-floor-header">
+            <div>
+              <h4 class="dorm-floor-name">2nd Floor &mdash; Standard Shared Dormitories</h4>
+              <p class="dorm-floor-desc">Quad-sharing room setup with study tables and lockers for training participants.</p>
+            </div>
+            <span class="dorm-price-pill">P600 / night</span>
+          </div>
+
+          <div class="dorm-rooms-grid">
+            <!-- Row 1: 201 to 206 -->
+            <div class="dorm-room-box available" data-room="201" data-floor="2nd Floor" data-rate="₱600 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">201</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="202" data-floor="2nd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">202</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="203" data-floor="2nd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">203</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="204" data-floor="2nd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">204</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="205" data-floor="2nd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">205</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="206" data-floor="2nd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">206</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <!-- Row 2: 207 to 212 -->
+            <div class="dorm-room-box reserved" data-room="207" data-floor="2nd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">207</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="208" data-floor="2nd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">208</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="209" data-floor="2nd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">209</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="210" data-floor="2nd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">210</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="211" data-floor="2nd Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">211</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="212" data-floor="2nd Floor" data-rate="₱600 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">212</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 1st Floor: Accessible & Guest Lodging -->
+        <div class="dorm-floor-card" data-floor="1" id="dormFloor1">
+          <div class="dorm-floor-header">
+            <div>
+              <h4 class="dorm-floor-name">1st Floor &mdash; Accessible &amp; Guest Lodging</h4>
+              <p class="dorm-floor-desc">Ground level units with wider doorways and ramp access for senior officers and PWD guests.</p>
+            </div>
+            <span class="dorm-price-pill">P500 / night</span>
+          </div>
+
+          <div class="dorm-rooms-grid">
+            <!-- Row 1: 101 to 106 -->
+            <div class="dorm-room-box available" data-room="101" data-floor="1st Floor" data-rate="₱500 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">101</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="102" data-floor="1st Floor" data-rate="₱500 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">102</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="103" data-floor="1st Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">103</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="104" data-floor="1st Floor" data-rate="₱500 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">104</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="105" data-floor="1st Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">105</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="106" data-floor="1st Floor" data-rate="₱500 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">106</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <!-- Row 2: 107 to 112 -->
+            <div class="dorm-room-box available" data-room="107" data-floor="1st Floor" data-rate="₱500 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">107</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="108" data-floor="1st Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">108</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="109" data-floor="1st Floor" data-rate="₱500 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">109</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <div class="dorm-room-box reserved" data-room="110" data-floor="1st Floor">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">110</div>
+              <div class="dorm-room-status">RESERVED</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="111" data-floor="1st Floor" data-rate="₱500 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">111</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+
+            <div class="dorm-room-box available" data-room="112" data-floor="1st Floor" data-rate="₱500 / night">
+              <div class="dorm-bed-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+                </svg>
+              </div>
+              <div class="dorm-room-num">112</div>
+              <div class="dorm-room-status">AVAILABLE</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ==========================================================================
