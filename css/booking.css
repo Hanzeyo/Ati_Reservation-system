@@ -794,6 +794,41 @@ body.booking-body {
   box-shadow: 0 0 0 1px #fef9c3;
 }
 
+/* Past Date Status - Muted Gray / Disabled */
+.slot-day-btn.past-date {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  opacity: 0.65;
+  text-decoration: line-through;
+  position: relative;
+  pointer-events: none;
+}
+
+.slot-day-btn.past-date:hover {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #94a3b8 !important;
+}
+
+/* Today Indicator */
+.slot-day-btn.today {
+  border: 2px solid #175432 !important;
+  font-weight: 800;
+  position: relative;
+}
+
+.slot-day-btn.today::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #175432;
+}
+
 /* Selected Range Status */
 .slot-day-btn.selected {
   background-color: #175432 !important;
@@ -864,10 +899,25 @@ body.booking-body {
   border-radius: 50%;
 }
 
-.legend-circle.available { background-color: #38a169; }
-.legend-circle.reserved { background-color: #e53e3e; }
-.legend-circle.suspended { background-color: #eab308; }
-.legend-circle.selected { background-color: #175432; }
+.legend-circle.available {
+  background-color: #38a169;
+}
+
+.legend-circle.reserved {
+  background-color: #e53e3e;
+}
+
+.legend-circle.suspended {
+  background-color: #eab308;
+}
+
+.legend-circle.selected {
+  background-color: #175432;
+}
+
+.legend-circle.past {
+  background-color: #94a3b8;
+}
 
 /* Right Column: Inputs Form */
 .date-time-form-col {
@@ -1043,8 +1093,15 @@ body.booking-body {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ==========================================================================

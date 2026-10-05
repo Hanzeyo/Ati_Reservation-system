@@ -6,16 +6,19 @@
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reserve ATI Venue & Facilities - Agricultural Training Institute</title>
-  <meta name="description" content="Submit official reservation requests for ATI function halls, training venues, boardrooms, and dormitory suites.">
+  <meta name="description"
+    content="Submit official reservation requests for ATI function halls, training venues, boardrooms, and dormitory suites.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/booking.css">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=<?php echo time(); ?>">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
+
 <body class="booking-body">
 
   <!-- ==========================================================================
@@ -107,7 +110,8 @@
       </nav>
 
       <!-- Mobile Hamburger Menu Button -->
-      <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileDrawer(true)" aria-label="Open Navigation Menu" aria-expanded="false">
+      <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileDrawer(true)"
+        aria-label="Open Navigation Menu" aria-expanded="false">
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
@@ -118,19 +122,22 @@
   <!-- ==========================================================================
        MOBILE NAVIGATION DRAWER OVERLAY
        ========================================================================== -->
-  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay" onclick="if(event.target===this) toggleMobileDrawer(false);" style="display: none;">
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"
+    onclick="if(event.target===this) toggleMobileDrawer(false);" style="display: none;">
     <div class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
-      
+
       <!-- Drawer Header -->
       <div class="drawer-header">
         <div class="drawer-brand">
-          <img src="assets/images/ATI_Logo.png" alt="ATI Logo" class="drawer-logo" style="width: 36px; height: 36px; object-fit: contain;">
+          <img src="assets/images/ATI_Logo.png" alt="ATI Logo" class="drawer-logo"
+            style="width: 36px; height: 36px; object-fit: contain;">
           <div>
             <h4>ATI Portal</h4>
             <p>Central Office</p>
           </div>
         </div>
-        <button type="button" class="drawer-close-btn" id="mobileDrawerClose" onclick="toggleMobileDrawer(false)" aria-label="Close Navigation Menu">&times;</button>
+        <button type="button" class="drawer-close-btn" id="mobileDrawerClose" onclick="toggleMobileDrawer(false)"
+          aria-label="Close Navigation Menu">&times;</button>
       </div>
 
       <!-- Drawer Body -->
@@ -148,47 +155,75 @@
         <!-- Main Navigation Section -->
         <div class="drawer-nav-section">
           <div class="drawer-section-label">PORTAL NAVIGATION</div>
-          
+
           <a href="booking.php" class="drawer-nav-link active">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14"></path>
+                <path d="M5 12h14"></path>
+              </svg>
             </div>
             <span class="drawer-link-text">New Reservation</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
           </a>
 
           <a href="my_reservations.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
             </div>
             <span class="drawer-link-text">My Reservations</span>
             <span class="drawer-badge-count">2</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
           </a>
 
           <a href="schedule.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
             </div>
             <span class="drawer-link-text">Master Schedule</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
           </a>
         </div>
 
         <!-- Account Settings Section -->
         <div class="drawer-nav-section">
           <div class="drawer-section-label">ACCOUNT & SETTINGS</div>
-          
-          <a href="javascript:void(0)" class="drawer-nav-link" onclick="alert('Profile management available in next administrative release.');">
+
+          <a href="javascript:void(0)" class="drawer-nav-link"
+            onclick="alert('Profile management available in next administrative release.');">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
             </div>
             <span class="drawer-link-text">My Profile</span>
           </a>
 
           <a href="my_reservations.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
             </div>
             <span class="drawer-link-text">Booking History</span>
           </a>
@@ -225,7 +260,7 @@
         overlay.classList.remove('show');
         if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
         document.body.style.overflow = '';
-        setTimeout(function() {
+        setTimeout(function () {
           if (!overlay.classList.contains('show')) {
             overlay.style.display = 'none';
           }
@@ -233,7 +268,7 @@
       }
     }
 
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         var overlay = document.getElementById('mobileDrawerOverlay');
         if (overlay && overlay.classList.contains('show')) {
@@ -242,7 +277,7 @@
       }
     });
 
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
       if (window.innerWidth > 900) {
         var overlay = document.getElementById('mobileDrawerOverlay');
         if (overlay && overlay.classList.contains('show')) {
@@ -319,7 +354,8 @@
       <!-- Facility Cards Grid -->
       <div class="facility-selection-grid">
         <!-- 1. Function Hall (Selected by default) -->
-        <article class="facility-choice-card selected" data-id="function-hall" data-name="Function Hall" data-rate="₱5,000/day" data-capacity="150 - 200 PAX" data-category="large-halls">
+        <article class="facility-choice-card selected" data-id="function-hall" data-name="Function Hall"
+          data-rate="₱5,000/day" data-capacity="150 - 200 PAX" data-category="large-halls">
           <div class="facility-card-image">
             <img src="assets/images/function_hall.jpg" alt="Function Hall" loading="lazy">
             <span class="facility-cap-badge">150 - 200 PAX</span>
@@ -345,7 +381,8 @@
         </article>
 
         <!-- 2. Training Hall A -->
-        <article class="facility-choice-card" data-id="training-hall-a" data-name="Training Hall A" data-rate="₱3,000/day" data-capacity="50 - 80 PAX" data-category="large-halls">
+        <article class="facility-choice-card" data-id="training-hall-a" data-name="Training Hall A"
+          data-rate="₱3,000/day" data-capacity="50 - 80 PAX" data-category="large-halls">
           <div class="facility-card-image">
             <img src="assets/images/training_hall.jpg" alt="Training Hall A" loading="lazy">
             <span class="facility-cap-badge">50 - 80 PAX</span>
@@ -367,7 +404,8 @@
         </article>
 
         <!-- 3. Mess Hall & Dining Area -->
-        <article class="facility-choice-card" data-id="mess-hall" data-name="Mess Hall & Dining Area" data-rate="₱3,500/day" data-capacity="100 PAX DINING" data-category="large-halls">
+        <article class="facility-choice-card" data-id="mess-hall" data-name="Mess Hall & Dining Area"
+          data-rate="₱3,500/day" data-capacity="100 PAX DINING" data-category="large-halls">
           <div class="facility-card-image">
             <img src="assets/images/mess_hall.jpg" alt="Mess Hall & Dining Area" loading="lazy">
             <span class="facility-cap-badge">100 PAX DINING</span>
@@ -389,7 +427,8 @@
         </article>
 
         <!-- 4. Executive Boardroom -->
-        <article class="facility-choice-card" data-id="executive-boardroom" data-name="Executive Boardroom" data-rate="₱2,500/day" data-capacity="20 - 30 PAX" data-category="meeting-rooms">
+        <article class="facility-choice-card" data-id="executive-boardroom" data-name="Executive Boardroom"
+          data-rate="₱2,500/day" data-capacity="20 - 30 PAX" data-category="meeting-rooms">
           <div class="facility-card-image">
             <img src="assets/images/boardroom.jpg" alt="Executive Boardroom" loading="lazy">
             <span class="facility-cap-badge">20 - 30 PAX</span>
@@ -411,7 +450,8 @@
         </article>
 
         <!-- 5. Dormitory Suites (Building B) -->
-        <article class="facility-choice-card" data-id="dormitory-suites" data-name="Dormitory Suites (Building B)" data-rate="₱4,000/day" data-capacity="40 GUESTS (10 ROOMS)" data-category="lodging-suites">
+        <article class="facility-choice-card" data-id="dormitory-suites" data-name="Dormitory Suites (Building B)"
+          data-rate="₱4,000/day" data-capacity="40 GUESTS (10 ROOMS)" data-category="lodging-suites">
           <div class="facility-card-image">
             <img src="assets/images/dormitory.jpg" alt="Dormitory Suites" loading="lazy">
             <span class="facility-cap-badge">40 GUESTS (10 ROOMS)</span>
@@ -449,8 +489,10 @@
               <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
                 <span class="slot-box-title">INTERACTIVE AVAILABILITY SLOT CHECK</span>
                 <div class="slot-mode-selector" id="slotModeSelector">
-                  <button type="button" class="slot-mode-btn active" id="btnModeSingle" title="Select single day reservation">Single Day</button>
-                  <button type="button" class="slot-mode-btn" id="btnModeRange" title="Select multi-day range">Multi-Day Range</button>
+                  <button type="button" class="slot-mode-btn active" id="btnModeSingle"
+                    title="Select single day reservation">Single Day</button>
+                  <button type="button" class="slot-mode-btn" id="btnModeRange" title="Select multi-day range">Multi-Day
+                    Range</button>
                 </div>
               </div>
               <span class="slot-month-pill">Month: October 2026</span>
@@ -473,12 +515,12 @@
                 <div class="slot-day-btn empty"></div>
                 <div class="slot-day-btn empty"></div>
                 <div class="slot-day-btn empty"></div>
-                <button type="button" class="slot-day-btn available" data-day="1">1</button>
-                <button type="button" class="slot-day-btn available" data-day="2">2</button>
-                <button type="button" class="slot-day-btn available" data-day="3">3</button>
+                <button type="button" class="slot-day-btn past-date" data-day="1" title="Past Date: October 1, 2026 (Cannot be selected)" disabled>1</button>
+                <button type="button" class="slot-day-btn past-date" data-day="2" title="Past Date: October 2, 2026 (Cannot be selected)" disabled>2</button>
+                <button type="button" class="slot-day-btn past-date" data-day="3" title="Past Date: October 3, 2026 (Cannot be selected)" disabled>3</button>
 
-                <button type="button" class="slot-day-btn available" data-day="4">4</button>
-                <button type="button" class="slot-day-btn available" data-day="5">5</button>
+                <button type="button" class="slot-day-btn past-date" data-day="4" title="Past Date: October 4, 2026 (Cannot be selected)" disabled>4</button>
+                <button type="button" class="slot-day-btn available today" data-day="5" title="Today: October 5, 2026 (Available)">5</button>
                 <button type="button" class="slot-day-btn reserved" data-day="6">6</button>
                 <button type="button" class="slot-day-btn available" data-day="7">7</button>
                 <button type="button" class="slot-day-btn available" data-day="8">8</button>
@@ -505,14 +547,19 @@
                 <button type="button" class="slot-day-btn available" data-day="26">26</button>
                 <button type="button" class="slot-day-btn reserved" data-day="27">27</button>
                 <button type="button" class="slot-day-btn available" data-day="28">28</button>
-                <button type="button" class="slot-day-btn suspended" data-day="29" title="Suspended: Facility Maintenance">29</button>
+                <button type="button" class="slot-day-btn suspended" data-day="29"
+                  title="Suspended: Facility Maintenance">29</button>
                 <button type="button" class="slot-day-btn available" data-day="30">30</button>
                 <button type="button" class="slot-day-btn available" data-day="31">31</button>
               </div>
             </div>
 
-            <!-- Legend with Suspended Added -->
+            <!-- Legend with Past Date & Suspended Added -->
             <div class="slot-legend-row">
+              <div class="slot-legend-tag">
+                <span class="legend-circle past"></span>
+                <span>Past Date</span>
+              </div>
               <div class="slot-legend-tag">
                 <span class="legend-circle available"></span>
                 <span>Available</span>
@@ -618,27 +665,33 @@
     <div class="wizard-step-view" data-step="3">
       <div class="wizard-form-card">
         <h3 class="wizard-form-title">Step 3: Event & Activity Information</h3>
-        <p class="wizard-form-desc">Provide details regarding the nature of your activity, participants, and specific requirements.</p>
+        <p class="wizard-form-desc">Provide details regarding the nature of your activity, participants, and specific
+          requirements.</p>
 
         <div class="auth-field-group">
           <label class="auth-field-label" for="eventTitleInput">Activity / Event Title</label>
-          <input type="text" id="eventTitleInput" class="auth-input" placeholder="e.g. Regional Agricultural Extension Coordinators Training 2026" style="padding-left: 1rem;">
+          <input type="text" id="eventTitleInput" class="auth-input"
+            placeholder="e.g. Regional Agricultural Extension Coordinators Training 2026" style="padding-left: 1rem;">
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
           <div class="auth-field-group">
             <label class="auth-field-label" for="eventPaxInput">Estimated Number of Attendees</label>
-            <input type="number" id="eventPaxInput" class="auth-input" placeholder="e.g. 120" style="padding-left: 1rem;">
+            <input type="number" id="eventPaxInput" class="auth-input" placeholder="e.g. 120"
+              style="padding-left: 1rem;">
           </div>
           <div class="auth-field-group">
             <label class="auth-field-label" for="divisionInput">Requesting Division / Unit</label>
-            <input type="text" id="divisionInput" class="auth-input" value="Career Development Division (CDD)" style="padding-left: 1rem;">
+            <input type="text" id="divisionInput" class="auth-input" value="Career Development Division (CDD)"
+              style="padding-left: 1rem;">
           </div>
         </div>
 
         <div class="auth-field-group">
           <label class="auth-field-label" for="specialNotes">Special Equipment / Setup Notes (Optional)</label>
-          <textarea id="specialNotes" class="auth-input" rows="3" placeholder="e.g. Needs 4 wireless microphones, podium banner stand, and registration tables." style="padding: 0.8rem 1rem; resize: vertical;"></textarea>
+          <textarea id="specialNotes" class="auth-input" rows="3"
+            placeholder="e.g. Needs 4 wireless microphones, podium banner stand, and registration tables."
+            style="padding: 0.8rem 1rem; resize: vertical;"></textarea>
         </div>
       </div>
     </div>
@@ -649,10 +702,13 @@
     <div class="wizard-step-view" data-step="4">
       <div class="wizard-form-card">
         <h3 class="wizard-form-title">Step 4: Supporting Documents Upload</h3>
-        <p class="wizard-form-desc">Attach approved Special Order, Activity Design, or official request endorsement memo.</p>
+        <p class="wizard-form-desc">Attach approved Special Order, Activity Design, or official request endorsement
+          memo.</p>
 
-        <div style="border: 2px dashed #b8ccbe; border-radius: 12px; padding: 3rem 2rem; text-align: center; background: #fbfdfc; cursor: pointer;">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="1.8" style="margin-bottom: 0.75rem;">
+        <div
+          style="border: 2px dashed #b8ccbe; border-radius: 12px; padding: 3rem 2rem; text-align: center; background: #fbfdfc; cursor: pointer;">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="1.8"
+            style="margin-bottom: 0.75rem;">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="17 8 12 3 7 8"></polyline>
             <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -669,30 +725,38 @@
     <div class="wizard-step-view" data-step="5">
       <div class="wizard-form-card">
         <h3 class="wizard-form-title">Step 5: Review & Submit Official Request</h3>
-        <p class="wizard-form-desc">Please verify your reservation particulars before final submission to the administrative approving authority.</p>
+        <p class="wizard-form-desc">Please verify your reservation particulars before final submission to the
+          administrative approving authority.</p>
 
-        <div style="background: #f7faf8; border: 1.5px solid #dce8e0; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+        <div
+          style="background: #f7faf8; border: 1.5px solid #dce8e0; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
           <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.25rem;">
             <div>
-              <span style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Selected Venue</span>
-              <h4 id="summaryVenueName" style="color: #175432; font-size: 1.2rem; margin-top: 0.2rem;">Function Hall</h4>
+              <span style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Selected
+                Venue</span>
+              <h4 id="summaryVenueName" style="color: #175432; font-size: 1.2rem; margin-top: 0.2rem;">Function Hall
+              </h4>
             </div>
             <div>
-              <span style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Capacity</span>
-              <h4 id="summaryVenueCapacity" style="color: #192e22; font-size: 1.1rem; margin-top: 0.2rem;">150 - 200 PAX</h4>
+              <span
+                style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Capacity</span>
+              <h4 id="summaryVenueCapacity" style="color: #192e22; font-size: 1.1rem; margin-top: 0.2rem;">150 - 200 PAX
+              </h4>
             </div>
             <div>
-              <span style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Rate / Tariff</span>
+              <span style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Rate /
+                Tariff</span>
               <h4 id="summaryVenueRate" style="color: #192e22; font-size: 1.1rem; margin-top: 0.2rem;">₱5,000/day</h4>
             </div>
           </div>
           <div style="font-size: 0.88rem; color: #435b4d; border-top: 1px solid #e1ece4; padding-top: 1rem;">
-            <span>Requested by: <strong>Juan Dela Cruz</strong> (ATI Staff, CDD)</span> &bull; 
+            <span>Requested by: <strong>Juan Dela Cruz</strong> (ATI Staff, CDD)</span> &bull;
             <span>Status after submission: <strong>Pending Administrative Officer Review</strong></span>
           </div>
         </div>
 
-        <button type="button" class="btn-proceed-step" id="btnSubmitFinalReservation" style="width: 100%; justify-content: center; border-radius: 10px; padding: 1rem;">
+        <button type="button" class="btn-proceed-step" id="btnSubmitFinalReservation"
+          style="width: 100%; justify-content: center; border-radius: 10px; padding: 1rem;">
           <svg viewBox="0 0 24 24" fill="none">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
@@ -723,4 +787,5 @@
 
   <script src="js/booking.js?v=<?php echo time(); ?>"></script>
 </body>
+
 </html>

@@ -20,7 +20,9 @@ const bookingState = {
     rate: '₱5,000/day',
     capacity: '150 - 200 PAX'
   },
-  date: '2026-10-15',
+  selectedStartDay: 14,
+  selectedEndDay: 14,
+  date: '10/14/2026',
   timeSlot: 'Whole Day (8:00 AM - 5:00 PM)',
   eventTitle: '',
   participants: '',
@@ -110,6 +112,15 @@ function initStepperNavigation() {
 
   function goToStep(stepNumber) {
     if (stepNumber < 1 || stepNumber > 5) return;
+
+    // Restriction: Cannot advance past Step 2 if a past date is selected
+    if (stepNumber > 2 && bookingState.currentStep === 2) {
+      if (bookingState.selectedStartDay < 5) {
+        alert('Past Date Restriction: The selected reservation date has already passed. Please select today (October 5) or an upcoming available date before proceeding.');
+        return;
+      }
+    }
+
     bookingState.currentStep = stepNumber;
 
     stepButtons.forEach((btn, index) => {
@@ -237,7 +248,7 @@ function initDateSlotInteractions() {
   function renderSelection() {
     dayButtons.forEach(btn => {
       const day = parseInt(btn.dataset.day, 10);
-      if (btn.classList.contains('reserved') || btn.classList.contains('suspended')) return;
+      if (btn.classList.contains('reserved') || btn.classList.contains('suspended') || btn.classList.contains('past-date')) return;
 
       if (day >= selectedStart && day <= selectedEnd) {
         btn.classList.add('selected');
@@ -253,6 +264,9 @@ function initDateSlotInteractions() {
 
     if (startInput) startInput.value = formattedStart;
     if (endInput) endInput.value = formattedEnd;
+
+    bookingState.selectedStartDay = selectedStart;
+    bookingState.selectedEndDay = selectedEnd;
 
     const durationDays = (selectedEnd - selectedStart) + 1;
     if (statusTitle) statusTitle.textContent = 'Selected Slot Available!';
@@ -311,19 +325,25 @@ function initDateSlotInteractions() {
     btn.addEventListener('click', () => {
       const day = parseInt(btn.dataset.day, 10);
 
-      // 1. Guard Suspended
+      // 1. Guard Past Dates (Cannot select dates before October 5, 2026)
+      if (btn.classList.contains('past-date') || day < 5) {
+        alert(`Past Date Restriction: October ${day}, 2026 has already passed. Reservation requests must be made for today (October 5) or future dates.`);
+        return;
+      }
+
+      // 2. Guard Suspended
       if (btn.classList.contains('suspended')) {
         alert(`October ${day}, 2026 is SUSPENDED for scheduled facility maintenance / administrative sanitation. Booking is not available on this date.`);
         return;
       }
 
-      // 2. Guard Reserved
+      // 3. Guard Reserved
       if (btn.classList.contains('reserved')) {
         alert(`October ${day}, 2026 is currently reserved for another official event. Please select an available green slot.`);
         return;
       }
 
-      // 3. Single Day Mode: 
+      // 4. Single Day Mode: 
       // ALWAYS select ONLY this single date! 
       // Guarantees zero multiplying / spreading bug when clicking dates!
       if (mode === 'single') {
@@ -333,7 +353,7 @@ function initDateSlotInteractions() {
         return;
       }
 
-      // 4. Multi-Day Range Mode:
+      // 5. Multi-Day Range Mode:
       if (mode === 'range') {
         if (!rangeWaitingForEnd) {
           // First click in range mode: pick new start date
@@ -368,11 +388,15 @@ function initDateSlotInteractions() {
             return;
           }
 
-          // Check if range spans over any reserved or suspended dates!
+          // Check if range spans over any past, reserved, or suspended dates!
           let conflict = null;
-          for (let d = selectedStart + 1; d <= day; d++) {
+          for (let d = selectedStart; d <= day; d++) {
             const checkBtn = document.querySelector(`.slot-day-btn[data-day="${d}"]`);
             if (checkBtn) {
+              if (checkBtn.classList.contains('past-date') || d < 5) {
+                conflict = `October ${d} has already passed`;
+                break;
+              }
               if (checkBtn.classList.contains('reserved')) {
                 conflict = `October ${d} is Reserved for another event`;
                 break;
@@ -403,6 +427,43 @@ function initDateSlotInteractions() {
       }
     });
   });
+
+  // Guard manual inputs against past dates
+  if (startInput) {
+    startInput.addEventListener('change', () => {
+      const parts = startInput.value.split('/');
+      if (parts.length === 3) {
+        const day = parseInt(parts[1], 10);
+        if (day < 5) {
+          alert('Past Date Restriction: Cannot enter a date in the past (before October 5, 2026). Reverting to today.');
+          selectedStart = 5;
+          if (selectedEnd < 5) selectedEnd = 5;
+          renderSelection();
+        } else if (day >= 5 && day <= 31) {
+          selectedStart = day;
+          if (selectedEnd < day) selectedEnd = day;
+          renderSelection();
+        }
+      }
+    });
+  }
+
+  if (endInput) {
+    endInput.addEventListener('change', () => {
+      const parts = endInput.value.split('/');
+      if (parts.length === 3) {
+        const day = parseInt(parts[1], 10);
+        if (day < selectedStart) {
+          alert('End date must be on or after the start date.');
+          selectedEnd = selectedStart;
+          renderSelection();
+        } else if (day <= 31) {
+          selectedEnd = day;
+          renderSelection();
+        }
+      }
+    });
+  }
 
   // Initial render
   renderSelection();
