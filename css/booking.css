@@ -1924,13 +1924,109 @@ body.booking-body {
   white-space: nowrap;
 }
 
-/* Floor Card */
+/* Dormitory Suite Card Specifics - Embed Room Selection Inside Cards */
+.facility-choice-card.dorm-suite-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.facility-choice-card.dorm-suite-card:hover {
+  border-color: #246a42;
+}
+
+/* When a dorm card is selected, expand across the entire grid width to display the 6-column floor plan */
+.facility-choice-card.dorm-suite-card.selected {
+  grid-column: 1 / -1 !important;
+  border-color: #175432 !important;
+  box-shadow: 0 10px 35px rgba(23, 84, 50, 0.16) !important;
+  background: #ffffff !important;
+}
+
+.facility-choice-card.dorm-suite-card.selected .facility-card-image {
+  max-height: 220px;
+}
+
+.facility-choice-card.dorm-suite-card.selected .facility-card-image img {
+  max-height: 220px;
+  object-position: center 35%;
+}
+
+/* Room Selection Container inside Dorm Card */
+.card-room-selection-container {
+  display: none;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1.5px dashed #cde0d4;
+  animation: fadeInDormFloor 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.facility-choice-card.selected .card-room-selection-container {
+  display: block !important;
+}
+
+@keyframes fadeInDormFloor {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Feedback Notice inside Card */
+.card-room-feedback-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #f0fdf4 0%, #e8f9ee 100%);
+  border: 1.5px solid #86efac;
+  border-radius: 12px;
+  padding: 0.85rem 1.25rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.08);
+  animation: fadeInDormFloor 0.25s ease forwards;
+}
+
+.crf-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #14532d;
+}
+
+.crf-sub {
+  font-size: 0.82rem;
+  color: #166534;
+  margin-top: 0.15rem;
+}
+
+/* Ready to proceed CTA button on Card */
+.btn-select-facility.btn-ready-proceed {
+  background: #175432 !important;
+  color: #ffffff !important;
+  border-color: #175432 !important;
+  box-shadow: 0 4px 14px rgba(23, 84, 50, 0.25) !important;
+  font-weight: 800 !important;
+  font-size: 0.95rem !important;
+  cursor: pointer !important;
+}
+
+.btn-select-facility.btn-ready-proceed:hover {
+  background: #0f3720 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(23, 84, 50, 0.35) !important;
+}
+
+/* Floor Card (Nested inside Dorm Card) */
 .dorm-floor-card {
-  background: #ffffff;
-  border: 1.5px solid #dce8e0;
-  border-radius: 18px;
-  padding: 1.6rem 1.75rem;
-  box-shadow: 0 4px 20px rgba(23, 77, 47, 0.03);
+  background: #fbfdfc;
+  border: 1.5px solid #d8e6dd;
+  border-radius: 16px;
+  padding: 1.4rem 1.5rem;
+  box-shadow: 0 2px 10px rgba(23, 77, 47, 0.04);
 }
 
 .dorm-floor-header {
