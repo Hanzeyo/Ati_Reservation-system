@@ -352,7 +352,7 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
     </div>
   </div>
 
-  <script src="js/auth.js"></script>
+  <script src="js/auth.js?v=<?php echo time(); ?>"></script>
 </body>
 
 </html>

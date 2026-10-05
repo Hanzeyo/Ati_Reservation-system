@@ -278,5 +278,5 @@ function handleLoginSubmit(event) {
   event.preventDefault();
   const email = document.getElementById('loginEmailInput')?.value;
   alert(`Sign in simulation successful for: ${email}\nRedirecting to reservation portal...`);
-  window.location.href = 'booking.php';
+  window.location.href = 'home.php';
 }

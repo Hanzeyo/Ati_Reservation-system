@@ -13,8 +13,8 @@
   <title>Reserve ATI Venue & Facilities - Agricultural Training Institute</title>
   <meta name="description"
     content="Submit official reservation requests for ATI function halls, training venues, boardrooms, and dormitory suites.">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/booking.css">
+  <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
+  <link rel="stylesheet" href="css/booking.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=<?php echo time(); ?>">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
@@ -27,7 +27,7 @@
   <header class="booking-topbar">
     <div class="booking-topbar-container">
       <!-- Left: ATI Brand -->
-      <a href="booking.php" class="booking-brand">
+      <a href="home.php" class="booking-brand" title="Return to Home">
         <img src="assets/images/ATI_Logo.png" alt="ATI Official Logo" class="booking-brand-logo">
         <div class="booking-brand-text">
           <h1>Agricultural Training Institute</h1>
@@ -37,6 +37,15 @@
 
       <!-- Center & Right: Navigation Actions -->
       <nav class="booking-nav-center">
+        <!-- Home -->
+        <a href="home.php" class="booking-nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Home</span>
+        </a>
+
         <!-- New Reservation (Active) -->
         <a href="booking.php" class="booking-nav-item active">
           <svg viewBox="0 0 24 24" fill="none">
@@ -155,6 +164,19 @@
         <!-- Main Navigation Section -->
         <div class="drawer-nav-section">
           <div class="drawer-section-label">PORTAL NAVIGATION</div>
+
+          <a href="home.php" class="drawer-nav-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
+            <span class="drawer-link-text">Home</span>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
 
           <a href="booking.php" class="drawer-nav-link active">
             <div class="drawer-link-icon">
@@ -304,8 +326,9 @@
       </p>
     </section>
 
-    <!-- Stepper Navigation Bar (5 Steps) -->
+    <!-- Stepper Navigation Bar (Desktop Grid + Compact Mobile Progress Bar) -->
     <div class="stepper-bar-card">
+      <!-- Desktop Stepper (5 Tabs) -->
       <div class="stepper-grid">
         <button type="button" class="step-tab-btn active" data-step="1">
           <span class="step-number">1</span>
@@ -328,40 +351,79 @@
           <span>Review & Submit</span>
         </button>
       </div>
+
+      <!-- Compact Mobile Stepper Indicator -->
+      <div class="mobile-stepper-progress" id="mobileStepperProgress">
+        <div class="mobile-stepper-header">
+          <div class="mobile-step-pill">
+            <span class="mobile-step-badge" id="mobileStepBadge">Step 1 of 5</span>
+            <strong class="mobile-step-name" id="mobileStepName">Facility Selection</strong>
+          </div>
+          <span class="mobile-step-percent" id="mobileStepPercent">20%</span>
+        </div>
+        <div class="mobile-progress-track">
+          <div class="mobile-progress-fill" id="mobileProgressFill" style="width: 20%;"></div>
+        </div>
+        <div class="mobile-step-dots">
+          <button type="button" class="mobile-dot active" data-step="1" title="Facility">1</button>
+          <button type="button" class="mobile-dot" data-step="2" title="Date & Time">2</button>
+          <button type="button" class="mobile-dot" data-step="3" title="Event Details">3</button>
+          <button type="button" class="mobile-dot" data-step="4" title="Documents">4</button>
+          <button type="button" class="mobile-dot" data-step="5" title="Review">5</button>
+        </div>
+      </div>
     </div>
 
     <!-- ==========================================================================
          STEP 1: FACILITY SELECTION
          ========================================================================== -->
     <div class="wizard-step-view active" data-step="1">
-      <!-- Filter Bar -->
-      <div class="facilities-filter-bar">
+      
+      <!-- Facility Category Nav Toolbar (Return to Categories & Switch Pills) -->
+      <div class="facility-category-nav-header" id="facilitiesSectionAnchor">
+        <div class="category-nav-left">
+          <a href="home.php" class="btn-return-home" title="Back to Category Selection">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span>Change Category (Halls / Dorms)</span>
+          </a>
+          <span class="active-category-indicator" id="activeCategoryBadge">
+            <span class="indicator-dot"></span>
+            <span id="activeCategoryName">Halls View</span>
+          </span>
+        </div>
+
+        <div class="filter-pills-list">
+          <button type="button" class="filter-pill active" id="btnFilterHalls" data-category-filter="halls">Halls (4)</button>
+          <button type="button" class="filter-pill" id="btnFilterDormitories" data-category-filter="dormitories">Dormitories (4)</button>
+          <button type="button" class="filter-pill" id="btnFilterAll" data-category-filter="all">Show All (8)</button>
+        </div>
+      </div>
+
+      <!-- Active Section Title -->
+      <div class="facility-header-status-row">
         <div class="filter-label-group">
           <svg viewBox="0 0 24 24" fill="none">
             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
           </svg>
-          <span>FILTER AVAILABLE FACILITIES:</span>
+          <span id="categorySectionHeading">AVAILABLE HALLS & VENUES (4):</span>
         </div>
-
-        <div class="filter-pills-list">
-          <button type="button" class="filter-pill active" data-filter="all">All Facilities</button>
-          <button type="button" class="filter-pill" data-filter="large-halls">Large Halls</button>
-          <button type="button" class="filter-pill" data-filter="meeting-rooms">Meeting Rooms</button>
-          <button type="button" class="filter-pill" data-filter="lodging-suites">Lodging & Suites</button>
-        </div>
+        <p class="select-instruction-text">Select one facility card below to proceed with your booking.</p>
       </div>
 
       <!-- Facility Cards Grid -->
-      <div class="facility-selection-grid">
-        <!-- 1. Function Hall (Selected by default) -->
+      <div class="facility-selection-grid" id="facilitySelectionGrid">
+        <!-- =================== 1. HALLS CATEGORY (4 VENUES) =================== -->
+        <!-- Hall 1: Function Hall (Selected by default) -->
         <article class="facility-choice-card selected" data-id="function-hall" data-name="Function Hall"
-          data-rate="₱5,000/day" data-capacity="150 - 200 PAX" data-category="large-halls">
+          data-rate="₱5,000/day" data-capacity="150 - 200 PAX" data-facility-type="halls">
           <div class="facility-card-image">
             <img src="assets/images/function_hall.jpg" alt="Function Hall" loading="lazy">
             <span class="facility-cap-badge">150 - 200 PAX</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">LARGE EVENT VENUE</span>
+            <span class="facility-category-tag">LARGE EVENT VENUE &bull; HALLS</span>
             <h3 class="facility-title">Function Hall</h3>
             <div class="facility-rate-tag">Standard Rate: ₱5,000/day</div>
             <div class="facility-amenities-tags">
@@ -380,15 +442,15 @@
           </div>
         </article>
 
-        <!-- 2. Training Hall A -->
+        <!-- Hall 2: Training Hall A -->
         <article class="facility-choice-card" data-id="training-hall-a" data-name="Training Hall A"
-          data-rate="₱3,000/day" data-capacity="50 - 80 PAX" data-category="large-halls">
+          data-rate="₱3,000/day" data-capacity="50 - 80 PAX" data-facility-type="halls">
           <div class="facility-card-image">
             <img src="assets/images/training_hall.jpg" alt="Training Hall A" loading="lazy">
             <span class="facility-cap-badge">50 - 80 PAX</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">INTERACTIVE TRAINING HALL</span>
+            <span class="facility-category-tag">INTERACTIVE TRAINING &bull; HALLS</span>
             <h3 class="facility-title">Training Hall A</h3>
             <div class="facility-rate-tag">Standard Rate: ₱3,000/day</div>
             <div class="facility-amenities-tags">
@@ -403,15 +465,15 @@
           </div>
         </article>
 
-        <!-- 3. Mess Hall & Dining Area -->
+        <!-- Hall 3: Mess Hall & Dining Area -->
         <article class="facility-choice-card" data-id="mess-hall" data-name="Mess Hall & Dining Area"
-          data-rate="₱3,500/day" data-capacity="100 PAX DINING" data-category="large-halls">
+          data-rate="₱3,500/day" data-capacity="100 PAX DINING" data-facility-type="halls">
           <div class="facility-card-image">
             <img src="assets/images/mess_hall.jpg" alt="Mess Hall & Dining Area" loading="lazy">
             <span class="facility-cap-badge">100 PAX DINING</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">DINING & CATERING VENUE</span>
+            <span class="facility-category-tag">DINING & CATERING &bull; HALLS</span>
             <h3 class="facility-title">Mess Hall & Dining Area</h3>
             <div class="facility-rate-tag">Standard Rate: ₱3,500/day</div>
             <div class="facility-amenities-tags">
@@ -426,15 +488,15 @@
           </div>
         </article>
 
-        <!-- 4. Executive Boardroom -->
+        <!-- Hall 4: Executive Boardroom -->
         <article class="facility-choice-card" data-id="executive-boardroom" data-name="Executive Boardroom"
-          data-rate="₱2,500/day" data-capacity="20 - 30 PAX" data-category="meeting-rooms">
+          data-rate="₱2,500/day" data-capacity="20 - 30 PAX" data-facility-type="halls">
           <div class="facility-card-image">
             <img src="assets/images/boardroom.jpg" alt="Executive Boardroom" loading="lazy">
             <span class="facility-cap-badge">20 - 30 PAX</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">VIP CONFERENCE ROOM</span>
+            <span class="facility-category-tag">VIP CONFERENCE ROOM &bull; HALLS</span>
             <h3 class="facility-title">Executive Boardroom</h3>
             <div class="facility-rate-tag">Standard Rate: ₱2,500/day</div>
             <div class="facility-amenities-tags">
@@ -449,22 +511,92 @@
           </div>
         </article>
 
-        <!-- 5. Dormitory Suites (Building B) -->
+        <!-- =================== 2. DORMITORIES CATEGORY (4 ROOM TYPES) =================== -->
+        <!-- Dorm 1: Dormitory Suites (Building B) -->
         <article class="facility-choice-card" data-id="dormitory-suites" data-name="Dormitory Suites (Building B)"
-          data-rate="₱4,000/day" data-capacity="40 GUESTS (10 ROOMS)" data-category="lodging-suites">
+          data-rate="₱4,000/day" data-capacity="40 GUESTS (10 ROOMS)" data-facility-type="dormitories" style="display: none;">
           <div class="facility-card-image">
             <img src="assets/images/dormitory.jpg" alt="Dormitory Suites" loading="lazy">
             <span class="facility-cap-badge">40 GUESTS (10 ROOMS)</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">ACCOMMODATION LODGING</span>
+            <span class="facility-category-tag">BUILDING ACCOMMODATION &bull; DORMITORIES</span>
             <h3 class="facility-title">Dormitory Suites (Building B)</h3>
             <div class="facility-rate-tag">Standard Rate: ₱4,000/day</div>
             <div class="facility-amenities-tags">
-              <span class="amenity-pill">Air-Conditioned Rooms</span>
+              <span class="amenity-pill">10 Aircon Rooms</span>
               <span class="amenity-pill">Hot/Cold Shower</span>
               <span class="amenity-pill">Shared Lounge</span>
-              <span class="amenity-pill">24/7 Security</span>
+              <span class="amenity-pill">24/7 Security Desk</span>
+            </div>
+            <button type="button" class="btn-select-facility">
+              Select This Facility
+            </button>
+          </div>
+        </article>
+
+        <!-- Dorm 2: Executive VIP Suite -->
+        <article class="facility-choice-card" data-id="executive-vip-suite" data-name="Executive VIP Suite"
+          data-rate="₱1,500/night" data-capacity="2 - 3 GUESTS" data-facility-type="dormitories" style="display: none;">
+          <div class="facility-card-image">
+            <img src="assets/images/dormitory.jpg" alt="Executive VIP Suite" loading="lazy">
+            <span class="facility-cap-badge">2 - 3 GUESTS</span>
+          </div>
+          <div class="facility-card-content">
+            <span class="facility-category-tag">VIP ACCOMMODATION &bull; DORMITORIES</span>
+            <h3 class="facility-title">Executive VIP Suite</h3>
+            <div class="facility-rate-tag">Standard Rate: ₱1,500/night</div>
+            <div class="facility-amenities-tags">
+              <span class="amenity-pill">King/Queen Bed</span>
+              <span class="amenity-pill">Private Bathroom</span>
+              <span class="amenity-pill">Mini Refrigerator</span>
+              <span class="amenity-pill">Executive Work Desk</span>
+            </div>
+            <button type="button" class="btn-select-facility">
+              Select This Facility
+            </button>
+          </div>
+        </article>
+
+        <!-- Dorm 3: Trainee Quad Quarters -->
+        <article class="facility-choice-card" data-id="trainee-quad-quarters" data-name="Trainee Quad Quarters"
+          data-rate="₱1,200/night" data-capacity="4 TRAINEES" data-facility-type="dormitories" style="display: none;">
+          <div class="facility-card-image">
+            <img src="assets/images/dormitory.jpg" alt="Trainee Quad Quarters" loading="lazy">
+            <span class="facility-cap-badge">4 TRAINEES</span>
+          </div>
+          <div class="facility-card-content">
+            <span class="facility-category-tag">SHARED LODGING &bull; DORMITORIES</span>
+            <h3 class="facility-title">Trainee Quad Quarters</h3>
+            <div class="facility-rate-tag">Standard Rate: ₱1,200/night</div>
+            <div class="facility-amenities-tags">
+              <span class="amenity-pill">4 Single Bunk Beds</span>
+              <span class="amenity-pill">Individual Lockers</span>
+              <span class="amenity-pill">Quiet Study Area</span>
+              <span class="amenity-pill">Air-Conditioned</span>
+            </div>
+            <button type="button" class="btn-select-facility">
+              Select This Facility
+            </button>
+          </div>
+        </article>
+
+        <!-- Dorm 4: Twin Deluxe Accommodation -->
+        <article class="facility-choice-card" data-id="twin-deluxe" data-name="Twin Deluxe Accommodation"
+          data-rate="₱1,800/night" data-capacity="2 GUESTS" data-facility-type="dormitories" style="display: none;">
+          <div class="facility-card-image">
+            <img src="assets/images/dormitory.jpg" alt="Twin Deluxe Accommodation" loading="lazy">
+            <span class="facility-cap-badge">2 GUESTS</span>
+          </div>
+          <div class="facility-card-content">
+            <span class="facility-category-tag">TWIN ROOM &bull; DORMITORIES</span>
+            <h3 class="facility-title">Twin Deluxe Accommodation</h3>
+            <div class="facility-rate-tag">Standard Rate: ₱1,800/night</div>
+            <div class="facility-amenities-tags">
+              <span class="amenity-pill">2 Twin Single Beds</span>
+              <span class="amenity-pill">En-suite Bathroom</span>
+              <span class="amenity-pill">High-Speed Wifi</span>
+              <span class="amenity-pill">Complimentary Linens</span>
             </div>
             <button type="button" class="btn-select-facility">
               Select This Facility
@@ -486,8 +618,8 @@
           <!-- Left Column: Interactive Slot Check -->
           <div class="interactive-slot-box">
             <div class="slot-box-header">
-              <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-                <span class="slot-box-title">INTERACTIVE AVAILABILITY SLOT CHECK</span>
+              <div class="slot-box-header-left">
+                <span class="slot-box-title">Availability Slot Check</span>
                 <div class="slot-mode-selector" id="slotModeSelector">
                   <button type="button" class="slot-mode-btn active" id="btnModeSingle"
                     title="Select single day reservation">Single Day</button>

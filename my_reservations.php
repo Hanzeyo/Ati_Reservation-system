@@ -30,7 +30,7 @@
   <header class="booking-topbar">
     <div class="booking-topbar-container">
       <!-- Brand Logo & Title -->
-      <a href="index.html" class="booking-brand" style="text-decoration: none;">
+      <a href="home.php" class="booking-brand" style="text-decoration: none;" title="ATI Reservation Portal">
         <img src="assets/images/ATI_Logo.png" alt="Agricultural Training Institute Logo" class="booking-brand-logo">
         <div class="booking-brand-text">
           <h1>ATI Facility Reservation Portal</h1>
@@ -40,6 +40,15 @@
 
       <!-- Navigation Links -->
       <nav class="booking-nav-center" aria-label="Portal Navigation">
+        <!-- Home -->
+        <a href="home.php" class="booking-nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Home</span>
+        </a>
+
         <!-- New Reservation -->
         <a href="booking.php" class="booking-nav-item">
           <svg viewBox="0 0 24 24" fill="none">
@@ -155,6 +164,17 @@
         <div class="drawer-nav-section">
           <div class="drawer-section-label">PORTAL NAVIGATION</div>
           
+          <a href="home.php" class="drawer-nav-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
+            <span class="drawer-link-text">Home</span>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+
           <a href="booking.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>

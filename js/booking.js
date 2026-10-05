@@ -79,29 +79,119 @@ function initFacilitySelection() {
 }
 
 /* ==========================================================================
-   2. Filter Available Facilities
+   2. Filter & Category Selection (Halls vs Dormitories)
    ========================================================================== */
 function initFacilityFilters() {
+  const categoryCards = document.querySelectorAll('.category-pick-card');
+  const exploreButtons = document.querySelectorAll('.btn-explore-category');
   const filterPills = document.querySelectorAll('.filter-pill');
-  const cards = document.querySelectorAll('.facility-choice-card');
+  const facilityCards = document.querySelectorAll('.facility-choice-card');
+  const sectionHeading = document.getElementById('categorySectionHeading');
+  const activeCategoryName = document.getElementById('activeCategoryName');
+  const anchorSection = document.getElementById('facilitiesSectionAnchor');
 
-  filterPills.forEach(pill => {
-    pill.addEventListener('click', () => {
-      filterPills.forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-
-      const filterValue = pill.dataset.filter;
-
-      cards.forEach(card => {
-        const category = card.dataset.category;
-        if (filterValue === 'all' || category === filterValue) {
-          card.style.display = 'flex';
+  function switchCategory(catName, shouldScroll = false) {
+    // 1. Update Category Cards Active State (if present)
+    categoryCards.forEach(card => {
+      const isTarget = card.dataset.category === catName;
+      card.classList.toggle('active', isTarget);
+      const btn = card.querySelector('.btn-explore-category span');
+      if (btn) {
+        if (isTarget) {
+          btn.textContent = catName === 'halls' ? 'Selected: Halls ✓' : 'Selected: Dormitories ✓';
         } else {
-          card.style.display = 'none';
+          btn.textContent = card.dataset.category === 'halls' ? 'Explore Halls' : 'Explore Dormitories';
         }
-      });
+      }
+    });
+
+    // 2. Update Filter Pills
+    filterPills.forEach(pill => {
+      pill.classList.toggle('active', pill.dataset.categoryFilter === catName);
+    });
+
+    // 3. Update Heading & Badge Indicator
+    if (activeCategoryName) {
+      if (catName === 'halls') {
+        activeCategoryName.textContent = 'Halls (4 Available)';
+      } else if (catName === 'dormitories') {
+        activeCategoryName.textContent = 'Dormitories (4 Room Types)';
+      } else {
+        activeCategoryName.textContent = 'All Facilities (8 Total)';
+      }
+    }
+
+    if (sectionHeading) {
+      if (catName === 'halls') {
+        sectionHeading.textContent = 'AVAILABLE HALLS & VENUES (4):';
+      } else if (catName === 'dormitories') {
+        sectionHeading.textContent = 'AVAILABLE DORMITORY ROOMS & SUITES (4):';
+      } else {
+        sectionHeading.textContent = 'ALL AVAILABLE FACILITIES & ROOMS (8):';
+      }
+    }
+
+    // 4. Show/Hide Matching Facility Cards
+    let firstVisibleCard = null;
+    let currentSelectedVisible = false;
+
+    facilityCards.forEach(card => {
+      const type = card.dataset.facilityType;
+      const isVisible = (catName === 'all' || type === catName);
+      card.style.display = isVisible ? 'flex' : 'none';
+
+      if (isVisible) {
+        if (!firstVisibleCard) firstVisibleCard = card;
+        if (card.classList.contains('selected')) {
+          currentSelectedVisible = true;
+        }
+      }
+    });
+
+    // If current selected card is now hidden, select the first visible card!
+    if (!currentSelectedVisible && firstVisibleCard) {
+      firstVisibleCard.click();
+    }
+
+    // Smooth scroll down to facilities list if requested
+    if (shouldScroll && anchorSection) {
+      anchorSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // Bind Category Cards & Explore Buttons (if rendered)
+  categoryCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const cat = card.dataset.category;
+      switchCategory(cat, true);
     });
   });
+
+  exploreButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const targetCat = btn.dataset.targetCategory;
+      switchCategory(targetCat, true);
+    });
+  });
+
+  // Bind Filter Pills
+  filterPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      const cat = pill.dataset.categoryFilter;
+      switchCategory(cat, false);
+    });
+  });
+
+  // Check URL query parameters for pre-selected category (e.g. ?category=dormitories)
+  const urlParams = new URLSearchParams(window.location.search);
+  const requestedCat = urlParams.get('category');
+  if (requestedCat === 'dormitories' || requestedCat === 'halls' || requestedCat === 'all') {
+    switchCategory(requestedCat, false);
+  } else {
+    // Default to halls
+    switchCategory('halls', false);
+  }
 }
 
 /* ==========================================================================
@@ -135,6 +225,7 @@ function initStepperNavigation() {
 
     bookingState.currentStep = stepNumber;
 
+    // Update Desktop Stepper Buttons
     stepButtons.forEach((btn, index) => {
       const stepIdx = index + 1;
       btn.classList.remove('active');
@@ -144,6 +235,40 @@ function initStepperNavigation() {
         btn.classList.add('completed');
       }
     });
+
+    // Update Mobile Compact Progress Bar
+    const stepLabels = [
+      'Facility Selection',
+      'Date & Time Selection',
+      'Event & Activity Details',
+      'Document Upload',
+      'Review & Submit'
+    ];
+
+    const mobileBadge = document.getElementById('mobileStepBadge');
+    const mobileName = document.getElementById('mobileStepName');
+    const mobilePercent = document.getElementById('mobileStepPercent');
+    const mobileFill = document.getElementById('mobileProgressFill');
+    const mobileDots = document.querySelectorAll('.mobile-dot');
+
+    const progressPercent = Math.round((stepNumber / 5) * 100);
+
+    if (mobileBadge) mobileBadge.textContent = `Step ${stepNumber} of 5`;
+    if (mobileName) mobileName.textContent = stepLabels[stepNumber - 1];
+    if (mobilePercent) mobilePercent.textContent = `${progressPercent}%`;
+    if (mobileFill) mobileFill.style.width = `${progressPercent}%`;
+
+    if (mobileDots) {
+      mobileDots.forEach((dot, index) => {
+        const dotStep = index + 1;
+        dot.classList.remove('active', 'completed');
+        if (dotStep === stepNumber) {
+          dot.classList.add('active');
+        } else if (dotStep < stepNumber) {
+          dot.classList.add('completed');
+        }
+      });
+    }
 
     stepViews.forEach(view => {
       view.classList.toggle('active', parseInt(view.dataset.step, 10) === stepNumber);
@@ -177,12 +302,24 @@ function initStepperNavigation() {
     updateReviewSummary();
   }
 
+  // Desktop step buttons click
   stepButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const targetStep = parseInt(btn.dataset.step, 10);
       goToStep(targetStep);
     });
   });
+
+  // Mobile step dots click
+  const mobileDots = document.querySelectorAll('.mobile-dot');
+  if (mobileDots) {
+    mobileDots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        const targetStep = parseInt(dot.dataset.step, 10);
+        goToStep(targetStep);
+      });
+    });
+  }
 
   if (proceedBtn) {
     proceedBtn.addEventListener('click', () => {
