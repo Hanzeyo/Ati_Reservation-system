@@ -289,8 +289,8 @@ button {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: clamp(1.5rem, 3vw, 3rem);
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(1.5rem, 3.5vw, 3.25rem);
   align-items: center;
   position: relative;
   z-index: 2;
@@ -466,7 +466,7 @@ button {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: clamp(320px, 34vw, 400px);
+  max-width: clamp(360px, 38vw, 490px);
   margin: 0 auto;
   width: 100%;
   position: relative;
@@ -474,22 +474,23 @@ button {
 
 .hero-card {
   width: 100%;
-  aspect-ratio: 16 / 11;
-  max-height: clamp(220px, 30vh, 275px);
+  aspect-ratio: 4 / 3.15;
+  height: clamp(320px, 44vh, 410px);
+  max-height: 440px;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-radius: 20px;
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.4), 0 0 30px rgba(23, 77, 47, 0.3);
+  box-shadow: 0 25px 55px rgba(0, 0, 0, 0.45), 0 0 35px rgba(23, 77, 47, 0.32);
   position: relative;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.32);
   transition: transform 0.35s ease, box-shadow 0.35s ease;
 }
 
 .hero-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 30px 65px rgba(0, 0, 0, 0.45), 0 0 45px rgba(34, 197, 94, 0.3);
+  box-shadow: 0 35px 75px rgba(0, 0, 0, 0.5), 0 0 45px rgba(34, 197, 94, 0.35);
 }
 
 .showcase-status-badge {
@@ -578,15 +579,15 @@ button {
 }
 
 .hero-pill-badge {
-  margin-top: clamp(0.75rem, 1.3vh, 1.15rem);
+  margin-top: clamp(0.85rem, 1.4vh, 1.25rem);
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   color: #0c331d;
   font-family: var(--font-serif);
   font-weight: 800;
-  font-size: clamp(1rem, 1.2vw, 1.15rem);
-  padding: 0.5rem 2rem;
+  font-size: clamp(1.05rem, 1.2vw, 1.2rem);
+  padding: 0.55rem 2.25rem;
   border-radius: 9999px;
   border: 1.5px solid rgba(162, 215, 180, 0.9);
   border-top: 3.5px solid #174d2f;
@@ -594,7 +595,7 @@ button {
   text-align: center;
   letter-spacing: 0.01em;
   transition: var(--transition);
-  min-width: 220px;
+  min-width: 240px;
 }
 
 .hero-pill-badge:hover {
@@ -1379,22 +1380,44 @@ button {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 !important;
+  margin: 0 !important;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(0, 0, 0, 0.08);
   color: #4b6354;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 30;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box !important;
+  overflow: hidden;
+}
+
+.modal-close-btn svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  display: block;
+  pointer-events: none;
+  flex-shrink: 0;
+  margin: auto;
+}
+
+.modal-close-btn:not(:has(svg)) {
+  padding-bottom: 2px !important;
 }
 
 .modal-close-btn:hover {
@@ -2434,20 +2457,44 @@ button {
   background: rgba(255, 255, 255, 0.18);
   border: none;
   color: #ffffff;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 !important;
+  margin: 0 !important;
   border-radius: 50%;
-  font-size: 1.35rem;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-family: Arial, sans-serif !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-sizing: border-box !important;
+  overflow: hidden;
+}
+
+.drawer-close-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  display: block;
+  pointer-events: none;
+  flex-shrink: 0;
+  margin: auto;
+}
+
+.drawer-close-btn:not(:has(svg)) {
+  padding-bottom: 2px !important;
 }
 
 .drawer-close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.32);
+  transform: rotate(90deg);
 }
 
 /* Drawer Body */

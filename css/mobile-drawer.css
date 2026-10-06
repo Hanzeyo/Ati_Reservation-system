@@ -127,18 +127,42 @@
   color: #ffffff;
   width: 34px;
   height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  padding: 0 !important;
+  margin: 0 !important;
   border-radius: 50%;
-  font-size: 1.5rem;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-family: Arial, sans-serif !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-sizing: border-box !important;
+  overflow: hidden;
+}
+
+.drawer-close-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  display: block;
+  pointer-events: none;
+  flex-shrink: 0;
+  margin: auto;
+}
+
+.drawer-close-btn:not(:has(svg)) {
+  padding-bottom: 2px !important;
 }
 
 .drawer-close-btn:hover {
   background: rgba(255, 255, 255, 0.32);
+  transform: rotate(90deg);
 }
 
 /* 5. Drawer Body */

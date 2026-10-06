@@ -318,7 +318,12 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
   <!-- Terms Modal -->
   <div class="modal-overlay" id="termsModal">
     <div class="modal-card">
-      <button class="modal-close-btn js-close-modal">&times;</button>
+      <button class="modal-close-btn js-close-modal" aria-label="Close modal">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       <div class="modal-header-banner">
         <h3>Terms of Reservation</h3>
         <p>Agricultural Training Institute</p>
@@ -339,7 +344,12 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
   <!-- Privacy Policy Modal -->
   <div class="modal-overlay" id="privacyModal">
     <div class="modal-card">
-      <button class="modal-close-btn js-close-modal">&times;</button>
+      <button class="modal-close-btn js-close-modal" aria-label="Close modal">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       <div class="modal-header-banner">
         <h3>Data Privacy Policy</h3>
         <p>Republic Act No. 10173 Compliance</p>
