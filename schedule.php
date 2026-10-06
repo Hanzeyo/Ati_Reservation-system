@@ -395,7 +395,12 @@
        ========================================================================== -->
   <div class="modal-overlay" id="scheduleEventModal" role="dialog" aria-modal="true">
     <div class="modal-card modal-lg">
-      <button class="modal-close-btn js-close-modal" aria-label="Close modal">&times;</button>
+      <button type="button" class="modal-close-btn js-close-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       
       <div class="modal-header-banner" id="modalEventBanner">
         <span style="font-size: 0.78rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.9;" id="modalEventFacility">Function Hall</span>
@@ -443,3 +448,4 @@
   <script src="js/schedule.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
+

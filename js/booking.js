@@ -596,7 +596,7 @@ function initStepperNavigation() {
 
   function isDormitorySelected() {
     return bookingState.selectedFacility?.type === 'dormitories' ||
-           String(bookingState.selectedFacility?.id).startsWith('dorm-');
+      String(bookingState.selectedFacility?.id).startsWith('dorm-');
   }
 
   function updateStepperMode() {
@@ -665,7 +665,7 @@ function initStepperNavigation() {
     }
   }
 
-  goToStep = function(stepNumber) {
+  goToStep = function (stepNumber) {
     if (stepNumber < 1 || stepNumber > 5) return;
 
     const isDorm = isDormitorySelected();
@@ -880,7 +880,7 @@ function initStepperNavigation() {
    ========================================================================== */
 function updateReviewSummary() {
   const isDorm = bookingState.selectedFacility?.type === 'dormitories' ||
-                 String(bookingState.selectedFacility?.id).startsWith('dorm-');
+    String(bookingState.selectedFacility?.id).startsWith('dorm-');
   const roomNum = bookingState.selectedFacility?.roomNumber;
   const floorName = bookingState.selectedFacility?.floor || '';
   const facilityName = bookingState.selectedFacility?.name || 'Function Hall';
@@ -1182,18 +1182,18 @@ function initDateSlotInteractions() {
           const cD = cur.getDate();
           const cKey = dateToKey(cY, cM, cD);
           if (isPastDate(cY, cM, cD)) {
-            conflict = `${formatDisplayDate({year: cY, month: cM, day: cD})} has already passed`;
+            conflict = `${formatDisplayDate({ year: cY, month: cM, day: cD })} has already passed`;
             break;
           }
           const isRoomOccupiedRangeDate = Boolean(bookingState.selectedFacility?.occupiedOnDefaultDate) && (cKey === '2026-10-05' || cKey === '2026-10-06');
           if (RESERVED_DATES.has(cKey) || isRoomOccupiedRangeDate) {
             conflict = isRoomOccupiedRangeDate
-              ? `Room ${bookingState.selectedFacility?.roomNumber || ''} is occupied on ${formatDisplayDate({year: cY, month: cM, day: cD})}`
-              : `${formatDisplayDate({year: cY, month: cM, day: cD})} is reserved for another event`;
+              ? `Room ${bookingState.selectedFacility?.roomNumber || ''} is occupied on ${formatDisplayDate({ year: cY, month: cM, day: cD })}`
+              : `${formatDisplayDate({ year: cY, month: cM, day: cD })} is reserved for another event`;
             break;
           }
           if (SUSPENDED_DATES.has(cKey)) {
-            conflict = `${formatDisplayDate({year: cY, month: cM, day: cD})} is suspended for facility maintenance`;
+            conflict = `${formatDisplayDate({ year: cY, month: cM, day: cD })} is suspended for facility maintenance`;
             break;
           }
           cur.setDate(cur.getDate() + 1);
@@ -1311,7 +1311,7 @@ function initDateSlotInteractions() {
   }
 
   // Explicit helper to select current date (October 5, 2026)
-  window.selectCurrentDate = function() {
+  window.selectCurrentDate = function () {
     viewYear = 2026;
     viewMonth = 9;
     selectedStart = { year: 2026, month: 9, day: 5 };
@@ -1327,7 +1327,7 @@ function initDateSlotInteractions() {
   };
 
   // Helper when user chose an occupied room: pre-select earliest open date (October 7, 2026)
-  window.selectAlternateAvailableDateForRoom = function(roomNumber) {
+  window.selectAlternateAvailableDateForRoom = function (roomNumber) {
     viewYear = 2026;
     viewMonth = 9; // October 2026
     selectedStart = { year: 2026, month: 9, day: 7 };

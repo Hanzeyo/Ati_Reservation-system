@@ -188,7 +188,7 @@ function initMasterCalendar() {
 
       let statusBadge = '';
       if (dayEvents.length > 0) {
-        statusBadge = isFull 
+        statusBadge = isFull
           ? `<span class="day-status-indicator full">Full</span>`
           : `<span class="day-status-indicator open">${dayEvents.length} Booked</span>`;
       }
@@ -201,7 +201,7 @@ function initMasterCalendar() {
               <span>${ev.title}</span>
             </div>
           `).join('') +
-        `</div>`;
+          `</div>`;
       }
 
       dayBox.innerHTML = `

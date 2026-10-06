@@ -42,7 +42,9 @@
   --transition: all 0.22s ease-in-out;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -278,8 +280,15 @@ body.my-res-body {
 }
 
 @keyframes dropdownFade {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ==========================================================================
@@ -998,9 +1007,17 @@ body.my-res-body {
 }
 
 @keyframes pulseNode {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.08); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.08);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ==========================================================================
@@ -1510,6 +1527,7 @@ body.my-res-body {
 
 /* Mobile Phones (<= 640px) */
 @media (max-width: 640px) {
+
   /* Compact Brand Bar */
   .booking-brand-logo {
     height: 38px;

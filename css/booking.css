@@ -1817,12 +1817,12 @@ body.booking-body {
     gap: 0.75rem !important;
   }
 
-    .slot-legend-row {
-      display: grid !important;
-      grid-template-columns: 1fr 1fr !important;
-      gap: 0.5rem 0.75rem !important;
-      justify-items: center;
-    }
+  .slot-legend-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem 0.75rem !important;
+    justify-items: center;
+  }
 }
 
 /* ==========================================================================
@@ -2002,8 +2002,13 @@ body.booking-body {
 }
 
 @keyframes fadeInOverlay {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .room-modal-dialog {
@@ -2025,6 +2030,7 @@ body.booking-body {
     opacity: 0;
     transform: scale(0.95) translateY(12px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -2090,7 +2096,7 @@ body.booking-body {
 
 .room-modal-close-btn {
   position: absolute;
-  top: 1.25rem;
+  top: 1.35rem;
   right: 1.5rem;
   background: #f1f5f2;
   border: 1px solid #dce5df;
@@ -2102,22 +2108,40 @@ body.booking-body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
   z-index: 20;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .room-modal-close-btn svg {
   width: 18px;
   height: 18px;
   display: block;
+  stroke: currentColor;
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.25s ease;
+}
+
+.room-modal-close-btn svg line {
+  stroke: currentColor !important;
+  transition: stroke 0.25s ease;
 }
 
 .room-modal-close-btn:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
-  color: #dc2626;
-  transform: rotate(90deg);
+  background: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+  color: #dc2626 !important;
+  transform: rotate(90deg) scale(1.08);
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.28) !important;
+}
+
+.room-modal-close-btn:hover svg line {
+  stroke: #dc2626 !important;
+}
+
+.room-modal-close-btn:active {
+  transform: rotate(90deg) scale(0.95);
 }
 
 /* Modal Legend */
@@ -2349,8 +2373,15 @@ body.booking-body {
 }
 
 @keyframes fadeInModal {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-feedback-left {
@@ -2445,6 +2476,7 @@ body.booking-body {
   .modal-rooms-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+
   .room-modal-dialog {
     max-height: 94vh;
   }
@@ -2455,27 +2487,34 @@ body.booking-body {
     grid-template-columns: repeat(3, 1fr);
     gap: 0.65rem;
   }
+
   .room-modal-header {
     padding: 1.25rem 3.5rem 1rem 1.25rem;
   }
+
   .room-modal-close-btn {
     top: 1rem;
     right: 1rem;
     width: 34px;
     height: 34px;
   }
+
   .room-modal-close-btn svg {
     width: 16px;
     height: 16px;
   }
+
   .room-modal-body {
     padding: 1.25rem 1rem 1.5rem;
   }
+
   .room-modal-footer {
     padding: 1rem;
     flex-direction: column-reverse;
   }
-  .btn-modal-cancel, .btn-modal-confirm {
+
+  .btn-modal-cancel,
+  .btn-modal-confirm {
     width: 100%;
     justify-content: center;
   }
@@ -2582,4 +2621,5 @@ body.booking-body {
 
 .booking-bottom-actions .btn-proceed-step {
   margin-left: auto;
+}
 }

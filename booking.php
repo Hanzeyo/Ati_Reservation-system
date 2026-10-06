@@ -1002,14 +1002,6 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
               <span class="scb-label">Time Window:</span>
               <strong class="scb-val" id="summaryTimeSlot">Whole Day (8:00 AM - 5:00 PM)</strong>
             </div>
-            <div class="scb-item" id="summaryEventWrap">
-              <span class="scb-label" id="summaryEventLabel">Activity / Event Title:</span>
-              <strong class="scb-val" id="summaryEventTitle">Official Training Workshop</strong>
-            </div>
-            <div class="scb-item" id="summaryPaxWrap">
-              <span class="scb-label" id="summaryPaxLabel">Participants / Attendees:</span>
-              <strong class="scb-val" id="summaryPaxValue">As specified</strong>
-            </div>
           </div>
 
           <div style="font-size: 0.88rem; color: #435b4d; border-top: 1px solid #e1ece4; padding-top: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
@@ -1075,11 +1067,11 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
       <div class="room-modal-legend">
         <div class="legend-item">
           <span class="legend-color-dot available"></span>
-          <span><strong>Available on Oct 5:</strong> Ready for immediate check-in</span>
+          <span><strong>Available:</strong> Click to assign for your stay</span>
         </div>
         <div class="legend-item">
           <span class="legend-color-dot reserved"></span>
-          <span><strong>Occupied on Oct 5:</strong> Click to book for a different date</span>
+          <span><strong>Reserved:</strong> Occupied by scheduled delegates</span>
         </div>
       </div>
 
