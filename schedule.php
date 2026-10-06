@@ -91,7 +91,7 @@
               <div class="dropdown-user-name">Juan Dela Cruz</div>
               <div class="dropdown-user-email"><span class="user-verified-dot"></span> ATI Personnel &bull; CDD</div>
             </div>
-            <a href="javascript:void(0)" class="dropdown-item">
+            <a href="profile.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
@@ -191,7 +191,7 @@
         <div class="drawer-nav-section">
           <div class="drawer-section-label">ACCOUNT & SETTINGS</div>
           
-          <a href="javascript:void(0)" class="drawer-nav-link" onclick="alert('Profile management available in next administrative release.');">
+          <a href="profile.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>

@@ -247,7 +247,7 @@
               <div class="dropdown-user-name">Juan Dela Cruz</div>
               <div class="dropdown-user-email"><span class="user-verified-dot"></span> ATI Personnel &bull; CDD</div>
             </div>
-            <a href="javascript:void(0)" class="dropdown-item">
+            <a href="profile.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
@@ -385,8 +385,7 @@
         <div class="drawer-nav-section">
           <div class="drawer-section-label">ACCOUNT & SETTINGS</div>
 
-          <a href="javascript:void(0)" class="drawer-nav-link"
-            onclick="alert('Profile management available in next administrative release.');">
+          <a href="profile.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -556,6 +555,25 @@
     document.addEventListener('DOMContentLoaded', function() {
       var profileBadge = document.getElementById('userProfileBadge');
       var profileDropdown = document.getElementById('profileDropdown');
+
+      // Sync Avatar & Profile from localStorage
+      var avatar = localStorage.getItem('ati_user_avatar');
+      var profile = localStorage.getItem('ati_user_profile');
+      if (avatar) {
+        document.querySelectorAll('.user-avatar-circle, .drawer-avatar').forEach(function(c) {
+          c.innerHTML = '<img src="' + avatar + '" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">';
+        });
+      }
+      if (profile) {
+        try {
+          var p = JSON.parse(profile);
+          if (p.fullName) {
+            document.querySelectorAll('.user-name, .dropdown-user-name, .drawer-profile-info h5').forEach(function(el) {
+              el.textContent = p.fullName;
+            });
+          }
+        } catch(e) {}
+      }
 
       if (profileBadge && profileDropdown) {
         profileBadge.addEventListener('click', function(e) {

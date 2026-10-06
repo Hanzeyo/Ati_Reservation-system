@@ -159,6 +159,7 @@ body.booking-body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .user-details {

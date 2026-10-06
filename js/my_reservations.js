@@ -23,6 +23,8 @@ function initProfileDropdown() {
   const badge = document.getElementById('userProfileBadge');
   const dropdown = document.getElementById('profileDropdown');
 
+  syncGlobalProfileHeader();
+
   if (!badge || !dropdown) return;
 
   badge.addEventListener('click', (e) => {
@@ -33,6 +35,24 @@ function initProfileDropdown() {
   document.addEventListener('click', () => {
     dropdown.classList.remove('show');
   });
+}
+
+function syncGlobalProfileHeader() {
+  const avatar = localStorage.getItem('ati_user_avatar');
+  const profile = localStorage.getItem('ati_user_profile');
+  if (avatar) {
+    document.querySelectorAll('.user-avatar-circle, .drawer-avatar').forEach(c => {
+      c.innerHTML = `<img src="${avatar}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+    });
+  }
+  if (profile) {
+    try {
+      const p = JSON.parse(profile);
+      if (p.fullName) {
+        document.querySelectorAll('.user-name, .dropdown-user-name, .drawer-profile-info h5').forEach(el => el.textContent = p.fullName);
+      }
+    } catch(e) {}
+  }
 }
 
 /* ==========================================================================
