@@ -48,14 +48,14 @@
     }
 
     /* ==========================================================================
-       CATEGORY INTRO CARD (FROSTED GLASS ELEVATION)
+       CATEGORY INTRO CARD (RICH SYSTEM AESTHETIC & ELEVATION)
        ========================================================================== */
     .portal-category-intro-card {
-      background: rgba(255, 255, 255, 0.95);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(244, 251, 246, 0.96) 100%);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1.5px solid rgba(255, 255, 255, 0.9);
-      border-top: 4px solid #175432;
+      border: 1.5px solid rgba(162, 215, 180, 0.85);
+      border-top: 5px solid #174d2f;
       border-radius: 22px;
       padding: 3.25rem 2.25rem 2.75rem;
       text-align: center;
@@ -66,6 +66,17 @@
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
+    .portal-category-intro-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #174d2f 0%, #eab308 50%, #2e7d32 100%);
+      z-index: 1;
+    }
+
     .portal-category-intro-card:hover {
       box-shadow: 0 22px 55px rgba(5, 20, 11, 0.28), 0 3px 10px rgba(0, 0, 0, 0.08);
     }
@@ -74,17 +85,21 @@
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      background: #edf7f0;
-      color: #175432;
+      background: linear-gradient(135deg, #174d2f 0%, #226b42 100%);
+      color: #ffffff;
       font-size: 0.78rem;
       font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      padding: 0.4rem 1.05rem;
+      padding: 0.45rem 1.15rem;
       border-radius: 9999px;
-      border: 1px solid #cce4d3;
+      border: 1px solid rgba(255, 255, 255, 0.2);
       margin-bottom: 0.95rem;
-      box-shadow: 0 2px 6px rgba(23, 84, 50, 0.06);
+      box-shadow: 0 4px 12px rgba(23, 77, 47, 0.22);
+    }
+
+    .cat-sec-badge svg {
+      stroke: #fcd34d;
     }
 
     .cat-sec-title {
@@ -92,26 +107,26 @@
       font-size: 2.35rem;
       font-weight: 900;
       letter-spacing: 0.03em;
-      color: #0e291a;
+      color: #0c331d;
       margin-bottom: 0.75rem;
       text-transform: uppercase;
     }
 
     .cat-sec-subtitle {
       font-size: 0.98rem;
-      color: #4a6353;
+      color: #3e5948;
       max-width: 680px;
       margin: 0 auto;
       line-height: 1.65;
     }
 
     .cat-sec-divider {
-      width: 64px;
-      height: 3.5px;
-      background: #eab308;
+      width: 72px;
+      height: 4px;
+      background: linear-gradient(90deg, #174d2f 0%, #eab308 50%, #174d2f 100%);
       border-radius: 4px;
       margin: 1.4rem auto 0;
-      box-shadow: 0 1px 4px rgba(234, 179, 8, 0.3);
+      box-shadow: 0 2px 6px rgba(234, 179, 8, 0.35);
     }
 
     /* ==========================================================================
@@ -125,13 +140,8 @@
     }
 
     .portal-cat-card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 2px solid rgba(255, 255, 255, 0.9);
       border-radius: 22px;
       padding: 2.5rem 2.25rem;
-      box-shadow: 0 16px 40px rgba(5, 20, 11, 0.2), 0 2px 6px rgba(0, 0, 0, 0.06);
       display: flex;
       flex-direction: column;
       text-decoration: none;
@@ -139,13 +149,194 @@
       transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       cursor: pointer;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
 
-    .portal-cat-card:hover {
-      border-color: #2e7d32;
-      background: #ffffff;
+    /* ---------------- 1. HALLS CARD (FOREST EMERALD THEME) ---------------- */
+    #cardCatHalls {
+      background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 250, 244, 0.97) 50%, rgba(230, 247, 236, 0.96) 100%);
+      border: 2px solid rgba(152, 212, 174, 0.9);
+      border-top: 5px solid #174d2f;
+      box-shadow: 0 16px 40px rgba(7, 35, 18, 0.2), 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    #cardCatHalls:hover {
+      border-color: #174d2f;
+      background: linear-gradient(165deg, #ffffff 0%, #ecf8f0 100%);
       transform: translateY(-8px);
-      box-shadow: 0 24px 55px rgba(5, 20, 11, 0.3), 0 0 0 1px rgba(46, 125, 50, 0.4);
+      box-shadow: 0 24px 55px rgba(23, 77, 47, 0.32), 0 0 0 2px rgba(23, 77, 47, 0.4);
+    }
+
+    #cardCatHalls .cat-count-badge {
+      display: inline-flex;
+      align-items: center;
+      background: linear-gradient(135deg, #174d2f 0%, #206740 100%);
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.35rem 0.95rem;
+      border-radius: 9999px;
+      box-shadow: 0 4px 12px rgba(23, 77, 47, 0.28);
+      letter-spacing: 0.02em;
+    }
+
+    #cardCatHalls .cat-icon-container {
+      background: linear-gradient(135deg, #e4f5ea 0%, #ccecd7 100%);
+      border-radius: 18px;
+      padding: 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1.5px solid #a4dcba;
+      box-shadow: 0 8px 22px rgba(23, 77, 47, 0.1);
+    }
+
+    #cardCatHalls:hover .cat-icon-container {
+      background: linear-gradient(135deg, #d8f2e1 0%, #bee7cb 100%);
+      transform: scale(1.03);
+      border-color: #174d2f;
+      box-shadow: 0 10px 26px rgba(23, 77, 47, 0.18);
+    }
+
+    #cardCatHalls .cat-card-title {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #0c331d;
+      margin-bottom: 0.5rem;
+    }
+
+    #cardCatHalls .cat-card-desc {
+      font-size: 0.92rem;
+      color: #3b5745;
+      line-height: 1.55;
+      margin-bottom: 1.75rem;
+      flex-grow: 1;
+    }
+
+    #cardCatHalls .btn-explore-category {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #174d2f 0%, #20633d 100%);
+      color: #ffffff;
+      font-size: 0.92rem;
+      font-weight: 700;
+      padding: 0.9rem 1.4rem;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 18px rgba(23, 77, 47, 0.28);
+      border: 1px solid #174d2f;
+    }
+
+    #cardCatHalls:hover .btn-explore-category {
+      background: linear-gradient(135deg, #0e3520 0%, #174d2f 100%);
+      box-shadow: 0 10px 24px rgba(23, 77, 47, 0.4);
+    }
+
+    #cardCatHalls .btn-explore-category svg {
+      transition: transform 0.22s ease;
+    }
+
+    #cardCatHalls:hover .btn-explore-category svg {
+      transform: translateX(5px);
+    }
+
+    /* ---------------- 2. DORMITORIES CARD (HARVEST GOLD THEME) ---------------- */
+    #cardCatDormitories {
+      background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 250, 241, 0.97) 50%, rgba(254, 245, 230, 0.96) 100%);
+      border: 2px solid rgba(245, 215, 150, 0.9);
+      border-top: 5px solid #d97706;
+      box-shadow: 0 16px 40px rgba(50, 25, 5, 0.18), 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    #cardCatDormitories:hover {
+      border-color: #d97706;
+      background: linear-gradient(165deg, #ffffff 0%, #fef7ec 100%);
+      transform: translateY(-8px);
+      box-shadow: 0 24px 55px rgba(217, 119, 6, 0.3), 0 0 0 2px rgba(217, 119, 6, 0.4);
+    }
+
+    #cardCatDormitories .cat-count-badge {
+      display: inline-flex;
+      align-items: center;
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.35rem 0.95rem;
+      border-radius: 9999px;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.28);
+      letter-spacing: 0.02em;
+    }
+
+    #cardCatDormitories .cat-icon-container {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-radius: 18px;
+      padding: 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1.5px solid #fcd34d;
+      box-shadow: 0 8px 22px rgba(217, 119, 6, 0.12);
+    }
+
+    #cardCatDormitories:hover .cat-icon-container {
+      background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
+      transform: scale(1.03);
+      border-color: #d97706;
+      box-shadow: 0 10px 26px rgba(217, 119, 6, 0.2);
+    }
+
+    #cardCatDormitories .cat-card-title {
+      font-family: var(--font-serif);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #451a03;
+      margin-bottom: 0.5rem;
+    }
+
+    #cardCatDormitories .cat-card-desc {
+      font-size: 0.92rem;
+      color: #5c442a;
+      line-height: 1.55;
+      margin-bottom: 1.75rem;
+      flex-grow: 1;
+    }
+
+    #cardCatDormitories .btn-explore-category {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: #ffffff;
+      font-size: 0.92rem;
+      font-weight: 700;
+      padding: 0.9rem 1.4rem;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 18px rgba(217, 119, 6, 0.28);
+      border: 1px solid #d97706;
+    }
+
+    #cardCatDormitories:hover .btn-explore-category {
+      background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+      box-shadow: 0 10px 24px rgba(217, 119, 6, 0.4);
+    }
+
+    #cardCatDormitories .btn-explore-category svg {
+      transition: transform 0.22s ease;
+    }
+
+    #cardCatDormitories:hover .btn-explore-category svg {
+      transform: translateX(5px);
     }
 
     .portal-cat-card .cat-card-header {
@@ -154,99 +345,15 @@
       margin-bottom: 1rem;
     }
 
-    .portal-cat-card .cat-count-badge {
-      display: inline-flex;
-      align-items: center;
-      background: #e8f5ec;
-      color: #175432;
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 0.3rem 0.85rem;
-      border-radius: 9999px;
-      border: 1.5px solid #c2e2cc;
-      box-shadow: 0 2px 6px rgba(23, 84, 50, 0.05);
-      transition: all 0.25s ease;
-    }
-
-    .portal-cat-card:hover .cat-count-badge {
-      background: #175432;
-      color: #ffffff;
-      border-color: #175432;
-    }
-
-    .portal-cat-card .cat-icon-container {
-      background: #f2f8f4;
-      border-radius: 16px;
-      padding: 1.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1.5rem;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      border: 1px solid #e1eee5;
-    }
-
-    .portal-cat-card:hover .cat-icon-container {
-      background: #e6f5eb;
-      transform: scale(1.03);
-      border-color: #bfe0cb;
-      box-shadow: 0 6px 18px rgba(23, 84, 50, 0.1);
-    }
-
-    .portal-cat-card .cat-card-title {
-      font-family: var(--font-serif);
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: #123821;
-      margin-bottom: 0.5rem;
-    }
-
-    .portal-cat-card .cat-card-desc {
-      font-size: 0.92rem;
-      color: #556f60;
-      line-height: 1.55;
-      margin-bottom: 1.75rem;
-      flex-grow: 1;
-    }
-
-    .portal-cat-card .btn-explore-category {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #eaf4ed;
-      color: #175432;
-      font-size: 0.92rem;
-      font-weight: 700;
-      padding: 0.85rem 1.35rem;
-      border-radius: 12px;
-      text-decoration: none;
-      transition: all 0.25s ease;
-      border: 1.5px solid #d0e7d7;
-    }
-
-    .portal-cat-card:hover .btn-explore-category {
-      background: #175432;
-      color: #ffffff;
-      border-color: #175432;
-      box-shadow: 0 8px 20px rgba(23, 84, 50, 0.32);
-    }
-
-    .portal-cat-card .btn-explore-category svg {
-      transition: transform 0.22s ease;
-    }
-
-    .portal-cat-card:hover .btn-explore-category svg {
-      transform: translateX(5px);
-    }
-
     /* ==========================================================================
        QUICK STATUS CARD
        ========================================================================== */
     .portal-quick-status-card {
-      background: rgba(255, 255, 255, 0.95);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 249, 243, 0.96) 100%);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1.5px solid rgba(255, 255, 255, 0.9);
+      border: 1.5px solid rgba(162, 212, 180, 0.85);
+      border-left: 5px solid #174d2f;
       border-radius: 16px;
       padding: 1.35rem 2rem;
       display: flex;
@@ -269,51 +376,51 @@
     }
 
     .status-icon-bubble {
-      width: 44px;
-      height: 44px;
-      border-radius: 12px;
-      background: #eaf4ed;
-      color: #175432;
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #174d2f 0%, #226b42 100%);
+      color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      border: 1px solid #cbe4d4;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(23, 77, 47, 0.25);
     }
 
     .status-text h4 {
       font-size: 0.98rem;
       font-weight: 700;
-      color: #123821;
+      color: #0c331d;
       margin-bottom: 0.2rem;
     }
 
     .status-text p {
       font-size: 0.84rem;
-      color: #556f60;
+      color: #4a6353;
     }
 
     .btn-view-bookings {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      background: #ffffff;
-      border: 1.5px solid #cce4d3;
-      color: #175432;
+      background: linear-gradient(135deg, #174d2f 0%, #20633d 100%);
+      color: #ffffff;
       font-size: 0.88rem;
       font-weight: 700;
-      padding: 0.65rem 1.15rem;
+      padding: 0.7rem 1.25rem;
       border-radius: 10px;
       text-decoration: none;
       transition: all 0.2s ease;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 4px 12px rgba(23, 77, 47, 0.2);
+      border: 1px solid #174d2f;
     }
 
     .btn-view-bookings:hover {
-      background: #175432;
+      background: linear-gradient(135deg, #0e3520 0%, #174d2f 100%);
       color: #ffffff;
-      border-color: #175432;
-      box-shadow: 0 4px 14px rgba(23, 84, 50, 0.25);
+      box-shadow: 0 6px 16px rgba(23, 77, 47, 0.35);
       transform: translateY(-2px);
     }
 
@@ -638,11 +745,11 @@
         <div class="cat-icon-container">
           <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#174d2f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <!-- Classical Hall Building with Pediment & Columns -->
-            <path d="M6 22L32 7L58 22H6Z" fill="#edf7f1"/>
+            <path d="M6 22L32 7L58 22H6Z" fill="#d7f0df"/>
             <path d="M10 22V26H54V22"/>
-            <rect x="15" y="26" width="7" height="26" rx="2" fill="#edf7f1"/>
-            <rect x="28.5" y="26" width="7" height="26" rx="2" fill="#edf7f1"/>
-            <rect x="42" y="26" width="7" height="26" rx="2" fill="#edf7f1"/>
+            <rect x="15" y="26" width="7" height="26" rx="2" fill="#d7f0df"/>
+            <rect x="28.5" y="26" width="7" height="26" rx="2" fill="#d7f0df"/>
+            <rect x="42" y="26" width="7" height="26" rx="2" fill="#d7f0df"/>
             <path d="M9 52H55V56H9V52Z"/>
             <path d="M5 56H59V60H5V56Z"/>
           </svg>
@@ -663,11 +770,11 @@
           <span class="cat-count-badge">4 Room Types</span>
         </div>
         <div class="cat-icon-container">
-          <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#174d2f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#b45309" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <!-- Multi-story Dormitory Accommodation Building -->
-            <rect x="23" y="10" width="18" height="46" rx="2" fill="#edf7f1"/>
-            <rect x="9" y="22" width="14" height="34" rx="2" fill="#edf7f1"/>
-            <rect x="41" y="22" width="14" height="34" rx="2" fill="#edf7f1"/>
+            <rect x="23" y="10" width="18" height="46" rx="2" fill="#fef3c7"/>
+            <rect x="9" y="22" width="14" height="34" rx="2" fill="#fef3c7"/>
+            <rect x="41" y="22" width="14" height="34" rx="2" fill="#fef3c7"/>
             <rect x="13" y="28" width="6" height="6" rx="1"/>
             <rect x="13" y="40" width="6" height="6" rx="1"/>
             <rect x="45" y="28" width="6" height="6" rx="1"/>
