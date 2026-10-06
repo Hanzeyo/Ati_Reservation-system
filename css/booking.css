@@ -2535,9 +2535,51 @@ body.booking-body {
 }
 
 /* Responsive Modal Grid */
+.modal-rooms-grid.hall-layout-mode {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.hall-layout-box {
+  padding: 1.25rem 1rem 1.1rem;
+  min-height: 140px;
+}
+
+.hall-layout-box .layout-cap-badge {
+  display: inline-block;
+  background: rgba(23, 77, 47, 0.08);
+  color: #174d2f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  margin: 0.25rem 0;
+}
+
+.hall-layout-box.available .layout-cap-badge {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.hall-layout-box.reserved .layout-cap-badge {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.hall-layout-box .layout-desc-text {
+  font-size: 0.73rem;
+  color: #526b5c;
+  line-height: 1.35;
+  margin-top: 0.2rem;
+}
+
 @media (max-width: 820px) {
   .modal-rooms-grid {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  .modal-rooms-grid.hall-layout-mode {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .room-modal-dialog {

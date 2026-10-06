@@ -430,7 +430,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
       <!-- Facility Cards Grid -->
       <div class="facility-selection-grid" id="facilitySelectionGrid">
         <!-- =================== 1. HALLS CATEGORY (4 VENUES) =================== -->
-        <!-- Hall 1: Function Hall (Selected by default) -->
+        <!-- Hall 1: Function Hall -->
         <article class="facility-choice-card <?php echo $reqCategory === 'halls' ? 'selected' : ''; ?>" data-id="function-hall" style="<?php echo $reqCategory === 'dormitories' ? 'display: none;' : ''; ?>" data-name="Function Hall"
           data-rate="₱5,000/day" data-capacity="150 - 200 PAX" data-facility-type="halls">
           <div class="facility-card-image">
@@ -448,11 +448,12 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
               <span class="amenity-pill">Stage Setup</span>
               <span class="amenity-pill">VIP Waiting Lounge</span>
             </div>
-            <button type="button" class="btn-select-facility">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-              Selected Venue
+            <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
+              <span class="d-room-text">✓ Theater Setup Selected (200 PAX)</span>
+            </div>
+            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              Select Setup &amp; View Floor Plan
             </button>
           </div>
         </article>
@@ -474,8 +475,12 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
               <span class="amenity-pill">High-Speed Wifi</span>
               <span class="amenity-pill">Breakout Corners</span>
             </div>
-            <button type="button" class="btn-select-facility">
-              Select This Facility
+            <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
+              <span class="d-room-text">✓ Modular Pods Selected (60 PAX)</span>
+            </div>
+            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              Select Setup &amp; View Floor Plan
             </button>
           </div>
         </article>
@@ -497,8 +502,12 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
               <span class="amenity-pill">Washing Station</span>
               <span class="amenity-pill">Outdoor Patio Deck</span>
             </div>
-            <button type="button" class="btn-select-facility">
-              Select This Facility
+            <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
+              <span class="d-room-text">✓ Full Buffet Selected (100 PAX)</span>
+            </div>
+            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              Select Setup &amp; View Floor Plan
             </button>
           </div>
         </article>
@@ -520,8 +529,12 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
               <span class="amenity-pill">Coffee Machine</span>
               <span class="amenity-pill">Acoustic Wall Paneling</span>
             </div>
-            <button type="button" class="btn-select-facility">
-              Select This Facility
+            <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
+              <span class="d-room-text">✓ Board Table Selected (25 PAX)</span>
+            </div>
+            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              Select Setup &amp; View Floor Plan
             </button>
           </div>
         </article>
@@ -702,7 +715,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
         </div>
         <div class="summary-card-body">
           <div class="scb-item" id="summaryPreviewRoomWrap" style="display: none;">
-            <span class="scb-label">Assigned Room Unit:</span>
+            <span class="scb-label" id="summaryPreviewUnitLabel">Assigned Setup / Room:</span>
             <strong class="scb-val" id="summaryPreviewRoom">None</strong>
           </div>
           <div class="scb-item">
@@ -986,7 +999,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
 
           <div class="summary-card-body" style="margin-bottom: 1.25rem;">
             <div class="scb-item" id="summaryRoomDetailWrap" style="display: none;">
-              <span class="scb-label">Assigned Room Unit:</span>
+              <span class="scb-label" id="summaryRoomDetailLabel">Assigned Setup / Unit:</span>
               <strong class="scb-val" id="summaryRoomDetail">Room 102 (1st Floor (Sampaguita))</strong>
             </div>
             <div class="scb-item">
@@ -1052,13 +1065,13 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
       <div class="room-modal-header">
         <div class="room-modal-header-info">
           <div class="modal-badge-row">
-            <span class="modal-dorm-pill-tag">FLOOR PLAN SELECTION</span>
+            <span class="modal-dorm-pill-tag" id="modalCategoryPill">FLOOR PLAN SELECTION</span>
             <span id="modalDormRate" class="modal-dorm-rate-pill">₱500 / night</span>
           </div>
           <h3 id="modalDormTitle" class="modal-dorm-title">1st Floor: Sampaguita Dormitory</h3>
           <p id="modalDormFloor" class="modal-dorm-desc">Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.</p>
         </div>
-        <button type="button" class="room-modal-close-btn" id="btnModalClose" aria-label="Close Room Selection">
+        <button type="button" class="room-modal-close-btn" id="btnModalClose" aria-label="Close Selection">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1070,11 +1083,11 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
       <div class="room-modal-legend">
         <div class="legend-item">
           <span class="legend-color-dot available"></span>
-          <span><strong>Available:</strong> Click to assign for your stay</span>
+          <span id="modalLegendAvailText"><strong>Available:</strong> Click to assign for your booking</span>
         </div>
         <div class="legend-item">
           <span class="legend-color-dot reserved"></span>
-          <span><strong>Reserved:</strong> Occupied by scheduled delegates</span>
+          <span id="modalLegendResText"><strong>Reserved:</strong> Occupied by scheduled delegates</span>
         </div>
       </div>
 
