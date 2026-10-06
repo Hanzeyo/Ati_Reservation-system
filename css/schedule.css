@@ -102,73 +102,317 @@ body.schedule-body {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1.25rem;
-  margin-bottom: 2.25rem;
+  margin-bottom: 2rem;
 }
 
 .schedule-stat-card {
   background: #ffffff;
   border: 1.5px solid #e1e9e3;
-  border-radius: 14px;
-  padding: 1.25rem 1.4rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  border-radius: 16px;
+  padding: 1.15rem 1.35rem 0.95rem;
+  box-shadow: 0 4px 14px rgba(18, 56, 32, 0.04);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.65rem;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+/* Subtle top colored accent bar */
+.schedule-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: transparent;
+  transition: background 0.25s ease;
+}
+
+.schedule-stat-card.green::before { background: linear-gradient(90deg, #16a34a, #86efac); }
+.schedule-stat-card.blue::before { background: linear-gradient(90deg, #2563eb, #93c5fd); }
+.schedule-stat-card.amber::before { background: linear-gradient(90deg, #d97706, #fde68a); }
+.schedule-stat-card.purple::before { background: linear-gradient(90deg, #7c3aed, #d8b4fe); }
+
+/* Card Inner Content */
+.stat-card-inner {
   display: flex;
   align-items: center;
-  gap: 1.15rem;
+  gap: 1rem;
 }
 
 .stat-icon-box {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
 .stat-icon-box.green {
-  background: #eaf5ee;
-  color: #175432;
+  background: linear-gradient(135deg, #e8f5ed, #d1fae5);
+  color: #15803d;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.12);
 }
 
 .stat-icon-box.blue {
-  background: #eff6ff;
-  color: #2563eb;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  color: #1d4ed8;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
 }
 
 .stat-icon-box.amber {
-  background: #fef3c7;
-  color: #d97706;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #b45309;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.12);
 }
 
 .stat-icon-box.purple {
-  background: #f3e8ff;
-  color: #7c3aed;
+  background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+  color: #6d28d9;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.12);
 }
 
 .stat-icon-box svg {
-  width: 22px;
-  height: 22px;
+  width: 23px;
+  height: 23px;
   stroke: currentColor;
-  stroke-width: 2;
+  stroke-width: 2.1;
+  display: block;
 }
 
 .stat-content {
   display: flex;
   flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.45rem;
 }
 
 .stat-value {
-  font-size: 1.4rem;
+  font-size: 1.38rem;
   font-weight: 800;
-  color: #152c1e;
+  color: #0f2416;
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
 .stat-label {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  color: #637a6d;
+  color: #556e5f;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Micro pill in header */
+.stat-micro-pill {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 999px;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.stat-micro-pill.green { background: #dcfce7; color: #166534; }
+.stat-micro-pill.blue { background: #dbeafe; color: #1e40af; }
+.stat-micro-pill.amber { background: #fef3c7; color: #92400e; }
+.stat-micro-pill.purple { background: #f3e8ff; color: #6b21a8; }
+
+/* Bottom Action Hint */
+.stat-card-bottom-accent {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 0.35rem;
+  border-top: 1px dashed #e8efe9;
+}
+
+.stat-action-hint {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #175432;
+  opacity: 0.72;
+  transition: all 0.22s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* Hover effects */
+.schedule-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(23, 84, 50, 0.08);
+}
+
+.schedule-stat-card:hover .stat-icon-box {
+  transform: scale(1.08);
+}
+
+.schedule-stat-card:hover .stat-action-hint {
+  opacity: 1;
+  transform: translateX(2px);
+  color: #15803d;
+}
+
+.schedule-stat-card.green:hover { border-color: #86efac; box-shadow: 0 10px 24px rgba(22, 163, 74, 0.12); }
+.schedule-stat-card.blue:hover { border-color: #93c5fd; box-shadow: 0 10px 24px rgba(37, 99, 235, 0.12); }
+.schedule-stat-card.amber:hover { border-color: #fde68a; box-shadow: 0 10px 24px rgba(217, 119, 6, 0.12); }
+.schedule-stat-card.purple:hover { border-color: #d8b4fe; box-shadow: 0 10px 24px rgba(124, 58, 237, 0.12); }
+
+/* Active mode */
+.schedule-stat-card.active-mode {
+  border-color: #175432 !important;
+  background: #f7fbf8;
+  box-shadow: 0 0 0 3px rgba(23, 84, 50, 0.16), 0 10px 24px rgba(23, 84, 50, 0.1) !important;
+}
+
+.schedule-stat-card.active-mode::after {
+  content: 'ACTIVE VIEW';
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #166534;
+  background: #dcfce7;
+  padding: 2px 6px;
+  border-radius: 999px;
+}
+
+/* Status Banner above Calendar when a Stat Mode is active */
+.schedule-status-banner {
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 12px;
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  animation: slideDownBanner 0.25s ease;
+}
+
+@keyframes slideDownBanner {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.schedule-status-banner-text {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #15803d;
+}
+
+.schedule-status-banner-btn {
+  background: #15803d;
+  color: #ffffff;
+  border: none;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.schedule-status-banner-btn:hover {
+  background: #166534;
+  transform: translateY(-1px);
+}
+
+/* Monthly Scheduled Events Modal */
+.monthly-event-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  background: #f7faf8;
+  border: 1px solid #e2ede5;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.monthly-event-row:hover {
+  background: #ffffff;
+  border-color: #86efac;
+  box-shadow: 0 3px 12px rgba(23, 84, 50, 0.08);
+  transform: translateX(3px);
+}
+
+.monthly-event-date-badge {
+  background: #175432;
+  color: #ffffff;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  text-align: center;
+  min-width: 58px;
+  flex-shrink: 0;
+}
+
+.monthly-event-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.monthly-event-title {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #152c1e;
+  margin-bottom: 0.25rem;
+}
+
+.monthly-event-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  color: #557262;
+  flex-wrap: wrap;
+}
+
+.monthly-event-locate-btn {
+  background: #ffffff;
+  border: 1.5px solid #cce0d2;
+  color: #175432;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.45rem 0.95rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.monthly-event-locate-btn:hover {
+  background: #175432;
+  color: #ffffff;
+  border-color: #175432;
 }
 
 /* Calendar Controls Bar */

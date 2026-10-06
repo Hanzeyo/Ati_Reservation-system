@@ -289,62 +289,109 @@
       </a>
     </section>
 
-    <!-- Summary Stats Strip -->
+    <!-- Summary Stats Strip (Interactive System Status Cards) -->
     <div class="schedule-stats-grid">
-      <div class="schedule-stat-card">
-        <div class="stat-icon-box green">
-          <svg viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-          </svg>
+
+      <!-- Card 1: Total Events Scheduled -->
+      <div class="schedule-stat-card green" id="statCardEvents" role="button" tabindex="0" title="Click to view scheduled events breakdown for this month">
+        <div class="stat-card-inner">
+          <div class="stat-icon-box green">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-header-row">
+              <span class="stat-value" id="statValueEvents">18 Events</span>
+              <span class="stat-micro-pill green" id="statPillEvents">↗ Active</span>
+            </div>
+            <span class="stat-label" id="statLabelEvents">Scheduled this Month</span>
+          </div>
         </div>
-        <div class="stat-content">
-          <span class="stat-value">18 Events</span>
-          <span class="stat-label">Scheduled this Month</span>
+        <div class="stat-card-bottom-accent">
+          <span class="stat-action-hint">View schedule breakdown &rarr;</span>
         </div>
       </div>
 
-      <div class="schedule-stat-card">
-        <div class="stat-icon-box blue">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
+      <!-- Card 2: Highest Demand Venue -->
+      <div class="schedule-stat-card blue" id="statCardDemand" role="button" tabindex="0" title="Click to filter calendar directly to this venue">
+        <div class="stat-card-inner">
+          <div class="stat-icon-box blue">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-header-row">
+              <span class="stat-value" id="statValueDemand">Function Hall</span>
+              <span class="stat-micro-pill blue" id="statPillDemand">🔥 Top</span>
+            </div>
+            <span class="stat-label" id="statLabelDemand">Highest Demand Venue</span>
+          </div>
         </div>
-        <div class="stat-content">
-          <span class="stat-value">Function Hall</span>
-          <span class="stat-label">Highest Demand Venue</span>
-        </div>
-      </div>
-
-      <div class="schedule-stat-card">
-        <div class="stat-icon-box amber">
-          <svg viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <span class="stat-value">68%</span>
-          <span class="stat-label">Overall Monthly Occupancy</span>
+        <div class="stat-card-bottom-accent">
+          <span class="stat-action-hint">Filter to this venue &rarr;</span>
         </div>
       </div>
 
-      <div class="schedule-stat-card">
-        <div class="stat-icon-box purple">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
+      <!-- Card 3: Overall Monthly Occupancy -->
+      <div class="schedule-stat-card amber" id="statCardOccupancy" role="button" tabindex="0" title="Click to toggle visual occupancy heatmap view">
+        <div class="stat-card-inner">
+          <div class="stat-icon-box amber">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-header-row">
+              <span class="stat-value" id="statValueOccupancy">68%</span>
+              <span class="stat-micro-pill amber" id="statPillOccupancy">● Optimal</span>
+            </div>
+            <span class="stat-label" id="statLabelOccupancy">Overall Monthly Occupancy</span>
+          </div>
         </div>
-        <div class="stat-content">
-          <span class="stat-value">12 Days</span>
-          <span class="stat-label">With Available Slots</span>
+        <div class="stat-card-bottom-accent">
+          <span class="stat-action-hint">Toggle occupancy heatmap &rarr;</span>
         </div>
       </div>
+
+      <!-- Card 4: Days with Available Slots -->
+      <div class="schedule-stat-card purple" id="statCardAvailableDays" role="button" tabindex="0" title="Click to highlight open days with available slots">
+        <div class="stat-card-inner">
+          <div class="stat-icon-box purple">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-header-row">
+              <span class="stat-value" id="statValueAvailableDays">12 Days</span>
+              <span class="stat-micro-pill purple" id="statPillAvailable">🟢 Open</span>
+            </div>
+            <span class="stat-label" id="statLabelAvailableDays">With Available Slots</span>
+          </div>
+        </div>
+        <div class="stat-card-bottom-accent">
+          <span class="stat-action-hint">Highlight open slots &rarr;</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Dynamic System Status Banner (when a stat view mode is active) -->
+    <div class="schedule-status-banner" id="scheduleStatusBanner" style="display: none;">
+      <div style="display: flex; align-items: center; gap: 0.65rem;">
+        <span id="statusBannerIcon" style="font-size: 1.15rem;">ℹ️</span>
+        <span class="schedule-status-banner-text" id="statusBannerText">Status message</span>
+      </div>
+      <button type="button" class="schedule-status-banner-btn" id="btnResetStatusMode">Reset Standard View</button>
     </div>
 
     <!-- Calendar Controls Bar -->
@@ -439,6 +486,41 @@
           <button type="button" class="btn-step-back js-close-modal">Close</button>
           <a href="booking.php" class="btn-proceed-step" style="padding: 0.8rem 1.5rem; border-radius: 9999px;">
             <span>Book Another Date</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  <!-- ==========================================================================
+       MONTHLY SCHEDULED EVENTS LIST MODAL (Activated by Card 1)
+       ========================================================================== -->
+  <div class="modal-overlay" id="monthlyEventsModal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-lg" style="max-width: 820px;">
+      <button type="button" class="modal-close-btn js-close-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      
+      <div class="modal-header-banner" style="background: linear-gradient(135deg, #175432, #107545); padding: 1.35rem 1.85rem;">
+        <span style="font-size: 0.78rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.9; color: #ffffff;">SYSTEM ACTIVITY BREAKDOWN</span>
+        <h3 id="monthlyEventsModalTitle" style="font-size: 1.45rem; margin-top: 0.35rem; color: #ffffff;">Scheduled Events for October 2026</h3>
+      </div>
+
+      <div class="schedule-modal-content" style="padding: 1.5rem 1.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+          <div style="font-size: 0.88rem; color: #175432; font-weight: 700;" id="monthlyEventsModalCount">Showing 18 confirmed events across ATI facilities</div>
+          <input type="text" id="eventsModalSearchInput" placeholder="Quick search title, facility, division..." style="padding: 0.5rem 0.95rem; border: 1.5px solid #d1ded5; border-radius: 8px; font-size: 0.82rem; min-width: 260px; outline: none;">
+        </div>
+
+        <div class="monthly-events-list-container" id="monthlyEventsListContainer" style="max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 4px;">
+          <!-- Dynamically populated by schedule.js -->
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5ece7;">
+          <button type="button" class="btn-step-back js-close-modal">Close</button>
+          <a href="booking.php" class="btn-proceed-step" style="padding: 0.75rem 1.5rem; border-radius: 9999px;">
+            <span>Reserve a Facility</span>
           </a>
         </div>
       </div>

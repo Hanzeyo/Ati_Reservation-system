@@ -858,6 +858,31 @@ function initStepperNavigation() {
   if (finalSubmitBtn) {
     finalSubmitBtn.addEventListener('click', () => {
       const refNum = `ATI-RES-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      const isDorm = isDormitorySelected();
+
+      // Persist to localStorage for live sync with Master Schedule & My Reservations
+      try {
+        const stored = JSON.parse(localStorage.getItem('ati_system_reservations') || '[]');
+        const targetFacilityKey = isDorm ? 'dormitory' : (bookingState.selectedFacility?.id || 'function-hall');
+        const newRes = {
+          id: Date.now(),
+          ref: refNum,
+          title: bookingState.eventTitle || (isDorm ? `Dorm Stay: ${bookingState.selectedFacility?.name || 'Dormitory'}` : `${bookingState.selectedFacility?.name || 'Facility'} Reservation`),
+          facility: bookingState.selectedFacility?.name || 'Facility',
+          facilityKey: targetFacilityKey,
+          date: bookingState.dateRaw || '2026-10-20',
+          time: bookingState.time || '08:00 AM - 05:00 PM',
+          division: 'Online Reservation',
+          attendees: bookingState.participants ? `${bookingState.participants} Guests` : '15 Participants',
+          status: 'Approved & Confirmed',
+          roomNumber: bookingState.selectedFacility?.roomNumber || null
+        };
+        stored.push(newRes);
+        localStorage.setItem('ati_system_reservations', JSON.stringify(stored));
+      } catch (err) {
+        console.warn('Could not save to localStorage:', err);
+      }
+
       let summaryMsg = `Reservation Request Submitted Successfully!\n\nReference: ${refNum}\nFacility: ${bookingState.selectedFacility.name}`;
       if (bookingState.selectedFacility.roomNumber) {
         summaryMsg += `\nAssigned Room: Room ${bookingState.selectedFacility.roomNumber} (${bookingState.selectedFacility.floor || ''})`;
@@ -867,7 +892,7 @@ function initStepperNavigation() {
       }
       summaryMsg += `\nSchedule: ${bookingState.date}\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`;
       alert(summaryMsg);
-      window.location.href = 'booking.php';
+      window.location.href = 'schedule.php';
     });
   }
 
