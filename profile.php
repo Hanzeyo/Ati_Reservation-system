@@ -250,8 +250,6 @@
     <nav class="profile-breadcrumb" aria-label="Breadcrumb">
       <a href="home.php">Home</a>
       <span class="sep">/</span>
-      <a href="profile.php">Staff Account</a>
-      <span class="sep">/</span>
       <span class="current">My Profile</span>
     </nav>
 
@@ -259,20 +257,28 @@
     <input type="file" id="profilePicInput" accept="image/png, image/jpeg, image/webp" aria-label="Upload profile photo">
 
     <!-- ==========================================================================
-         HERO PROFILE BANNER CARD
+         HERO PROFILE BANNER CARD (PERFECTLY ALIGNED & 100% READABLE)
          ========================================================================== -->
     <section class="profile-hero-card" aria-label="Staff Identity Banner">
-      <div class="profile-hero-cover"></div>
+      <div class="profile-hero-cover">
+        <div class="profile-hero-cover-badge">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>Republic of the Philippines &bull; Department of Agriculture</span>
+        </div>
+        <div class="profile-hero-cover-tagline">
+          <span>Agricultural Training Institute &bull; Personnel Portal</span>
+        </div>
+      </div>
 
       <div class="profile-hero-body">
-        <div class="profile-identity-group">
-          <!-- Avatar with photo upload badge -->
+        <!-- Top Row: Overlapping Avatar on Left, Action Buttons on Right -->
+        <div class="profile-hero-top-row">
           <div class="profile-avatar-wrap">
             <div class="profile-avatar-inner" id="heroAvatarContainer">
               <img src="" alt="Juan Dela Cruz Profile Picture" class="profile-avatar-img" id="heroAvatarImg" style="display: none;">
               <span class="profile-avatar-initials" id="heroAvatarInitials">JD</span>
             </div>
-            <button type="button" class="btn-upload-photo" id="btnTriggerPhotoUpload" title="Change profile photo" aria-label="Change profile photo">
+            <button type="button" class="btn-upload-photo" id="btnTriggerPhotoUpload" title="Upload or change profile photo" aria-label="Upload or change profile photo">
               <svg viewBox="0 0 24 24" fill="none">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                 <circle cx="12" cy="13" r="4"></circle>
@@ -280,71 +286,101 @@
             </button>
           </div>
 
-          <!-- Identity Text -->
-          <div class="profile-identity-text">
-            <div class="profile-name-row">
-              <h2 class="profile-name-display" id="displayFullName">Juan Dela Cruz</h2>
-              <span class="profile-verified-badge">
-                <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                <span>Verified Personnel</span>
-              </span>
-              <span class="edit-mode-indicator" id="editModeIndicator">
-                <span class="status-dot-pulse" style="background: #d97706;"></span>
-                <span>Edit Mode Active</span>
-              </span>
-            </div>
-            <p class="profile-role-subtitle" id="displayRoleSubtitle">Training Specialist III &bull; Career Development Division</p>
-            
-            <div class="profile-tag-ribbon">
-              <span class="profile-tag-pill">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                <span>ATI Central Office</span>
-              </span>
-              <span class="profile-tag-pill">
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span>Regular Full-Time</span>
-              </span>
-              <button type="button" class="btn-profile-danger-text" id="btnRemovePhoto" style="display: none;" title="Remove current photo and restore initials">
-                Remove Photo
-              </button>
-            </div>
+          <!-- Hero Actions (Edit Profile / Save Changes) -->
+          <div class="profile-hero-actions">
+            <!-- View Mode Actions -->
+            <button type="button" class="btn-profile-primary btn-view-mode" id="btnStartEditing">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              <span>Edit Profile</span>
+            </button>
+            <a href="booking.php" class="btn-profile-secondary btn-view-mode">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>New Booking</span>
+            </a>
+
+            <!-- Edit Mode Actions -->
+            <button type="button" class="btn-profile-primary btn-edit-mode" id="btnSaveProfile">
+              <svg viewBox="0 0 24 24" fill="none">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>Save Changes</span>
+            </button>
+            <button type="button" class="btn-profile-secondary btn-edit-mode" id="btnCancelEditing">
+              <span>Cancel</span>
+            </button>
           </div>
         </div>
 
-        <!-- Hero Actions (Edit Profile / Save Changes) -->
-        <div class="profile-hero-actions">
-          <!-- View Mode Actions -->
-          <button type="button" class="btn-profile-primary btn-view-mode" id="btnStartEditing">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-            </svg>
-            <span>Edit Profile</span>
-          </button>
-          <a href="booking.php" class="btn-profile-secondary btn-view-mode">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>New Booking</span>
-          </a>
+        <!-- Identity Information - Completely situated on the white card background for maximum readability -->
+        <div class="profile-hero-identity">
+          <div class="profile-name-row">
+            <h1 class="profile-name-display" id="displayFullName">Juan Dela Cruz</h1>
+            <span class="profile-verified-badge">
+              <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Verified Personnel</span>
+            </span>
+            <span class="edit-mode-indicator" id="editModeIndicator">
+              <span class="status-dot-pulse" style="background: #d97706;"></span>
+              <span>Edit Mode Active</span>
+            </span>
+          </div>
 
-          <!-- Edit Mode Actions -->
-          <button type="button" class="btn-profile-primary btn-edit-mode" id="btnSaveProfile">
-            <svg viewBox="0 0 24 24" fill="none">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span>Save Changes</span>
-          </button>
-          <button type="button" class="btn-profile-secondary btn-edit-mode" id="btnCancelEditing">
-            <span>Cancel</span>
-          </button>
+          <p class="profile-role-subtitle" id="displayRoleSubtitle">Training Specialist III &bull; Career Development Division (CDD)</p>
+          
+          <div class="profile-tag-ribbon">
+            <span class="profile-tag-pill">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+              <span>ATI Central Office</span>
+            </span>
+            <span class="profile-tag-pill">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>Regular Full-Time</span>
+            </span>
+            <span class="profile-tag-pill" style="color: #174d2f; background: #eaf5ee; border-color: #cce4d3;">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span id="displayHiredTag">Hired: March 15, 2018</span>
+            </span>
+            <button type="button" class="btn-profile-danger-text" id="btnRemovePhoto" style="display: none;" title="Remove current photo and restore initials">
+              Remove Photo
+            </button>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- ==========================================================================
-         ACTIVITY KPI RIBBON
+         EDIT MODE ALERT BANNER (ACTIVATES IN EDIT MODE ONLY)
+         ========================================================================== -->
+    <div class="profile-edit-banner" id="profileEditBanner">
+      <div class="profile-edit-banner-content">
+        <div class="profile-edit-banner-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+        <div class="profile-edit-banner-text">
+          <h4>Profile Editing Mode Active</h4>
+          <p>You can modify your personal contact and workstation details below. Official civil service records (Employee ID &amp; Hire Date) remain protected by HR. Click <strong>Save Changes</strong> to apply your updates or <strong>Cancel</strong> to discard.</p>
+        </div>
+      </div>
+      <div class="profile-edit-banner-actions">
+        <button type="button" class="btn-banner-save" id="btnBannerSave">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Save Changes</span>
+        </button>
+        <button type="button" class="btn-banner-cancel" id="btnBannerCancel">Cancel</button>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         ACTIVITY KPI RIBBON (FUNCTIONAL, CLICKABLE & SENSIBLE ICONS)
          ========================================================================== -->
     <section class="profile-stats-ribbon" aria-label="Staff Reservation Activity">
-      <div class="profile-stat-box">
+      <!-- 1. Total Reservations -->
+      <div class="profile-stat-box" data-kpi="total" title="Click to view all filed reservations" tabindex="0" role="button">
         <div class="profile-stat-icon green">
           <svg viewBox="0 0 24 24" fill="none">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -356,10 +392,12 @@
         <div class="profile-stat-info">
           <span class="profile-stat-val">5</span>
           <span class="profile-stat-lbl">Total Reservations Filed</span>
+          <a href="my_reservations.php" class="stat-click-hint" onclick="event.stopPropagation();" title="View all 5 bookings in Booking History">View all 5 bookings &rarr;</a>
         </div>
       </div>
 
-      <div class="profile-stat-box">
+      <!-- 2. Confirmed & Approved -->
+      <div class="profile-stat-box" data-kpi="approved" title="Click to view approved bookings" tabindex="0" role="button">
         <div class="profile-stat-icon blue">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -368,11 +406,13 @@
         </div>
         <div class="profile-stat-info">
           <span class="profile-stat-val">2</span>
-          <span class="profile-stat-lbl">Confirmed & Approved</span>
+          <span class="profile-stat-lbl">Confirmed &amp; Approved</span>
+          <a href="my_reservations.php?filter=approved" class="stat-click-hint" onclick="event.stopPropagation();" title="View approved bookings in Booking History">View 2 approved &rarr;</a>
         </div>
       </div>
 
-      <div class="profile-stat-box">
+      <!-- 3. Under Admin Review -->
+      <div class="profile-stat-box" data-kpi="pending" title="Click to view pending reviews" tabindex="0" role="button">
         <div class="profile-stat-icon amber">
           <svg viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10"></circle>
@@ -382,19 +422,26 @@
         <div class="profile-stat-info">
           <span class="profile-stat-val">2</span>
           <span class="profile-stat-lbl">Under Admin Review</span>
+          <a href="my_reservations.php?filter=pending" class="stat-click-hint" onclick="event.stopPropagation();" title="View pending bookings in Booking History">View 2 pending &rarr;</a>
         </div>
       </div>
 
-      <div class="profile-stat-box">
-        <div class="profile-stat-icon slate">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 2v20"></path>
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+      <!-- 4. Government Service Tenure (Sensible Civil Service Medal Icon + Exact Hired Detail) -->
+      <div class="profile-stat-box" data-kpi="service" title="Click to view official Civil Service hiring record" tabindex="0" role="button">
+        <div class="profile-stat-icon gold">
+          <!-- Official Public Service Ribbon / Civil Service Medal Icon -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="6"></circle>
+            <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"></path>
           </svg>
         </div>
         <div class="profile-stat-info">
-          <span class="profile-stat-val">8 Yrs</span>
+          <span class="profile-stat-val">8 Yrs, 7 Mos</span>
           <span class="profile-stat-lbl">ATI Government Service</span>
+          <span class="stat-hired-detail">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span id="statHiredText">Hired: March 15, 2018</span>
+          </span>
         </div>
       </div>
     </section>
@@ -422,16 +469,23 @@
             <input type="text" id="inpFullName" class="profile-input-control" value="Juan Dela Cruz" placeholder="First Name Last Name">
           </div>
 
-          <!-- Employee ID -->
+          <!-- Employee ID (HR Protected - Readonly to avoid accidental changes) -->
           <div class="profile-field-group">
-            <label class="profile-label" for="inpEmployeeId">Employee ID Number</label>
+            <label class="profile-label" for="inpEmployeeId">
+              <span>Employee ID Number</span>
+              <span class="badge-hr-pill" title="Protected Civil Service item">HR Locked</span>
+            </label>
             <div class="profile-value-display profile-copyable-val">
               <span id="valEmployeeId">ATI-EMP-2024-0891</span>
               <button type="button" class="btn-mini-copy" id="btnCopyEmpId" title="Copy Employee ID">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               </button>
             </div>
-            <input type="text" id="inpEmployeeId" class="profile-input-control" value="ATI-EMP-2024-0891" placeholder="ATI-EMP-YYYY-XXXX">
+            <input type="text" id="inpEmployeeId" class="profile-input-control profile-input-readonly" value="ATI-EMP-2024-0891" readonly placeholder="ATI-EMP-YYYY-XXXX">
+            <div class="field-locked-note">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              <span>HR Verified Record &bull; Cannot be altered</span>
+            </div>
           </div>
 
           <!-- Position / Job Title -->
@@ -455,6 +509,20 @@
             </select>
           </div>
 
+          <!-- Date Originally Hired (Civil Service Appointed - Readonly to avoid accidental changes) -->
+          <div class="profile-field-group">
+            <label class="profile-label" for="inpDateHired">
+              <span>Date Originally Appointed / Hired</span>
+              <span class="badge-hr-pill" title="Official Appointment Record">Civil Service</span>
+            </label>
+            <div class="profile-value-display" id="valDateHired">March 15, 2018 (Regular)</div>
+            <input type="text" id="inpDateHired" class="profile-input-control profile-input-readonly" value="March 15, 2018" readonly placeholder="March 15, 2018">
+            <div class="field-locked-note">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="6"></circle><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"></path></svg>
+              <span>Fixed Civil Service Appointment Date</span>
+            </div>
+          </div>
+
           <!-- Employment Status -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpEmpStatus">Employment Status</label>
@@ -475,15 +543,15 @@
           </div>
 
           <!-- Station / Location -->
-          <div class="profile-field-group profile-field-full">
+          <div class="profile-field-group">
             <label class="profile-label" for="inpStation">Office Station / Assignment</label>
-            <div class="profile-value-display" id="valStation">ATI Central Office &bull; Elliptical Road, Diliman, Quezon City</div>
-            <input type="text" id="inpStation" class="profile-input-control" value="ATI Central Office • Elliptical Road, Diliman, Quezon City" placeholder="Office Location">
+            <div class="profile-value-display" id="valStation">ATI Central Office &bull; Diliman, QC</div>
+            <input type="text" id="inpStation" class="profile-input-control" value="ATI Central Office • Diliman, QC" placeholder="Office Location">
           </div>
         </div>
       </section>
 
-      <!-- CARD 2: CONTACT & COMMUNICATIONS -->
+      <!-- CARD 2: CONTACT & COMMUNICATIONS (8 BALANCED FIELDS MATCHING CARD 1) -->
       <section class="profile-card" aria-label="Contact and Communications">
         <div class="profile-card-header">
           <h3 class="profile-card-title">
@@ -494,11 +562,18 @@
         </div>
 
         <div class="profile-fields-grid">
-          <!-- Work Email -->
-          <div class="profile-field-group profile-field-full">
+          <!-- Official Gov Email -->
+          <div class="profile-field-group">
             <label class="profile-label" for="inpEmail">Official Gov Email Address</label>
             <div class="profile-value-display" id="valEmail">juan.delacruz@ati.da.gov.ph</div>
             <input type="email" id="inpEmail" class="profile-input-control" value="juan.delacruz@ati.da.gov.ph" placeholder="username@ati.da.gov.ph">
+          </div>
+
+          <!-- Alternate / Recovery Email -->
+          <div class="profile-field-group">
+            <label class="profile-label" for="inpAltEmail">Alternate / Personal Email</label>
+            <div class="profile-value-display" id="valAltEmail">jdelacruz.ati@gmail.com</div>
+            <input type="email" id="inpAltEmail" class="profile-input-control" value="jdelacruz.ati@gmail.com" placeholder="personal.email@domain.com">
           </div>
 
           <!-- Mobile Phone -->
@@ -508,6 +583,13 @@
             <input type="tel" id="inpPhone" class="profile-input-control" value="+63 917 842 5901" placeholder="+63 9XX XXX XXXX">
           </div>
 
+          <!-- Emergency Contact -->
+          <div class="profile-field-group">
+            <label class="profile-label" for="inpEmergencyContact">Emergency Contact &amp; Phone</label>
+            <div class="profile-value-display" id="valEmergencyContact">Maria Dela Cruz (Spouse) &bull; 0918 123 4567</div>
+            <input type="text" id="inpEmergencyContact" class="profile-input-control" value="Maria Dela Cruz (Spouse) • 0918 123 4567" placeholder="Name (Relation) • Contact No.">
+          </div>
+
           <!-- Landline Trunk -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpLandline">Office Trunkline</label>
@@ -515,18 +597,25 @@
             <input type="text" id="inpLandline" class="profile-input-control" value="(02) 8929-8541" placeholder="(02) 8XXX-XXXX">
           </div>
 
-          <!-- Extension -->
+          <!-- Local Extension -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpExtension">Local Extension</label>
             <div class="profile-value-display" id="valExtension">Local Ext. 214</div>
             <input type="text" id="inpExtension" class="profile-input-control" value="Local Ext. 214" placeholder="Ext. XXX">
           </div>
 
+          <!-- Office Building & Station -->
+          <div class="profile-field-group">
+            <label class="profile-label" for="inpBuilding">Office Building &amp; Floor</label>
+            <div class="profile-value-display" id="valBuilding">ATI Central Bldg &bull; 2nd Floor</div>
+            <input type="text" id="inpBuilding" class="profile-input-control" value="ATI Central Bldg • 2nd Floor" placeholder="Building & Floor">
+          </div>
+
           <!-- Room / Desk -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpDesk">Office Room &amp; Desk</label>
-            <div class="profile-value-display" id="valDesk">CDD Wing, 2nd Flr, Desk 204</div>
-            <input type="text" id="inpDesk" class="profile-input-control" value="CDD Wing, 2nd Flr, Desk 204" placeholder="Building / Room / Desk">
+            <div class="profile-value-display" id="valDesk">CDD Wing &bull; Desk 204</div>
+            <input type="text" id="inpDesk" class="profile-input-control" value="CDD Wing • Desk 204" placeholder="Room / Desk Designation">
           </div>
         </div>
       </section>
@@ -659,6 +748,91 @@
           <button type="submit" class="btn-profile-primary">Update Password</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: CONFIRM PROFILE EDITS (PREVENTS ACCIDENTAL CHANGES)
+       ========================================================================== -->
+  <div class="profile-modal-overlay" id="saveConfirmModal" role="dialog" aria-modal="true" aria-labelledby="saveModalTitle">
+    <div class="profile-modal-card" style="max-width: 470px;">
+      <div class="profile-modal-header" style="background: linear-gradient(135deg, #174d2f, #22643a);">
+        <h3 id="saveModalTitle">Save Profile Updates?</h3>
+        <p>Confirm changes before committing to your official staff profile</p>
+        <button type="button" class="profile-modal-close-btn" id="btnCloseSaveModal" aria-label="Close dialog">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="profile-modal-body">
+        <p style="font-size: 0.92rem; color: #1e3a2b; line-height: 1.55; margin: 0 0 1rem 0;">
+          Are you sure you want to save your updated profile details? Your changes will be saved to your local browser session and reflected immediately across the reservation portal.
+        </p>
+        <div style="background: #f0f7f2; border: 1.5px solid #d1e7d8; border-radius: 10px; padding: 0.85rem 1rem; font-size: 0.82rem; color: #166534; display: flex; align-items: center; gap: 0.65rem;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink: 0;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <span>Official Civil Service identification numbers &amp; appointment records are protected by HR.</span>
+        </div>
+      </div>
+      <div class="profile-modal-footer">
+        <button type="button" class="btn-profile-secondary" id="btnCancelSaveModal">Review Edits</button>
+        <button type="button" class="btn-profile-primary" id="btnExecuteSaveProfile">Yes, Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: DISCARD EDITS CONFIRMATION (PREVENTS ACCIDENTAL LOSS)
+       ========================================================================== -->
+  <div class="profile-modal-overlay" id="discardConfirmModal" role="dialog" aria-modal="true" aria-labelledby="discardModalTitle">
+    <div class="profile-modal-card" style="max-width: 440px;">
+      <div class="profile-modal-header" style="background: linear-gradient(135deg, #854d0e, #b45309);">
+        <h3 id="discardModalTitle">Discard Unsaved Changes?</h3>
+        <p>You have unsaved edits on your profile</p>
+        <button type="button" class="profile-modal-close-btn" id="btnCloseDiscardModal" aria-label="Close dialog">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="profile-modal-body">
+        <p style="font-size: 0.92rem; color: #1e3a2b; line-height: 1.55; margin: 0;">
+          Are you sure you want to cancel? Any edits made will be discarded and your previous profile information will be preserved without changes.
+        </p>
+      </div>
+      <div class="profile-modal-footer">
+        <button type="button" class="btn-profile-secondary" id="btnKeepEditing">Continue Editing</button>
+        <button type="button" class="btn-profile-danger-text" id="btnExecuteDiscard" style="background: #fee2e2; color: #b91c1c; font-weight: 700; padding: 0.65rem 1.25rem; border-radius: 9999px;">Discard Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: STAT CARD ACTIVITY DETAILS (FUNCTION FOR KPI CARDS)
+       ========================================================================== -->
+  <div class="profile-modal-overlay" id="statDetailModal" role="dialog" aria-modal="true" aria-labelledby="statModalTitle">
+    <div class="profile-modal-card" style="max-width: 600px;">
+      <div class="profile-modal-header">
+        <h3 id="statModalTitle">Staff Reservation Activity</h3>
+        <p id="statModalSubtitle">Official ATI staff reservation activity details</p>
+        <button type="button" class="profile-modal-close-btn" id="btnCloseStatModal" aria-label="Close dialog">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="profile-modal-body" id="statModalBody" style="max-height: 60vh; overflow-y: auto; padding: 1.5rem 1.75rem;">
+        <!-- Injected via JavaScript based on clicked stat card -->
+      </div>
+      <div class="profile-modal-footer">
+        <button type="button" class="btn-profile-secondary" id="btnCloseStatModalFooter">Close</button>
+        <a href="my_reservations.php" class="btn-profile-primary" id="btnModalGoToBookings">
+          <span>Go to Booking History &rarr;</span>
+        </a>
+      </div>
     </div>
   </div>
 

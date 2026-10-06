@@ -186,6 +186,15 @@ function initKpiFilters() {
       applyAllFilters();
     });
   });
+
+  // Support direct navigation from profile stat cards via URL query
+  const urlFilter = new URLSearchParams(window.location.search).get('filter');
+  if (urlFilter) {
+    const targetCard = document.querySelector(`.my-res-stat-card[data-filter="${urlFilter}"]`);
+    if (targetCard) {
+      targetCard.click();
+    }
+  }
 }
 
 /* ==========================================================================
