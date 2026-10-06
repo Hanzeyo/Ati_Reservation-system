@@ -1,11 +1,13 @@
 /**
  * ATI Reservation System - My Reservations Dashboard Controller
- * Handles filtering, search, routing modal views, gatepass generation, and cancellation
+ * Handles filtering, category separation (Facility Reservations vs Dormitory Bookings),
+ * search, routing modal views, gatepass generation, and cancellation
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   initProfileDropdown();
   initMobileDrawer();
+  initCategorySwitcher();
   initKpiFilters();
   initCustomFacilityDropdown();
   initSearch();
@@ -56,12 +58,90 @@ function syncGlobalProfileHeader() {
 }
 
 /* ==========================================================================
-   2. KPI Stat Card Filters & Filtering Controller
+   2. Category Segregation (Facility Reservations vs Dormitory Bookings)
    ========================================================================== */
+let activeCategoryType = 'all'; // 'all' | 'facility' | 'dormitory'
 let activeStatusFilter = 'all';
 let activeVenueFilter = 'all';
 let activeSearchQuery = '';
 let currentViewMode = 'cards';
+
+function initCategorySwitcher() {
+  const segmentBtns = document.querySelectorAll('.category-segment-btn');
+  const pageHeading = document.getElementById('pageHeadingTitle');
+  const pageSubtext = document.getElementById('pageHeadingSubtext');
+  const pageBadge = document.getElementById('pageTopBadgeText');
+
+  function setCategory(cat, updateUrl = true) {
+    activeCategoryType = cat;
+
+    segmentBtns.forEach(btn => {
+      if (btn.dataset.categoryType === cat) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+      } else {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-pressed', 'false');
+      }
+    });
+
+    // Update navigation active styles
+    document.querySelectorAll('.booking-nav-item[data-cat-nav]').forEach(item => {
+      if (item.dataset.catNav === cat) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+
+    // Dynamic Heading & Meta
+    if (cat === 'facility') {
+      if (pageHeading) pageHeading.textContent = 'Facility Reservation History';
+      if (pageSubtext) pageSubtext.textContent = 'Monitor your official facility reservation requests for function halls, training rooms, and boardrooms, follow live administrative routing clearances, download official slips, and access gate passes.';
+      if (pageBadge) pageBadge.textContent = 'Official Facility Reservations & Halls';
+      document.title = 'Facility Reservation History | ATI Reservation Portal';
+    } else if (cat === 'dormitory') {
+      if (pageHeading) pageHeading.textContent = 'Dormitory Booking History';
+      if (pageSubtext) pageSubtext.textContent = 'Monitor your official dormitory lodging bookings, track room & bed assignments with dormitory custodians, download lodging slips, and view room access security gate passes.';
+      if (pageBadge) pageBadge.textContent = 'Official Dormitory Lodging & Room Bookings';
+      document.title = 'Dormitory Booking History | ATI Reservation Portal';
+    } else {
+      if (pageHeading) pageHeading.textContent = 'Complete History Log';
+      if (pageSubtext) pageSubtext.textContent = 'Monitor your active and historical facility reservations and dormitory room bookings, follow live routing clearances through approving units, and download official documents.';
+      if (pageBadge) pageBadge.textContent = 'Official Records & Activity Log';
+      document.title = 'Activity & History Records | ATI Reservation Portal';
+    }
+
+    if (updateUrl) {
+      const url = new URL(window.location.href);
+      if (cat === 'all') {
+        url.searchParams.delete('type');
+      } else {
+        url.searchParams.set('type', cat);
+      }
+      window.history.replaceState({}, '', url.toString());
+    }
+
+    applyAllFilters();
+  }
+
+  segmentBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      setCategory(btn.dataset.categoryType);
+    });
+  });
+
+  // Read URL query parameter on initialization
+  const urlParams = new URLSearchParams(window.location.search);
+  const typeParam = (urlParams.get('type') || '').toLowerCase();
+  if (['dorm', 'dormitory', 'dorms', 'booking', 'bookings'].includes(typeParam)) {
+    setCategory('dormitory', false);
+  } else if (['facility', 'facilities', 'halls', 'reservation', 'reservations'].includes(typeParam)) {
+    setCategory('facility', false);
+  } else {
+    setCategory('all', false);
+  }
+}
 
 function applyAllFilters() {
   const cards = document.querySelectorAll('.res-card');
@@ -72,15 +152,17 @@ function applyAllFilters() {
 
   cards.forEach(card => {
     const cardStatus = card.dataset.status;
+    const cardCat = card.dataset.category || (card.dataset.venue === 'dormitory' ? 'dormitory' : 'facility');
     const cardVenue = card.dataset.venue;
     const cardText = card.textContent.toLowerCase();
 
+    const matchesCategory = (activeCategoryType === 'all') || (cardCat === activeCategoryType);
     const matchesStatus = (activeStatusFilter === 'all') || (cardStatus === activeStatusFilter);
     const matchesVenue = (activeVenueFilter === 'all') || (cardVenue === activeVenueFilter);
     const matchesSearch = !activeSearchQuery || cardText.includes(activeSearchQuery);
 
     if (currentViewMode === 'cards') {
-      if (matchesStatus && matchesVenue && matchesSearch) {
+      if (matchesCategory && matchesStatus && matchesVenue && matchesSearch) {
         card.style.display = '';
         visibleCount++;
       } else {
@@ -93,14 +175,16 @@ function applyAllFilters() {
 
   tableRows.forEach(row => {
     const rowStatus = row.dataset.status;
+    const rowCat = row.dataset.category || (row.dataset.venue === 'dormitory' ? 'dormitory' : 'facility');
     const rowVenue = row.dataset.venue;
     const rowText = row.textContent.toLowerCase();
 
+    const matchesCategory = (activeCategoryType === 'all') || (rowCat === activeCategoryType);
     const matchesStatus = (activeStatusFilter === 'all') || (rowStatus === activeStatusFilter);
     const matchesVenue = (activeVenueFilter === 'all') || (rowVenue === activeVenueFilter);
     const matchesSearch = !activeSearchQuery || rowText.includes(activeSearchQuery);
 
-    if (matchesStatus && matchesVenue && matchesSearch) {
+    if (matchesCategory && matchesStatus && matchesVenue && matchesSearch) {
       row.style.display = '';
       if (currentViewMode === 'table') visibleCount++;
     } else {
@@ -115,6 +199,8 @@ function applyAllFilters() {
   if (emptyState) {
     emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
   }
+
+  updateKpiCounts();
 }
 
 function initViewModeToggle() {
@@ -149,27 +235,49 @@ function updateKpiCounts() {
   let approved = 0;
   let completed = 0;
 
+  let totalAll = 0;
+  let totalFacility = 0;
+  let totalDorm = 0;
+
   cards.forEach(card => {
     const status = card.dataset.status;
+    const cat = card.dataset.category || (card.dataset.venue === 'dormitory' ? 'dormitory' : 'facility');
+
     if (status !== 'cancelled') {
-      total++;
+      totalAll++;
+      if (cat === 'facility') totalFacility++;
+      if (cat === 'dormitory') totalDorm++;
     }
-    if (status === 'pending') pending++;
-    if (status === 'approved') approved++;
-    if (status === 'completed') completed++;
+
+    if (activeCategoryType === 'all' || cat === activeCategoryType) {
+      if (status !== 'cancelled') total++;
+      if (status === 'pending') pending++;
+      if (status === 'approved') approved++;
+      if (status === 'completed') completed++;
+    }
   });
 
   const kpiTotal = document.getElementById('kpiTotal');
   const kpiPending = document.getElementById('kpiPending');
   const kpiApproved = document.getElementById('kpiApproved');
   const kpiCompleted = document.getElementById('kpiCompleted');
-  const navBadgeCount = document.getElementById('navBadgeCount');
+  const catCountAll = document.getElementById('catCountAll');
+  const catCountFacility = document.getElementById('catCountFacility');
+  const catCountDormitory = document.getElementById('catCountDormitory');
+  const navBadgeFacilityCount = document.getElementById('navBadgeFacilityCount');
+  const navBadgeDormCount = document.getElementById('navBadgeDormCount');
 
   if (kpiTotal) kpiTotal.textContent = total;
   if (kpiPending) kpiPending.textContent = pending;
   if (kpiApproved) kpiApproved.textContent = approved;
   if (kpiCompleted) kpiCompleted.textContent = completed;
-  if (navBadgeCount) navBadgeCount.textContent = pending;
+
+  if (catCountAll) catCountAll.textContent = totalAll;
+  if (catCountFacility) catCountFacility.textContent = totalFacility;
+  if (catCountDormitory) catCountDormitory.textContent = totalDorm;
+
+  if (navBadgeFacilityCount) navBadgeFacilityCount.textContent = totalFacility;
+  if (navBadgeDormCount) navBadgeDormCount.textContent = totalDorm;
 }
 
 function initKpiFilters() {

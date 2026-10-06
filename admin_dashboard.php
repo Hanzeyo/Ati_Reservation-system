@@ -552,13 +552,13 @@ $isRecommendation = ($currentRole === 'recommendation');
 
                 <!-- Row 3: Pending -->
                 <tr data-ref="R-2026-0893" data-status="pending" data-category="halls" data-venue="Executive Boardroom">
-                  <td>
+                  <td data-label="Reference & Date">
                     <div class="td-ref-group">
                       <span class="td-ref-id">R-2026-0893</span>
                       <span class="td-sub-date">Oct 05, 2026 &bull; 10:45 AM</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Applicant & Org">
                     <div class="td-user-group">
                       <div class="user-avatar-circle sm">AB</div>
                       <div class="td-user-details">
@@ -567,42 +567,42 @@ $isRecommendation = ($currentRole === 'recommendation');
                       </div>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Requested Facility">
                     <div class="td-facility-pill hall">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
                       <span>Executive Boardroom</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Schedule / Duration">
                     <div class="td-schedule-text">
                       <strong>Oct 08, 2026</strong>
                       <span>1:00 PM – 5:00 PM (Half-Day)</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Attendees (PAX)">
                     <div class="td-pax-count">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
                       <span>18 PAX</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Current Status">
                     <span class="status-pill status-pending">
                       <span class="status-dot"></span>
                       Pending Review
                     </span>
                   </td>
-                  <td style="text-align: right;">
+                  <td data-label="Actions" style="text-align: right;">
                     <div class="action-buttons-wrap">
-                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0893', 'Atty. Bernardo Castro', 'Executive Boardroom')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0893', 'Atty. Bernardo Castro', 'Executive Boardroom')" title="Approve Request">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         <span>Approve</span>
                       </button>
-                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0893', 'Atty. Bernardo Castro')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0893', 'Atty. Bernardo Castro')" title="Decline Request">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         <span>Decline</span>
                       </button>
-                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0893')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0893')" title="View Booking Form">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                       </button>
                     </div>
                   </td>
@@ -610,13 +610,13 @@ $isRecommendation = ($currentRole === 'recommendation');
 
                 <!-- Row 4: Pending -->
                 <tr data-ref="R-2026-0894" data-status="pending" data-category="halls" data-venue="4-H Learning Center">
-                  <td>
+                  <td data-label="Reference & Date">
                     <div class="td-ref-group">
                       <span class="td-ref-id">R-2026-0894</span>
                       <span class="td-sub-date">Oct 05, 2026 &bull; 11:10 AM</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Applicant & Org">
                     <div class="td-user-group">
                       <div class="user-avatar-circle sm">RP</div>
                       <div class="td-user-details">
@@ -625,42 +625,42 @@ $isRecommendation = ($currentRole === 'recommendation');
                       </div>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Requested Facility">
                     <div class="td-facility-pill hall">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
                       <span>4-H Learning Center</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Schedule / Duration">
                     <div class="td-schedule-text">
                       <strong>Oct 20 – Oct 22, 2026</strong>
                       <span>8:00 AM – 5:00 PM (3 Days)</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Attendees (PAX)">
                     <div class="td-pax-count">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
                       <span>60 PAX</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Current Status">
                     <span class="status-pill status-pending">
                       <span class="status-dot"></span>
                       Pending Review
                     </span>
                   </td>
-                  <td style="text-align: right;">
+                  <td data-label="Actions" style="text-align: right;">
                     <div class="action-buttons-wrap">
-                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0894', 'Ramon Pascual', '4-H Learning Center')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0894', 'Ramon Pascual', '4-H Learning Center')" title="Approve Request">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         <span>Approve</span>
                       </button>
-                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0894', 'Ramon Pascual')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0894', 'Ramon Pascual')" title="Decline Request">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         <span>Decline</span>
                       </button>
-                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0894')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0894')" title="View Booking Form">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                       </button>
                     </div>
                   </td>
@@ -668,13 +668,13 @@ $isRecommendation = ($currentRole === 'recommendation');
 
                 <!-- Row 5: Pending (Dormitory) -->
                 <tr data-ref="R-2026-0895" data-status="pending" data-category="dorms" data-venue="Dormitory Suite">
-                  <td>
+                  <td data-label="Reference & Date">
                     <div class="td-ref-group">
                       <span class="td-ref-id">R-2026-0895</span>
                       <span class="td-sub-date">Oct 05, 2026 &bull; 11:40 AM</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Applicant & Org">
                     <div class="td-user-group">
                       <div class="user-avatar-circle sm">CL</div>
                       <div class="td-user-details">
@@ -683,42 +683,42 @@ $isRecommendation = ($currentRole === 'recommendation');
                       </div>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Requested Facility">
                     <div class="td-facility-pill dorm">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
                       <span>Dormitory Executive Suite</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Schedule / Duration">
                     <div class="td-schedule-text">
                       <strong>Oct 25 – Oct 27, 2026</strong>
                       <span>Check-in 1:00 PM (3 Days)</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Attendees (PAX)">
                     <div class="td-pax-count">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
                       <span>14 Delegates</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Current Status">
                     <span class="status-pill status-pending">
                       <span class="status-dot"></span>
                       Pending Review
                     </span>
                   </td>
-                  <td style="text-align: right;">
+                  <td data-label="Actions" style="text-align: right;">
                     <div class="action-buttons-wrap">
-                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0895', 'Carmela Lim', 'Dormitory Executive Suite')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0895', 'Carmela Lim', 'Dormitory Executive Suite')" title="Approve Request">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         <span>Approve</span>
                       </button>
-                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0895', 'Carmela Lim')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0895', 'Carmela Lim')" title="Decline Request">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         <span>Decline</span>
                       </button>
-                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0895')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0895')" title="View Booking Form">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                       </button>
                     </div>
                   </td>
@@ -726,13 +726,13 @@ $isRecommendation = ($currentRole === 'recommendation');
 
                 <!-- Row 6: Approved (Sample confirmed record) -->
                 <tr data-ref="R-2026-0888" data-status="approved" data-category="halls" data-venue="Serrano Hall">
-                  <td>
+                  <td data-label="Reference & Date">
                     <div class="td-ref-group">
                       <span class="td-ref-id">R-2026-0888</span>
                       <span class="td-sub-date">Oct 02, 2026 &bull; 02:20 PM</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Applicant & Org">
                     <div class="td-user-group">
                       <div class="user-avatar-circle sm">GV</div>
                       <div class="td-user-details">
@@ -741,35 +741,35 @@ $isRecommendation = ($currentRole === 'recommendation');
                       </div>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Requested Facility">
                     <div class="td-facility-pill hall">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
                       <span>Serrano Hall</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Schedule / Duration">
                     <div class="td-schedule-text">
                       <strong>Oct 06 – Oct 07, 2026</strong>
                       <span>8:00 AM – 5:00 PM (2 Days)</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Attendees (PAX)">
                     <div class="td-pax-count">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
                       <span>100 PAX</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Current Status">
                     <span class="status-pill status-approved">
                       <span class="status-dot"></span>
                       Confirmed & Approved
                     </span>
                   </td>
-                  <td style="text-align: right;">
+                  <td data-label="Actions" style="text-align: right;">
                     <div class="action-buttons-wrap">
                       <span class="badge-approved-note">Approved by Director</span>
-                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0888')">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0888')" title="View Booking Form">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                       </button>
                     </div>
                   </td>

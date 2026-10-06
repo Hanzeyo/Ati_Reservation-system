@@ -1,16 +1,28 @@
 <?php
 /**
  * ATI Facility & Dormitory Reservation Portal
- * User Dashboard: My Reservations
+ * User Dashboard: Reservation History (Venues) & Booking History (Dormitories)
  */
+$typeParam = isset($_GET['type']) ? strtolower(trim($_GET['type'])) : '';
+if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings'])) {
+    $activeType = 'dormitory';
+} elseif (in_array($typeParam, ['facility', 'facilities', 'halls', 'reservation', 'reservations'])) {
+    $activeType = 'facility';
+} else {
+    $activeType = 'all';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking History | ATI Facility & Dormitory Reservation Portal</title>
-  <meta name="description" content="Official Booking History & Reservation Activity Tracker for Agriculture Training Institute facilities and dormitories.">
+  <title><?php 
+    if ($activeType === 'facility') echo 'Facility Reservation History | ATI Facility Reservation Portal';
+    elseif ($activeType === 'dormitory') echo 'Dormitory Booking History | ATI Dormitory Reservation Portal';
+    else echo 'Activity & History Records | ATI Facility & Dormitory Reservation Portal';
+  ?></title>
+  <meta name="description" content="Official Activity & History Tracker for Agriculture Training Institute facility reservations and dormitory room bookings.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -58,18 +70,26 @@
           <span>New Reservation</span>
         </a>
 
-        <!-- My Reservations / Booking History (Active) -->
-        <a href="my_reservations.php" class="booking-nav-item active">
-          <svg viewBox="0 0 24 24" fill="none">
-            <line x1="8" y1="6" x2="21" y2="6"></line>
-            <line x1="8" y1="12" x2="21" y2="12"></line>
-            <line x1="8" y1="18" x2="21" y2="18"></line>
-            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        <!-- Facility Reservations (Halls) - Active -->
+        <a href="my_reservations.php" class="booking-nav-item active" data-cat-nav="facility" title="Facility Reservations (Halls & Venues)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Reservation History</span>
+          <span class="nav-badge-count" id="navBadgeFacilityCount">4</span>
+        </a>
+
+        <!-- Dormitory Bookings (Lodging) -->
+        <a href="booking_history.php" class="booking-nav-item" data-cat-nav="dormitory" title="Booking History (Dormitories & Rooms)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 4v16"></path>
+            <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+            <path d="M2 17h20"></path>
+            <path d="M6 8v9"></path>
           </svg>
           <span>Booking History</span>
-          <span class="nav-badge-count" id="navBadgeCount">2</span>
+          <span class="nav-badge-count blue" id="navBadgeDormCount">2</span>
         </a>
 
         <!-- Master Schedule -->
@@ -107,11 +127,17 @@
             </a>
             <a href="my_reservations.php" class="dropdown-item active">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               </svg>
-              <span>Booking History</span>
-              <span class="dropdown-item-badge">Active</span>
+              <span>Facility Reservations</span>
+            </a>
+            <a href="booking_history.php" class="dropdown-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 4v16"></path>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                <path d="M2 17h20"></path>
+              </svg>
+              <span>Dormitory Bookings</span>
             </a>
             <a href="admin_dashboard.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -159,7 +185,12 @@
             <p>Central Office</p>
           </div>
         </div>
-        <button type="button" class="drawer-close-btn" id="mobileDrawerClose" onclick="toggleMobileDrawer(false)" aria-label="Close Navigation Menu">&times;</button>
+        <button type="button" class="drawer-close-btn" id="mobileDrawerClose" onclick="toggleMobileDrawer(false)" aria-label="Close Navigation Menu">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <!-- Drawer Body -->
@@ -199,10 +230,25 @@
 
           <a href="my_reservations.php" class="drawer-nav-link active">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              </svg>
             </div>
-            <span class="drawer-link-text">Booking History</span>
-            <span class="drawer-badge-count">2</span>
+            <span class="drawer-link-text">Facility Reservations</span>
+            <span class="drawer-badge-count">4</span>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+
+          <a href="booking_history.php" class="drawer-nav-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 4v16"></path>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                <path d="M2 17h20"></path>
+              </svg>
+            </div>
+            <span class="drawer-link-text">Booking History (Dormitory)</span>
+            <span class="drawer-badge-count blue">2</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
 
@@ -226,11 +272,11 @@
             <span class="drawer-link-text">My Profile</span>
           </a>
 
-          <a href="my_reservations.php" class="drawer-nav-link">
+          <a href="my_reservations.php?type=all" class="drawer-nav-link <?php echo $activeType === 'all' ? 'active' : ''; ?>">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>
-            <span class="drawer-link-text">Booking History</span>
+            <span class="drawer-link-text">Complete History Log</span>
           </a>
         </div>
       </div>
@@ -296,26 +342,63 @@
        MAIN CONTENT
        ========================================================================== -->
   <main class="my-res-main-wrapper">
+    <!-- Primary Category Segregation Switcher (Facility Reservations vs Dormitory Bookings) -->
+    <div class="history-category-segmented-bar">
+      <div class="category-segmented-container">
+        <!-- Tab 1: Facility Venues & Halls (Active) -->
+        <a href="my_reservations.php" class="category-segment-btn active" title="Currently Viewing Facility Reservation History">
+          <div class="seg-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </div>
+          <div class="seg-text">
+            <span class="seg-title">Facility Reservations</span>
+            <span class="seg-subtitle">Function Hall, Training Halls, Boardrooms &amp; Mess Hall</span>
+          </div>
+          <span class="seg-count-badge">4</span>
+        </a>
+
+        <!-- Tab 2: Dormitory Lodging & Rooms (Link) -->
+        <a href="booking_history.php" class="category-segment-btn" title="Switch to Dormitory Lodging Booking History">
+          <div class="seg-icon dorm-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 4v16"></path>
+              <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+              <path d="M2 17h20"></path>
+              <path d="M6 8v9"></path>
+            </svg>
+          </div>
+          <div class="seg-text">
+            <span class="seg-title">Dormitory Bookings</span>
+            <span class="seg-subtitle">Trainee Accommodations, Suites &amp; Bed Allocations</span>
+          </div>
+          <span class="seg-count-badge blue">2</span>
+        </a>
+      </div>
+    </div>
+
     <!-- Header Section -->
     <section class="my-res-header">
       <div class="my-res-header-text">
         <div class="my-res-top-badge">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
-          <span>Official Records &amp; Activity Log</span>
+          <span id="pageTopBadgeText">Official Facility Reservations &amp; Halls</span>
         </div>
-        <h2>Booking History</h2>
-        <p>Monitor your active and historical reservation requests, follow live routing through approving administrative units, download official booking slips, or view security gate passes.</p>
+        <h2 id="pageHeadingTitle">Facility Reservation History</h2>
+        <p id="pageHeadingSubtext">Monitor your official facility reservation requests for function halls, training rooms, and boardrooms, follow live administrative routing clearances, download official slips, and access gate passes.</p>
       </div>
 
-      <a href="booking.php" class="btn-new-res-action">
+      <a href="booking.php?category=halls" class="btn-new-res-action">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        <span>New Reservation</span>
+        <span>Reserve Venue</span>
       </a>
     </section>
 
@@ -332,8 +415,8 @@
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiTotal">5</span>
-          <span class="stat-label">Total Bookings</span>
+          <span class="stat-value" id="kpiTotal">6</span>
+          <span class="stat-label">Total Records</span>
         </div>
       </div>
 
@@ -346,7 +429,7 @@
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiPending">2</span>
+          <span class="stat-value" id="kpiPending">3</span>
           <span class="stat-label">Pending Review</span>
         </div>
       </div>
@@ -492,6 +575,7 @@
       <!-- CARD 1: FUNCTION HALL (PENDING ADMIN REVIEW) -->
       <article class="res-card" 
                data-status="pending" 
+               data-category="facility" 
                data-venue="function-hall" 
                data-ref="ATI-RES-2026-1042" 
                data-venue-title="Function Hall"
@@ -576,6 +660,7 @@
       <!-- CARD 2: TRAINING HALL A (PENDING DIVISION ENDORSEMENT) -->
       <article class="res-card" 
                data-status="pending" 
+               data-category="facility" 
                data-venue="training-hall" 
                data-ref="ATI-RES-2026-1039" 
                data-venue-title="Training Hall A"
@@ -660,6 +745,7 @@
       <!-- CARD 3: BOARDROOM (APPROVED & CONFIRMED) -->
       <article class="res-card" 
                data-status="approved" 
+               data-category="facility" 
                data-venue="boardroom" 
                data-ref="ATI-RES-2026-0985" 
                data-venue-title="Boardroom"
@@ -744,6 +830,7 @@
       <!-- CARD 4: DORMITORY (APPROVED & CONFIRMED) -->
       <article class="res-card" 
                data-status="approved" 
+               data-category="dormitory" 
                data-venue="dormitory" 
                data-ref="ATI-RES-2026-0941" 
                data-venue-title="ATI Dormitory (Executive Wing)"
@@ -755,13 +842,13 @@
         
         <div class="res-card-media">
           <img src="assets/images/dormitory.jpg" alt="ATI Dormitory">
-          <span class="venue-thumb-pill">Dormitory</span>
+          <span class="venue-thumb-pill dorm-pill">Dormitory (Executive)</span>
         </div>
 
         <div class="res-card-main">
           <div class="res-main-top">
             <div class="res-ref-group">
-              <span class="res-ref-tag">ATI-RES-2026-0941</span>
+              <span class="res-ref-tag dorm-ref">ATI-RES-2026-0941</span>
               <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0941" title="Copy Reference Code">
                 <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               </button>
@@ -825,9 +912,95 @@
         </div>
       </article>
 
+      <!-- CARD 6: DORMITORY SUITES A & B (PENDING CUSTODIAN ALLOCATION) -->
+      <article class="res-card" 
+               data-status="pending" 
+               data-category="dormitory" 
+               data-venue="dormitory" 
+               data-ref="ATI-BK-2026-1055" 
+               data-venue-title="Dormitory Suites A & B"
+               data-dates="Nov 10 - 14, 2026 (4 Nights)"
+               data-time="Check-in 02:00 PM • Check-out 11:00 AM"
+               data-pax="24 Trainees (12 Twin Bed Rooms)"
+               data-division="Partnership & Accreditation Division (PAD)"
+               data-status-text="Pending Custodian Bed Allotment">
+        
+        <div class="res-card-media">
+          <img src="assets/images/dormitory.jpg" alt="ATI Dormitory Suites">
+          <span class="venue-thumb-pill dorm-pill">Dormitory Suites</span>
+        </div>
+
+        <div class="res-card-main">
+          <div class="res-main-top">
+            <div class="res-ref-group">
+              <span class="res-ref-tag dorm-ref">ATI-BK-2026-1055</span>
+              <button type="button" class="btn-copy-ref" data-ref="ATI-BK-2026-1055" title="Copy Reference Code">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+              <span class="res-timestamp">&bull; Oct 04, 2026</span>
+            </div>
+            <div class="res-status-badge pending">
+              <span class="status-dot-pulse"></span>
+              <span>Pending Custodian Bed Allotment</span>
+            </div>
+          </div>
+
+          <h3 class="res-event-title">National Young Farmers Camp Participant Lodging (Batch 4)</h3>
+
+          <div class="res-details-chips">
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>Nov 10 – 14, 2026 (4 Nights)</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>In: 02:00 PM • Out: 11:00 AM</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+              <span>Floors 3 &amp; 4 (Suites A &amp; B)</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>24 Delegates (12 Rooms)</span>
+            </div>
+          </div>
+
+          <!-- Mini Routing Stepper / Progress Bar -->
+          <div class="res-mini-routing">
+            <div class="routing-progress-bar">
+              <div class="progress-segment filled" title="1. Booking Request Submitted (Done)"></div>
+              <div class="progress-segment filled" title="2. Division Endorsed (Done)"></div>
+              <div class="progress-segment active-pulse" title="3. Dormitory Custodian Review (Under Evaluation)"></div>
+              <div class="progress-segment" title="4. Bed Allotment & Keys Release"></div>
+            </div>
+            <div class="routing-status-label">
+              <span class="routing-step-desc"><strong style="color: #b45309;">Step 3 of 4:</strong> Dormitory Custodian Room & Bed Assignment in Progress</span>
+              <span class="routing-note">Gender-segregated room allocation requested. Linens requested.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="res-card-side-actions">
+          <button type="button" class="btn-card-action secondary js-view-details">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>View Details</span>
+          </button>
+          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-1055">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download</span>
+          </button>
+          <button type="button" class="btn-card-action outline-danger js-cancel-res">
+            <svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <span>Cancel</span>
+          </button>
+        </div>
+      </article>
+
       <!-- CARD 5: MESS HALL (COMPLETED / HISTORICAL) -->
       <article class="res-card" 
                data-status="completed" 
+               data-category="facility" 
                data-venue="mess-hall" 
                data-ref="ATI-RES-2026-0812" 
                data-venue-title="Mess Hall"
@@ -918,7 +1091,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="res-table-row" data-status="pending" data-venue="function-hall">
+            <tr class="res-table-row" data-status="pending" data-category="facility" data-venue="function-hall">
               <td>
                 <span class="res-ref-tag">ATI-RES-2026-1042</span>
                 <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Function Hall</div>
@@ -942,7 +1115,7 @@
               </td>
             </tr>
 
-            <tr class="res-table-row" data-status="pending" data-venue="training-hall">
+            <tr class="res-table-row" data-status="pending" data-category="facility" data-venue="training-hall">
               <td>
                 <span class="res-ref-tag">ATI-RES-2026-1039</span>
                 <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Training Hall A</div>
@@ -966,7 +1139,7 @@
               </td>
             </tr>
 
-            <tr class="res-table-row" data-status="approved" data-venue="boardroom">
+            <tr class="res-table-row" data-status="approved" data-category="facility" data-venue="boardroom">
               <td>
                 <span class="res-ref-tag">ATI-RES-2026-0985</span>
                 <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Executive Boardroom</div>
@@ -990,10 +1163,10 @@
               </td>
             </tr>
 
-            <tr class="res-table-row" data-status="approved" data-venue="dormitory">
+            <tr class="res-table-row" data-status="approved" data-category="dormitory" data-venue="dormitory">
               <td>
-                <span class="res-ref-tag">ATI-RES-2026-0941</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Dormitory (Executive Wing)</div>
+                <span class="res-ref-tag dorm-ref">ATI-RES-2026-0941</span>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Dormitory (Executive Wing)</div>
               </td>
               <td>
                 <div style="font-weight: 800; color: #142e20;">Guest Lecturers & Resource Persons Lodging</div>
@@ -1014,7 +1187,31 @@
               </td>
             </tr>
 
-            <tr class="res-table-row" data-status="completed" data-venue="mess-hall">
+            <tr class="res-table-row" data-status="pending" data-category="dormitory" data-venue="dormitory">
+              <td>
+                <span class="res-ref-tag dorm-ref">ATI-BK-2026-1055</span>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Dormitory Suites A &amp; B</div>
+              </td>
+              <td>
+                <div style="font-weight: 800; color: #142e20;">National Young Farmers Camp Participant Lodging</div>
+                <div style="font-size: 0.78rem; color: #556e5f;">Partnership &amp; Accreditation Division (PAD) &bull; 24 Delegates (12 Rooms)</div>
+              </td>
+              <td>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Nov 10 – 14, 2026 (4 Nights)</div>
+                <div style="font-size: 0.76rem; color: #617b6c;">In: 02:00 PM • Out: 11:00 AM</div>
+              </td>
+              <td>
+                <span class="res-status-badge pending"><span class="status-dot-pulse"></span><span>Custodian Review (Step 3/4)</span></span>
+              </td>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; gap: 0.4rem;">
+                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
+                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-1055">Slip</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="res-table-row" data-status="completed" data-category="facility" data-venue="mess-hall">
               <td>
                 <span class="res-ref-tag">ATI-RES-2026-0812</span>
                 <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Mess Hall</div>

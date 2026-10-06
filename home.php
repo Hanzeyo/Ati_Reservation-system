@@ -208,40 +208,11 @@
     }
 
     #cardCatHalls .cat-card-desc {
-      font-size: 0.92rem;
+      font-size: 0.95rem;
       color: #3b5745;
-      line-height: 1.55;
-      margin-bottom: 1.75rem;
+      line-height: 1.6;
+      margin-bottom: 0;
       flex-grow: 1;
-    }
-
-    #cardCatHalls .btn-explore-category {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(135deg, #174d2f 0%, #20633d 100%);
-      color: #ffffff;
-      font-size: 0.92rem;
-      font-weight: 700;
-      padding: 0.9rem 1.4rem;
-      border-radius: 12px;
-      text-decoration: none;
-      transition: all 0.25s ease;
-      box-shadow: 0 6px 18px rgba(23, 77, 47, 0.28);
-      border: 1px solid #174d2f;
-    }
-
-    #cardCatHalls:hover .btn-explore-category {
-      background: linear-gradient(135deg, #0e3520 0%, #174d2f 100%);
-      box-shadow: 0 10px 24px rgba(23, 77, 47, 0.4);
-    }
-
-    #cardCatHalls .btn-explore-category svg {
-      transition: transform 0.22s ease;
-    }
-
-    #cardCatHalls:hover .btn-explore-category svg {
-      transform: translateX(5px);
     }
 
     /* ---------------- 2. DORMITORIES CARD (HARVEST GOLD THEME) ---------------- */
@@ -301,40 +272,11 @@
     }
 
     #cardCatDormitories .cat-card-desc {
-      font-size: 0.92rem;
+      font-size: 0.95rem;
       color: #5c442a;
-      line-height: 1.55;
-      margin-bottom: 1.75rem;
+      line-height: 1.6;
+      margin-bottom: 0;
       flex-grow: 1;
-    }
-
-    #cardCatDormitories .btn-explore-category {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-      color: #ffffff;
-      font-size: 0.92rem;
-      font-weight: 700;
-      padding: 0.9rem 1.4rem;
-      border-radius: 12px;
-      text-decoration: none;
-      transition: all 0.25s ease;
-      box-shadow: 0 6px 18px rgba(217, 119, 6, 0.28);
-      border: 1px solid #d97706;
-    }
-
-    #cardCatDormitories:hover .btn-explore-category {
-      background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
-      box-shadow: 0 10px 24px rgba(217, 119, 6, 0.4);
-    }
-
-    #cardCatDormitories .btn-explore-category svg {
-      transition: transform 0.22s ease;
-    }
-
-    #cardCatDormitories:hover .btn-explore-category svg {
-      transform: translateX(5px);
     }
 
     .portal-cat-card .cat-card-header {
@@ -490,18 +432,26 @@
           <span>New Reservation</span>
         </a>
 
-        <!-- My Reservations with count badge -->
-        <a href="my_reservations.php" class="booking-nav-item">
-          <svg viewBox="0 0 24 24" fill="none">
-            <line x1="8" y1="6" x2="21" y2="6"></line>
-            <line x1="8" y1="12" x2="21" y2="12"></line>
-            <line x1="8" y1="18" x2="21" y2="18"></line>
-            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        <!-- Facility Reservations (Halls) -->
+        <a href="my_reservations.php" class="booking-nav-item" title="Facility Reservations (Halls & Venues)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
-          <span>My Reservations</span>
-          <span class="nav-badge-count">2</span>
+          <span>Reservation History</span>
+          <span class="nav-badge-count">4</span>
+        </a>
+
+        <!-- Dormitory Bookings (Lodging) -->
+        <a href="booking_history.php" class="booking-nav-item" title="Booking History (Dormitories & Rooms)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 4v16"></path>
+            <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+            <path d="M2 17h20"></path>
+            <path d="M6 8v9"></path>
+          </svg>
+          <span>Booking History</span>
+          <span class="nav-badge-count blue">2</span>
         </a>
 
         <!-- Master Schedule -->
@@ -539,10 +489,17 @@
             </a>
             <a href="my_reservations.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               </svg>
-              <span>Booking History</span>
+              <span>Facility Reservations</span>
+            </a>
+            <a href="booking_history.php" class="dropdown-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 4v16"></path>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                <path d="M2 17h20"></path>
+              </svg>
+              <span>Dormitory Bookings</span>
             </a>
             <a href="admin_dashboard.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -646,17 +603,27 @@
 
           <a href="my_reservations.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <line x1="8" y1="6" x2="21" y2="6"></line>
-                <line x1="8" y1="12" x2="21" y2="12"></line>
-                <line x1="8" y1="18" x2="21" y2="18"></line>
-                <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               </svg>
             </div>
-            <span class="drawer-link-text">My Reservations</span>
-            <span class="drawer-badge-count">2</span>
+            <span class="drawer-link-text">Facility Reservations</span>
+            <span class="drawer-badge-count">4</span>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+
+          <a href="booking_history.php" class="drawer-nav-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 4v16"></path>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                <path d="M2 17h20"></path>
+              </svg>
+            </div>
+            <span class="drawer-link-text">Booking History (Dormitory)</span>
+            <span class="drawer-badge-count blue">2</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -692,14 +659,16 @@
             <span class="drawer-link-text">My Profile</span>
           </a>
 
-          <a href="my_reservations.php" class="drawer-nav-link">
+          <a href="admin_dashboard.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
             </div>
-            <span class="drawer-link-text">Booking History</span>
+            <span class="drawer-link-text">Admin Dashboard</span>
           </a>
         </div>
       </div>
@@ -738,7 +707,7 @@
     <div class="portal-category-grid">
       
       <!-- 1. Halls Category Card -->
-      <a href="booking.php?category=halls" class="portal-cat-card" id="cardCatHalls" title="Explore ATI Halls">
+      <a href="booking.php" class="portal-cat-card" id="cardCatHalls" title="Explore ATI Halls">
         <div class="cat-card-header">
           <span class="cat-count-badge">4 Venues Available</span>
         </div>
@@ -755,17 +724,11 @@
           </svg>
         </div>
         <h2 class="cat-card-title">Halls</h2>
-        <p class="cat-card-desc">Function auditoriums, audio-visual training rooms, executive boardrooms & mess dining facilities.</p>
-        <div class="btn-explore-category">
-          <span>Explore Halls</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </div>
+        <p class="cat-card-desc">Function auditoriums, audio-visual training rooms, executive boardrooms &amp; mess dining facilities.</p>
       </a>
 
       <!-- 2. Dormitories Category Card -->
-      <a href="booking.php?category=dormitories" class="portal-cat-card" id="cardCatDormitories" title="Explore ATI Dormitories">
+      <a href="dormitory_booking.php" class="portal-cat-card" id="cardCatDormitories" title="Explore ATI Dormitories">
         <div class="cat-card-header">
           <span class="cat-count-badge">4 Room Types</span>
         </div>
@@ -786,39 +749,9 @@
           </svg>
         </div>
         <h2 class="cat-card-title">Dormitories</h2>
-        <p class="cat-card-desc">Executive VIP suites, shared trainee quarters, guest lecturer rooms & twin accommodations.</p>
-        <div class="btn-explore-category">
-          <span>Explore Dormitories</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </div>
+        <p class="cat-card-desc">Executive VIP suites, shared trainee quarters, guest lecturer rooms &amp; twin accommodations.</p>
       </a>
 
-    </div>
-
-    <!-- ==========================================================================
-         USER RESERVATION QUICK STATUS
-         ========================================================================== -->
-    <div class="portal-quick-status-card">
-      <div class="status-left">
-        <div class="status-icon-bubble">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-        </div>
-        <div class="status-text">
-          <h4>Looking for your active bookings?</h4>
-          <p>You currently have 2 upcoming reservations on file. You can monitor verification and approval status anytime.</p>
-        </div>
-      </div>
-      <a href="my_reservations.php" class="btn-view-bookings">
-        <span>Go to My Reservations</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </a>
     </div>
 
   </main>
