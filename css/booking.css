@@ -178,20 +178,21 @@ body.booking-body {
   font-weight: 600;
 }
 
-/* Profile Dropdown Menu */
+/* Profile Dropdown Menu (Modern Enterprise Card) */
 .profile-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 10px);
   right: 0;
-  width: 220px;
+  width: 240px;
   background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-  border: 1px solid #e1e9e3;
-  padding: 0.5rem;
+  border-radius: 14px;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.12), 0 3px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e1ebe3;
+  padding: 0.6rem;
   display: none;
   z-index: 150;
-  animation: fadeIn 0.2s ease;
+  transform-origin: top right;
+  animation: dropdownFade 0.16s ease-out;
 }
 
 .profile-dropdown.show,
@@ -199,31 +200,101 @@ body.booking-body {
   display: block !important;
 }
 
+.dropdown-header-info {
+  padding: 0.65rem 0.85rem 0.75rem;
+  border-bottom: 1px solid #eef4f0;
+  margin-bottom: 0.4rem;
+}
+
+.dropdown-user-name {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #142e20;
+  line-height: 1.25;
+}
+
+.dropdown-user-email {
+  font-size: 0.73rem;
+  color: #556f61;
+  margin-top: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.dropdown-user-email .user-verified-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #16a34a;
+  display: inline-block;
+}
+
 .dropdown-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.7rem;
   padding: 0.65rem 0.85rem;
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   font-weight: 600;
-  color: #3b5043;
-  border-radius: 8px;
+  color: #314a3b;
+  border-radius: 9px;
   text-decoration: none;
-  transition: var(--transition);
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.dropdown-item svg {
+  stroke: #526f5f;
+  transition: stroke 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
 }
 
 .dropdown-item:hover {
-  background: #f1f7f3;
+  background: #f1f8f3;
   color: var(--primary-green);
 }
 
+.dropdown-item:hover svg {
+  stroke: var(--primary-green);
+  transform: scale(1.08);
+}
+
+.dropdown-item.active {
+  background: #eaf5ee;
+  color: #175432;
+  font-weight: 700;
+}
+
+.dropdown-item.active svg {
+  stroke: #175432;
+}
+
+.dropdown-item-badge {
+  margin-left: auto;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: #e2f1e6;
+  color: #175432;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+}
+
 .dropdown-item.danger {
-  color: #dc2626;
+  color: #b91c1c;
+}
+
+.dropdown-item.danger svg {
+  stroke: #b91c1c;
 }
 
 .dropdown-item.danger:hover {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: #fff1f2;
+  color: #991b1b;
+}
+
+.dropdown-item.danger:hover svg {
+  stroke: #991b1b;
 }
 
 /* ==========================================================================
@@ -2096,8 +2167,8 @@ body.booking-body {
 
 .room-modal-close-btn {
   position: absolute;
-  top: 1.35rem;
-  right: 1.5rem;
+  top: 1.5rem;
+  right: 1.75rem;
   background: #f1f5f2;
   border: 1px solid #dce5df;
   color: #4b6354;

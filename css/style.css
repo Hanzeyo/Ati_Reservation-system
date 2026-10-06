@@ -1064,8 +1064,8 @@ button {
 
 .modal-close-btn {
   position: absolute;
-  top: 1.15rem;
-  right: 1.15rem;
+  top: 1.35rem;
+  right: 1.5rem;
   width: 38px;
   height: 38px;
   border-radius: 50%;

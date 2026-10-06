@@ -9,8 +9,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Reservations | ATI Facility Reservation Portal</title>
-  <meta name="description" content="View and track your facility and dormitory reservation requests with the Agricultural Training Institute.">
+  <title>Booking History | ATI Facility & Dormitory Reservation Portal</title>
+  <meta name="description" content="Official Booking History & Reservation Activity Tracker for Agriculture Training Institute facilities and dormitories.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,7 +19,7 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/my_reservations.css">
+  <link rel="stylesheet" href="css/my_reservations.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=<?php echo time(); ?>">
 </head>
 <body class="my-res-body">
@@ -58,7 +58,7 @@
           <span>New Reservation</span>
         </a>
 
-        <!-- My Reservations (Active) -->
+        <!-- My Reservations / Booking History (Active) -->
         <a href="my_reservations.php" class="booking-nav-item active">
           <svg viewBox="0 0 24 24" fill="none">
             <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -68,7 +68,7 @@
             <line x1="3" y1="12" x2="3.01" y2="12"></line>
             <line x1="3" y1="18" x2="3.01" y2="18"></line>
           </svg>
-          <span>My Reservations</span>
+          <span>Booking History</span>
           <span class="nav-badge-count" id="navBadgeCount">2</span>
         </a>
 
@@ -94,6 +94,10 @@
           </div>
 
           <div class="profile-dropdown" id="profileDropdown">
+            <div class="dropdown-header-info">
+              <div class="dropdown-user-name">Juan Dela Cruz</div>
+              <div class="dropdown-user-email"><span class="user-verified-dot"></span> ATI Personnel &bull; CDD</div>
+            </div>
             <a href="javascript:void(0)" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -101,12 +105,13 @@
               </svg>
               <span>My Profile</span>
             </a>
-            <a href="my_reservations.php" class="dropdown-item">
+            <a href="my_reservations.php" class="dropdown-item active">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
               </svg>
               <span>Booking History</span>
+              <span class="dropdown-item-badge">Active</span>
             </a>
             <div style="height: 1px; background: #e5ede7; margin: 0.35rem 0;"></div>
             <a href="index.php" class="dropdown-item danger">
@@ -187,7 +192,7 @@
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
             </div>
-            <span class="drawer-link-text">My Reservations</span>
+            <span class="drawer-link-text">Booking History</span>
             <span class="drawer-badge-count">2</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
@@ -287,16 +292,13 @@
       <div class="my-res-header-text">
         <div class="my-res-top-badge">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
-          <span>Official Request Tracker</span>
+          <span>Official Records &amp; Activity Log</span>
         </div>
-        <h2>My Facility & Dormitory Reservations</h2>
-        <p>Monitor your reservation requests, follow live routing through approving administrative units, download official booking slips, or view security gate passes.</p>
+        <h2>Booking History</h2>
+        <p>Monitor your active and historical reservation requests, follow live routing through approving administrative units, download official booking slips, or view security gate passes.</p>
       </div>
 
       <a href="booking.php" class="btn-new-res-action">
@@ -322,7 +324,7 @@
         </div>
         <div class="stat-content">
           <span class="stat-value" id="kpiTotal">5</span>
-          <span class="stat-label">Total Submitted</span>
+          <span class="stat-label">Total Bookings</span>
         </div>
       </div>
 
@@ -373,7 +375,7 @@
       <!-- Tabs -->
       <div class="filter-tabs-group" role="tablist">
         <button type="button" class="filter-tab-btn active" data-filter="all">
-          <span>All Requests</span>
+          <span>All Bookings</span>
           <span class="tab-count-pill" id="tabCountAll">5</span>
         </button>
         <button type="button" class="filter-tab-btn" data-filter="pending">
@@ -385,7 +387,7 @@
           <span class="tab-count-pill" id="tabCountApproved">2</span>
         </button>
         <button type="button" class="filter-tab-btn" data-filter="completed">
-          <span>Completed</span>
+          <span>Past / Completed</span>
           <span class="tab-count-pill" id="tabCountCompleted">1</span>
         </button>
       </div>
@@ -398,7 +400,7 @@
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" id="resSearchInput" class="search-input" placeholder="Search by Ref #, Activity title...">
+          <input type="text" id="resSearchInput" class="search-input" placeholder="Search by Ref #, activity title, or division...">
         </div>
 
         <!-- Venue Filter -->
@@ -1072,7 +1074,12 @@
        ========================================================================== -->
   <div class="modal-overlay" id="resDetailsModal" role="dialog" aria-modal="true">
     <div class="modal-card">
-      <button type="button" class="modal-close-btn js-close-res-modal" aria-label="Close modal">&times;</button>
+      <button type="button" class="modal-close-btn js-close-res-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       
       <div class="modal-header-banner">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
@@ -1154,7 +1161,12 @@
        ========================================================================== -->
   <div class="modal-overlay" id="gatePassModal" role="dialog" aria-modal="true">
     <div class="modal-card" style="max-width: 540px;">
-      <button type="button" class="modal-close-btn js-close-res-modal" aria-label="Close modal">&times;</button>
+      <button type="button" class="modal-close-btn js-close-res-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       
       <div class="modal-header-banner" style="text-align: center; padding: 1.75rem;">
         <span style="font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(255, 255, 255, 0.2); padding: 0.25rem 0.85rem; border-radius: 9999px;">ATI Security & Venue Access Pass</span>
@@ -1219,7 +1231,13 @@
        MODAL 3: CANCEL RESERVATION CONFIRMATION
        ========================================================================== -->
   <div class="modal-overlay" id="cancelConfirmModal" role="dialog" aria-modal="true">
-    <div class="modal-card" style="max-width: 500px;">
+    <div class="modal-card" style="max-width: 500px; position: relative;">
+      <button type="button" class="modal-close-btn js-close-res-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       <div style="padding: 1.75rem 2rem;">
         <div style="width: 52px; height: 52px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>

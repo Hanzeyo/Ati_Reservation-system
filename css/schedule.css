@@ -230,11 +230,12 @@ body.schedule-body {
    Stats Details Panel (Placed on the bottom of the cards when clicked)
    ========================================================================== */
 .stat-detail-panel {
+  position: relative;
   background: #ffffff;
   border: 1.5px solid #dce8df;
   border-left: 4px solid #166534;
   border-radius: 14px;
-  padding: 1.15rem 1.45rem;
+  padding: 1.15rem 4.25rem 1.15rem 1.45rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 4px 18px rgba(18, 56, 32, 0.06);
   display: flex;
@@ -372,27 +373,52 @@ body.schedule-body {
 }
 
 .stat-detail-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1.15rem;
   background: #f1f5f2;
   border: 1px solid #dce5df;
-  color: #526b5c;
+  color: #4b6354;
   width: 34px;
   height: 34px;
-  border-radius: 8px;
-  font-size: 1.35rem;
-  line-height: 1;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.stat-detail-close-btn svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  stroke: currentColor;
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.25s ease;
+}
+
+.stat-detail-close-btn svg line {
+  stroke: currentColor !important;
+  transition: stroke 0.25s ease;
 }
 
 .stat-detail-close-btn:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
-  color: #dc2626;
+  background: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+  color: #dc2626 !important;
   transform: rotate(90deg) scale(1.08);
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.28) !important;
+}
+
+.stat-detail-close-btn:hover svg line {
+  stroke: #dc2626 !important;
+}
+
+.stat-detail-close-btn:active {
+  transform: rotate(90deg) scale(0.95);
 }
 
 /* Mobile & Tablet Adjustments for Bottom Detail Panel */

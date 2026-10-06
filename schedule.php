@@ -87,6 +87,10 @@
           </div>
 
           <div class="profile-dropdown" id="profileDropdown">
+            <div class="dropdown-header-info">
+              <div class="dropdown-user-name">Juan Dela Cruz</div>
+              <div class="dropdown-user-email"><span class="user-verified-dot"></span> ATI Personnel &bull; CDD</div>
+            </div>
             <a href="javascript:void(0)" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -355,6 +359,12 @@
 
     <!-- Stats Details Panel on the bottom of the cards (appears when a card is clicked) -->
     <div class="stat-detail-panel" id="statDetailPanel" style="display: none;" role="region" aria-live="polite">
+      <button type="button" class="stat-detail-close-btn" id="statDetailCloseBtn" aria-label="Close stats details" title="Close stats details">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       <div class="stat-detail-main">
         <div class="stat-detail-icon-wrap" id="statDetailIconWrap">
           <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle></svg>
@@ -372,7 +382,6 @@
       </div>
       <div class="stat-detail-actions">
         <button type="button" class="stat-detail-action-btn" id="statDetailActionBtn" style="display: none;"></button>
-        <button type="button" class="stat-detail-close-btn" id="statDetailCloseBtn" aria-label="Close stats details" title="Close stats details">&times;</button>
       </div>
     </div>
 
