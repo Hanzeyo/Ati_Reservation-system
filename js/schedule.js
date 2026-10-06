@@ -5,6 +5,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   initMasterCalendar();
   initFacilityFilters();
+  initSystemStatusCards();
+  initMonthlyEventsModal();
   initProfileDropdown();
   initMobileDrawer();
 });
@@ -134,10 +136,157 @@ const masterEventsDatabase = [
   }
 ];
 
+const FACILITY_DISPLAY_NAMES = {
+  'all': 'All Facilities',
+  'function-hall': 'Function Hall',
+  'training-hall': 'Training Hall A',
+  'mess-hall': 'Mess Hall & Dining Area',
+  'boardroom': 'Executive Boardroom',
+  'dormitory': 'Dormitory Suites'
+};
+
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
 let currentYear = 2026;
 let currentMonth = 9; // 9 = October (0-indexed)
 let activeFilter = 'all';
 
+// Interactive Modes driven by Stat Cards
+let isHeatmapActive = false;
+let isAvailableFocusActive = false;
+let renderCalendarGlobal = null;
+
+/**
+ * Retrieve all events combining static database and live user reservations in localStorage
+ */
+function getAllEvents() {
+  const allEvents = [...masterEventsDatabase];
+  try {
+    const local = JSON.parse(localStorage.getItem('ati_system_reservations') || '[]');
+    if (Array.isArray(local) && local.length > 0) {
+      local.forEach(l => {
+        if (!allEvents.some(e => e.id === l.id || (e.ref && e.ref === l.ref))) {
+          allEvents.push(l);
+        }
+      });
+    }
+  } catch (err) {
+    console.warn('Error reading localStorage reservations:', err);
+  }
+  return allEvents;
+}
+
+/**
+ * Calculate actual system status metrics for the active month, year, and filter
+ */
+function calculateSystemStatus() {
+  const allEvents = getAllEvents();
+  const prefix = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+  const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+  // Events in current viewed month & active filter
+  const monthEvents = allEvents.filter(ev => {
+    const inMonth = ev.date && ev.date.startsWith(prefix);
+    const inFilter = activeFilter === 'all' || ev.facilityKey === activeFilter;
+    return inMonth && inFilter;
+  });
+
+  const totalEventsCount = monthEvents.length;
+
+  // Highest demand venue in this month
+  const facilityCounts = {};
+  allEvents
+    .filter(ev => ev.date && ev.date.startsWith(prefix))
+    .forEach(ev => {
+      const fKey = ev.facilityKey || 'function-hall';
+      facilityCounts[fKey] = (facilityCounts[fKey] || 0) + 1;
+    });
+
+  let topFacilityKey = 'function-hall';
+  let topFacilityCount = 0;
+  for (const [key, count] of Object.entries(facilityCounts)) {
+    if (count > topFacilityCount) {
+      topFacilityCount = count;
+      topFacilityKey = key;
+    }
+  }
+
+  const topFacilityName = FACILITY_DISPLAY_NAMES[topFacilityKey] || 'Function Hall';
+
+  // Occupancy: unique days with at least 1 event
+  const uniqueBookedDays = new Set(monthEvents.map(ev => ev.date)).size;
+  const occupancyPercent = totalDaysInMonth > 0 ? Math.round((uniqueBookedDays / totalDaysInMonth) * 100) : 0;
+
+  // Available days: days with < 2 events (still having open slots)
+  const dayEventCounts = {};
+  monthEvents.forEach(ev => {
+    dayEventCounts[ev.date] = (dayEventCounts[ev.date] || 0) + 1;
+  });
+
+  let fullyBookedDaysCount = 0;
+  for (let d = 1; d <= totalDaysInMonth; d++) {
+    const dateStr = `${prefix}-${String(d).padStart(2, '0')}`;
+    if ((dayEventCounts[dateStr] || 0) >= 2) {
+      fullyBookedDaysCount++;
+    }
+  }
+  const daysWithAvailableSlots = Math.max(0, totalDaysInMonth - fullyBookedDaysCount);
+
+  return {
+    totalEventsCount,
+    topFacilityName,
+    topFacilityKey,
+    topFacilityCount,
+    occupancyPercent,
+    uniqueBookedDays,
+    totalDaysInMonth,
+    daysWithAvailableSlots,
+    monthName: MONTH_NAMES[currentMonth],
+    monthEvents,
+    facilityCounts
+  };
+}
+
+/**
+ * Update the 4 Stat Metric Cards on the page with dynamically computed actual status
+ * Simple and clean: value + label inside card
+ */
+function updateSystemStatusMetrics() {
+  const status = calculateSystemStatus();
+
+  // Card 1: Total Events Scheduled
+  const elValEvents = document.getElementById('statValueEvents');
+  const elLblEvents = document.getElementById('statLabelEvents');
+  if (elValEvents) elValEvents.textContent = `${status.totalEventsCount} Event${status.totalEventsCount === 1 ? '' : 's'}`;
+  if (elLblEvents) elLblEvents.textContent = 'Scheduled this Month';
+
+  // Card 2: Highest Demand Venue
+  const elValDemand = document.getElementById('statValueDemand');
+  const elLblDemand = document.getElementById('statLabelDemand');
+  if (elValDemand) {
+    elValDemand.textContent = status.topFacilityCount > 0 ? status.topFacilityName : 'Function Hall';
+  }
+  if (elLblDemand) elLblDemand.textContent = 'Highest Demand Venue';
+
+  // Card 3: Overall Monthly Occupancy
+  const elValOccupancy = document.getElementById('statValueOccupancy');
+  const elLblOccupancy = document.getElementById('statLabelOccupancy');
+  if (elValOccupancy) elValOccupancy.textContent = `${status.occupancyPercent}%`;
+  if (elLblOccupancy) elLblOccupancy.textContent = 'Overall Monthly Occupancy';
+
+  // Card 4: Days with Available Slots
+  const elValAvailable = document.getElementById('statValueAvailableDays');
+  const elLblAvailable = document.getElementById('statLabelAvailableDays');
+  if (elValAvailable) elValAvailable.textContent = `${status.daysWithAvailableSlots} Day${status.daysWithAvailableSlots === 1 ? '' : 's'}`;
+  if (elLblAvailable) elLblAvailable.textContent = 'With Available Slots';
+}
+
+/* ==========================================================================
+   1. Master Calendar Grid Controller
+   ========================================================================== */
 function initMasterCalendar() {
   const monthDisplay = document.getElementById('currentMonthDisplay');
   const daysContainer = document.getElementById('boardDaysGrid');
@@ -145,19 +294,15 @@ function initMasterCalendar() {
   const nextBtn = document.getElementById('btnNextMonth');
   const todayBtn = document.getElementById('btnToday');
 
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-
   function renderCalendar() {
     if (monthDisplay) {
-      monthDisplay.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+      monthDisplay.textContent = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
     }
 
     if (!daysContainer) return;
     daysContainer.innerHTML = '';
 
+    const allEvents = getAllEvents();
     const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
     const totalDays = new Date(currentYear, currentMonth + 1, 0).getDate();
     const prevMonthTotalDays = new Date(currentYear, currentMonth, 0).getDate();
@@ -174,7 +319,7 @@ function initMasterCalendar() {
     // Current month days
     for (let day = 1; day <= totalDays; day++) {
       const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const dayEvents = masterEventsDatabase.filter(ev => {
+      const dayEvents = allEvents.filter(ev => {
         const matchesDate = ev.date === dateStr;
         const matchesFilter = activeFilter === 'all' || ev.facilityKey === activeFilter;
         return matchesDate && matchesFilter;
@@ -182,15 +327,34 @@ function initMasterCalendar() {
 
       const isToday = (day === 15 && currentMonth === 9 && currentYear === 2026);
       const isFull = dayEvents.length >= 2;
+      const isOpen = dayEvents.length < 2;
 
       const dayBox = document.createElement('div');
-      dayBox.className = `board-day-box ${isToday ? 'today' : ''}`;
+      dayBox.dataset.date = dateStr;
+
+      let extraClasses = '';
+      if (isToday) extraClasses += ' today';
+
+      // Interactive Stat Card Modes
+      if (isHeatmapActive) {
+        if (dayEvents.length === 0) extraClasses += ' heatmap-free';
+        else if (dayEvents.length === 1) extraClasses += ' heatmap-moderate';
+        else extraClasses += ' heatmap-busy';
+      }
+
+      if (isAvailableFocusActive && isOpen) {
+        extraClasses += ' available-highlight';
+      }
+
+      dayBox.className = `board-day-box${extraClasses}`;
 
       let statusBadge = '';
       if (dayEvents.length > 0) {
-        statusBadge = isFull 
+        statusBadge = isFull
           ? `<span class="day-status-indicator full">Full</span>`
           : `<span class="day-status-indicator open">${dayEvents.length} Booked</span>`;
+      } else if (isAvailableFocusActive) {
+        statusBadge = `<span class="day-status-indicator open" style="background:#dcfce7; color:#166534;">Open</span>`;
       }
 
       let eventsHtml = '';
@@ -201,7 +365,7 @@ function initMasterCalendar() {
               <span>${ev.title}</span>
             </div>
           `).join('') +
-        `</div>`;
+          `</div>`;
       }
 
       dayBox.innerHTML = `
@@ -223,7 +387,12 @@ function initMasterCalendar() {
         openEventDetails(eventId);
       });
     });
+
+    // Update the 4 Stat Metric Cards on every calendar render
+    updateSystemStatusMetrics();
   }
+
+  renderCalendarGlobal = renderCalendar;
 
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
@@ -233,6 +402,9 @@ function initMasterCalendar() {
         currentYear--;
       }
       renderCalendar();
+      if (activeStatMode && typeof populateStatPanelGlobal === 'function') {
+        populateStatPanelGlobal(activeStatMode);
+      }
     });
   }
 
@@ -244,6 +416,9 @@ function initMasterCalendar() {
         currentYear++;
       }
       renderCalendar();
+      if (activeStatMode && typeof populateStatPanelGlobal === 'function') {
+        populateStatPanelGlobal(activeStatMode);
+      }
     });
   }
 
@@ -252,6 +427,9 @@ function initMasterCalendar() {
       currentYear = 2026;
       currentMonth = 9;
       renderCalendar();
+      if (activeStatMode && typeof populateStatPanelGlobal === 'function') {
+        populateStatPanelGlobal(activeStatMode);
+      }
     });
   }
 
@@ -270,16 +448,419 @@ function initFacilityFilters() {
       pill.classList.add('active');
 
       activeFilter = pill.dataset.facility;
-      initMasterCalendar();
+      if (typeof renderCalendarGlobal === 'function') {
+        renderCalendarGlobal();
+      }
     });
   });
 }
 
 /* ==========================================================================
-   3. Event Details Modal
+   3. Interactive System Status Cards Controller (Details on Bottom)
+   ========================================================================== */
+let activeStatMode = null; // 'events' | 'demand' | 'occupancy' | 'available' | null
+let populateStatPanelGlobal = null;
+
+function initSystemStatusCards() {
+  const cardEvents = document.getElementById('statCardEvents');
+  const cardDemand = document.getElementById('statCardDemand');
+  const cardOccupancy = document.getElementById('statCardOccupancy');
+  const cardAvailable = document.getElementById('statCardAvailableDays');
+  const panel = document.getElementById('statDetailPanel');
+  const closeBtn = document.getElementById('statDetailCloseBtn');
+  const actionBtn = document.getElementById('statDetailActionBtn');
+
+  function populatePanel(mode) {
+    if (!panel) return;
+    const status = calculateSystemStatus();
+    const iconWrap = document.getElementById('statDetailIconWrap');
+    const titleEl = document.getElementById('statDetailTitle');
+    const badgeEl = document.getElementById('statDetailBadge');
+    const descEl = document.getElementById('statDetailDesc');
+    const chipsEl = document.getElementById('statDetailChips');
+
+    panel.className = `stat-detail-panel theme-${mode === 'events' ? 'green' : mode === 'demand' ? 'blue' : mode === 'occupancy' ? 'amber' : 'purple'}`;
+
+    if (mode === 'events') {
+      if (iconWrap) {
+        iconWrap.className = 'stat-detail-icon-wrap green';
+        iconWrap.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+          </svg>`;
+      }
+      if (titleEl) titleEl.textContent = `Scheduled Events Summary • ${status.monthName} ${currentYear}`;
+      if (badgeEl) {
+        badgeEl.className = 'stat-detail-badge green';
+        badgeEl.textContent = `${status.totalEventsCount} Total Events`;
+      }
+      if (descEl) {
+        descEl.textContent = `A total of ${status.totalEventsCount} confirmed reservation events are scheduled across ATI facilities in ${status.monthName} ${currentYear}. Click on any event chip or button below to inspect full event agendas.`;
+      }
+      if (chipsEl) {
+        const counts = status.facilityCounts || {};
+        const items = [
+          { name: 'Function Hall', count: counts['function-hall'] || 0, icon: '🏛️' },
+          { name: 'Training Hall', count: counts['training-hall'] || 0, icon: '🏫' },
+          { name: 'Mess Hall', count: counts['mess-hall'] || 0, icon: '🍽️' },
+          { name: 'Boardroom', count: counts['boardroom'] || 0, icon: '💼' },
+          { name: 'Dormitory', count: counts['dormitory'] || 0, icon: '🛏️' }
+        ];
+        chipsEl.innerHTML = items
+          .filter(item => item.count > 0)
+          .map(item => `<span class="stat-chip">${item.icon} <strong>${item.name}:</strong> ${item.count} event${item.count === 1 ? '' : 's'}</span>`)
+          .join('') || '<span class="stat-chip">✨ All Facilities Open</span>';
+      }
+      if (actionBtn) {
+        actionBtn.style.display = 'inline-flex';
+        actionBtn.textContent = '📋 View Full Event List';
+        actionBtn.onclick = () => openMonthlyEventsListModal();
+      }
+    } else if (mode === 'demand') {
+      if (iconWrap) {
+        iconWrap.className = 'stat-detail-icon-wrap blue';
+        iconWrap.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>`;
+      }
+      if (titleEl) titleEl.textContent = `Highest Demand Facility • ${status.topFacilityName}`;
+      if (badgeEl) {
+        badgeEl.className = 'stat-detail-badge blue';
+        badgeEl.textContent = `Top Venue (${status.topFacilityCount} Bookings)`;
+      }
+      const pct = status.totalEventsCount > 0 ? Math.round((status.topFacilityCount / status.totalEventsCount) * 100) : 0;
+      if (descEl) {
+        descEl.textContent = `"${status.topFacilityName}" is currently the most requested facility this month, accounting for ${pct}% of all scheduled events. The calendar grid below has been filtered to highlight only this facility.`;
+      }
+      if (chipsEl) {
+        chipsEl.innerHTML = `
+          <span class="stat-chip">🔥 <strong>${status.topFacilityCount}</strong> Reservations</span>
+          <span class="stat-chip">📊 <strong>${pct}%</strong> of Total Bookings</span>
+          <span class="stat-chip">🔍 Filter Applied to Calendar</span>
+        `;
+      }
+      if (actionBtn) {
+        actionBtn.style.display = 'inline-flex';
+        actionBtn.textContent = '✕ Reset Facility Filter';
+        actionBtn.onclick = () => {
+          activeFilter = 'all';
+          document.querySelectorAll('.fac-pill').forEach(p => {
+            p.classList.toggle('active', p.dataset.facility === 'all');
+          });
+          closeStatDetails();
+        };
+      }
+    } else if (mode === 'occupancy') {
+      if (iconWrap) {
+        iconWrap.className = 'stat-detail-icon-wrap amber';
+        iconWrap.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>`;
+      }
+      if (titleEl) titleEl.textContent = `Monthly Facility Occupancy • ${status.occupancyPercent}%`;
+      if (badgeEl) {
+        badgeEl.className = 'stat-detail-badge amber';
+        badgeEl.textContent = status.occupancyPercent >= 75 ? 'Peak Demand' : status.occupancyPercent >= 40 ? 'Optimal Utilization' : 'Light Utilization';
+      }
+      const freeDays = status.totalDaysInMonth - status.uniqueBookedDays;
+      if (descEl) {
+        descEl.textContent = `During ${status.monthName} ${currentYear}, facilities are booked across ${status.uniqueBookedDays} of ${status.totalDaysInMonth} calendar days (${status.occupancyPercent}% occupancy rate). Heatmap view is now active on the calendar grid below.`;
+      }
+      if (chipsEl) {
+        chipsEl.innerHTML = `
+          <span class="stat-chip">📅 <strong>${status.uniqueBookedDays}</strong> Booked Days</span>
+          <span class="stat-chip">✨ <strong>${freeDays}</strong> Free Days</span>
+          <span class="stat-chip">🌡️ Heatmap: 🟢 Free • 🟡 Moderate • 🔴 Busy</span>
+        `;
+      }
+      if (actionBtn) {
+        actionBtn.style.display = 'inline-flex';
+        actionBtn.textContent = '✕ Turn Off Heatmap';
+        actionBtn.onclick = () => closeStatDetails();
+      }
+    } else if (mode === 'available') {
+      if (iconWrap) {
+        iconWrap.className = 'stat-detail-icon-wrap purple';
+        iconWrap.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>`;
+      }
+      if (titleEl) titleEl.textContent = `Available Days for Reservation • ${status.daysWithAvailableSlots} Days`;
+      if (badgeEl) {
+        badgeEl.className = 'stat-detail-badge purple';
+        badgeEl.textContent = 'Open for Booking';
+      }
+      if (descEl) {
+        descEl.textContent = `There are ${status.daysWithAvailableSlots} days with open slots available for reservation in ${status.monthName} ${currentYear}. Dates with available slots are highlighted in bright green on the calendar below.`;
+      }
+      if (chipsEl) {
+        chipsEl.innerHTML = `
+          <span class="stat-chip">🟢 <strong>${status.daysWithAvailableSlots}</strong> Open Days</span>
+          <span class="stat-chip">⚡ Quick Booking Ready</span>
+          <span class="stat-chip">🎯 Available Slots Highlighted</span>
+        `;
+      }
+      if (actionBtn) {
+        actionBtn.style.display = 'inline-flex';
+        actionBtn.textContent = '➕ Reserve a Facility';
+        actionBtn.onclick = () => {
+          window.location.href = 'booking.php';
+        };
+      }
+    }
+  }
+
+  function openStatDetails(mode) {
+    if (!panel) return;
+
+    // Toggle off immediately if same card clicked
+    if (activeStatMode === mode) {
+      closeStatDetails();
+      return;
+    }
+
+    activeStatMode = mode;
+
+    // Instant card highlight updates
+    if (cardEvents) cardEvents.classList.toggle('active-mode', mode === 'events');
+    if (cardDemand) cardDemand.classList.toggle('active-mode', mode === 'demand');
+    if (cardOccupancy) cardOccupancy.classList.toggle('active-mode', mode === 'occupancy');
+    if (cardAvailable) cardAvailable.classList.toggle('active-mode', mode === 'available');
+
+    // Instant display and fill with zero delay
+    panel.style.display = 'flex';
+    populatePanel(mode);
+
+    // Apply calendar state only if needed
+    const status = calculateSystemStatus();
+    let needCalendarRerender = false;
+
+    if (mode === 'events') {
+      if (isHeatmapActive || isAvailableFocusActive || activeFilter !== 'all') {
+        isHeatmapActive = false;
+        isAvailableFocusActive = false;
+        activeFilter = 'all';
+        document.querySelectorAll('.fac-pill').forEach(p => p.classList.toggle('active', p.dataset.facility === 'all'));
+        needCalendarRerender = true;
+      }
+    } else if (mode === 'demand') {
+      if (activeFilter !== status.topFacilityKey || isHeatmapActive || isAvailableFocusActive) {
+        activeFilter = status.topFacilityKey;
+        isHeatmapActive = false;
+        isAvailableFocusActive = false;
+        document.querySelectorAll('.fac-pill').forEach(p => p.classList.toggle('active', p.dataset.facility === status.topFacilityKey));
+        needCalendarRerender = true;
+      }
+    } else if (mode === 'occupancy') {
+      if (!isHeatmapActive || isAvailableFocusActive) {
+        isHeatmapActive = true;
+        isAvailableFocusActive = false;
+        needCalendarRerender = true;
+      }
+    } else if (mode === 'available') {
+      if (!isAvailableFocusActive || isHeatmapActive) {
+        isAvailableFocusActive = true;
+        isHeatmapActive = false;
+        needCalendarRerender = true;
+      }
+    }
+
+    if (needCalendarRerender && typeof renderCalendarGlobal === 'function') {
+      renderCalendarGlobal();
+    }
+  }
+
+  function closeStatDetails() {
+    activeStatMode = null;
+    [cardEvents, cardDemand, cardOccupancy, cardAvailable].forEach(c => {
+      if (c) c.classList.remove('active-mode');
+    });
+
+    if (panel) panel.style.display = 'none';
+
+    // Reset visual modes
+    let needCalendarRerender = isHeatmapActive || isAvailableFocusActive || activeFilter !== 'all';
+    isHeatmapActive = false;
+    isAvailableFocusActive = false;
+
+    if (activeFilter !== 'all') {
+      activeFilter = 'all';
+      document.querySelectorAll('.fac-pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.facility === 'all');
+      });
+    }
+
+    if (needCalendarRerender && typeof renderCalendarGlobal === 'function') {
+      renderCalendarGlobal();
+    }
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeStatDetails);
+  }
+
+  // Card click event listeners
+  if (cardEvents) {
+    cardEvents.addEventListener('click', () => openStatDetails('events'));
+    cardEvents.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStatDetails('events'); }
+    });
+  }
+
+  if (cardDemand) {
+    cardDemand.addEventListener('click', () => openStatDetails('demand'));
+    cardDemand.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStatDetails('demand'); }
+    });
+  }
+
+  if (cardOccupancy) {
+    cardOccupancy.addEventListener('click', () => openStatDetails('occupancy'));
+    cardOccupancy.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStatDetails('occupancy'); }
+    });
+  }
+
+  if (cardAvailable) {
+    cardAvailable.addEventListener('click', () => openStatDetails('available'));
+    cardAvailable.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStatDetails('available'); }
+    });
+  }
+
+  populateStatPanelGlobal = populatePanel;
+}
+
+/* ==========================================================================
+   4. Monthly Events Breakdown Modal Controller (Activated by Card 1)
+   ========================================================================== */
+function initMonthlyEventsModal() {
+  const searchInput = document.getElementById('eventsModalSearchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase().trim();
+      const rows = document.querySelectorAll('.monthly-event-row');
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(query) ? 'flex' : 'none';
+      });
+    });
+  }
+}
+
+function openMonthlyEventsListModal() {
+  const modal = document.getElementById('monthlyEventsModal');
+  const titleEl = document.getElementById('monthlyEventsModalTitle');
+  const countEl = document.getElementById('monthlyEventsModalCount');
+  const container = document.getElementById('monthlyEventsListContainer');
+  const searchInput = document.getElementById('eventsModalSearchInput');
+
+  if (!modal || !container) return;
+
+  const status = calculateSystemStatus();
+
+  if (titleEl) {
+    titleEl.textContent = `Scheduled Activities & Events: ${status.monthName} ${currentYear}`;
+  }
+  if (countEl) {
+    const filterTxt = activeFilter !== 'all' ? ` for ${FACILITY_DISPLAY_NAMES[activeFilter]}` : '';
+    countEl.textContent = `Showing ${status.totalEventsCount} confirmed event${status.totalEventsCount === 1 ? '' : 's'}${filterTxt}`;
+  }
+  if (searchInput) {
+    searchInput.value = '';
+  }
+
+  container.innerHTML = '';
+
+  if (status.monthEvents.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 2.5rem 1rem; color: #526f5e;">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📅</div>
+        <h4 style="font-size: 1.1rem; color: #175432; margin-bottom: 0.35rem;">No Events Scheduled for this Period</h4>
+        <p style="font-size: 0.85rem;">All facilities are open and available for reservation during ${status.monthName} ${currentYear}.</p>
+      </div>
+    `;
+  } else {
+    // Sort events chronologically by date
+    const sorted = [...status.monthEvents].sort((a, b) => a.date.localeCompare(b.date));
+
+    sorted.forEach(ev => {
+      const dateParts = ev.date.split('-');
+      const dayNum = parseInt(dateParts[2], 10);
+      const row = document.createElement('div');
+      row.className = 'monthly-event-row';
+
+      row.innerHTML = `
+        <div class="monthly-event-date-badge">
+          <div style="font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.85;">${MONTH_NAMES[currentMonth].slice(0, 3)}</div>
+          <div style="font-size: 1.15rem; font-weight: 900; line-height: 1;">${dayNum}</div>
+        </div>
+        <div class="monthly-event-info">
+          <div class="monthly-event-title">${ev.title}</div>
+          <div class="monthly-event-meta">
+            <span style="background: ${getFacilityColor(ev.facilityKey)}; color: #ffffff; padding: 2px 8px; border-radius: 9999px; font-weight: 700; font-size: 0.72rem;">${ev.facility}</span>
+            <span>🕒 ${ev.time}</span>
+            <span>🏛️ ${ev.division}</span>
+            <span>👥 ${ev.attendees}</span>
+          </div>
+        </div>
+        <button type="button" class="monthly-event-locate-btn" data-date="${ev.date}" data-event-id="${ev.id}">
+          Locate on Calendar &rarr;
+        </button>
+      `;
+
+      const locateBtn = row.querySelector('.monthly-event-locate-btn');
+      if (locateBtn) {
+        locateBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          modal.classList.remove('active');
+          locateEventOnCalendar(ev.date, ev.id);
+        });
+      }
+
+      container.appendChild(row);
+    });
+  }
+
+  modal.classList.add('active');
+}
+
+/**
+ * Locate and highlight an event date on the calendar grid
+ */
+function locateEventOnCalendar(dateStr, eventId) {
+  const targetBox = document.querySelector(`.board-day-box[data-date="${dateStr}"]`);
+  if (targetBox) {
+    targetBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    targetBox.style.transition = 'all 0.3s ease';
+    targetBox.style.boxShadow = '0 0 0 4px #175432, 0 8px 24px rgba(23, 84, 50, 0.25)';
+    targetBox.style.transform = 'scale(1.03)';
+    setTimeout(() => {
+      targetBox.style.boxShadow = '';
+      targetBox.style.transform = '';
+      if (eventId) {
+        openEventDetails(eventId);
+      }
+    }, 1200);
+  }
+}
+
+/* ==========================================================================
+   5. Event Details Modal
    ========================================================================== */
 function openEventDetails(eventId) {
-  const event = masterEventsDatabase.find(ev => ev.id === eventId);
+  const allEvents = getAllEvents();
+  const event = allEvents.find(ev => ev.id === eventId);
   if (!event) return;
 
   const modal = document.getElementById('scheduleEventModal');
@@ -312,9 +893,9 @@ function getFacilityColor(key) {
   }
 }
 
-// Close Modal Handler
+// Close Modal Handler with smooth click detection on svg & button
 document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('js-close-modal') || e.target.classList.contains('modal-overlay')) {
+  if (e.target.closest('.js-close-modal') || e.target.classList.contains('modal-overlay')) {
     document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
   }
 });
@@ -326,6 +907,8 @@ function initProfileDropdown() {
   const badge = document.getElementById('userProfileBadge');
   const dropdown = document.getElementById('profileDropdown');
 
+  syncGlobalProfileHeader();
+
   if (!badge || !dropdown) return;
 
   badge.addEventListener('click', (e) => {
@@ -336,6 +919,24 @@ function initProfileDropdown() {
   document.addEventListener('click', () => {
     dropdown.classList.remove('show');
   });
+}
+
+function syncGlobalProfileHeader() {
+  const avatar = localStorage.getItem('ati_user_avatar');
+  const profile = localStorage.getItem('ati_user_profile');
+  if (avatar) {
+    document.querySelectorAll('.user-avatar-circle, .drawer-avatar').forEach(c => {
+      c.innerHTML = `<img src="${avatar}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+    });
+  }
+  if (profile) {
+    try {
+      const p = JSON.parse(profile);
+      if (p.fullName) {
+        document.querySelectorAll('.user-name, .dropdown-user-name, .drawer-profile-info h5').forEach(el => el.textContent = p.fullName);
+      }
+    } catch(e) {}
+  }
 }
 
 /* ==========================================================================

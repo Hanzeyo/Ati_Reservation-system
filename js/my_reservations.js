@@ -6,9 +6,10 @@
 document.addEventListener('DOMContentLoaded', () => {
   initProfileDropdown();
   initMobileDrawer();
-  initFilterTabs();
   initKpiFilters();
-  initSearchAndFilter();
+  initCustomFacilityDropdown();
+  initSearch();
+  initViewModeToggle();
   initCardModals();
   initCancellationWorkflow();
   initCopyButtons();
@@ -22,6 +23,8 @@ function initProfileDropdown() {
   const badge = document.getElementById('userProfileBadge');
   const dropdown = document.getElementById('profileDropdown');
 
+  syncGlobalProfileHeader();
+
   if (!badge || !dropdown) return;
 
   badge.addEventListener('click', (e) => {
@@ -34,15 +37,36 @@ function initProfileDropdown() {
   });
 }
 
+function syncGlobalProfileHeader() {
+  const avatar = localStorage.getItem('ati_user_avatar');
+  const profile = localStorage.getItem('ati_user_profile');
+  if (avatar) {
+    document.querySelectorAll('.user-avatar-circle, .drawer-avatar').forEach(c => {
+      c.innerHTML = `<img src="${avatar}" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+    });
+  }
+  if (profile) {
+    try {
+      const p = JSON.parse(profile);
+      if (p.fullName) {
+        document.querySelectorAll('.user-name, .dropdown-user-name, .drawer-profile-info h5').forEach(el => el.textContent = p.fullName);
+      }
+    } catch(e) {}
+  }
+}
+
 /* ==========================================================================
-   2. Filter Tabs & Dynamic Counter
+   2. KPI Stat Card Filters & Filtering Controller
    ========================================================================== */
 let activeStatusFilter = 'all';
 let activeVenueFilter = 'all';
 let activeSearchQuery = '';
+let currentViewMode = 'cards';
 
 function applyAllFilters() {
   const cards = document.querySelectorAll('.res-card');
+  const tableRows = document.querySelectorAll('.res-table-row');
+  const tableWrap = document.getElementById('reservationsTableWrap');
   const emptyState = document.getElementById('emptyResState');
   let visibleCount = 0;
 
@@ -55,17 +79,67 @@ function applyAllFilters() {
     const matchesVenue = (activeVenueFilter === 'all') || (cardVenue === activeVenueFilter);
     const matchesSearch = !activeSearchQuery || cardText.includes(activeSearchQuery);
 
-    if (matchesStatus && matchesVenue && matchesSearch) {
-      card.style.display = 'block';
-      visibleCount++;
+    if (currentViewMode === 'cards') {
+      if (matchesStatus && matchesVenue && matchesSearch) {
+        card.style.display = '';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
     } else {
       card.style.display = 'none';
     }
   });
 
+  tableRows.forEach(row => {
+    const rowStatus = row.dataset.status;
+    const rowVenue = row.dataset.venue;
+    const rowText = row.textContent.toLowerCase();
+
+    const matchesStatus = (activeStatusFilter === 'all') || (rowStatus === activeStatusFilter);
+    const matchesVenue = (activeVenueFilter === 'all') || (rowVenue === activeVenueFilter);
+    const matchesSearch = !activeSearchQuery || rowText.includes(activeSearchQuery);
+
+    if (matchesStatus && matchesVenue && matchesSearch) {
+      row.style.display = '';
+      if (currentViewMode === 'table') visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+
+  if (tableWrap) {
+    tableWrap.style.display = currentViewMode === 'table' ? 'block' : 'none';
+  }
+
   if (emptyState) {
     emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
   }
+}
+
+function initViewModeToggle() {
+  const btnCards = document.getElementById('btnViewCards');
+  const btnTable = document.getElementById('btnViewTable');
+
+  if (!btnCards || !btnTable) return;
+
+  btnCards.addEventListener('click', () => {
+    currentViewMode = 'cards';
+    btnCards.classList.add('active');
+    btnCards.setAttribute('aria-pressed', 'true');
+    btnTable.classList.remove('active');
+    btnTable.setAttribute('aria-pressed', 'false');
+    applyAllFilters();
+  });
+
+  btnTable.addEventListener('click', () => {
+    currentViewMode = 'table';
+    btnTable.classList.add('active');
+    btnTable.setAttribute('aria-pressed', 'true');
+    btnCards.classList.remove('active');
+    btnCards.setAttribute('aria-pressed', 'false');
+    applyAllFilters();
+  });
 }
 
 function updateKpiCounts() {
@@ -89,80 +163,118 @@ function updateKpiCounts() {
   const kpiPending = document.getElementById('kpiPending');
   const kpiApproved = document.getElementById('kpiApproved');
   const kpiCompleted = document.getElementById('kpiCompleted');
-
-  const tabCountAll = document.getElementById('tabCountAll');
-  const tabCountPending = document.getElementById('tabCountPending');
-  const tabCountApproved = document.getElementById('tabCountApproved');
-  const tabCountCompleted = document.getElementById('tabCountCompleted');
   const navBadgeCount = document.getElementById('navBadgeCount');
 
   if (kpiTotal) kpiTotal.textContent = total;
   if (kpiPending) kpiPending.textContent = pending;
   if (kpiApproved) kpiApproved.textContent = approved;
   if (kpiCompleted) kpiCompleted.textContent = completed;
-
-  if (tabCountAll) tabCountAll.textContent = total;
-  if (tabCountPending) tabCountPending.textContent = pending;
-  if (tabCountApproved) tabCountApproved.textContent = approved;
-  if (tabCountCompleted) tabCountCompleted.textContent = completed;
   if (navBadgeCount) navBadgeCount.textContent = pending;
-}
-
-function initFilterTabs() {
-  const tabs = document.querySelectorAll('.filter-tab-btn');
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      activeStatusFilter = tab.dataset.filter;
-
-      // Sync KPI cards active class
-      document.querySelectorAll('.my-res-stat-card').forEach(c => {
-        c.classList.toggle('active-filter', c.dataset.filter === activeStatusFilter);
-      });
-
-      applyAllFilters();
-    });
-  });
 }
 
 function initKpiFilters() {
   const statCards = document.querySelectorAll('.my-res-stat-card');
-  const tabs = document.querySelectorAll('.filter-tab-btn');
 
   statCards.forEach(card => {
     card.addEventListener('click', () => {
-      const filter = card.dataset.filter;
-      if (!filter) return;
+      const filter = card.dataset.filter || 'all';
 
-      tabs.forEach(t => {
-        if (t.dataset.filter === filter) {
-          t.click();
-        }
-      });
+      statCards.forEach(c => c.classList.remove('active-filter'));
+      card.classList.add('active-filter');
+
+      activeStatusFilter = filter;
+      applyAllFilters();
     });
+  });
+
+  // Support direct navigation from profile stat cards via URL query
+  const urlFilter = new URLSearchParams(window.location.search).get('filter');
+  if (urlFilter) {
+    const targetCard = document.querySelector(`.my-res-stat-card[data-filter="${urlFilter}"]`);
+    if (targetCard) {
+      targetCard.click();
+    }
+  }
+}
+
+/* ==========================================================================
+   3. Custom Facility Dropdown (ATI Themed)
+   ========================================================================== */
+function initCustomFacilityDropdown() {
+  const dropdown = document.getElementById('facilityDropdown');
+  const btn = document.getElementById('facilityDropdownBtn');
+  const label = document.getElementById('facilityDropdownLabel');
+  const menu = document.getElementById('facilityDropdownMenu');
+  const options = document.querySelectorAll('.facility-option');
+
+  if (!dropdown || !btn || !menu) return;
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = dropdown.classList.toggle('open');
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  options.forEach(opt => {
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const value = opt.dataset.value;
+      const text = opt.querySelector('.opt-name')?.textContent || opt.textContent.trim();
+
+      options.forEach(o => {
+        o.classList.remove('active');
+        o.setAttribute('aria-selected', 'false');
+      });
+      opt.classList.add('active');
+      opt.setAttribute('aria-selected', 'true');
+
+      if (label) label.textContent = text;
+      activeVenueFilter = value;
+      dropdown.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+
+      applyAllFilters();
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target)) {
+      dropdown.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && dropdown.classList.contains('open')) {
+      dropdown.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
   });
 }
 
 /* ==========================================================================
-   3. Live Search & Venue Filter
+   4. Live Search
    ========================================================================== */
-function initSearchAndFilter() {
+function initSearch() {
   const searchInput = document.getElementById('resSearchInput');
-  const venueSelect = document.getElementById('resVenueFilter');
+  const clearBtn = document.getElementById('btnClearSearch');
 
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      activeSearchQuery = e.target.value.toLowerCase().trim();
-      applyAllFilters();
-    });
-  }
+  if (!searchInput) return;
 
-  if (venueSelect) {
-    venueSelect.addEventListener('change', (e) => {
-      activeVenueFilter = e.target.value;
+  searchInput.addEventListener('input', (e) => {
+    activeSearchQuery = e.target.value.toLowerCase().trim();
+    if (clearBtn) {
+      clearBtn.style.display = activeSearchQuery ? 'inline-flex' : 'none';
+    }
+    applyAllFilters();
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      activeSearchQuery = '';
+      clearBtn.style.display = 'none';
+      searchInput.focus();
       applyAllFilters();
     });
   }
@@ -180,7 +292,16 @@ function initCardModals() {
 
   detailBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      const card = btn.closest('.res-card');
+      let card = btn.closest('.res-card');
+      if (!card) {
+        const row = btn.closest('.res-table-row');
+        if (row) {
+          const ref = row.querySelector('.res-ref-tag')?.textContent.trim();
+          if (ref) {
+            card = document.querySelector(`.res-card[data-ref="${ref}"]`);
+          }
+        }
+      }
       if (!card) return;
 
       // Extract metadata from card

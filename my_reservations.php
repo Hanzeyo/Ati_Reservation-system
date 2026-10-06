@@ -9,8 +9,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Reservations | ATI Facility Reservation Portal</title>
-  <meta name="description" content="View and track your facility and dormitory reservation requests with the Agricultural Training Institute.">
+  <title>Booking History | ATI Facility & Dormitory Reservation Portal</title>
+  <meta name="description" content="Official Booking History & Reservation Activity Tracker for Agriculture Training Institute facilities and dormitories.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,7 +19,7 @@
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/my_reservations.css">
+  <link rel="stylesheet" href="css/my_reservations.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=<?php echo time(); ?>">
 </head>
 <body class="my-res-body">
@@ -58,7 +58,7 @@
           <span>New Reservation</span>
         </a>
 
-        <!-- My Reservations (Active) -->
+        <!-- My Reservations / Booking History (Active) -->
         <a href="my_reservations.php" class="booking-nav-item active">
           <svg viewBox="0 0 24 24" fill="none">
             <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -68,7 +68,7 @@
             <line x1="3" y1="12" x2="3.01" y2="12"></line>
             <line x1="3" y1="18" x2="3.01" y2="18"></line>
           </svg>
-          <span>My Reservations</span>
+          <span>Booking History</span>
           <span class="nav-badge-count" id="navBadgeCount">2</span>
         </a>
 
@@ -94,19 +94,24 @@
           </div>
 
           <div class="profile-dropdown" id="profileDropdown">
-            <a href="javascript:void(0)" class="dropdown-item">
+            <div class="dropdown-header-info">
+              <div class="dropdown-user-name">Juan Dela Cruz</div>
+              <div class="dropdown-user-email"><span class="user-verified-dot"></span> ATI Personnel &bull; CDD</div>
+            </div>
+            <a href="profile.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
               <span>My Profile</span>
             </a>
-            <a href="my_reservations.php" class="dropdown-item">
+            <a href="my_reservations.php" class="dropdown-item active">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
               </svg>
               <span>Booking History</span>
+              <span class="dropdown-item-badge">Active</span>
             </a>
             <a href="admin_dashboard.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -196,7 +201,7 @@
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
             </div>
-            <span class="drawer-link-text">My Reservations</span>
+            <span class="drawer-link-text">Booking History</span>
             <span class="drawer-badge-count">2</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
@@ -214,7 +219,7 @@
         <div class="drawer-nav-section">
           <div class="drawer-section-label">ACCOUNT & SETTINGS</div>
           
-          <a href="javascript:void(0)" class="drawer-nav-link" onclick="showToast('Profile management available in next administrative release.');">
+          <a href="profile.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
@@ -296,16 +301,13 @@
       <div class="my-res-header-text">
         <div class="my-res-top-badge">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
-          <span>Official Request Tracker</span>
+          <span>Official Records &amp; Activity Log</span>
         </div>
-        <h2>My Facility & Dormitory Reservations</h2>
-        <p>Monitor your reservation requests, follow live routing through approving administrative units, download official booking slips, or view security gate passes.</p>
+        <h2>Booking History</h2>
+        <p>Monitor your active and historical reservation requests, follow live routing through approving administrative units, download official booking slips, or view security gate passes.</p>
       </div>
 
       <a href="booking.php" class="btn-new-res-action">
@@ -331,7 +333,7 @@
         </div>
         <div class="stat-content">
           <span class="stat-value" id="kpiTotal">5</span>
-          <span class="stat-label">Total Submitted</span>
+          <span class="stat-label">Total Bookings</span>
         </div>
       </div>
 
@@ -377,53 +379,113 @@
       </div>
     </section>
 
-    <!-- Filter & Search Toolbar -->
+    <!-- Filter & Search Toolbar (Cleaned, Non-Redundant, Custom Styled) -->
     <div class="my-res-toolbar-card">
-      <!-- Tabs -->
-      <div class="filter-tabs-group" role="tablist">
-        <button type="button" class="filter-tab-btn active" data-filter="all">
-          <span>All Requests</span>
-          <span class="tab-count-pill" id="tabCountAll">5</span>
-        </button>
-        <button type="button" class="filter-tab-btn" data-filter="pending">
-          <span>Pending Review</span>
-          <span class="tab-count-pill" id="tabCountPending">2</span>
-        </button>
-        <button type="button" class="filter-tab-btn" data-filter="approved">
-          <span>Confirmed & Approved</span>
-          <span class="tab-count-pill" id="tabCountApproved">2</span>
-        </button>
-        <button type="button" class="filter-tab-btn" data-filter="completed">
-          <span>Completed</span>
-          <span class="tab-count-pill" id="tabCountCompleted">1</span>
+      <!-- Search Input (Prominent & Responsive) -->
+      <div class="search-box-wrap">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="resSearchInput" class="search-input" placeholder="Search by Ref #, activity title, or division...">
+        <button type="button" class="btn-clear-search" id="btnClearSearch" title="Clear search" style="display: none;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
 
-      <!-- Controls -->
+      <!-- Controls: Custom Facility Dropdown & View Switcher -->
       <div class="toolbar-controls-right">
-        <!-- Search Input -->
-        <div class="search-box-wrap">
-          <svg viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" id="resSearchInput" class="search-input" placeholder="Search by Ref #, Activity title...">
+        <!-- Custom Styled Facility Dropdown (No ugly OS select menu) -->
+        <div class="custom-facility-dropdown" id="facilityDropdown">
+          <button type="button" class="facility-dropdown-btn" id="facilityDropdownBtn" aria-haspopup="listbox" aria-expanded="false" title="Filter by Facility">
+            <span class="facility-btn-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              </svg>
+            </span>
+            <span class="facility-btn-label" id="facilityDropdownLabel">All Facilities</span>
+            <svg class="facility-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          
+          <div class="facility-dropdown-menu" id="facilityDropdownMenu" role="listbox" aria-label="Filter by Facility">
+            <div class="facility-option active" data-value="all" role="option" aria-selected="true">
+              <span class="opt-bullet all"></span>
+              <span class="opt-name">All Facilities</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="function-hall" role="option">
+              <span class="opt-bullet"></span>
+              <span class="opt-name">Function Hall</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="training-hall" role="option">
+              <span class="opt-bullet"></span>
+              <span class="opt-name">Training Hall A</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="boardroom" role="option">
+              <span class="opt-bullet"></span>
+              <span class="opt-name">Boardroom</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="mess-hall" role="option">
+              <span class="opt-bullet"></span>
+              <span class="opt-name">Mess Hall</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="dormitory" role="option">
+              <span class="opt-bullet"></span>
+              <span class="opt-name">Dormitory</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+          </div>
         </div>
 
-        <!-- Venue Filter -->
-        <select class="venue-filter-select" id="resVenueFilter" aria-label="Filter by venue">
-          <option value="all">All Facilities</option>
-          <option value="function-hall">Function Hall</option>
-          <option value="training-hall">Training Hall A</option>
-          <option value="boardroom">Boardroom</option>
-          <option value="mess-hall">Mess Hall</option>
-          <option value="dormitory">Dormitory</option>
-        </select>
+        <!-- View Mode Switcher -->
+        <div class="view-mode-toggle" role="group" aria-label="View format toggle">
+          <button type="button" class="view-mode-btn active" id="btnViewCards" title="Card View" aria-pressed="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>Cards</span>
+          </button>
+          <button type="button" class="view-mode-btn" id="btnViewTable" title="Table View" aria-pressed="false">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+            <span>Table</span>
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- ==========================================================================
-         RESERVATIONS LIST CARDS
+         RESERVATIONS CONTAINER (CARDS VIEW & TABLE VIEW)
          ========================================================================== -->
     <section class="reservations-container" id="reservationsList">
 
@@ -439,129 +501,75 @@
                data-division="Career Development Division (CDD)"
                data-status-text="Pending Administrative Clearance">
         
-        <!-- Card Top Bar -->
-        <div class="res-card-topbar">
-          <div class="res-ref-group">
-            <span class="res-ref-tag">ATI-RES-2026-1042</span>
-            <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-1042" title="Copy Reference Code">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            </button>
-            <span class="res-timestamp">&bull; Submitted on Oct 02, 2026</span>
-          </div>
-
-          <div class="res-status-badge pending">
-            <span class="status-dot-pulse"></span>
-            <span>Pending Administrative Clearance</span>
-          </div>
+        <div class="res-card-media">
+          <img src="assets/images/function_hall.jpg" alt="ATI Function Hall">
+          <span class="venue-thumb-pill">Function Hall</span>
         </div>
 
-        <!-- Card Main Body -->
-        <div class="res-card-body">
-          <div class="res-venue-thumb">
-            <img src="assets/images/function_hall.jpg" alt="ATI Function Hall">
-            <span class="venue-thumb-pill">Function Hall</span>
-          </div>
-
-          <div class="res-event-info">
-            <h3 class="res-event-title">Regional Agricultural Extension Coordinators Training 2026</h3>
-            
-            <div class="res-details-chips">
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span><strong>Date:</strong> Oct 14 – 16, 2026 (3 Days)</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span><strong>Time:</strong> 08:00 AM – 05:00 PM</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span><strong>Attendees:</strong> 120 Delegates</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                <span><strong>Division:</strong> Career Development Division (CDD)</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                <span><strong>Tariff:</strong> Official ATI Activity (100% Waived)</span>
-              </div>
+        <div class="res-card-main">
+          <div class="res-main-top">
+            <div class="res-ref-group">
+              <span class="res-ref-tag">ATI-RES-2026-1042</span>
+              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-1042" title="Copy Reference Code">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+              <span class="res-timestamp">&bull; Oct 02, 2026</span>
+            </div>
+            <div class="res-status-badge pending">
+              <span class="status-dot-pulse"></span>
+              <span>Pending Administrative Clearance</span>
             </div>
           </div>
-        </div>
 
-        <!-- Workflow Stepper -->
-        <div class="res-workflow-section">
-          <div class="workflow-section-title">
-            <span>Official Government Routing Progress</span>
-            <span style="color: #b45309; font-weight: 700;">Step 3 of 4: In Progress</span>
+          <h3 class="res-event-title">Regional Agricultural Extension Coordinators Training 2026</h3>
+
+          <div class="res-details-chips">
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>Oct 14 – 16, 2026 (3 Days)</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>08:00 AM – 05:00 PM</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>120 Delegates</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+              <span>CDD</span>
+            </div>
           </div>
 
-          <div class="workflow-stepper">
-            <!-- Step 1 -->
-            <div class="wf-step completed">
-              <div class="wf-step-node">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Request Submitted</span>
-                <span class="wf-step-sub">Oct 02, 09:15 AM</span>
-              </div>
+          <!-- Mini Routing Stepper / Progress Bar -->
+          <div class="res-mini-routing">
+            <div class="routing-progress-bar">
+              <div class="progress-segment filled" title="1. Request Submitted (Done)"></div>
+              <div class="progress-segment filled" title="2. Division Endorsed (Done)"></div>
+              <div class="progress-segment active-pulse" title="3. Admin Services Clearance (Under Evaluation)"></div>
+              <div class="progress-segment" title="4. Final Approval"></div>
             </div>
-
-            <!-- Step 2 -->
-            <div class="wf-step completed">
-              <div class="wf-step-node">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Division Endorsed</span>
-                <span class="wf-step-sub">Dr. M. Villacorta (CDD)</span>
-              </div>
-            </div>
-
-            <!-- Step 3 -->
-            <div class="wf-step current">
-              <div class="wf-step-node">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              </div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Admin Services Clearance</span>
-                <span class="wf-step-sub">Under Evaluation</span>
-              </div>
-            </div>
-
-            <!-- Step 4 -->
-            <div class="wf-step upcoming">
-              <div class="wf-step-node">4</div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Approval Of Request</span>
-                <span class="wf-step-sub">Awaiting Approval</span>
-              </div>
+            <div class="routing-status-label">
+              <span class="routing-step-desc"><strong style="color: #b45309;">Step 3 of 4:</strong> Admin Services Clearance (Under Evaluation)</span>
+              <span class="routing-note">Special Setup: 4 wireless mics &amp; projector</span>
             </div>
           </div>
         </div>
 
-        <!-- Card Actions -->
-        <div class="res-card-actions">
-          <div class="res-actions-left">
-            <span>Special Setup: 4 wireless mics, podium & AV projector requested</span>
-          </div>
-
-          <div class="res-actions-right">
-            <button type="button" class="btn-card-action secondary js-view-details">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-              <span>View Details & Routing</span>
-            </button>
-            <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-1042">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              <span>Download Slip</span>
-            </button>
-            <button type="button" class="btn-card-action outline-danger js-cancel-res">
-              <svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              <span>Cancel Request</span>
-            </button>
-          </div>
+        <div class="res-card-side-actions">
+          <button type="button" class="btn-card-action secondary js-view-details">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>View Details</span>
+          </button>
+          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-1042">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download</span>
+          </button>
+          <button type="button" class="btn-card-action outline-danger js-cancel-res">
+            <svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <span>Cancel</span>
+          </button>
         </div>
       </article>
 
@@ -577,119 +585,75 @@
                data-division="Partnership & Accreditation Division (PAD)"
                data-status-text="Pending Division Endorsement">
         
-        <!-- Card Top Bar -->
-        <div class="res-card-topbar">
-          <div class="res-ref-group">
-            <span class="res-ref-tag">ATI-RES-2026-1039</span>
-            <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-1039" title="Copy Reference Code">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            </button>
-            <span class="res-timestamp">&bull; Submitted on Oct 01, 2026</span>
-          </div>
-
-          <div class="res-status-badge pending">
-            <span class="status-dot-pulse"></span>
-            <span>Pending Division Endorsement</span>
-          </div>
+        <div class="res-card-media">
+          <img src="assets/images/training_hall.jpg" alt="ATI Training Hall A">
+          <span class="venue-thumb-pill">Training Hall A</span>
         </div>
 
-        <!-- Card Main Body -->
-        <div class="res-card-body">
-          <div class="res-venue-thumb">
-            <img src="assets/images/training_hall.jpg" alt="ATI Training Hall A">
-            <span class="venue-thumb-pill">Training Hall A</span>
-          </div>
-
-          <div class="res-event-info">
-            <h3 class="res-event-title">Smart Agriculture Technologies Demonstration Workshop</h3>
-            
-            <div class="res-details-chips">
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span><strong>Date:</strong> Oct 22 – 23, 2026 (2 Days)</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span><strong>Time:</strong> 08:30 AM – 04:30 PM</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span><strong>Attendees:</strong> 45 Participants</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                <span><strong>Division:</strong> Partnership & Accreditation Division (PAD)</span>
-              </div>
+        <div class="res-card-main">
+          <div class="res-main-top">
+            <div class="res-ref-group">
+              <span class="res-ref-tag">ATI-RES-2026-1039</span>
+              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-1039" title="Copy Reference Code">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+              <span class="res-timestamp">&bull; Oct 01, 2026</span>
+            </div>
+            <div class="res-status-badge pending">
+              <span class="status-dot-pulse"></span>
+              <span>Pending Division Endorsement</span>
             </div>
           </div>
-        </div>
 
-        <!-- Workflow Stepper -->
-        <div class="res-workflow-section">
-          <div class="workflow-section-title">
-            <span>Official Government Routing Progress</span>
-            <span style="color: #b45309; font-weight: 700;">Step 2 of 4: In Progress</span>
+          <h3 class="res-event-title">Smart Agriculture Technologies Demonstration Workshop</h3>
+
+          <div class="res-details-chips">
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>Oct 22 – 23, 2026 (2 Days)</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>08:30 AM – 04:30 PM</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>45 Attendees</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+              <span>PAD</span>
+            </div>
           </div>
 
-          <div class="workflow-stepper">
-            <div class="wf-step completed">
-              <div class="wf-step-node">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Request Submitted</span>
-                <span class="wf-step-sub">Oct 01, 04:30 PM</span>
-              </div>
+          <!-- Mini Routing Stepper / Progress Bar -->
+          <div class="res-mini-routing">
+            <div class="routing-progress-bar">
+              <div class="progress-segment filled" title="1. Request Submitted (Done)"></div>
+              <div class="progress-segment active-pulse" title="2. Division Endorsement (In Progress)"></div>
+              <div class="progress-segment" title="3. Admin Clearance"></div>
+              <div class="progress-segment" title="4. Final Approval"></div>
             </div>
-
-            <div class="wf-step current">
-              <div class="wf-step-node">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              </div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Division Endorsement</span>
-                <span class="wf-step-sub">For Division Chief Sign</span>
-              </div>
-            </div>
-
-            <div class="wf-step upcoming">
-              <div class="wf-step-node">3</div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Admin Clearance</span>
-                <span class="wf-step-sub">Next Queue</span>
-              </div>
-            </div>
-
-            <div class="wf-step upcoming">
-              <div class="wf-step-node">4</div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Approval Of Request</span>
-                <span class="wf-step-sub">Final Step</span>
-              </div>
+            <div class="routing-status-label">
+              <span class="routing-step-desc"><strong style="color: #b45309;">Step 2 of 4:</strong> Division Endorsement (Awaiting Division Chief Sign)</span>
+              <span class="routing-note">Layout: Classroom style with 6 tables</span>
             </div>
           </div>
         </div>
 
-        <!-- Card Actions -->
-        <div class="res-card-actions">
-          <div class="res-actions-left">
-            <span>Requested layout: Classroom style with 6 discussion tables</span>
-          </div>
-
-          <div class="res-actions-right">
-            <button type="button" class="btn-card-action secondary js-view-details">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-              <span>View Details & Routing</span>
-            </button>
-            <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-1039">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              <span>Download Slip</span>
-            </button>
-            <button type="button" class="btn-card-action outline-danger js-cancel-res">
-              <svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              <span>Cancel Request</span>
-            </button>
-          </div>
+        <div class="res-card-side-actions">
+          <button type="button" class="btn-card-action secondary js-view-details">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>View Details</span>
+          </button>
+          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-1039">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download</span>
+          </button>
+          <button type="button" class="btn-card-action outline-danger js-cancel-res">
+            <svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <span>Cancel</span>
+          </button>
         </div>
       </article>
 
@@ -705,116 +669,75 @@
                data-division="Office of the Director (OD)"
                data-status-text="Confirmed & Approved">
         
-        <!-- Card Top Bar -->
-        <div class="res-card-topbar">
-          <div class="res-ref-group">
-            <span class="res-ref-tag">ATI-RES-2026-0985</span>
-            <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0985" title="Copy Reference Code">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            </button>
-            <span class="res-timestamp">&bull; Approved on Sep 28, 2026</span>
-          </div>
-
-          <div class="res-status-badge approved">
-            <span class="status-dot-pulse"></span>
-            <span>Confirmed & Approved</span>
-          </div>
+        <div class="res-card-media">
+          <img src="assets/images/boardroom.jpg" alt="ATI Boardroom">
+          <span class="venue-thumb-pill">Executive Boardroom</span>
         </div>
 
-        <!-- Card Main Body -->
-        <div class="res-card-body">
-          <div class="res-venue-thumb">
-            <img src="assets/images/boardroom.jpg" alt="ATI Boardroom">
-            <span class="venue-thumb-pill">Executive Boardroom</span>
-          </div>
-
-          <div class="res-event-info">
-            <h3 class="res-event-title">Executive Directorate Quarterly Planning & Strategy Session</h3>
-            
-            <div class="res-details-chips">
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span><strong>Date:</strong> Oct 08, 2026 (1 Day)</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span><strong>Time:</strong> 09:00 AM – 05:00 PM</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span><strong>Attendees:</strong> 25 Attendees</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                <span><strong>Division:</strong> Office of the Director (OD)</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                <span><strong>Approved by:</strong> Engr. R. Santos (Admin Chief)</span>
-              </div>
+        <div class="res-card-main">
+          <div class="res-main-top">
+            <div class="res-ref-group">
+              <span class="res-ref-tag">ATI-RES-2026-0985</span>
+              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0985" title="Copy Reference Code">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+              <span class="res-timestamp">&bull; Approved Sep 28, 2026</span>
+            </div>
+            <div class="res-status-badge approved">
+              <span class="status-dot-pulse"></span>
+              <span>Confirmed &amp; Approved</span>
             </div>
           </div>
-        </div>
 
-        <!-- Workflow Stepper -->
-        <div class="res-workflow-section">
-          <div class="workflow-section-title">
-            <span>Official Government Routing Progress</span>
-            <span style="color: #16a34a; font-weight: 700;">Completed & Confirmed</span>
+          <h3 class="res-event-title">Executive Directorate Quarterly Planning & Strategy Session</h3>
+
+          <div class="res-details-chips">
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>Oct 08, 2026 (1 Day)</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>09:00 AM – 05:00 PM</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>25 Attendees</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+              <span>OD</span>
+            </div>
           </div>
 
-          <div class="workflow-stepper">
-            <div class="wf-step completed">
-              <div class="wf-step-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Submitted</span>
-                <span class="wf-step-sub">Sep 26, 2026</span>
-              </div>
+          <!-- Mini Routing Stepper / Progress Bar -->
+          <div class="res-mini-routing">
+            <div class="routing-progress-bar">
+              <div class="progress-segment filled" title="1. Submitted (Done)"></div>
+              <div class="progress-segment filled" title="2. Endorsed (Done)"></div>
+              <div class="progress-segment filled" title="3. Cleared (Done)"></div>
+              <div class="progress-segment filled" title="4. Pass Issued (Done)"></div>
             </div>
-            <div class="wf-step completed">
-              <div class="wf-step-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Division Head Endorsed</span>
-                <span class="wf-step-sub">Sep 27, 2026</span>
-              </div>
-            </div>
-            <div class="wf-step completed">
-              <div class="wf-step-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Admin Cleared</span>
-                <span class="wf-step-sub">Sep 28, 2026</span>
-              </div>
-            </div>
-            <div class="wf-step completed">
-              <div class="wf-step-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Pass Issued</span>
-                <span class="wf-step-sub">Verified & Active</span>
-              </div>
+            <div class="routing-status-label">
+              <span class="routing-step-desc"><strong style="color: #16a34a;">Step 4 of 4:</strong> Routing Complete &bull; Security Pass Active</span>
+              <span class="routing-note" style="color: #15803d;">&#10003; Security guards &amp; technicians notified</span>
             </div>
           </div>
         </div>
 
-        <!-- Card Actions -->
-        <div class="res-card-actions">
-          <div class="res-actions-left">
-            <span style="color: #166534; font-weight: 700;">&#10003; Security notice sent to Building Guards & Audio Visual Technicians</span>
-          </div>
-
-          <div class="res-actions-right">
-            <button type="button" class="btn-card-action primary" onclick="showGatePassModal('ATI-RES-2026-0985', 'Executive Directorate Quarterly Planning & Strategy Session', 'Executive Boardroom', 'Oct 08, 2026')">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-              <span>View Gate Pass & QR</span>
-            </button>
-            <button type="button" class="btn-card-action secondary js-view-details">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-              <span>View Details</span>
-            </button>
-            <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0985">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              <span>Download Slip</span>
-            </button>
-          </div>
+        <div class="res-card-side-actions">
+          <button type="button" class="btn-card-action primary" onclick="showGatePassModal('ATI-RES-2026-0985', 'Executive Directorate Quarterly Planning & Strategy Session', 'Executive Boardroom', 'Oct 08, 2026')">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Gate Pass &amp; QR</span>
+          </button>
+          <button type="button" class="btn-card-action secondary js-view-details">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>View Details</span>
+          </button>
+          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0985">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download</span>
+          </button>
         </div>
       </article>
 
@@ -830,112 +753,75 @@
                data-division="Career Development Division (CDD)"
                data-status-text="Confirmed & Approved">
         
-        <!-- Card Top Bar -->
-        <div class="res-card-topbar">
-          <div class="res-ref-group">
-            <span class="res-ref-tag">ATI-RES-2026-0941</span>
-            <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0941" title="Copy Reference Code">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            </button>
-            <span class="res-timestamp">&bull; Approved on Sep 22, 2026</span>
-          </div>
-
-          <div class="res-status-badge approved">
-            <span class="status-dot-pulse"></span>
-            <span>Confirmed & Approved</span>
-          </div>
+        <div class="res-card-media">
+          <img src="assets/images/dormitory.jpg" alt="ATI Dormitory">
+          <span class="venue-thumb-pill">Dormitory</span>
         </div>
 
-        <!-- Card Main Body -->
-        <div class="res-card-body">
-          <div class="res-venue-thumb">
-            <img src="assets/images/dormitory.jpg" alt="ATI Dormitory">
-            <span class="venue-thumb-pill">Dormitory</span>
-          </div>
-
-          <div class="res-event-info">
-            <h3 class="res-event-title">Guest Lecturers & Resource Persons Lodging (Visayas & Mindanao Trainers)</h3>
-            
-            <div class="res-details-chips">
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span><strong>Duration:</strong> Oct 05 – 07, 2026 (2 Nights)</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span><strong>Check-in:</strong> 02:00 PM &bull; Check-out: 12:00 PM</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                <span><strong>Rooms:</strong> Rooms 201, 202, 203, 204 (Executive Wing)</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span><strong>Guests:</strong> 8 Resource Speakers</span>
-              </div>
+        <div class="res-card-main">
+          <div class="res-main-top">
+            <div class="res-ref-group">
+              <span class="res-ref-tag">ATI-RES-2026-0941</span>
+              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0941" title="Copy Reference Code">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+              <span class="res-timestamp">&bull; Approved Sep 22, 2026</span>
+            </div>
+            <div class="res-status-badge approved">
+              <span class="status-dot-pulse"></span>
+              <span>Confirmed &amp; Approved</span>
             </div>
           </div>
-        </div>
 
-        <!-- Workflow Stepper -->
-        <div class="res-workflow-section">
-          <div class="workflow-section-title">
-            <span>Official Government Routing Progress</span>
-            <span style="color: #16a34a; font-weight: 700;">Completed & Confirmed</span>
+          <h3 class="res-event-title">Guest Lecturers & Resource Persons Lodging (Visayas & Mindanao Trainers)</h3>
+
+          <div class="res-details-chips">
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>Oct 05 – 07, 2026 (2 Nights)</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>In: 02:00 PM • Out: 12:00 PM</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+              <span>Rooms 201-204 (Exec Wing)</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>8 Resource Speakers</span>
+            </div>
           </div>
 
-          <div class="workflow-stepper">
-            <div class="wf-step completed">
-              <div class="wf-step-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Submitted</span>
-                <span class="wf-step-sub">Sep 20, 2026</span>
-              </div>
+          <!-- Mini Routing Stepper / Progress Bar -->
+          <div class="res-mini-routing">
+            <div class="routing-progress-bar">
+              <div class="progress-segment filled" title="1. Submitted (Done)"></div>
+              <div class="progress-segment filled" title="2. Endorsed (Done)"></div>
+              <div class="progress-segment filled" title="3. Custodian Cleared (Done)"></div>
+              <div class="progress-segment filled" title="4. Keys Ready (Done)"></div>
             </div>
-            <div class="wf-step completed">
-              <div class="wf-step-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Division Endorsed</span>
-                <span class="wf-step-sub">Sep 21, 2026</span>
-              </div>
-            </div>
-            <div class="wf-step completed">
-              <div class="wf-step-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Dorm Custodian Cleared</span>
-                <span class="wf-step-sub">Sep 22, 2026</span>
-              </div>
-            </div>
-            <div class="wf-step completed">
-              <div class="wf-step-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Keys Allocation Ready</span>
-                <span class="wf-step-sub">Lobby Desk</span>
-              </div>
+            <div class="routing-status-label">
+              <span class="routing-step-desc"><strong style="color: #16a34a;">Step 4 of 4:</strong> Keys Allocation Ready at Lobby Desk</span>
+              <span class="routing-note">Towels &amp; linens provided. Curfew: 10:00 PM</span>
             </div>
           </div>
         </div>
 
-        <!-- Card Actions -->
-        <div class="res-card-actions">
-          <div class="res-actions-left">
-            <span>Dormitory Guidelines: Towels & Linens provided. Curfew: 10:00 PM for external visitors.</span>
-          </div>
-
-          <div class="res-actions-right">
-            <button type="button" class="btn-card-action primary" onclick="showGatePassModal('ATI-RES-2026-0941', 'Guest Lecturers & Resource Persons Lodging', 'ATI Dormitory Executive Wing', 'Oct 05 - 07, 2026')">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-              <span>View Gate Pass & QR</span>
-            </button>
-            <button type="button" class="btn-card-action secondary js-view-details">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-              <span>View Details</span>
-            </button>
-            <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0941">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              <span>Download Slip</span>
-            </button>
-          </div>
+        <div class="res-card-side-actions">
+          <button type="button" class="btn-card-action primary" onclick="showGatePassModal('ATI-RES-2026-0941', 'Guest Lecturers & Resource Persons Lodging', 'ATI Dormitory Executive Wing', 'Oct 05 - 07, 2026')">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Gate Pass &amp; QR</span>
+          </button>
+          <button type="button" class="btn-card-action secondary js-view-details">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>View Details</span>
+          </button>
+          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0941">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download</span>
+          </button>
         </div>
       </article>
 
@@ -951,110 +837,210 @@
                data-division="Administrative and Finance Unit"
                data-status-text="Completed">
         
-        <!-- Card Top Bar -->
-        <div class="res-card-topbar">
-          <div class="res-ref-group">
-            <span class="res-ref-tag">ATI-RES-2026-0812</span>
-            <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0812" title="Copy Reference Code">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            </button>
-            <span class="res-timestamp">&bull; Concluded on Sep 25, 2026</span>
-          </div>
-
-          <div class="res-status-badge completed">
-            <span class="status-dot-pulse"></span>
-            <span>Completed & Cleared</span>
-          </div>
+        <div class="res-card-media">
+          <img src="assets/images/mess_hall.jpg" alt="ATI Mess Hall">
+          <span class="venue-thumb-pill">Mess Hall</span>
         </div>
 
-        <!-- Card Main Body -->
-        <div class="res-card-body">
-          <div class="res-venue-thumb">
-            <img src="assets/images/mess_hall.jpg" alt="ATI Mess Hall">
-            <span class="venue-thumb-pill">Mess Hall</span>
-          </div>
-
-          <div class="res-event-info">
-            <h3 class="res-event-title">ATI Mid-Year General Assembly & Fellowship Gathering</h3>
-            
-            <div class="res-details-chips">
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span><strong>Date:</strong> Sep 25, 2026 (1 Day)</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                <span><strong>Time:</strong> 11:00 AM – 03:00 PM</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                <span><strong>Attendance:</strong> 180 Personnel</span>
-              </div>
-              <div class="res-chip-item">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                <span><strong>Division:</strong> Administrative & Finance Unit</span>
-              </div>
+        <div class="res-card-main">
+          <div class="res-main-top">
+            <div class="res-ref-group">
+              <span class="res-ref-tag">ATI-RES-2026-0812</span>
+              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0812" title="Copy Reference Code">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+              <span class="res-timestamp">&bull; Concluded Sep 25, 2026</span>
+            </div>
+            <div class="res-status-badge completed">
+              <span class="status-dot-pulse"></span>
+              <span>Completed &amp; Cleared</span>
             </div>
           </div>
-        </div>
 
-        <!-- Workflow Stepper -->
-        <div class="res-workflow-section">
-          <div class="workflow-section-title">
-            <span>Official Government Routing Progress</span>
-            <span style="color: #64748b; font-weight: 700;">Concluded & Post-Event Inspected</span>
+          <h3 class="res-event-title">ATI Mid-Year General Assembly & Fellowship Gathering</h3>
+
+          <div class="res-details-chips">
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>Sep 25, 2026 (1 Day)</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>11:00 AM – 03:00 PM</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>180 Personnel</span>
+            </div>
+            <div class="res-chip-item">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+              <span>Admin &amp; Finance Unit</span>
+            </div>
           </div>
 
-          <div class="workflow-stepper">
-            <div class="wf-step completed">
-              <div class="wf-step-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Submitted</span>
-                <span class="wf-step-sub">Sep 10, 2026</span>
-              </div>
+          <!-- Mini Routing Stepper / Progress Bar -->
+          <div class="res-mini-routing">
+            <div class="routing-progress-bar">
+              <div class="progress-segment filled" title="1. Submitted (Done)"></div>
+              <div class="progress-segment filled" title="2. Endorsed (Done)"></div>
+              <div class="progress-segment filled" title="3. Executed (Done)"></div>
+              <div class="progress-segment filled" title="4. Archived (Done)"></div>
             </div>
-            <div class="wf-step completed">
-              <div class="wf-step-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Endorsed</span>
-                <span class="wf-step-sub">Sep 12, 2026</span>
-              </div>
-            </div>
-            <div class="wf-step completed">
-              <div class="wf-step-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Executed</span>
-                <span class="wf-step-sub">Sep 25, 2026</span>
-              </div>
-            </div>
-            <div class="wf-step completed">
-              <div class="wf-step-node"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-              <div class="wf-step-text-wrap">
-                <span class="wf-step-label">Archived</span>
-                <span class="wf-step-sub">Facility Cleared</span>
-              </div>
+            <div class="routing-status-label">
+              <span class="routing-step-desc"><strong style="color: #64748b;">Archived:</strong> Concluded &bull; Post-Event Inspected</span>
+              <span class="routing-note">Post-activity report: Clean &amp; undamaged</span>
             </div>
           </div>
         </div>
 
-        <!-- Card Actions -->
-        <div class="res-card-actions">
-          <div class="res-actions-left">
-            <span>Post-activity facility condition report: Clean and undamaged.</span>
-          </div>
-
-          <div class="res-actions-right">
-            <button type="button" class="btn-card-action secondary js-view-details">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-              <span>View Archived Details</span>
-            </button>
-            <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0812">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              <span>Download Slip</span>
-            </button>
-          </div>
+        <div class="res-card-side-actions">
+          <button type="button" class="btn-card-action secondary js-view-details">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>Archived Details</span>
+          </button>
+          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0812">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <span>Download</span>
+          </button>
         </div>
       </article>
+
+      <!-- ALTERNATIVE TABLE VIEW (TOGGLEABLE) -->
+      <div class="reservations-table-wrap" id="reservationsTableWrap" style="display: none;">
+        <table class="res-table">
+          <thead>
+            <tr>
+              <th>Ref &amp; Facility</th>
+              <th>Activity Title &amp; Unit</th>
+              <th>Schedule Window</th>
+              <th>Routing Status</th>
+              <th style="text-align: right;">Quick Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="res-table-row" data-status="pending" data-venue="function-hall">
+              <td>
+                <span class="res-ref-tag">ATI-RES-2026-1042</span>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Function Hall</div>
+              </td>
+              <td>
+                <div style="font-weight: 800; color: #142e20;">Regional Agricultural Extension Coordinators Training 2026</div>
+                <div style="font-size: 0.78rem; color: #556e5f;">Career Development Division (CDD) &bull; 120 Delegates</div>
+              </td>
+              <td>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Oct 14 – 16, 2026 (3 Days)</div>
+                <div style="font-size: 0.76rem; color: #617b6c;">08:00 AM – 05:00 PM</div>
+              </td>
+              <td>
+                <span class="res-status-badge pending"><span class="status-dot-pulse"></span><span>Pending Clearance (Step 3/4)</span></span>
+              </td>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; gap: 0.4rem;">
+                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
+                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-1042">Slip</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="res-table-row" data-status="pending" data-venue="training-hall">
+              <td>
+                <span class="res-ref-tag">ATI-RES-2026-1039</span>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Training Hall A</div>
+              </td>
+              <td>
+                <div style="font-weight: 800; color: #142e20;">Smart Agriculture Technologies Demonstration Workshop</div>
+                <div style="font-size: 0.78rem; color: #556e5f;">Partnership &amp; Accreditation Division (PAD) &bull; 45 Attendees</div>
+              </td>
+              <td>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Oct 22 – 23, 2026 (2 Days)</div>
+                <div style="font-size: 0.76rem; color: #617b6c;">08:30 AM – 04:30 PM</div>
+              </td>
+              <td>
+                <span class="res-status-badge pending"><span class="status-dot-pulse"></span><span>Division Sign (Step 2/4)</span></span>
+              </td>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; gap: 0.4rem;">
+                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
+                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-1039">Slip</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="res-table-row" data-status="approved" data-venue="boardroom">
+              <td>
+                <span class="res-ref-tag">ATI-RES-2026-0985</span>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Executive Boardroom</div>
+              </td>
+              <td>
+                <div style="font-weight: 800; color: #142e20;">Executive Directorate Quarterly Planning & Strategy Session</div>
+                <div style="font-size: 0.78rem; color: #556e5f;">Office of the Director (OD) &bull; 25 Dignitaries</div>
+              </td>
+              <td>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Oct 08, 2026 (1 Day)</div>
+                <div style="font-size: 0.76rem; color: #617b6c;">09:00 AM – 05:00 PM</div>
+              </td>
+              <td>
+                <span class="res-status-badge approved"><span class="status-dot-pulse"></span><span>Confirmed &amp; Approved</span></span>
+              </td>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; gap: 0.4rem;">
+                  <button type="button" class="btn-card-action primary" onclick="showGatePassModal('ATI-RES-2026-0985', 'Executive Directorate Quarterly Planning & Strategy Session', 'Executive Boardroom', 'Oct 08, 2026')">Pass &amp; QR</button>
+                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="res-table-row" data-status="approved" data-venue="dormitory">
+              <td>
+                <span class="res-ref-tag">ATI-RES-2026-0941</span>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Dormitory (Executive Wing)</div>
+              </td>
+              <td>
+                <div style="font-weight: 800; color: #142e20;">Guest Lecturers & Resource Persons Lodging</div>
+                <div style="font-size: 0.78rem; color: #556e5f;">Career Development Division (CDD) &bull; 8 Speakers (4 Rooms)</div>
+              </td>
+              <td>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Oct 05 – 07, 2026 (2 Nights)</div>
+                <div style="font-size: 0.76rem; color: #617b6c;">In: 02:00 PM • Out: 12:00 PM</div>
+              </td>
+              <td>
+                <span class="res-status-badge approved"><span class="status-dot-pulse"></span><span>Keys Allocation Ready</span></span>
+              </td>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; gap: 0.4rem;">
+                  <button type="button" class="btn-card-action primary" onclick="showGatePassModal('ATI-RES-2026-0941', 'Guest Lecturers & Resource Persons Lodging', 'ATI Dormitory Executive Wing', 'Oct 05 - 07, 2026')">Pass &amp; QR</button>
+                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr class="res-table-row" data-status="completed" data-venue="mess-hall">
+              <td>
+                <span class="res-ref-tag">ATI-RES-2026-0812</span>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Mess Hall</div>
+              </td>
+              <td>
+                <div style="font-weight: 800; color: #142e20;">ATI Mid-Year General Assembly & Fellowship Gathering</div>
+                <div style="font-size: 0.78rem; color: #556e5f;">Administrative &amp; Finance Unit &bull; 180 Personnel</div>
+              </td>
+              <td>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Sep 25, 2026 (1 Day)</div>
+                <div style="font-size: 0.76rem; color: #617b6c;">11:00 AM – 03:00 PM</div>
+              </td>
+              <td>
+                <span class="res-status-badge completed"><span class="status-dot-pulse"></span><span>Completed &amp; Archived</span></span>
+              </td>
+              <td style="text-align: right;">
+                <div style="display: inline-flex; gap: 0.4rem;">
+                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
+                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0812">Slip</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     </section>
 
@@ -1081,7 +1067,12 @@
        ========================================================================== -->
   <div class="modal-overlay" id="resDetailsModal" role="dialog" aria-modal="true">
     <div class="modal-card">
-      <button type="button" class="modal-close-btn js-close-res-modal" aria-label="Close modal">&times;</button>
+      <button type="button" class="modal-close-btn js-close-res-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       
       <div class="modal-header-banner">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
@@ -1163,7 +1154,12 @@
        ========================================================================== -->
   <div class="modal-overlay" id="gatePassModal" role="dialog" aria-modal="true">
     <div class="modal-card" style="max-width: 540px;">
-      <button type="button" class="modal-close-btn js-close-res-modal" aria-label="Close modal">&times;</button>
+      <button type="button" class="modal-close-btn js-close-res-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       
       <div class="modal-header-banner" style="text-align: center; padding: 1.75rem;">
         <span style="font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(255, 255, 255, 0.2); padding: 0.25rem 0.85rem; border-radius: 9999px;">ATI Security & Venue Access Pass</span>
@@ -1228,7 +1224,13 @@
        MODAL 3: CANCEL RESERVATION CONFIRMATION
        ========================================================================== -->
   <div class="modal-overlay" id="cancelConfirmModal" role="dialog" aria-modal="true">
-    <div class="modal-card" style="max-width: 500px;">
+    <div class="modal-card" style="max-width: 500px; position: relative;">
+      <button type="button" class="modal-close-btn js-close-res-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       <div style="padding: 1.75rem 2rem;">
         <div style="width: 52px; height: 52px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem;">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>

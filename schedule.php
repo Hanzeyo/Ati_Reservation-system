@@ -98,7 +98,11 @@ if ($isAdmin || isset($_GET['admin'])) {
           </div>
 
           <div class="profile-dropdown" id="profileDropdown">
-            <a href="javascript:void(0)" class="dropdown-item">
+            <div class="dropdown-header-info">
+              <div class="dropdown-user-name">Juan Dela Cruz</div>
+              <div class="dropdown-user-email"><span class="user-verified-dot"></span> ATI Personnel &bull; CDD</div>
+            </div>
+            <a href="profile.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
@@ -198,7 +202,7 @@ if ($isAdmin || isset($_GET['admin'])) {
         <div class="drawer-nav-section">
           <div class="drawer-section-label">ACCOUNT & SETTINGS</div>
           
-          <a href="javascript:void(0)" class="drawer-nav-link" onclick="alert('Profile management available in next administrative release.');">
+          <a href="profile.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             </div>
@@ -300,9 +304,11 @@ if ($isAdmin || isset($_GET['admin'])) {
       </a>
     </section>
 
-    <!-- Summary Stats Strip -->
+    <!-- Summary Stats Strip (Interactive System Status Cards) -->
     <div class="schedule-stats-grid">
-      <div class="schedule-stat-card">
+
+      <!-- Card 1: Total Events Scheduled -->
+      <div class="schedule-stat-card green" id="statCardEvents" role="button" tabindex="0" title="Click to view scheduled events stats">
         <div class="stat-icon-box green">
           <svg viewBox="0 0 24 24" fill="none">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -311,12 +317,13 @@ if ($isAdmin || isset($_GET['admin'])) {
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value">18 Events</span>
-          <span class="stat-label">Scheduled this Month</span>
+          <span class="stat-value" id="statValueEvents">18 Events</span>
+          <span class="stat-label" id="statLabelEvents">Scheduled this Month</span>
         </div>
       </div>
 
-      <div class="schedule-stat-card">
+      <!-- Card 2: Highest Demand Venue -->
+      <div class="schedule-stat-card blue" id="statCardDemand" role="button" tabindex="0" title="Click to filter to highest demand venue">
         <div class="stat-icon-box blue">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -326,12 +333,13 @@ if ($isAdmin || isset($_GET['admin'])) {
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value">Function Hall</span>
-          <span class="stat-label">Highest Demand Venue</span>
+          <span class="stat-value" id="statValueDemand">Function Hall</span>
+          <span class="stat-label" id="statLabelDemand">Highest Demand Venue</span>
         </div>
       </div>
 
-      <div class="schedule-stat-card">
+      <!-- Card 3: Overall Monthly Occupancy -->
+      <div class="schedule-stat-card amber" id="statCardOccupancy" role="button" tabindex="0" title="Click to view monthly occupancy details">
         <div class="stat-icon-box amber">
           <svg viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10"></circle>
@@ -339,12 +347,13 @@ if ($isAdmin || isset($_GET['admin'])) {
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value">68%</span>
-          <span class="stat-label">Overall Monthly Occupancy</span>
+          <span class="stat-value" id="statValueOccupancy">68%</span>
+          <span class="stat-label" id="statLabelOccupancy">Overall Monthly Occupancy</span>
         </div>
       </div>
 
-      <div class="schedule-stat-card">
+      <!-- Card 4: Days with Available Slots -->
+      <div class="schedule-stat-card purple" id="statCardAvailableDays" role="button" tabindex="0" title="Click to highlight available slots">
         <div class="stat-icon-box purple">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -352,9 +361,38 @@ if ($isAdmin || isset($_GET['admin'])) {
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value">12 Days</span>
-          <span class="stat-label">With Available Slots</span>
+          <span class="stat-value" id="statValueAvailableDays">12 Days</span>
+          <span class="stat-label" id="statLabelAvailableDays">With Available Slots</span>
         </div>
+      </div>
+
+    </div>
+
+    <!-- Stats Details Panel on the bottom of the cards (appears when a card is clicked) -->
+    <div class="stat-detail-panel" id="statDetailPanel" style="display: none;" role="region" aria-live="polite">
+      <button type="button" class="stat-detail-close-btn" id="statDetailCloseBtn" aria-label="Close stats details" title="Close stats details">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <div class="stat-detail-main">
+        <div class="stat-detail-icon-wrap" id="statDetailIconWrap">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle></svg>
+        </div>
+        <div class="stat-detail-info">
+          <div class="stat-detail-header">
+            <span class="stat-detail-title" id="statDetailTitle">Card Stats</span>
+            <span class="stat-detail-badge" id="statDetailBadge">Details</span>
+          </div>
+          <p class="stat-detail-desc" id="statDetailDesc">Description of statistics.</p>
+          <div class="stat-detail-chips" id="statDetailChips">
+            <!-- Breakdown pills dynamically added here -->
+          </div>
+        </div>
+      </div>
+      <div class="stat-detail-actions">
+        <button type="button" class="stat-detail-action-btn" id="statDetailActionBtn" style="display: none;"></button>
       </div>
     </div>
 
@@ -406,7 +444,12 @@ if ($isAdmin || isset($_GET['admin'])) {
        ========================================================================== -->
   <div class="modal-overlay" id="scheduleEventModal" role="dialog" aria-modal="true">
     <div class="modal-card modal-lg">
-      <button class="modal-close-btn js-close-modal" aria-label="Close modal">&times;</button>
+      <button type="button" class="modal-close-btn js-close-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
       
       <div class="modal-header-banner" id="modalEventBanner">
         <span style="font-size: 0.78rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.9;" id="modalEventFacility">Function Hall</span>
@@ -449,8 +492,44 @@ if ($isAdmin || isset($_GET['admin'])) {
         </div>
       </div>
     </div>
+  <!-- ==========================================================================
+       MONTHLY SCHEDULED EVENTS LIST MODAL (Activated by Card 1)
+       ========================================================================== -->
+  <div class="modal-overlay" id="monthlyEventsModal" role="dialog" aria-modal="true">
+    <div class="modal-card modal-lg" style="max-width: 820px;">
+      <button type="button" class="modal-close-btn js-close-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      
+      <div class="modal-header-banner" style="background: linear-gradient(135deg, #175432, #107545); padding: 1.35rem 1.85rem;">
+        <span style="font-size: 0.78rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.9; color: #ffffff;">SYSTEM ACTIVITY BREAKDOWN</span>
+        <h3 id="monthlyEventsModalTitle" style="font-size: 1.45rem; margin-top: 0.35rem; color: #ffffff;">Scheduled Events for October 2026</h3>
+      </div>
+
+      <div class="schedule-modal-content" style="padding: 1.5rem 1.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+          <div style="font-size: 0.88rem; color: #175432; font-weight: 700;" id="monthlyEventsModalCount">Showing 18 confirmed events across ATI facilities</div>
+          <input type="text" id="eventsModalSearchInput" placeholder="Quick search title, facility, division..." style="padding: 0.5rem 0.95rem; border: 1.5px solid #d1ded5; border-radius: 8px; font-size: 0.82rem; min-width: 260px; outline: none;">
+        </div>
+
+        <div class="monthly-events-list-container" id="monthlyEventsListContainer" style="max-height: 380px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 4px;">
+          <!-- Dynamically populated by schedule.js -->
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5ece7;">
+          <button type="button" class="btn-step-back js-close-modal">Close</button>
+          <a href="booking.php" class="btn-proceed-step" style="padding: 0.75rem 1.5rem; border-radius: 9999px;">
+            <span>Reserve a Facility</span>
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="js/schedule.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
+
