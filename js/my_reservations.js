@@ -6,6 +6,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initProfileDropdown();
   initMobileDrawer();
+  initReservationTabs();
   initKpiFilters();
   initCustomFacilityDropdown();
   initSearch();
@@ -56,7 +57,99 @@ function syncGlobalProfileHeader() {
 }
 
 /* ==========================================================================
-   2. KPI Stat Card Filters & Filtering Controller
+   2. Segmented Tabs Controller: Active Reservations vs Booking History
+   ========================================================================== */
+let currentActiveTab = 'active'; // 'active' | 'history'
+
+function initReservationTabs() {
+  const tabActive = document.getElementById('tabActiveReservations');
+  const tabHistory = document.getElementById('tabBookingHistory');
+
+  if (tabActive) {
+    tabActive.addEventListener('click', () => switchReservationTab('active'));
+  }
+  if (tabHistory) {
+    tabHistory.addEventListener('click', () => switchReservationTab('history'));
+  }
+
+  // Check URL query param: ?tab=history or #history
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabParam = urlParams.get('tab');
+  const hashParam = window.location.hash.replace('#', '');
+
+  if (tabParam === 'history' || hashParam === 'history') {
+    switchReservationTab('history', false);
+  } else {
+    switchReservationTab('active', false);
+  }
+}
+
+function switchReservationTab(tab, updateUrl = true) {
+  currentActiveTab = tab === 'history' ? 'history' : 'active';
+
+  const tabActive = document.getElementById('tabActiveReservations');
+  const tabHistory = document.getElementById('tabBookingHistory');
+  const tabsContainer = document.querySelector('.res-tabs-container');
+  const metaText = document.getElementById('tabMetaText');
+  const emptyStateH3 = document.querySelector('#emptyResState h3');
+  const emptyStateP = document.querySelector('#emptyResState p');
+
+  if (currentActiveTab === 'active') {
+    if (tabActive) {
+      tabActive.classList.add('active');
+      tabActive.setAttribute('aria-selected', 'true');
+    }
+    if (tabHistory) {
+      tabHistory.classList.remove('active');
+      tabHistory.setAttribute('aria-selected', 'false');
+    }
+    if (tabsContainer) tabsContainer.classList.remove('is-history');
+    if (metaText) {
+      metaText.textContent = 'Showing ongoing and upcoming reservations undergoing administrative review & clearance.';
+    }
+    if (emptyStateH3) emptyStateH3.textContent = 'No Active Reservations Found';
+    if (emptyStateP) emptyStateP.textContent = 'There are no active or pending reservations matching your filter. Switch to Booking History to view past records.';
+  } else {
+    if (tabHistory) {
+      tabHistory.classList.add('active');
+      tabHistory.setAttribute('aria-selected', 'true');
+    }
+    if (tabActive) {
+      tabActive.classList.remove('active');
+      tabActive.setAttribute('aria-selected', 'false');
+    }
+    if (tabsContainer) tabsContainer.classList.add('is-history');
+    if (metaText) {
+      metaText.textContent = 'Showing completed, concluded, and archived booking records for historical audit & reporting.';
+    }
+    if (emptyStateH3) emptyStateH3.textContent = 'No Historical Bookings Found';
+    if (emptyStateP) emptyStateP.textContent = 'There are no past or completed reservations matching your criteria in the booking history archive.';
+  }
+
+  // Reset status filter for the tab
+  activeStatusFilter = 'all';
+  document.querySelectorAll('.my-res-stat-card').forEach(c => {
+    if (c.dataset.filter === 'all') c.classList.add('active-filter');
+    else c.classList.remove('active-filter');
+  });
+
+  if (updateUrl && history.pushState) {
+    const newUrl = new URL(window.location);
+    if (currentActiveTab === 'history') {
+      newUrl.searchParams.set('tab', 'history');
+    } else {
+      newUrl.searchParams.delete('tab');
+    }
+    history.pushState({}, '', newUrl);
+  }
+
+  updateKpiCounts();
+  applyAllFilters();
+}
+window.switchReservationTab = switchReservationTab;
+
+/* ==========================================================================
+   3. KPI Stat Card Filters & Filtering Controller
    ========================================================================== */
 let activeStatusFilter = 'all';
 let activeVenueFilter = 'all';
@@ -75,12 +168,17 @@ function applyAllFilters() {
     const cardVenue = card.dataset.venue;
     const cardText = card.textContent.toLowerCase();
 
+    // Check if card belongs to active tab
+    const matchesTab = (currentActiveTab === 'active')
+      ? (cardStatus === 'pending' || cardStatus === 'approved')
+      : (cardStatus === 'completed' || cardStatus === 'cancelled');
+
     const matchesStatus = (activeStatusFilter === 'all') || (cardStatus === activeStatusFilter);
     const matchesVenue = (activeVenueFilter === 'all') || (cardVenue === activeVenueFilter);
     const matchesSearch = !activeSearchQuery || cardText.includes(activeSearchQuery);
 
     if (currentViewMode === 'cards') {
-      if (matchesStatus && matchesVenue && matchesSearch) {
+      if (matchesTab && matchesStatus && matchesVenue && matchesSearch) {
         card.style.display = '';
         visibleCount++;
       } else {
@@ -96,11 +194,15 @@ function applyAllFilters() {
     const rowVenue = row.dataset.venue;
     const rowText = row.textContent.toLowerCase();
 
+    const matchesTab = (currentActiveTab === 'active')
+      ? (rowStatus === 'pending' || rowStatus === 'approved')
+      : (rowStatus === 'completed' || rowStatus === 'cancelled');
+
     const matchesStatus = (activeStatusFilter === 'all') || (rowStatus === activeStatusFilter);
     const matchesVenue = (activeVenueFilter === 'all') || (rowVenue === activeVenueFilter);
     const matchesSearch = !activeSearchQuery || rowText.includes(activeSearchQuery);
 
-    if (matchesStatus && matchesVenue && matchesSearch) {
+    if (matchesTab && matchesStatus && matchesVenue && matchesSearch) {
       row.style.display = '';
       if (currentViewMode === 'table') visibleCount++;
     } else {
@@ -144,32 +246,66 @@ function initViewModeToggle() {
 
 function updateKpiCounts() {
   const cards = document.querySelectorAll('.res-card');
-  let total = 0;
-  let pending = 0;
-  let approved = 0;
-  let completed = 0;
+  let activeTotal = 0;
+  let pendingCount = 0;
+  let approvedCount = 0;
+  let historyTotal = 0;
+  let completedCount = 0;
+  let cancelledCount = 0;
 
   cards.forEach(card => {
     const status = card.dataset.status;
-    if (status !== 'cancelled') {
-      total++;
+    if (status === 'pending') {
+      pendingCount++;
+      activeTotal++;
+    } else if (status === 'approved') {
+      approvedCount++;
+      activeTotal++;
+    } else if (status === 'completed') {
+      completedCount++;
+      historyTotal++;
+    } else if (status === 'cancelled') {
+      cancelledCount++;
+      historyTotal++;
     }
-    if (status === 'pending') pending++;
-    if (status === 'approved') approved++;
-    if (status === 'completed') completed++;
   });
 
-  const kpiTotal = document.getElementById('kpiTotal');
-  const kpiPending = document.getElementById('kpiPending');
-  const kpiApproved = document.getElementById('kpiApproved');
-  const kpiCompleted = document.getElementById('kpiCompleted');
+  const badgeActive = document.getElementById('badgeActiveCount');
+  const badgeHistory = document.getElementById('badgeHistoryCount');
   const navBadgeCount = document.getElementById('navBadgeCount');
 
-  if (kpiTotal) kpiTotal.textContent = total;
-  if (kpiPending) kpiPending.textContent = pending;
-  if (kpiApproved) kpiApproved.textContent = approved;
-  if (kpiCompleted) kpiCompleted.textContent = completed;
-  if (navBadgeCount) navBadgeCount.textContent = pending;
+  if (badgeActive) badgeActive.textContent = activeTotal;
+  if (badgeHistory) badgeHistory.textContent = historyTotal;
+  if (navBadgeCount) navBadgeCount.textContent = activeTotal;
+
+  const kpiTotal = document.getElementById('kpiTotal');
+  const lblKpiTotal = document.getElementById('lblKpiTotal');
+  const kpiPending = document.getElementById('kpiPending');
+  const lblKpiPending = document.getElementById('lblKpiPending');
+  const kpiApproved = document.getElementById('kpiApproved');
+  const lblKpiApproved = document.getElementById('lblKpiApproved');
+  const kpiCard4Val = document.getElementById('kpiCompleted');
+  const lblKpiCard4 = document.getElementById('lblKpiCompleted');
+
+  if (currentActiveTab === 'active') {
+    if (kpiTotal) kpiTotal.textContent = activeTotal;
+    if (lblKpiTotal) lblKpiTotal.textContent = 'Active Bookings';
+    if (kpiPending) kpiPending.textContent = pendingCount;
+    if (lblKpiPending) lblKpiPending.textContent = 'Pending Review';
+    if (kpiApproved) kpiApproved.textContent = approvedCount;
+    if (lblKpiApproved) lblKpiApproved.textContent = 'Approved & Confirmed';
+    if (kpiCard4Val) kpiCard4Val.textContent = historyTotal;
+    if (lblKpiCard4) lblKpiCard4.textContent = 'Booking History Archive';
+  } else {
+    if (kpiTotal) kpiTotal.textContent = historyTotal;
+    if (lblKpiTotal) lblKpiTotal.textContent = 'Historical Records';
+    if (kpiPending) kpiPending.textContent = completedCount;
+    if (lblKpiPending) lblKpiPending.textContent = 'Completed & Cleared';
+    if (kpiApproved) kpiApproved.textContent = cancelledCount;
+    if (lblKpiApproved) lblKpiApproved.textContent = 'Cancelled / Released';
+    if (kpiCard4Val) kpiCard4Val.textContent = activeTotal;
+    if (lblKpiCard4) lblKpiCard4.textContent = 'Active Reservations';
+  }
 }
 
 function initKpiFilters() {
@@ -179,6 +315,17 @@ function initKpiFilters() {
     card.addEventListener('click', () => {
       const filter = card.dataset.filter || 'all';
 
+      // Card 4 acts as quick switcher to other tab
+      if (filter === 'completed') {
+        if (currentActiveTab === 'active') {
+          switchReservationTab('history');
+          return;
+        } else {
+          switchReservationTab('active');
+          return;
+        }
+      }
+
       statCards.forEach(c => c.classList.remove('active-filter'));
       card.classList.add('active-filter');
 
@@ -187,12 +334,17 @@ function initKpiFilters() {
     });
   });
 
-  // Support direct navigation from profile stat cards via URL query
+  // Support direct navigation via URL query
   const urlFilter = new URLSearchParams(window.location.search).get('filter');
   if (urlFilter) {
-    const targetCard = document.querySelector(`.my-res-stat-card[data-filter="${urlFilter}"]`);
-    if (targetCard) {
-      targetCard.click();
+    if (urlFilter === 'completed') {
+      switchReservationTab('history', false);
+    } else {
+      switchReservationTab('active', false);
+      const targetCard = document.querySelector(`.my-res-stat-card[data-filter="${urlFilter}"]`);
+      if (targetCard) {
+        targetCard.click();
+      }
     }
   }
 }

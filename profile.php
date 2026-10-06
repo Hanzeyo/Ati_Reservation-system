@@ -55,7 +55,7 @@
           <span>New Reservation</span>
         </a>
 
-        <!-- Booking History with count badge -->
+        <!-- My Reservations with count badge -->
         <a href="my_reservations.php" class="booking-nav-item">
           <svg viewBox="0 0 24 24" fill="none">
             <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -65,8 +65,8 @@
             <line x1="3" y1="12" x2="3.01" y2="12"></line>
             <line x1="3" y1="18" x2="3.01" y2="18"></line>
           </svg>
-          <span>Booking History</span>
-          <span class="nav-badge-count" id="navBadgeCount">2</span>
+          <span>My Reservations</span>
+          <span class="nav-badge-count" id="navBadgeCount">4</span>
         </a>
 
         <!-- Master Schedule -->
@@ -104,6 +104,17 @@
               <span class="dropdown-item-badge">Active</span>
             </a>
             <a href="my_reservations.php" class="dropdown-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>My Reservations</span>
+            </a>
+            <a href="my_reservations.php?tab=history" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
@@ -179,8 +190,8 @@
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
             </div>
-            <span class="drawer-link-text">Booking History</span>
-            <span class="drawer-badge-count">2</span>
+            <span class="drawer-link-text">My Reservations</span>
+            <span class="drawer-badge-count">4</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
           <a href="schedule.php" class="drawer-nav-link">
@@ -201,7 +212,7 @@
             <span class="drawer-link-text">My Profile</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
-          <a href="my_reservations.php" class="drawer-nav-link">
+          <a href="my_reservations.php?tab=history" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>
@@ -385,7 +396,7 @@
         <div class="profile-stat-info">
           <span class="profile-stat-val">5</span>
           <span class="profile-stat-lbl">Total Reservations Filed</span>
-          <a href="my_reservations.php" class="stat-click-hint" onclick="event.stopPropagation();" title="View all 5 bookings in Booking History">View all 5 bookings &rarr;</a>
+          <a href="my_reservations.php" class="stat-click-hint" onclick="event.stopPropagation();" title="View all bookings in My Reservations">View all bookings &rarr;</a>
         </div>
       </div>
 
@@ -400,7 +411,7 @@
         <div class="profile-stat-info">
           <span class="profile-stat-val">2</span>
           <span class="profile-stat-lbl">Confirmed &amp; Approved</span>
-          <a href="my_reservations.php?filter=approved" class="stat-click-hint" onclick="event.stopPropagation();" title="View approved bookings in Booking History">View 2 approved &rarr;</a>
+          <a href="my_reservations.php?filter=approved" class="stat-click-hint" onclick="event.stopPropagation();" title="View approved bookings in My Reservations">View 2 approved &rarr;</a>
         </div>
       </div>
 
@@ -415,7 +426,7 @@
         <div class="profile-stat-info">
           <span class="profile-stat-val">2</span>
           <span class="profile-stat-lbl">Under Admin Review</span>
-          <a href="my_reservations.php?filter=pending" class="stat-click-hint" onclick="event.stopPropagation();" title="View pending bookings in Booking History">View 2 pending &rarr;</a>
+          <a href="my_reservations.php?filter=pending" class="stat-click-hint" onclick="event.stopPropagation();" title="View pending reviews in My Reservations">View 2 pending &rarr;</a>
         </div>
       </div>
 
@@ -823,7 +834,7 @@
       <div class="profile-modal-footer">
         <button type="button" class="btn-profile-secondary" id="btnCloseStatModalFooter">Close</button>
         <a href="my_reservations.php" class="btn-profile-primary" id="btnModalGoToBookings">
-          <span>Go to Booking History &rarr;</span>
+          <span>Go to My Reservations &rarr;</span>
         </a>
       </div>
     </div>

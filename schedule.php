@@ -38,7 +38,7 @@ if ($isAdmin || isset($_GET['admin'])) {
       <a href="home.php" class="booking-brand" title="ATI Reservation Portal">
         <img src="assets/images/ATI_Logo.png" alt="ATI Official Logo" class="booking-brand-logo">
         <div class="booking-brand-text">
-          <h1>Agriculture Training Institute</h1>
+          <h1>Agricultural Training Institute</h1>
           <p>Facility and Dormitory Reservation System</p>
         </div>
       </a>
@@ -73,7 +73,7 @@ if ($isAdmin || isset($_GET['admin'])) {
             <line x1="3" y1="18" x2="3.01" y2="18"></line>
           </svg>
           <span>My Reservations</span>
-          <span class="nav-badge-count">2</span>
+          <span class="nav-badge-count">4</span>
         </a>
 
         <!-- Master Schedule (Active) -->
@@ -110,6 +110,17 @@ if ($isAdmin || isset($_GET['admin'])) {
               <span>My Profile</span>
             </a>
             <a href="my_reservations.php" class="dropdown-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>My Reservations</span>
+            </a>
+            <a href="my_reservations.php?tab=history" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
@@ -185,7 +196,7 @@ if ($isAdmin || isset($_GET['admin'])) {
               <svg viewBox="0 0 24 24" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
             </div>
             <span class="drawer-link-text">My Reservations</span>
-            <span class="drawer-badge-count">2</span>
+            <span class="drawer-badge-count">4</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
 
@@ -209,7 +220,7 @@ if ($isAdmin || isset($_GET['admin'])) {
             <span class="drawer-link-text">My Profile</span>
           </a>
 
-          <a href="my_reservations.php" class="drawer-nav-link">
+          <a href="my_reservations.php?tab=history" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>

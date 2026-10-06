@@ -70,7 +70,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             <line x1="3" y1="18" x2="3.01" y2="18"></line>
           </svg>
           <span>My Reservations</span>
-          <span class="nav-badge-count">2</span>
+          <span class="nav-badge-count">4</span>
         </a>
 
         <!-- Master Schedule -->
@@ -107,6 +107,17 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
               <span>My Profile</span>
             </a>
             <a href="my_reservations.php" class="dropdown-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>My Reservations</span>
+            </a>
+            <a href="my_reservations.php?tab=history" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
@@ -211,7 +222,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
               </svg>
             </div>
             <span class="drawer-link-text">My Reservations</span>
-            <span class="drawer-badge-count">2</span>
+            <span class="drawer-badge-count">4</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -247,7 +258,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             <span class="drawer-link-text">My Profile</span>
           </a>
 
-          <a href="my_reservations.php" class="drawer-nav-link">
+          <a href="my_reservations.php?tab=history" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10"></circle>

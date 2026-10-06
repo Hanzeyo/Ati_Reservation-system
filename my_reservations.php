@@ -9,13 +9,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking History | ATI Facility & Dormitory Reservation Portal</title>
-  <meta name="description" content="Official Booking History & Reservation Activity Tracker for Agriculture Training Institute facilities and dormitories.">
+  <title>My Reservations | ATI Facility & Dormitory Reservation Portal</title>
+  <meta name="description" content="Official My Reservations & Booking History Portal for Agriculture Training Institute facilities and dormitories.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
@@ -33,8 +33,8 @@
       <a href="home.php" class="booking-brand" style="text-decoration: none;" title="ATI Reservation Portal">
         <img src="assets/images/ATI_Logo.png" alt="Agricultural Training Institute Logo" class="booking-brand-logo">
         <div class="booking-brand-text">
-          <h1>ATI Facility Reservation Portal</h1>
-          <p>Department of Agriculture &bull; Central Office</p>
+          <h1>Agricultural Training Institute</h1>
+          <p>Facility and Dormitory Reservation System</p>
         </div>
       </a>
 
@@ -52,13 +52,13 @@
         <!-- New Reservation -->
         <a href="booking.php" class="booking-nav-item">
           <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 5v14"></path>
-            <path d="M5 12h14"></path>
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
           </svg>
           <span>New Reservation</span>
         </a>
 
-        <!-- My Reservations / Booking History (Active) -->
+        <!-- My Reservations (Active) -->
         <a href="my_reservations.php" class="booking-nav-item active">
           <svg viewBox="0 0 24 24" fill="none">
             <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -68,8 +68,8 @@
             <line x1="3" y1="12" x2="3.01" y2="12"></line>
             <line x1="3" y1="18" x2="3.01" y2="18"></line>
           </svg>
-          <span>Booking History</span>
-          <span class="nav-badge-count" id="navBadgeCount">2</span>
+          <span>My Reservations</span>
+          <span class="nav-badge-count" id="navBadgeCount">4</span>
         </a>
 
         <!-- Master Schedule -->
@@ -107,11 +107,22 @@
             </a>
             <a href="my_reservations.php" class="dropdown-item active">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>My Reservations</span>
+              <span class="dropdown-item-badge">Active</span>
+            </a>
+            <a href="my_reservations.php?tab=history" class="dropdown-item" onclick="switchReservationTab('history')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
               </svg>
               <span>Booking History</span>
-              <span class="dropdown-item-badge">Active</span>
             </a>
             <a href="admin_dashboard.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -201,8 +212,8 @@
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
             </div>
-            <span class="drawer-link-text">Booking History</span>
-            <span class="drawer-badge-count">2</span>
+            <span class="drawer-link-text">My Reservations</span>
+            <span class="drawer-badge-count" id="drawerActiveCount">4</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
 
@@ -226,7 +237,7 @@
             <span class="drawer-link-text">My Profile</span>
           </a>
 
-          <a href="my_reservations.php" class="drawer-nav-link">
+          <a href="my_reservations.php?tab=history" class="drawer-nav-link" onclick="toggleMobileDrawer(false); switchReservationTab('history');">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>
@@ -304,10 +315,10 @@
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
-          <span>Official Records &amp; Activity Log</span>
+          <span>Official Records &amp; Reservation Desk</span>
         </div>
-        <h2>Booking History</h2>
-        <p>Monitor your active and historical reservation requests, follow live routing through approving administrative units, download official booking slips, or view security gate passes.</p>
+        <h2 id="pageMainHeading">My Reservations</h2>
+        <p>Monitor your active venue and dormitory bookings, follow live routing through approving administrative units, download official booking slips, or access your completed booking archives.</p>
       </div>
 
       <a href="booking.php" class="btn-new-res-action">
@@ -319,9 +330,41 @@
       </a>
     </section>
 
+    <!-- Segmented Tab Switcher: Active Reservations vs Booking History -->
+    <div class="res-tabs-container">
+      <div class="res-segmented-tabs" role="tablist" aria-label="Reservation Categories">
+        <button type="button" class="res-tab-item active" id="tabActiveReservations" data-tab="active" role="tab" aria-selected="true" onclick="switchReservationTab('active')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="8" y1="6" x2="21" y2="6"></line>
+            <line x1="8" y1="12" x2="21" y2="12"></line>
+            <line x1="8" y1="18" x2="21" y2="18"></line>
+            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+          </svg>
+          <span class="tab-label">Active Reservations</span>
+          <span class="tab-counter-pill green" id="badgeActiveCount">4</span>
+        </button>
+
+        <button type="button" class="res-tab-item" id="tabBookingHistory" data-tab="history" role="tab" aria-selected="false" onclick="switchReservationTab('history')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span class="tab-label">Booking History</span>
+          <span class="tab-counter-pill neutral" id="badgeHistoryCount">1</span>
+        </button>
+      </div>
+
+      <div class="res-tab-meta-hint" id="tabMetaHint">
+        <span class="tab-meta-dot"></span>
+        <span id="tabMetaText">Showing ongoing and upcoming reservations undergoing administrative review & clearance.</span>
+      </div>
+    </div>
+
     <!-- Summary KPI Stat Cards -->
     <section class="my-res-stats-grid" aria-label="Reservation Summary Statistics">
-      <!-- Total -->
+      <!-- Total in Tab -->
       <div class="my-res-stat-card active-filter" data-filter="all">
         <div class="stat-icon-box green">
           <svg viewBox="0 0 24 24" fill="none">
@@ -332,8 +375,8 @@
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiTotal">5</span>
-          <span class="stat-label">Total Bookings</span>
+          <span class="stat-value" id="kpiTotal">4</span>
+          <span class="stat-label" id="lblKpiTotal">Active Bookings</span>
         </div>
       </div>
 
@@ -347,7 +390,7 @@
         </div>
         <div class="stat-content">
           <span class="stat-value" id="kpiPending">2</span>
-          <span class="stat-label">Pending Review</span>
+          <span class="stat-label" id="lblKpiPending">Pending Review</span>
         </div>
       </div>
 
@@ -361,20 +404,21 @@
         </div>
         <div class="stat-content">
           <span class="stat-value" id="kpiApproved">2</span>
-          <span class="stat-label">Confirmed & Approved</span>
+          <span class="stat-label" id="lblKpiApproved">Confirmed & Approved</span>
         </div>
       </div>
 
-      <!-- Completed -->
+      <!-- Historical / Tab Switcher Card -->
       <div class="my-res-stat-card" data-filter="completed">
         <div class="stat-icon-box slate">
           <svg viewBox="0 0 24 24" fill="none">
-            <polyline points="20 6 9 17 4 12"></polyline>
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
         </div>
         <div class="stat-content">
           <span class="stat-value" id="kpiCompleted">1</span>
-          <span class="stat-label">Past / Completed</span>
+          <span class="stat-label" id="lblKpiCompleted">Booking History Archive</span>
         </div>
       </div>
     </section>
