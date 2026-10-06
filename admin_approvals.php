@@ -88,7 +88,7 @@ $isRecommendation = ($currentRole === 'recommendation');
           <span class="sidebar-count-badge amber" id="sidebarPendingCount">5</span>
         </a>
 
-        <a href="admin_dashboard.php<?= $isRecommendation ? '?role=recommendation' : '' ?>#reservationsSection" class="sidebar-menu-item">
+        <a href="admin_reservations.php" class="sidebar-menu-item">
           <div class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -213,14 +213,7 @@ $isRecommendation = ($currentRole === 'recommendation');
         </div>
 
         <div class="admin-topbar-right">
-          <!-- Quick Search -->
-          <div class="topbar-search-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" placeholder="Search approvals queue..." oninput="document.getElementById('approvalsSearchInput').value = this.value; renderApprovalsTable();">
-          </div>
+
 
           <!-- Date Badge -->
           <div class="topbar-date-pill">
@@ -248,35 +241,35 @@ $isRecommendation = ($currentRole === 'recommendation');
               <span>Dual-Stage Endorsement Engine</span>
             </div>
             <h2>Institutional Reservation Endorsement Desk</h2>
-            <p>Review incoming requests, verify logistical feasibility (Stage 1), and issue official Director IV clearance with printable entry permits (Stage 2).</p>
           </div>
 
-          <div class="admin-header-actions">
-            <button type="button" class="btn-system-secondary" onclick="window.print()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-              <span>Print Endorsement Sheet</span>
-            </button>
-            <a href="admin_schedule.php" class="btn-system-primary">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-              <span>Check Master Schedule</span>
-            </a>
+          <div class="admin-header-actions" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; justify-content: flex-end;">
+            <div class="persona-switch-buttons" style="display: flex; align-items: center; gap: 0.45rem; background: #ffffff; padding: 0.35rem 0.65rem; border-radius: 10px; border: 1.5px solid #dce8e0; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+              <span style="font-size: 0.72rem; font-weight: 800; color: #627b6c; text-transform: uppercase; margin-right: 0.25rem;">Authority Level:</span>
+              <button type="button" id="btnRoleRec" class="btn-persona-toggle <?= $isRecommendation ? 'active' : '' ?>" onclick="switchAdminRole('recommendation')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                Stage 1 (Recommendation)
+              </button>
+              <button type="button" id="btnRoleClear" class="btn-persona-toggle <?= !$isRecommendation ? 'active director' : '' ?>" onclick="switchAdminRole('clearance')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                Stage 2 (Final Clearance)
+              </button>
+            </div>
+            
+            <div style="display: flex; gap: 0.5rem;">
+              <button type="button" class="btn-system-secondary" onclick="window.print()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                <span>Print Sheet</span>
+              </button>
+              <a href="admin_schedule.php" class="btn-system-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span>Master Schedule</span>
+              </a>
+            </div>
           </div>
         </section>
 
-        <!-- Sleek Authority Level Switcher Strip -->
-        <div class="authority-level-strip" style="display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; margin-bottom: 1.25rem;">
-          <div class="persona-switch-buttons" style="display: flex; align-items: center; gap: 0.45rem; background: #ffffff; padding: 0.35rem 0.65rem; border-radius: 10px; border: 1.5px solid #dce8e0; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-            <span style="font-size: 0.72rem; font-weight: 800; color: #627b6c; text-transform: uppercase; margin-right: 0.25rem;">Authority Level:</span>
-            <button type="button" id="btnRoleRec" class="btn-persona-toggle <?= $isRecommendation ? 'active' : '' ?>" onclick="switchAdminRole('recommendation')">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              Stage 1 (Recommendation)
-            </button>
-            <button type="button" id="btnRoleClear" class="btn-persona-toggle <?= !$isRecommendation ? 'active director' : '' ?>" onclick="switchAdminRole('clearance')">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-              Stage 2 (Final Clearance)
-            </button>
-          </div>
-        </div>
+
 
         <!-- ==========================================================================
              KPI STAT CARDS
@@ -363,35 +356,16 @@ $isRecommendation = ($currentRole === 'recommendation');
           </div>
 
           <div class="approvals-toolbar-actions">
+            <button type="button" class="btn-system-secondary" onclick="applyApprovalsFilterTab('all')" style="padding: 0.52rem 0.85rem; border-radius: 10px; height: 100%;">
+              View All
+            </button>
+            
             <!-- Venue Category Filter -->
-            <select id="approvalsVenueFilter" onchange="renderApprovalsTable()" style="padding: 0.52rem 0.85rem; border: 1.5px solid #dce8e0; border-radius: 10px; font-family: inherit; font-size: 0.82rem; font-weight: 600; color: #172c1f; background: #fff;">
+            <select id="approvalsVenueFilter" onchange="renderApprovalsTable()" style="padding: 0.52rem 0.85rem; border: 1.5px solid #dce8e0; border-radius: 10px; font-family: inherit; font-size: 0.82rem; font-weight: 600; color: #172c1f; background: #fff; height: 100%;">
               <option value="all">All Facility Types</option>
               <option value="halls">Training & Function Halls</option>
               <option value="dorms">Dormitory Suites</option>
             </select>
-
-            <!-- Filter Tabs -->
-            <div class="approvals-filter-group">
-              <button type="button" class="approvals-filter-tab active" data-tab="awaiting" onclick="applyApprovalsFilterTab('awaiting')">
-                <span>Awaiting Action</span>
-                <span class="tab-count" id="tabCountAwaiting">3</span>
-              </button>
-              <button type="button" class="approvals-filter-tab" data-tab="stage1" onclick="applyApprovalsFilterTab('stage1')">
-                <span>Stage 1: Recommendation</span>
-                <span class="tab-count" id="tabCountStage1">3</span>
-              </button>
-              <button type="button" class="approvals-filter-tab" data-tab="stage2" onclick="applyApprovalsFilterTab('stage2')">
-                <span>Stage 2: Final Clearance</span>
-                <span class="tab-count" id="tabCountStage2">2</span>
-              </button>
-              <button type="button" class="approvals-filter-tab" data-tab="approved" onclick="applyApprovalsFilterTab('approved')">
-                <span>Cleared Archive</span>
-                <span class="tab-count" id="tabCountApproved">1</span>
-              </button>
-              <button type="button" class="approvals-filter-tab" data-tab="all" onclick="applyApprovalsFilterTab('all')">
-                <span>All Requests</span>
-              </button>
-            </div>
           </div>
         </div>
 
@@ -419,6 +393,15 @@ $isRecommendation = ($currentRole === 'recommendation');
           </table>
         </div>
 
+        <style>
+          #approvalsTable th:last-child, #approvalsTable td:last-child {
+            background: #f4fdf8;
+            border-left: 1px solid #dce8e0;
+          }
+          #approvalsTable td:last-child {
+            box-shadow: inset 3px 0 0 #a9d6bb;
+          }
+        </style>
       </main>
     </div>
   </div>

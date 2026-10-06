@@ -86,7 +86,7 @@ $isRecommendation = ($currentRole === 'recommendation');
           <span class="sidebar-count-badge amber" id="sidebarPendingCount">5</span>
         </a>
 
-        <a href="admin_dashboard.php<?= $isRecommendation ? '?role=recommendation' : '' ?>#reservationsSection" class="sidebar-menu-item">
+        <a href="admin_reservations.php" class="sidebar-menu-item">
           <div class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -98,7 +98,6 @@ $isRecommendation = ($currentRole === 'recommendation');
             </svg>
           </div>
           <span class="menu-label">All Reservations</span>
-          <span class="sidebar-count-badge green">128</span>
         </a>
 
         <div class="sidebar-section-title">ACCESS & GOVERNANCE</div>

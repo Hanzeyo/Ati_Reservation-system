@@ -86,7 +86,7 @@ $isRecommendation = ($currentRole === 'recommendation');
           <span class="sidebar-count-badge amber" id="sidebarPendingCount">5</span>
         </a>
 
-        <a href="admin_dashboard.php#reservationsSection" class="sidebar-menu-item">
+        <a href="admin_reservations.php" class="sidebar-menu-item">
           <div class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -98,7 +98,6 @@ $isRecommendation = ($currentRole === 'recommendation');
             </svg>
           </div>
           <span class="menu-label">All Reservations</span>
-          <span class="sidebar-count-badge green">128</span>
         </a>
 
         <div class="sidebar-section-title">ACCESS & GOVERNANCE</div>
@@ -167,10 +166,12 @@ $isRecommendation = ($currentRole === 'recommendation');
       <!-- Sidebar User Profile Footer -->
       <div class="admin-sidebar-footer">
         <div class="sidebar-user-card">
-          <div class="sidebar-avatar">SA</div>
+          <div class="sidebar-avatar <?= $isRecommendation ? 'rec' : 'clear' ?>">
+            <?= $isRecommendation ? 'RO' : 'DIR' ?>
+          </div>
           <div class="sidebar-user-info">
-            <h5>Atty. Remelyn Recoter</h5>
-            <p>Director IV &bull; Super Admin</p>
+            <h5><?= $isRecommendation ? 'Recommending Officer' : 'Clearance Authority' ?></h5>
+            <p><?= $isRecommendation ? 'Stage 1: Admin & Logistics' : 'Stage 2: Directorate Clearance' ?></p>
           </div>
         </div>
         <a href="index.php" class="sidebar-signout-btn" title="Sign Out">
@@ -438,7 +439,7 @@ $isRecommendation = ($currentRole === 'recommendation');
                         <span class="user-online-dot"></span>
                       </div>
                       <div>
-                        <div class="user-name-title">Atty. Remelyn R. Recoter, CESO III</div>
+                        <div class="user-name-title">Clearance Authority</div>
                         <span class="user-email-text">director@ati.da.gov.ph</span>
                       </div>
                     </div>
@@ -463,7 +464,7 @@ $isRecommendation = ($currentRole === 'recommendation');
                   </td>
                   <td style="text-align: right;">
                     <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1001', 'Atty. Remelyn R. Recoter', 'director@ati.da.gov.ph', 'clear', 'Office of the Director')" title="Configure clearance role">
+                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1001', 'Clearance Authority', 'director@ati.da.gov.ph', 'clear', 'Office of the Director')" title="Configure clearance role">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                         <span>Role</span>
                       </button>
@@ -1066,8 +1067,8 @@ $isRecommendation = ($currentRole === 'recommendation');
                         <span class="user-online-dot offline"></span>
                       </div>
                       <div>
-                        <div class="user-name-title">Josefina Morales</div>
-                        <span class="user-email-text">josefina.morales@rfo3.da.gov.ph</span>
+                        <div class="user-name-title">External Requestor</div>
+                        <span class="user-email-text">external.requestor@rfo3.da.gov.ph</span>
                       </div>
                     </div>
                   </td>
@@ -1090,7 +1091,7 @@ $isRecommendation = ($currentRole === 'recommendation');
                   </td>
                   <td style="text-align: right;">
                     <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1015', 'Josefina Morales', 'josefina.morales@rfo3.da.gov.ph', 'external', 'DA RFO III')">
+                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1015', 'External Requestor', 'external.requestor@rfo3.da.gov.ph', 'external', 'DA RFO III')">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                         <span>Role</span>
                       </button>

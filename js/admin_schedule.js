@@ -589,3 +589,33 @@ function showAdminToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 320);
   }, 4000);
 }
+
+let currentBlockRef = null;
+
+function confirmLiftCurrentBlock() {
+  if (!currentBlockRef) return;
+  if (confirm('Are you sure you want to lift this blackout hold? This will immediately make these dates available for reservation.')) {
+    liftHoldByRef(currentBlockRef);
+    closeAdminEventDetailsModal();
+  }
+}
+
+// Hook into openAdminEventDetailsModal to capture current block ref
+const originalOpenModal = openAdminEventDetailsModal;
+openAdminEventDetailsModal = function(refId) {
+  const actualEv = calendarEvents.find(e => e.ref === refId);
+  const liftBtn = document.getElementById('btnModalLiftBlock');
+  const deskBtn = document.getElementById('btnModalOpenDesk');
+  
+  if (actualEv && actualEv.status === 'blackout') {
+    currentBlockRef = actualEv.ref;
+    if(liftBtn) liftBtn.style.display = 'inline-flex';
+    if(deskBtn) deskBtn.style.display = 'none';
+  } else {
+    currentBlockRef = null;
+    if(liftBtn) liftBtn.style.display = 'none';
+    if(deskBtn) deskBtn.style.display = 'inline-flex';
+  }
+  originalOpenModal(refId);
+};
+

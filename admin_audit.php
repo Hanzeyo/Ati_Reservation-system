@@ -86,7 +86,7 @@ $isRecommendation = ($currentRole === 'recommendation');
           <span class="sidebar-count-badge amber" id="sidebarPendingCount">5</span>
         </a>
 
-        <a href="admin_dashboard.php#reservationsSection" class="sidebar-menu-item">
+        <a href="admin_reservations.php" class="sidebar-menu-item">
           <div class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="8" y1="6" x2="21" y2="6"></line>
@@ -98,7 +98,6 @@ $isRecommendation = ($currentRole === 'recommendation');
             </svg>
           </div>
           <span class="menu-label">All Reservations</span>
-          <span class="sidebar-count-badge green">128</span>
         </a>
 
         <div class="sidebar-section-title">ACCESS & GOVERNANCE</div>
@@ -167,10 +166,12 @@ $isRecommendation = ($currentRole === 'recommendation');
       <!-- Sidebar User Profile Footer -->
       <div class="admin-sidebar-footer">
         <div class="sidebar-user-card">
-          <div class="sidebar-avatar">SA</div>
+          <div class="sidebar-avatar <?= $isRecommendation ? 'rec' : 'clear' ?>">
+            <?= $isRecommendation ? 'RO' : 'DIR' ?>
+          </div>
           <div class="sidebar-user-info">
-            <h5>Atty. Remelyn Recoter</h5>
-            <p>Director IV &bull; Super Admin</p>
+            <h5><?= $isRecommendation ? 'Recommending Officer' : 'Clearance Authority' ?></h5>
+            <p><?= $isRecommendation ? 'Stage 1: Admin & Logistics' : 'Stage 2: Directorate Clearance' ?></p>
           </div>
         </div>
         <a href="index.php" class="sidebar-signout-btn" title="Sign Out">
@@ -470,7 +471,7 @@ $isRecommendation = ($currentRole === 'recommendation');
                     <div class="audit-actor-cell">
                       <div class="audit-actor-avatar director">RR</div>
                       <div>
-                        <div class="audit-actor-name">Atty. Remelyn Recoter</div>
+                        <div class="audit-actor-name">Clearance Authority</div>
                         <span class="audit-actor-role">Director IV &bull; Super Admin</span>
                       </div>
                     </div>
@@ -548,7 +549,7 @@ $isRecommendation = ($currentRole === 'recommendation');
                     <div class="audit-actor-cell">
                       <div class="audit-actor-avatar director">RR</div>
                       <div>
-                        <div class="audit-actor-name">Atty. Remelyn Recoter</div>
+                        <div class="audit-actor-name">Clearance Authority</div>
                         <span class="audit-actor-role">Super Administrator</span>
                       </div>
                     </div>
@@ -743,7 +744,7 @@ $isRecommendation = ($currentRole === 'recommendation');
                     <div class="audit-actor-cell">
                       <div class="audit-actor-avatar director">RR</div>
                       <div>
-                        <div class="audit-actor-name">Atty. Remelyn Recoter</div>
+                        <div class="audit-actor-name">Clearance Authority</div>
                         <span class="audit-actor-role">Super Administrator</span>
                       </div>
                     </div>
@@ -782,7 +783,7 @@ $isRecommendation = ($currentRole === 'recommendation');
                     <div class="audit-actor-cell">
                       <div class="audit-actor-avatar director">RR</div>
                       <div>
-                        <div class="audit-actor-name">Atty. Remelyn Recoter</div>
+                        <div class="audit-actor-name">Clearance Authority</div>
                         <span class="audit-actor-role">Super Administrator</span>
                       </div>
                     </div>
@@ -821,7 +822,7 @@ $isRecommendation = ($currentRole === 'recommendation');
                     <div class="audit-actor-cell">
                       <div class="audit-actor-avatar director">RR</div>
                       <div>
-                        <div class="audit-actor-name">Atty. Remelyn Recoter</div>
+                        <div class="audit-actor-name">Clearance Authority</div>
                         <span class="audit-actor-role">Director IV &bull; Super Admin</span>
                       </div>
                     </div>
@@ -863,7 +864,7 @@ $isRecommendation = ($currentRole === 'recommendation');
                 <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
                   <div class="audit-actor-cell">
                     <div class="audit-actor-avatar director" style="width: 28px; height: 28px; font-size: 0.72rem;">RR</div>
-                    <span style="font-size: 0.82rem; font-weight: 700; color: #1e3828;">Atty. Remelyn Recoter (Director IV)</span>
+                    <span style="font-size: 0.82rem; font-weight: 700; color: #1e3828;">Clearance Authority</span>
                   </div>
                   <span class="security-hash-tag">#8812-a7 &bull; Serrano Hall</span>
                 </div>
@@ -909,7 +910,7 @@ $isRecommendation = ($currentRole === 'recommendation');
                 <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
                   <div class="audit-actor-cell">
                     <div class="audit-actor-avatar director" style="width: 28px; height: 28px; font-size: 0.72rem;">RR</div>
-                    <span style="font-size: 0.82rem; font-weight: 700; color: #1e3828;">Atty. Remelyn Recoter (Super Admin)</span>
+                    <span style="font-size: 0.82rem; font-weight: 700; color: #1e3828;">Clearance Authority</span>
                   </div>
                   <span class="security-hash-tag">#8810-f1 &bull; Target USR-1004</span>
                 </div>
