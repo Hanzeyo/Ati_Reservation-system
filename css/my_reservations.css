@@ -493,8 +493,19 @@ body.my-res-body {
 
 .my-res-stat-card.active-filter {
   border-color: #175432;
-  background: #f6fbf7;
-  box-shadow: 0 4px 14px rgba(23, 84, 50, 0.1);
+  background: #f4faf6;
+  box-shadow: 0 4px 16px rgba(23, 84, 50, 0.12);
+}
+
+.my-res-stat-card.active-filter::after {
+  content: '';
+  position: absolute;
+  bottom: -1.5px;
+  left: 20%;
+  right: 20%;
+  height: 3px;
+  background: #175432;
+  border-radius: 3px 3px 0 0;
 }
 
 .stat-icon-box {
@@ -566,97 +577,37 @@ body.my-res-body {
   background: #ffffff;
   border: 1.5px solid #e1eae3;
   border-radius: 14px;
-  padding: 0.95rem 1.25rem;
-  margin-bottom: 2rem;
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.75rem;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1.25rem;
-  flex-wrap: wrap;
 }
 
-/* Status Filter Tabs */
-.filter-tabs-group {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  flex-wrap: wrap;
-}
-
-.filter-tab-btn {
-  background: #f1f6f2;
-  color: #435d4f;
-  font-size: 0.85rem;
-  font-weight: 700;
-  padding: 0.5rem 0.95rem;
-  border-radius: 9999px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: all 0.16s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  white-space: nowrap;
-  user-select: none;
-}
-
-.filter-tab-btn:hover {
-  background: #e3ede5;
-  color: var(--primary-green);
-}
-
-.filter-tab-btn.active {
-  background: #175432;
-  color: #ffffff;
-  border-color: #175432;
-  box-shadow: 0 2px 8px rgba(23, 84, 50, 0.22);
-}
-
-.filter-tab-btn .tab-count-pill {
-  font-size: 0.72rem;
-  padding: 0.12rem 0.48rem;
-  border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.08);
-  color: inherit;
-  font-weight: 700;
-}
-
-.filter-tab-btn.active .tab-count-pill {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-/* Right Filter Controls */
-.toolbar-controls-right {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  flex-grow: 1;
-  justify-content: flex-end;
-}
-
+/* Prominent Live Search Input */
 .search-box-wrap {
   position: relative;
-  min-width: 250px;
-  flex-grow: 1;
-  max-width: 370px;
+  flex: 1 1 360px;
+  max-width: 540px;
 }
 
 .search-box-wrap svg {
   position: absolute;
-  left: 13px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  width: 16px;
-  height: 16px;
-  stroke: #5e7768;
+  width: 17px;
+  height: 17px;
+  stroke: #526f5d;
+  stroke-width: 2.2;
   pointer-events: none;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.6rem 1rem 0.6rem 2.45rem;
+  padding: 0.65rem 2.45rem 0.65rem 2.6rem;
   border-radius: 9999px;
   border: 1.5px solid #d5e2d8;
   font-size: 0.88rem;
@@ -674,27 +625,171 @@ body.my-res-body {
   background-color: #ffffff;
 }
 
-.venue-filter-select {
-  padding: 0.6rem 2.2rem 0.6rem 1rem;
-  border-radius: 9999px;
-  border: 1.5px solid #d5e2d8;
-  font-size: 0.86rem;
-  font-family: inherit;
-  color: #213829;
-  font-weight: 700;
-  background-color: #ffffff;
-  outline: none;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%234a6554' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  transition: var(--transition);
+.search-input::placeholder {
+  color: #7b9485;
+  font-weight: 500;
 }
 
-.venue-filter-select:focus {
+.btn-clear-search {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #edf3ee;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #557061;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.btn-clear-search:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Right Filter Controls */
+.toolbar-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Custom Facility Filter Dropdown (Brand-Themed, No OS Native Popup)
+   ========================================================================== */
+.custom-facility-dropdown {
+  position: relative;
+  display: inline-block;
+  user-select: none;
+}
+
+.facility-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #ffffff;
+  border: 1.5px solid #d5e5db;
+  color: #1a3325;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 0.52rem 0.95rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.facility-dropdown-btn:hover {
   border-color: #175432;
-  box-shadow: 0 0 0 3px rgba(23, 84, 50, 0.1);
+  background: #f7faf8;
+  color: #175432;
+}
+
+.custom-facility-dropdown.open .facility-dropdown-btn {
+  border-color: #175432;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(23, 84, 50, 0.12);
+  color: #175432;
+}
+
+.facility-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  color: #2e7d32;
+}
+
+.facility-chevron {
+  transition: transform 0.22s ease;
+  color: #4b6857;
+}
+
+.custom-facility-dropdown.open .facility-chevron {
+  transform: rotate(180deg);
+  color: #175432;
+}
+
+.facility-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 215px;
+  background: #ffffff;
+  border: 1.5px solid #d8e8dc;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(15, 51, 31, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 6px;
+  z-index: 50;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.98);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-facility-dropdown.open .facility-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.facility-option {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.58rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2d4537;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.facility-option:hover {
+  background: #edf6f0;
+  color: #175432;
+}
+
+.facility-option.active {
+  background: #e6f3eb;
+  color: #175432;
+  font-weight: 700;
+}
+
+.opt-bullet {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2e7d32;
+  flex-shrink: 0;
+}
+
+.opt-bullet.all {
+  background: #175432;
+}
+
+.opt-name {
+  flex: 1;
+  text-align: left;
+}
+
+.opt-check {
+  color: #175432;
+  opacity: 0;
+  transition: opacity 0.14s ease;
+  flex-shrink: 0;
+}
+
+.facility-option.active .opt-check {
+  opacity: 1;
 }
 
 /* View Mode Switcher */
@@ -1550,29 +1645,7 @@ body.my-res-body {
     flex-direction: column;
     align-items: stretch;
     padding: 1rem;
-  }
-
-  .filter-tabs-group {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    flex-wrap: nowrap;
-    padding-bottom: 0.35rem;
-    scrollbar-width: none;
-  }
-
-  .filter-tabs-group::-webkit-scrollbar {
-    display: none;
-  }
-
-  .filter-tab-btn {
-    flex-shrink: 0;
-  }
-
-  .toolbar-controls-right {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
+    gap: 0.85rem;
   }
 
   .search-box-wrap {
@@ -1580,18 +1653,33 @@ body.my-res-body {
     width: 100%;
   }
 
-  .venue-filter-select {
+  .toolbar-controls-right {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     width: 100%;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+  }
+
+  .custom-facility-dropdown {
+    flex: 1 1 180px;
+  }
+
+  .facility-dropdown-btn {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .facility-dropdown-menu {
+    width: 100%;
+    min-width: 100%;
+    left: 0;
+    right: 0;
   }
 
   .view-mode-toggle {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .view-mode-btn {
-    flex: 1;
-    justify-content: center;
+    flex-shrink: 0;
   }
 
   .res-card {

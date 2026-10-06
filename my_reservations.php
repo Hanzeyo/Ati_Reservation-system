@@ -370,37 +370,83 @@
       </div>
     </section>
 
-    <!-- Filter & Search Toolbar -->
+    <!-- Filter & Search Toolbar (Cleaned, Non-Redundant, Custom Styled) -->
     <div class="my-res-toolbar-card">
-      <!-- Tabs -->
-      <div class="filter-tabs-group" role="tablist">
-        <button type="button" class="filter-tab-btn active" data-filter="all">
-          <span>All Bookings</span>
-          <span class="tab-count-pill" id="tabCountAll">5</span>
-        </button>
-        <button type="button" class="filter-tab-btn" data-filter="pending">
-          <span>Pending Review</span>
-          <span class="tab-count-pill" id="tabCountPending">2</span>
-        </button>
-        <button type="button" class="filter-tab-btn" data-filter="approved">
-          <span>Confirmed & Approved</span>
-          <span class="tab-count-pill" id="tabCountApproved">2</span>
-        </button>
-        <button type="button" class="filter-tab-btn" data-filter="completed">
-          <span>Past / Completed</span>
-          <span class="tab-count-pill" id="tabCountCompleted">1</span>
+      <!-- Search Input (Prominent & Responsive) -->
+      <div class="search-box-wrap">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="resSearchInput" class="search-input" placeholder="Search by Ref #, activity title, or division...">
+        <button type="button" class="btn-clear-search" id="btnClearSearch" title="Clear search" style="display: none;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
         </button>
       </div>
 
-      <!-- Controls -->
+      <!-- Controls: Custom Facility Dropdown & View Switcher -->
       <div class="toolbar-controls-right">
-        <!-- Search Input -->
-        <div class="search-box-wrap">
-          <svg viewBox="0 0 24 24" fill="none">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" id="resSearchInput" class="search-input" placeholder="Search by Ref #, activity title, or division...">
+        <!-- Custom Styled Facility Dropdown (No ugly OS select menu) -->
+        <div class="custom-facility-dropdown" id="facilityDropdown">
+          <button type="button" class="facility-dropdown-btn" id="facilityDropdownBtn" aria-haspopup="listbox" aria-expanded="false" title="Filter by Facility">
+            <span class="facility-btn-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              </svg>
+            </span>
+            <span class="facility-btn-label" id="facilityDropdownLabel">All Facilities</span>
+            <svg class="facility-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          
+          <div class="facility-dropdown-menu" id="facilityDropdownMenu" role="listbox" aria-label="Filter by Facility">
+            <div class="facility-option active" data-value="all" role="option" aria-selected="true">
+              <span class="opt-bullet all"></span>
+              <span class="opt-name">All Facilities</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="function-hall" role="option">
+              <span class="opt-bullet"></span>
+              <span class="opt-name">Function Hall</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="training-hall" role="option">
+              <span class="opt-bullet"></span>
+              <span class="opt-name">Training Hall A</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="boardroom" role="option">
+              <span class="opt-bullet"></span>
+              <span class="opt-name">Boardroom</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="mess-hall" role="option">
+              <span class="opt-bullet"></span>
+              <span class="opt-name">Mess Hall</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="dormitory" role="option">
+              <span class="opt-bullet"></span>
+              <span class="opt-name">Dormitory</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+          </div>
         </div>
 
         <!-- View Mode Switcher -->

@@ -6,9 +6,9 @@
 document.addEventListener('DOMContentLoaded', () => {
   initProfileDropdown();
   initMobileDrawer();
-  initFilterTabs();
   initKpiFilters();
-  initSearchAndFilter();
+  initCustomFacilityDropdown();
+  initSearch();
   initViewModeToggle();
   initCardModals();
   initCancellationWorkflow();
@@ -36,7 +36,7 @@ function initProfileDropdown() {
 }
 
 /* ==========================================================================
-   2. Filter Tabs & Dynamic Counter
+   2. KPI Stat Card Filters & Filtering Controller
    ========================================================================== */
 let activeStatusFilter = 'all';
 let activeVenueFilter = 'all';
@@ -143,80 +143,109 @@ function updateKpiCounts() {
   const kpiPending = document.getElementById('kpiPending');
   const kpiApproved = document.getElementById('kpiApproved');
   const kpiCompleted = document.getElementById('kpiCompleted');
-
-  const tabCountAll = document.getElementById('tabCountAll');
-  const tabCountPending = document.getElementById('tabCountPending');
-  const tabCountApproved = document.getElementById('tabCountApproved');
-  const tabCountCompleted = document.getElementById('tabCountCompleted');
   const navBadgeCount = document.getElementById('navBadgeCount');
 
   if (kpiTotal) kpiTotal.textContent = total;
   if (kpiPending) kpiPending.textContent = pending;
   if (kpiApproved) kpiApproved.textContent = approved;
   if (kpiCompleted) kpiCompleted.textContent = completed;
-
-  if (tabCountAll) tabCountAll.textContent = total;
-  if (tabCountPending) tabCountPending.textContent = pending;
-  if (tabCountApproved) tabCountApproved.textContent = approved;
-  if (tabCountCompleted) tabCountCompleted.textContent = completed;
   if (navBadgeCount) navBadgeCount.textContent = pending;
-}
-
-function initFilterTabs() {
-  const tabs = document.querySelectorAll('.filter-tab-btn');
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-
-      activeStatusFilter = tab.dataset.filter;
-
-      // Sync KPI cards active class
-      document.querySelectorAll('.my-res-stat-card').forEach(c => {
-        c.classList.toggle('active-filter', c.dataset.filter === activeStatusFilter);
-      });
-
-      applyAllFilters();
-    });
-  });
 }
 
 function initKpiFilters() {
   const statCards = document.querySelectorAll('.my-res-stat-card');
-  const tabs = document.querySelectorAll('.filter-tab-btn');
 
   statCards.forEach(card => {
     card.addEventListener('click', () => {
-      const filter = card.dataset.filter;
-      if (!filter) return;
+      const filter = card.dataset.filter || 'all';
 
-      tabs.forEach(t => {
-        if (t.dataset.filter === filter) {
-          t.click();
-        }
-      });
+      statCards.forEach(c => c.classList.remove('active-filter'));
+      card.classList.add('active-filter');
+
+      activeStatusFilter = filter;
+      applyAllFilters();
     });
   });
 }
 
 /* ==========================================================================
-   3. Live Search & Venue Filter
+   3. Custom Facility Dropdown (ATI Themed)
    ========================================================================== */
-function initSearchAndFilter() {
-  const searchInput = document.getElementById('resSearchInput');
-  const venueSelect = document.getElementById('resVenueFilter');
+function initCustomFacilityDropdown() {
+  const dropdown = document.getElementById('facilityDropdown');
+  const btn = document.getElementById('facilityDropdownBtn');
+  const label = document.getElementById('facilityDropdownLabel');
+  const menu = document.getElementById('facilityDropdownMenu');
+  const options = document.querySelectorAll('.facility-option');
 
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      activeSearchQuery = e.target.value.toLowerCase().trim();
+  if (!dropdown || !btn || !menu) return;
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = dropdown.classList.toggle('open');
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  options.forEach(opt => {
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const value = opt.dataset.value;
+      const text = opt.querySelector('.opt-name')?.textContent || opt.textContent.trim();
+
+      options.forEach(o => {
+        o.classList.remove('active');
+        o.setAttribute('aria-selected', 'false');
+      });
+      opt.classList.add('active');
+      opt.setAttribute('aria-selected', 'true');
+
+      if (label) label.textContent = text;
+      activeVenueFilter = value;
+      dropdown.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+
       applyAllFilters();
     });
-  }
+  });
 
-  if (venueSelect) {
-    venueSelect.addEventListener('change', (e) => {
-      activeVenueFilter = e.target.value;
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target)) {
+      dropdown.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && dropdown.classList.contains('open')) {
+      dropdown.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+
+/* ==========================================================================
+   4. Live Search
+   ========================================================================== */
+function initSearch() {
+  const searchInput = document.getElementById('resSearchInput');
+  const clearBtn = document.getElementById('btnClearSearch');
+
+  if (!searchInput) return;
+
+  searchInput.addEventListener('input', (e) => {
+    activeSearchQuery = e.target.value.toLowerCase().trim();
+    if (clearBtn) {
+      clearBtn.style.display = activeSearchQuery ? 'inline-flex' : 'none';
+    }
+    applyAllFilters();
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      searchInput.value = '';
+      activeSearchQuery = '';
+      clearBtn.style.display = 'none';
+      searchInput.focus();
       applyAllFilters();
     });
   }
