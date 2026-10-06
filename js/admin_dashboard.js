@@ -348,7 +348,7 @@ const adminFilterState = {
   query: ''
 };
 
-function applyTabFilter(filter) {
+function applyTabFilter(filter, shouldScroll = false) {
   adminFilterState.tab = filter;
 
   // Update tab buttons
@@ -360,7 +360,24 @@ function applyTabFilter(filter) {
     }
   });
 
+  // Synchronize active indicator bar on KPI stat cards
+  document.querySelectorAll('.admin-kpi-grid .my-res-stat-card').forEach(card => {
+    const kpi = card.getAttribute('data-kpi');
+    if ((filter === 'all' && kpi === 'total') || (filter === 'pending' && kpi === 'pending')) {
+      card.classList.add('active-filter');
+    } else {
+      card.classList.remove('active-filter');
+    }
+  });
+
   applyCombinedAdminFilters();
+
+  if (shouldScroll) {
+    const tableSection = document.getElementById('reservationsSection');
+    if (tableSection) {
+      tableSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 }
 
 function handleAdminSearch(query) {

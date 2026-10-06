@@ -259,7 +259,7 @@ $isRecommendation = ($currentRole === 'recommendation');
              ========================================================================== -->
         <section class="my-res-stats-grid admin-kpi-grid" aria-label="Executive KPI Overview">
           <!-- Total Reservations -->
-          <div class="my-res-stat-card active-filter" data-kpi="total" onclick="applyTabFilter('all')" title="Click to view all reservations">
+          <div class="my-res-stat-card active-filter" data-kpi="total" onclick="applyTabFilter('all', true)" title="Click to view all reservations">
             <div class="stat-icon-box green">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -278,7 +278,7 @@ $isRecommendation = ($currentRole === 'recommendation');
           </div>
 
           <!-- Pending Approvals -->
-          <div class="my-res-stat-card admin-stat-highlight" data-kpi="pending" onclick="applyTabFilter('pending')" title="Click to filter pending approval requests">
+          <div class="my-res-stat-card admin-stat-highlight" data-kpi="pending" onclick="applyTabFilter('pending', true)" title="Click to filter pending approval requests">
             <div class="stat-icon-box amber">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -332,7 +332,452 @@ $isRecommendation = ($currentRole === 'recommendation');
           </div>
         </section>
 
+        <!-- ==========================================================================
+             FILTER & SEARCH TOOLBAR (MATCHED WITH my_reservations.php)
+             ========================================================================== -->
+        <div class="my-res-toolbar-card admin-toolbar-card" id="reservationsSection">
+          <!-- Filter Tabs -->
+          <div class="filter-tabs-group" role="tablist">
+            <button type="button" class="filter-tab-btn active" data-filter="all" onclick="applyTabFilter('all')">
+              <span>All Requests</span>
+              <span class="tab-count-pill" id="tabCountAll">128</span>
+            </button>
+            <button type="button" class="filter-tab-btn" data-filter="pending" onclick="applyTabFilter('pending')">
+              <span>Pending Review</span>
+              <span class="tab-count-pill tab-count-pending" id="tabCountPending">5</span>
+            </button>
+            <button type="button" class="filter-tab-btn" data-filter="approved" onclick="applyTabFilter('approved')">
+              <span>Approved</span>
+              <span class="tab-count-pill" id="tabCountApproved">114</span>
+            </button>
+            <button type="button" class="filter-tab-btn" data-filter="halls" onclick="applyTabFilter('halls')">
+              <span>Function Halls</span>
+              <span class="tab-count-pill" id="tabCountHalls">80</span>
+            </button>
+            <button type="button" class="filter-tab-btn" data-filter="dorms" onclick="applyTabFilter('dorms')">
+              <span>Dormitories</span>
+              <span class="tab-count-pill" id="tabCountDorms">48</span>
+            </button>
+          </div>
 
+          <!-- Controls Right -->
+          <div class="toolbar-controls-right">
+            <div class="search-box-wrap admin-search-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="adminSearchInput" class="search-input" placeholder="Search applicant, agency, venue, or ref #..."
+                oninput="handleAdminSearch(this.value)" autocomplete="off">
+              <button type="button" class="search-clear-btn" id="adminSearchClear" onclick="clearAdminSearch()" title="Clear search" style="display: none;" aria-label="Clear search">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <div class="select-filter-wrap">
+              <select id="venueFilterSelect" class="venue-filter-select" onchange="handleVenueSelectFilter(this.value)">
+                <option value="all">All Venues & Rooms</option>
+                <option value="Serrano Hall">Serrano Hall</option>
+                <option value="4-H Learning Center">4-H Learning Center</option>
+                <option value="Executive Boardroom">Executive Boardroom</option>
+                <option value="Training Hall A">Training Hall A</option>
+                <option value="Dormitory Suite">Dormitory Suites</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==========================================================================
+             RESERVATIONS QUEUE TABLE (SYSTEM CARD DESIGN)
+             ========================================================================== -->
+        <div class="admin-table-card">
+          <div class="admin-card-header">
+            <div class="admin-card-title-group">
+              <h3>Action & Routing Approval Queue</h3>
+              <p>Review submissions, verify attachments, and execute official Director IV approvals.</p>
+            </div>
+            <div class="admin-card-header-badge">
+              <span class="indicator-live-dot"></span>
+              Live Institutional Feed
+            </div>
+          </div>
+
+          <div class="admin-table-responsive">
+            <table class="admin-data-table" id="adminReservationsTable">
+              <thead>
+                <tr>
+                  <th>Reference & Date</th>
+                  <th>Applicant & Organization</th>
+                  <th>Requested Facility</th>
+                  <th>Schedule / Duration</th>
+                  <th>Attendees (PAX)</th>
+                  <th>Current Status</th>
+                  <th style="text-align: right;">Executive Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminTableBody">
+                <!-- Empty search state row -->
+                <tr id="adminNoResultsRow" style="display: none;">
+                  <td colspan="7" class="admin-empty-table-state">
+                    <div class="empty-state-content">
+                      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#8ca394" stroke-width="1.8">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      </svg>
+                      <h4>No Matching Reservations Found</h4>
+                      <p>No records matched your search query or selected filters.</p>
+                      <button type="button" class="btn-system-secondary" style="font-size: 0.82rem; padding: 0.45rem 1.15rem;" onclick="resetAllAdminFilters()">Reset Filters</button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 1: Pending -->
+                <tr data-ref="R-2026-0891" data-status="pending" data-category="halls" data-venue="Serrano Hall">
+                  <td data-label="Reference & Date">
+                    <div class="td-ref-group">
+                      <span class="td-ref-id">R-2026-0891</span>
+                      <span class="td-sub-date">Oct 05, 2026 &bull; 08:30 AM</span>
+                    </div>
+                  </td>
+                  <td data-label="Applicant & Org">
+                    <div class="td-user-group">
+                      <div class="user-avatar-circle sm">JD</div>
+                      <div class="td-user-details">
+                        <span class="td-name">Engr. Juan Dela Cruz</span>
+                        <span class="td-org">ATI - Career Dev Division (CDD)</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td data-label="Requested Facility">
+                    <div class="td-facility-pill hall">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                      <span>Serrano Hall</span>
+                    </div>
+                  </td>
+                  <td data-label="Schedule / Duration">
+                    <div class="td-schedule-text">
+                      <strong>Oct 12 – Oct 14, 2026</strong>
+                      <span>8:00 AM – 5:00 PM (3 Days)</span>
+                    </div>
+                  </td>
+                  <td data-label="Attendees (PAX)">
+                    <div class="td-pax-count">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                      <span>85 PAX</span>
+                    </div>
+                  </td>
+                  <td data-label="Current Status">
+                    <span class="status-pill status-pending">
+                      <span class="status-dot"></span>
+                      Pending Review
+                    </span>
+                  </td>
+                  <td data-label="Actions" style="text-align: right;">
+                    <div class="action-buttons-wrap">
+                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0891', 'Engr. Juan Dela Cruz', 'Serrano Hall')" title="Approve Request">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Approve</span>
+                      </button>
+                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0891', 'Engr. Juan Dela Cruz')" title="Decline Request">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <span>Decline</span>
+                      </button>
+                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0891')" title="View Booking Form">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 2: Pending (Dormitory) -->
+                <tr data-ref="R-2026-0892" data-status="pending" data-category="dorms" data-venue="Dormitory Suite">
+                  <td data-label="Reference & Date">
+                    <div class="td-ref-group">
+                      <span class="td-ref-id">R-2026-0892</span>
+                      <span class="td-sub-date">Oct 05, 2026 &bull; 09:15 AM</span>
+                    </div>
+                  </td>
+                  <td data-label="Applicant & Org">
+                    <div class="td-user-group">
+                      <div class="user-avatar-circle sm gold">MS</div>
+                      <div class="td-user-details">
+                        <span class="td-name">Dr. Maria Santos</span>
+                        <span class="td-org">Bureau of Plant Industry (BPI)</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td data-label="Requested Facility">
+                    <div class="td-facility-pill dorm">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                      <span>Dormitory Suite A & B</span>
+                    </div>
+                  </td>
+                  <td data-label="Schedule / Duration">
+                    <div class="td-schedule-text">
+                      <strong>Oct 15 – Oct 18, 2026</strong>
+                      <span>Check-in 2:00 PM (4 Days)</span>
+                    </div>
+                  </td>
+                  <td data-label="Attendees (PAX)">
+                    <div class="td-pax-count">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                      <span>32 Delegates</span>
+                    </div>
+                  </td>
+                  <td data-label="Current Status">
+                    <span class="status-pill status-pending">
+                      <span class="status-dot"></span>
+                      Pending Review
+                    </span>
+                  </td>
+                  <td data-label="Actions" style="text-align: right;">
+                    <div class="action-buttons-wrap">
+                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0892', 'Dr. Maria Santos', 'Dormitory Suite A & B')" title="Approve Request">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Approve</span>
+                      </button>
+                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0892', 'Dr. Maria Santos')" title="Decline Request">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <span>Decline</span>
+                      </button>
+                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0892')" title="View Booking Form">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 3: Pending -->
+                <tr data-ref="R-2026-0893" data-status="pending" data-category="halls" data-venue="Executive Boardroom">
+                  <td>
+                    <div class="td-ref-group">
+                      <span class="td-ref-id">R-2026-0893</span>
+                      <span class="td-sub-date">Oct 05, 2026 &bull; 10:45 AM</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-user-group">
+                      <div class="user-avatar-circle sm">AB</div>
+                      <div class="td-user-details">
+                        <span class="td-name">Atty. Bernardo Castro</span>
+                        <span class="td-org">DA - Legal Service Office</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-facility-pill hall">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                      <span>Executive Boardroom</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-schedule-text">
+                      <strong>Oct 08, 2026</strong>
+                      <span>1:00 PM – 5:00 PM (Half-Day)</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-pax-count">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                      <span>18 PAX</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-pill status-pending">
+                      <span class="status-dot"></span>
+                      Pending Review
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <div class="action-buttons-wrap">
+                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0893', 'Atty. Bernardo Castro', 'Executive Boardroom')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Approve</span>
+                      </button>
+                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0893', 'Atty. Bernardo Castro')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <span>Decline</span>
+                      </button>
+                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0893')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 4: Pending -->
+                <tr data-ref="R-2026-0894" data-status="pending" data-category="halls" data-venue="4-H Learning Center">
+                  <td>
+                    <div class="td-ref-group">
+                      <span class="td-ref-id">R-2026-0894</span>
+                      <span class="td-sub-date">Oct 05, 2026 &bull; 11:10 AM</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-user-group">
+                      <div class="user-avatar-circle sm">RP</div>
+                      <div class="td-user-details">
+                        <span class="td-name">Ramon Pascual</span>
+                        <span class="td-org">PhilRice - Extension Division</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-facility-pill hall">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                      <span>4-H Learning Center</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-schedule-text">
+                      <strong>Oct 20 – Oct 22, 2026</strong>
+                      <span>8:00 AM – 5:00 PM (3 Days)</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-pax-count">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                      <span>60 PAX</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-pill status-pending">
+                      <span class="status-dot"></span>
+                      Pending Review
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <div class="action-buttons-wrap">
+                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0894', 'Ramon Pascual', '4-H Learning Center')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Approve</span>
+                      </button>
+                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0894', 'Ramon Pascual')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <span>Decline</span>
+                      </button>
+                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0894')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 5: Pending (Dormitory) -->
+                <tr data-ref="R-2026-0895" data-status="pending" data-category="dorms" data-venue="Dormitory Suite">
+                  <td>
+                    <div class="td-ref-group">
+                      <span class="td-ref-id">R-2026-0895</span>
+                      <span class="td-sub-date">Oct 05, 2026 &bull; 11:40 AM</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-user-group">
+                      <div class="user-avatar-circle sm">CL</div>
+                      <div class="td-user-details">
+                        <span class="td-name">Carmela Lim</span>
+                        <span class="td-org">ATI - Information Services (ISD)</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-facility-pill dorm">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                      <span>Dormitory Executive Suite</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-schedule-text">
+                      <strong>Oct 25 – Oct 27, 2026</strong>
+                      <span>Check-in 1:00 PM (3 Days)</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-pax-count">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                      <span>14 Delegates</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-pill status-pending">
+                      <span class="status-dot"></span>
+                      Pending Review
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <div class="action-buttons-wrap">
+                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0895', 'Carmela Lim', 'Dormitory Executive Suite')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <span>Approve</span>
+                      </button>
+                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0895', 'Carmela Lim')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        <span>Decline</span>
+                      </button>
+                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0895')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 6: Approved (Sample confirmed record) -->
+                <tr data-ref="R-2026-0888" data-status="approved" data-category="halls" data-venue="Serrano Hall">
+                  <td>
+                    <div class="td-ref-group">
+                      <span class="td-ref-id">R-2026-0888</span>
+                      <span class="td-sub-date">Oct 02, 2026 &bull; 02:20 PM</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-user-group">
+                      <div class="user-avatar-circle sm">GV</div>
+                      <div class="td-user-details">
+                        <span class="td-name">Grace Valenzuela</span>
+                        <span class="td-org">DA - National Rice Program</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-facility-pill hall">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                      <span>Serrano Hall</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-schedule-text">
+                      <strong>Oct 06 – Oct 07, 2026</strong>
+                      <span>8:00 AM – 5:00 PM (2 Days)</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="td-pax-count">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                      <span>100 PAX</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-pill status-approved">
+                      <span class="status-dot"></span>
+                      Confirmed & Approved
+                    </span>
+                  </td>
+                  <td style="text-align: right;">
+                    <div class="action-buttons-wrap">
+                      <span class="badge-approved-note">Approved by Director</span>
+                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0888')">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
         <!-- ==========================================================================
              LOWER SPLIT: FACILITY STATUS & AUDIT LOGS
@@ -522,7 +967,12 @@ $isRecommendation = ($currentRole === 'recommendation');
           <span class="modal-badge-ref" id="modalRefId">R-2026-0891</span>
           <h4>Official Reservation Application Form</h4>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeReservationModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeReservationModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body">
@@ -592,7 +1042,12 @@ $isRecommendation = ($currentRole === 'recommendation');
         <div class="modal-title-wrap">
           <h4 style="color: #991b1b;">Decline Reservation Request</h4>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeDeclineModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeDeclineModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body">
@@ -645,7 +1100,12 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
           </div>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeOccupancyModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeOccupancyModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body occupancy-modal-scroll">
@@ -1015,8 +1475,6 @@ $isRecommendation = ($currentRole === 'recommendation');
         </button>
       </div>
     </div>
-  </div>
-
   <!-- ==========================================================================
        TOAST NOTIFICATION CONTAINER
        ========================================================================== -->
