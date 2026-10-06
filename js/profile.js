@@ -832,6 +832,23 @@ function initKpiModals() {
       subEl.textContent = data.subtitle;
       bodyEl.innerHTML = data.html;
 
+      const btnGo = document.getElementById('btnModalGoToBookings');
+      if (btnGo) {
+        if (kpiKey === 'approved') {
+          btnGo.href = 'my_reservations.php?filter=approved';
+          btnGo.innerHTML = '<span>View 2 Approved Bookings &rarr;</span>';
+        } else if (kpiKey === 'pending') {
+          btnGo.href = 'my_reservations.php?filter=pending';
+          btnGo.innerHTML = '<span>View 2 Pending Bookings &rarr;</span>';
+        } else if (kpiKey === 'total') {
+          btnGo.href = 'my_reservations.php';
+          btnGo.innerHTML = '<span>Go to Booking History &rarr;</span>';
+        } else if (kpiKey === 'service') {
+          btnGo.href = 'my_reservations.php';
+          btnGo.innerHTML = '<span>View My Bookings &rarr;</span>';
+        }
+      }
+
       modal.classList.add('show');
       document.body.style.overflow = 'hidden';
     });
