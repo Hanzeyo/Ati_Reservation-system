@@ -57,20 +57,21 @@
   visibility: visible !important;
 }
 
-/* 3. Off-Canvas Slide Drawer */
+/* 3. Off-Canvas Slide Drawer (Slides in from Left) */
 .mobile-nav-drawer {
   position: fixed;
   top: 0;
-  right: 0;
+  left: 0;
   bottom: 0;
-  width: 82%;
-  max-width: 330px;
+  right: auto;
+  width: 84%;
+  max-width: 320px;
   background: #ffffff;
   z-index: 99999;
   display: flex;
   flex-direction: column;
-  box-shadow: -6px 0 28px rgba(0, 0, 0, 0.25);
-  transform: translateX(100%);
+  box-shadow: 6px 0 30px rgba(0, 0, 0, 0.28);
+  transform: translateX(-100%);
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -324,12 +325,14 @@
   }
 }
 
-/* Mobile Rule (<= 900px): Hide desktop navigation bar and show hamburger toggle */
+/* Mobile Rule (<= 900px): Hide desktop navigation bar and show hamburger toggle on upper left */
 @media (max-width: 900px) {
   .booking-topbar-container {
+    display: flex !important;
     flex-direction: row !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    justify-content: flex-start !important;
+    gap: 0.85rem !important;
   }
 
   .booking-nav-center {
@@ -338,5 +341,10 @@
 
   .mobile-menu-toggle {
     display: flex !important;
+    order: -1 !important; /* Forces hamburger button to the UPPER LEFT */
+  }
+
+  .booking-brand {
+    flex-grow: 1 !important;
   }
 }

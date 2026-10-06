@@ -14,7 +14,7 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
   <title>Account Registration & Login - Agricultural Training Institute</title>
   <meta name="description"
     content="Register for official ATI facility reservation authorization or log in to manage your bookings.">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
 
@@ -124,31 +124,34 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
             </div>
           </div>
 
-          <!-- Full Name -->
-          <div class="auth-field-group">
-            <label class="auth-field-label" for="regFullName">Full Name</label>
-            <div class="auth-input-wrapper">
-              <input type="text" id="regFullName" class="auth-input" placeholder="Juan Dela Cruz" required>
-              <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
+          <!-- Full Name & Office / Agency (2-Column Grid) -->
+          <div class="auth-form-row">
+            <!-- Full Name -->
+            <div class="auth-field-group">
+              <label class="auth-field-label" for="regFullName">Full Name</label>
+              <div class="auth-input-wrapper">
+                <input type="text" id="regFullName" class="auth-input" placeholder="Juan Dela Cruz" required>
+                <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
             </div>
-          </div>
 
-          <!-- Dynamic Office / Division / Agency Field -->
-          <div class="auth-field-group">
-            <label class="auth-field-label" for="regOffice" id="labelOffice">Office / Division Name</label>
-            <div class="auth-input-wrapper">
-              <input type="text" id="regOffice" class="auth-input" placeholder="e.g. Information Services Division"
-                required>
-              <!-- Organization / Branch Icon -->
-              <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-              </svg>
+            <!-- Dynamic Office / Division / Agency Field -->
+            <div class="auth-field-group">
+              <label class="auth-field-label" for="regOffice" id="labelOffice">Office / Division Name</label>
+              <div class="auth-input-wrapper">
+                <input type="text" id="regOffice" class="auth-input" placeholder="e.g. Information Services Division"
+                  required>
+                <!-- Organization / Branch Icon -->
+                <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </div>
             </div>
           </div>
 
@@ -283,9 +286,9 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
           </div>
 
           <!-- Options -->
-          <div class="form-helper" style="margin-top: -0.25rem; margin-bottom: 1.5rem;">
+          <div class="auth-remember-row">
             <label class="remember-label">
-              <input type="checkbox" checked style="accent-color: #175432;">
+              <input type="checkbox" checked class="remember-checkbox">
               <span>Remember this device</span>
             </label>
             <a href="javascript:void(0)"
