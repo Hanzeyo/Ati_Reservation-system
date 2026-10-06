@@ -267,7 +267,8 @@ $isRecommendation = ($currentRole === 'recommendation');
              ========================================================================== -->
         <section class="my-res-stats-grid admin-kpi-grid" aria-label="Audit Statistics">
           <!-- Total Events -->
-          <div class="my-res-stat-card active-filter" onclick="filterAuditByCategory('all')">
+          <!-- Total Logs -->
+          <div class="my-res-stat-card active-filter" data-cat="all" onclick="filterAuditByCategory('all')" style="cursor: pointer;">
             <div class="stat-icon-box green">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 20h9"></path>
@@ -284,7 +285,7 @@ $isRecommendation = ($currentRole === 'recommendation');
           </div>
 
           <!-- Approvals & Endorsements -->
-          <div class="my-res-stat-card" onclick="filterAuditByCategory('approval')">
+          <div class="my-res-stat-card" data-cat="approval" onclick="filterAuditByCategory('approval')" style="cursor: pointer;">
             <div class="stat-icon-box emerald">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -300,7 +301,7 @@ $isRecommendation = ($currentRole === 'recommendation');
           </div>
 
           <!-- Facility Maintenance Holds -->
-          <div class="my-res-stat-card" onclick="filterAuditByCategory('maintenance')">
+          <div class="my-res-stat-card" data-cat="maintenance" onclick="filterAuditByCategory('maintenance')" style="cursor: pointer;">
             <div class="stat-icon-box amber">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -318,7 +319,7 @@ $isRecommendation = ($currentRole === 'recommendation');
           </div>
 
           <!-- Security & RBAC Access -->
-          <div class="my-res-stat-card" onclick="filterAuditByCategory('security')">
+          <div class="my-res-stat-card" data-cat="security" onclick="filterAuditByCategory('security')" style="cursor: pointer;">
             <div class="stat-icon-box blue">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -336,28 +337,9 @@ $isRecommendation = ($currentRole === 'recommendation');
         </section>
 
         <!-- ==========================================================================
-             TOOLBAR: SEARCH, CATEGORY PILLS, FILTERS & VIEW SWITCHER
+             TOOLBAR: SEARCH, TIMEFRAME FILTERS & VIEW SWITCHER
              ========================================================================== -->
         <div class="my-res-toolbar-card admin-toolbar-card">
-          <!-- Filter Tabs -->
-          <div class="filter-tabs-group" role="tablist">
-            <button type="button" class="user-filter-pill active" data-cat="all" onclick="filterAuditByCategory('all')">
-              <span>All Logs</span>
-              <span class="tab-count-pill" id="countPillAll">10</span>
-            </button>
-            <button type="button" class="user-filter-pill" data-cat="approval" onclick="filterAuditByCategory('approval')">
-              <span>Approvals & Endorsements</span>
-              <span class="tab-count-pill" id="countPillApp">4</span>
-            </button>
-            <button type="button" class="user-filter-pill" data-cat="maintenance" onclick="filterAuditByCategory('maintenance')">
-              <span>Facility Maintenance</span>
-              <span class="tab-count-pill" id="countPillMaint">3</span>
-            </button>
-            <button type="button" class="user-filter-pill" data-cat="security" onclick="filterAuditByCategory('security')">
-              <span>Security & Roles</span>
-              <span class="tab-count-pill" id="countPillSec">3</span>
-            </button>
-          </div>
 
           <!-- Controls Right -->
           <div class="toolbar-controls-right">

@@ -391,9 +391,6 @@ if ($isAdmin || isset($_GET['admin'])) {
           </div>
         </div>
       </div>
-      <div class="stat-detail-actions">
-        <button type="button" class="stat-detail-action-btn" id="statDetailActionBtn" style="display: none;"></button>
-      </div>
     </div>
 
     <!-- Calendar Controls Bar -->

@@ -40,6 +40,14 @@ document.addEventListener('DOMContentLoaded', () => {
 function filterAuditByCategory(category) {
   auditFilterState.category = category;
 
+  document.querySelectorAll('.my-res-stat-card[data-cat]').forEach(card => {
+    if (card.getAttribute('data-cat') === category) {
+      card.classList.add('active-filter');
+    } else {
+      card.classList.remove('active-filter');
+    }
+  });
+
   document.querySelectorAll('.user-filter-pill').forEach(pill => {
     if (pill.getAttribute('data-cat') === category) {
       pill.classList.add('active');
@@ -98,6 +106,14 @@ function resetAllAuditFilters() {
 
   const timeSelect = document.getElementById('timeframeFilterSelect');
   if (timeSelect) timeSelect.value = 'all';
+
+  document.querySelectorAll('.my-res-stat-card[data-cat]').forEach(card => {
+    if (card.getAttribute('data-cat') === 'all') {
+      card.classList.add('active-filter');
+    } else {
+      card.classList.remove('active-filter');
+    }
+  });
 
   document.querySelectorAll('.user-filter-pill').forEach(pill => {
     if (pill.getAttribute('data-cat') === 'all') {

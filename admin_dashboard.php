@@ -257,9 +257,9 @@ $isRecommendation = ($currentRole === 'recommendation');
         <!-- ==========================================================================
              KPI STAT CARDS (TERNO WITH SYSTEM DESIGN)
              ========================================================================== -->
-        <section class="my-res-stats-grid admin-kpi-grid" aria-label="Executive KPI Statistics">
+        <section class="my-res-stats-grid admin-kpi-grid" aria-label="Executive KPI Overview">
           <!-- Total Reservations -->
-          <div class="my-res-stat-card active-filter" data-kpi="total" onclick="applyTabFilter('all')">
+          <div class="my-res-stat-card active-filter" data-kpi="total" onclick="applyTabFilter('all')" title="Click to view all reservations">
             <div class="stat-icon-box green">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -277,8 +277,8 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
           </div>
 
-          <!-- Pending Approvals (Amber Pulsing) -->
-          <div class="my-res-stat-card admin-stat-highlight" data-kpi="pending" onclick="applyTabFilter('pending')">
+          <!-- Pending Approvals -->
+          <div class="my-res-stat-card admin-stat-highlight" data-kpi="pending" onclick="applyTabFilter('pending')" title="Click to filter pending approval requests">
             <div class="stat-icon-box amber">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -295,7 +295,7 @@ $isRecommendation = ($currentRole === 'recommendation');
           </div>
 
           <!-- Venue Occupancy -->
-          <div class="my-res-stat-card" data-kpi="occupancy">
+          <div class="my-res-stat-card" data-kpi="occupancy" id="cardOccupancyKpi" onclick="openOccupancyModal()" title="Click to open occupancy analytics & graphs">
             <div class="stat-icon-box blue">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="18" y1="20" x2="18" y2="10"></line>
@@ -312,13 +312,14 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
           </div>
 
-          <!-- Monthly Revenue -->
-          <div class="my-res-stat-card" data-kpi="revenue">
+          <!-- Monthly Revenue / Utilization -->
+          <div class="my-res-stat-card" data-kpi="revenue" onclick="showAdminToast('October 2026 Estimated Utilization: ₱284,500 across all institutional facilities.', 'info')" title="Click to view monthly utilization summary">
             <div class="stat-icon-box emerald">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
-                <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path>
-                <line x1="12" y1="6" x2="12" y2="18"></line>
+                <path d="M8.5 17V7h4.5a3 3 0 0 1 0 6H8.5"></path>
+                <line x1="6" y1="9.5" x2="15.5" y2="9.5"></line>
+                <line x1="6" y1="12" x2="15.5" y2="12"></line>
               </svg>
             </div>
             <div class="stat-content">
@@ -619,6 +620,399 @@ $isRecommendation = ($currentRole === 'recommendation');
       <div class="admin-modal-footer">
         <button type="button" class="btn-system-secondary" onclick="closeDeclineModal()">Cancel</button>
         <button type="button" class="btn-confirm-decline" onclick="submitDeclineAction()">Confirm & Send Notice</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: OCCUPANCY & UTILIZATION ANALYTICS (BAR & LINE GRAPH)
+       ========================================================================== -->
+  <div class="admin-modal-overlay" id="occupancyModal" style="display: none;" onclick="if(event.target===this) closeOccupancyModal()">
+    <div class="admin-modal-card occupancy-analytics-modal">
+      <div class="admin-modal-header">
+        <div class="modal-title-wrap">
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <div class="stat-icon-box blue" style="width: 32px; height: 32px; font-size: 0.9rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
+            <div>
+              <h4 style="margin: 0; font-size: 1.2rem; color: #174d2f;">Venue & Dormitory Occupancy Analytics</h4>
+              <p style="margin: 0.15rem 0 0; font-size: 0.8rem; color: #556f60;">Real-time capacity utilization, statistics, and booking trend breakdowns</p>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeOccupancyModal()">&times;</button>
+      </div>
+
+      <div class="admin-modal-body occupancy-modal-scroll">
+        <!-- 1. Top Summary Metric Cards -->
+        <div class="occ-metrics-grid">
+          <div class="occ-metric-card primary">
+            <span class="occ-metric-lbl">Overall Occupancy</span>
+            <div class="occ-metric-val">76.4%</div>
+            <div class="occ-metric-sub"><strong>168</strong> / 220 Total PAX</div>
+            <div class="occ-bar-track"><div class="occ-bar-fill" style="width: 76.4%; background: #174d2f;"></div></div>
+          </div>
+
+          <div class="occ-metric-card">
+            <span class="occ-metric-lbl">Function Halls</span>
+            <div class="occ-metric-val">82.5%</div>
+            <div class="occ-metric-sub"><strong>99</strong> / 120 Hall PAX</div>
+            <div class="occ-bar-track"><div class="occ-bar-fill" style="width: 82.5%; background: #2563eb;"></div></div>
+          </div>
+
+          <div class="occ-metric-card">
+            <span class="occ-metric-lbl">Dormitory Suites</span>
+            <div class="occ-metric-val">69.0%</div>
+            <div class="occ-metric-sub"><strong>69</strong> / 100 Dorm Beds</div>
+            <div class="occ-bar-track"><div class="occ-bar-fill" style="width: 69%; background: #d97706;"></div></div>
+          </div>
+
+          <div class="occ-metric-card">
+            <span class="occ-metric-lbl">Peak Load Day</span>
+            <div class="occ-metric-val" style="color: #b45309;">94.2%</div>
+            <div class="occ-metric-sub">Thursday, Oct 15 &bull; 207 PAX</div>
+            <div class="occ-bar-track"><div class="occ-bar-fill" style="width: 94.2%; background: #ef4444;"></div></div>
+          </div>
+        </div>
+
+        <!-- 2. Controls & Switcher Toolbar -->
+        <div class="occ-graph-toolbar">
+          <div class="occ-toggle-group">
+            <button type="button" class="occ-btn-toggle active" id="btnToggleBarGraph" onclick="switchOccupancyGraph('bar')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>Bar Graph (By Venue)</span>
+            </button>
+            <button type="button" class="occ-btn-toggle" id="btnToggleLineGraph" onclick="switchOccupancyGraph('line')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              <span>Line Graph (Trend %)</span>
+            </button>
+          </div>
+
+          <div class="occ-range-group">
+            <label for="occTimeRangeSelect" style="font-size: 0.8rem; font-weight: 700; color: #4b6354;">Timeline:</label>
+            <select id="occTimeRangeSelect" class="occ-range-select" onchange="updateOccupancyTimeRange(this.value)">
+              <option value="week" selected>Current Week (Oct 5 – Oct 11, 2026)</option>
+              <option value="month">Full Month of October 2026</option>
+              <option value="q4">Quarter 4 Projection (Oct – Dec)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 3. Graph Container -->
+        <div class="occ-chart-surface">
+          <!-- VIEW A: BAR GRAPH (Facility Capacity Breakdown) -->
+          <div id="occupancyBarGraphView" class="occ-graph-pane">
+            <div class="occ-chart-caption">
+              <span class="occ-legend-pill"><span class="occ-dot hall"></span> Function Halls</span>
+              <span class="occ-legend-pill"><span class="occ-dot dorm"></span> Dormitory Suites</span>
+              <span class="occ-legend-pill"><span class="occ-target-line"></span> Benchmark Target (80%)</span>
+            </div>
+
+            <!-- SVG Bar Graph -->
+            <div class="occ-svg-container">
+              <svg viewBox="0 0 740 280" class="occ-bar-svg" preserveAspectRatio="xMidYMid meet">
+                <!-- Grid Lines -->
+                <line x1="60" y1="40" x2="710" y2="40" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="85" x2="710" y2="85" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="130" x2="710" y2="130" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="175" x2="710" y2="175" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="220" x2="710" y2="220" stroke="#d5e3d8" stroke-width="1.5"></line>
+
+                <!-- 80% Benchmark Line -->
+                <line x1="60" y1="76" x2="710" y2="76" stroke="#eab308" stroke-dasharray="6 3" stroke-width="1.8"></line>
+                <text x="712" y="79" font-size="10" fill="#b45309" font-weight="700">80% Target</text>
+
+                <!-- Y Axis Labels -->
+                <text x="45" y="44" font-size="11" fill="#789080" text-anchor="end">100%</text>
+                <text x="45" y="89" font-size="11" fill="#789080" text-anchor="end">75%</text>
+                <text x="45" y="134" font-size="11" fill="#789080" text-anchor="end">50%</text>
+                <text x="45" y="179" font-size="11" fill="#789080" text-anchor="end">25%</text>
+                <text x="45" y="224" font-size="11" fill="#789080" text-anchor="end">0%</text>
+
+                <!-- Bar 1: Serrano Hall (90%) -> height = 90% of 180 = 162. y = 220 - 162 = 58 -->
+                <g class="occ-bar-group" tabindex="0">
+                  <rect x="85" y="58" width="56" height="162" rx="6" fill="url(#gradHall)" class="bar-rect"></rect>
+                  <text x="113" y="50" font-size="12" font-weight="800" fill="#174d2f" text-anchor="middle">90.0%</text>
+                  <text x="113" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Serrano Hall</text>
+                  <text x="113" y="255" font-size="10" fill="#698572" text-anchor="middle">108/120 PAX</text>
+                </g>
+
+                <!-- Bar 2: Training Hall A (85%) -> height = 153. y = 67 -->
+                <g class="occ-bar-group" tabindex="0">
+                  <rect x="190" y="67" width="56" height="153" rx="6" fill="url(#gradHall)" class="bar-rect"></rect>
+                  <text x="218" y="59" font-size="12" font-weight="800" fill="#174d2f" text-anchor="middle">85.0%</text>
+                  <text x="218" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Training Hall</text>
+                  <text x="218" y="255" font-size="10" fill="#698572" text-anchor="middle">51/60 PAX</text>
+                </g>
+
+                <!-- Bar 3: Executive Boardroom (72%) -> height = 129.6. y = 90.4 -->
+                <g class="occ-bar-group" tabindex="0">
+                  <rect x="295" y="90" width="56" height="130" rx="6" fill="url(#gradHall)" class="bar-rect"></rect>
+                  <text x="323" y="82" font-size="12" font-weight="800" fill="#174d2f" text-anchor="middle">72.0%</text>
+                  <text x="323" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Boardroom</text>
+                  <text x="323" y="255" font-size="10" fill="#698572" text-anchor="middle">18/25 PAX</text>
+                </g>
+
+                <!-- Bar 4: Mess Hall Dining (80%) -> height = 144. y = 76 -->
+                <g class="occ-bar-group" tabindex="0">
+                  <rect x="400" y="76" width="56" height="144" rx="6" fill="url(#gradHall)" class="bar-rect"></rect>
+                  <text x="428" y="68" font-size="12" font-weight="800" fill="#174d2f" text-anchor="middle">80.0%</text>
+                  <text x="428" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Mess Hall</text>
+                  <text x="428" y="255" font-size="10" fill="#698572" text-anchor="middle">80/100 PAX</text>
+                </g>
+
+                <!-- Bar 5: Dorm Suite A (65%) -> height = 117. y = 103 -->
+                <g class="occ-bar-group" tabindex="0">
+                  <rect x="505" y="103" width="56" height="117" rx="6" fill="url(#gradDorm)" class="bar-rect"></rect>
+                  <text x="533" y="95" font-size="12" font-weight="800" fill="#d97706" text-anchor="middle">65.0%</text>
+                  <text x="533" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Dorm Suite A</text>
+                  <text x="533" y="255" font-size="10" fill="#698572" text-anchor="middle">39/60 Beds</text>
+                </g>
+
+                <!-- Bar 6: Dorm Suite B (70%) -> height = 126. y = 94 -->
+                <g class="occ-bar-group" tabindex="0">
+                  <rect x="610" y="94" width="56" height="126" rx="6" fill="url(#gradDorm)" class="bar-rect"></rect>
+                  <text x="638" y="86" font-size="12" font-weight="800" fill="#d97706" text-anchor="middle">70.0%</text>
+                  <text x="638" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Dorm Suite B</text>
+                  <text x="638" y="255" font-size="10" fill="#698572" text-anchor="middle">28/40 Beds</text>
+                </g>
+
+                <!-- Gradients -->
+                <defs>
+                  <linearGradient id="gradHall" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#1b5e33"></stop>
+                    <stop offset="100%" stop-color="#2a824b"></stop>
+                  </linearGradient>
+                  <linearGradient id="gradDorm" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#d97706"></stop>
+                    <stop offset="100%" stop-color="#f59e0b"></stop>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <!-- VIEW B: LINE GRAPH (Occupancy Percentage Trend) -->
+          <div id="occupancyLineGraphView" class="occ-graph-pane" style="display: none;">
+            <div class="occ-chart-caption">
+              <span class="occ-legend-pill"><span class="occ-dot" style="background: #174d2f;"></span> Daily Occupancy Rate (%)</span>
+              <span class="occ-legend-pill"><span class="occ-target-line"></span> Monthly Average (76.4%)</span>
+            </div>
+
+            <!-- SVG Line Graph -->
+            <div class="occ-svg-container">
+              <svg viewBox="0 0 740 280" class="occ-line-svg" preserveAspectRatio="xMidYMid meet">
+                <!-- Grid Lines -->
+                <line x1="60" y1="40" x2="710" y2="40" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="85" x2="710" y2="85" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="130" x2="710" y2="130" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="175" x2="710" y2="175" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="220" x2="710" y2="220" stroke="#d5e3d8" stroke-width="1.5"></line>
+
+                <!-- Average Line (76.4%) -> y = 220 - (0.764 * 180) = 82.5 -->
+                <line x1="60" y1="82.5" x2="710" y2="82.5" stroke="#eab308" stroke-dasharray="6 3" stroke-width="1.8"></line>
+                <text x="712" y="85" font-size="10" fill="#b45309" font-weight="700">76.4% Avg</text>
+
+                <!-- Y Axis Labels -->
+                <text x="45" y="44" font-size="11" fill="#789080" text-anchor="end">100%</text>
+                <text x="45" y="89" font-size="11" fill="#789080" text-anchor="end">75%</text>
+                <text x="45" y="134" font-size="11" fill="#789080" text-anchor="end">50%</text>
+                <text x="45" y="179" font-size="11" fill="#789080" text-anchor="end">25%</text>
+                <text x="45" y="224" font-size="11" fill="#789080" text-anchor="end">0%</text>
+
+                <!-- Gradient Area Under Curve -->
+                <!-- Points: Mon(105, 108) Tue(200, 86) Wed(295, 70) Thu(390, 50) Fri(485, 79) Sat(580, 115) Sun(675, 144) -->
+                <path d="M 105 108 L 200 86 L 295 70 L 390 50 L 485 79 L 580 115 L 675 144 L 675 220 L 105 220 Z" fill="url(#gradLineArea)"></path>
+
+                <!-- The Curved Trend Line -->
+                <path d="M 105 108 L 200 86 L 295 70 L 390 50 L 485 79 L 580 115 L 675 144" fill="none" stroke="#174d2f" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path>
+
+                <!-- Data Points & Labels -->
+                <!-- Mon Oct 5: 62.0% -> y = 220 - (0.62 * 180) = 108.4 -->
+                <g class="occ-pt-group">
+                  <circle cx="105" cy="108" r="6" fill="#ffffff" stroke="#174d2f" stroke-width="3"></circle>
+                  <text x="105" y="94" font-size="11" font-weight="700" fill="#174d2f" text-anchor="middle">62.0%</text>
+                  <text x="105" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Mon</text>
+                  <text x="105" y="255" font-size="10" fill="#698572" text-anchor="middle">Oct 5</text>
+                </g>
+
+                <!-- Tue Oct 6: 74.4% -> y = 86 -->
+                <g class="occ-pt-group">
+                  <circle cx="200" cy="86" r="6" fill="#ffffff" stroke="#174d2f" stroke-width="3"></circle>
+                  <text x="200" y="72" font-size="11" font-weight="700" fill="#174d2f" text-anchor="middle">74.4%</text>
+                  <text x="200" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Tue</text>
+                  <text x="200" y="255" font-size="10" fill="#698572" text-anchor="middle">Oct 6 (Today)</text>
+                </g>
+
+                <!-- Wed Oct 7: 83.2% -> y = 70 -->
+                <g class="occ-pt-group">
+                  <circle cx="295" cy="70" r="6" fill="#ffffff" stroke="#174d2f" stroke-width="3"></circle>
+                  <text x="295" y="56" font-size="11" font-weight="700" fill="#174d2f" text-anchor="middle">83.2%</text>
+                  <text x="295" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Wed</text>
+                  <text x="295" y="255" font-size="10" fill="#698572" text-anchor="middle">Oct 7</text>
+                </g>
+
+                <!-- Thu Oct 8: 94.2% Peak -> y = 50 -->
+                <g class="occ-pt-group">
+                  <circle cx="390" cy="50" r="7.5" fill="#f59e0b" stroke="#b45309" stroke-width="3"></circle>
+                  <text x="390" y="34" font-size="12" font-weight="800" fill="#b45309" text-anchor="middle">94.2% (Peak)</text>
+                  <text x="390" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Thu</text>
+                  <text x="390" y="255" font-size="10" fill="#698572" text-anchor="middle">Oct 8</text>
+                </g>
+
+                <!-- Fri Oct 9: 78.5% -> y = 79 -->
+                <g class="occ-pt-group">
+                  <circle cx="485" cy="79" r="6" fill="#ffffff" stroke="#174d2f" stroke-width="3"></circle>
+                  <text x="485" y="65" font-size="11" font-weight="700" fill="#174d2f" text-anchor="middle">78.5%</text>
+                  <text x="485" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Fri</text>
+                  <text x="485" y="255" font-size="10" fill="#698572" text-anchor="middle">Oct 9</text>
+                </g>
+
+                <!-- Sat Oct 10: 58.0% -> y = 115 -->
+                <g class="occ-pt-group">
+                  <circle cx="580" cy="115" r="6" fill="#ffffff" stroke="#174d2f" stroke-width="3"></circle>
+                  <text x="580" y="101" font-size="11" font-weight="700" fill="#174d2f" text-anchor="middle">58.0%</text>
+                  <text x="580" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Sat</text>
+                  <text x="580" y="255" font-size="10" fill="#698572" text-anchor="middle">Oct 10</text>
+                </g>
+
+                <!-- Sun Oct 11: 42.0% -> y = 144 -->
+                <g class="occ-pt-group">
+                  <circle cx="675" cy="144" r="6" fill="#ffffff" stroke="#174d2f" stroke-width="3"></circle>
+                  <text x="675" y="130" font-size="11" font-weight="700" fill="#174d2f" text-anchor="middle">42.0%</text>
+                  <text x="675" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Sun</text>
+                  <text x="675" y="255" font-size="10" fill="#698572" text-anchor="middle">Oct 11</text>
+                </g>
+
+                <defs>
+                  <linearGradient id="gradLineArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#174d2f" stop-opacity="0.25"></stop>
+                    <stop offset="100%" stop-color="#174d2f" stop-opacity="0.02"></stop>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Detailed Facility Asset Breakdown Table -->
+        <div class="occ-breakdown-section">
+          <h5 style="margin: 0 0 0.75rem; font-size: 0.95rem; font-weight: 800; color: #174d2f; display: flex; align-items: center; justify-content: space-between;">
+            <span>Monitored Facility Utilization Breakdown</span>
+            <span style="font-size: 0.75rem; font-weight: 600; color: #60796b;">Total 6 Institutional Assets</span>
+          </h5>
+
+          <div class="occ-table-wrap">
+            <table class="occ-breakdown-table">
+              <thead>
+                <tr>
+                  <th>Facility / Venue</th>
+                  <th>Category</th>
+                  <th>Booked / Max Capacity</th>
+                  <th>Occupancy Rate</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Serrano Function Hall</strong></td>
+                  <td><span class="occ-tag hall">Function Hall</span></td>
+                  <td>108 / 120 PAX</td>
+                  <td>
+                    <div class="occ-tbl-rate">
+                      <div class="occ-tbl-bar"><div class="occ-tbl-fill" style="width: 90%; background: #174d2f;"></div></div>
+                      <strong>90.0%</strong>
+                    </div>
+                  </td>
+                  <td><span class="occ-status-badge high">High Demand</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Training Hall A (AV Room)</strong></td>
+                  <td><span class="occ-tag hall">Training Hall</span></td>
+                  <td>51 / 60 PAX</td>
+                  <td>
+                    <div class="occ-tbl-rate">
+                      <div class="occ-tbl-bar"><div class="occ-tbl-fill" style="width: 85%; background: #174d2f;"></div></div>
+                      <strong>85.0%</strong>
+                    </div>
+                  </td>
+                  <td><span class="occ-status-badge active">Active Load</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Executive Boardroom</strong></td>
+                  <td><span class="occ-tag hall">Executive Hall</span></td>
+                  <td>18 / 25 PAX</td>
+                  <td>
+                    <div class="occ-tbl-rate">
+                      <div class="occ-tbl-bar"><div class="occ-tbl-fill" style="width: 72%; background: #2563eb;"></div></div>
+                      <strong>72.0%</strong>
+                    </div>
+                  </td>
+                  <td><span class="occ-status-badge active">Reserved</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Mess Hall & Dining Area</strong></td>
+                  <td><span class="occ-tag hall">Dining Hall</span></td>
+                  <td>80 / 100 PAX</td>
+                  <td>
+                    <div class="occ-tbl-rate">
+                      <div class="occ-tbl-bar"><div class="occ-tbl-fill" style="width: 80%; background: #174d2f;"></div></div>
+                      <strong>80.0%</strong>
+                    </div>
+                  </td>
+                  <td><span class="occ-status-badge active">Active Catering</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Dormitory Suite A (Trainee Wing)</strong></td>
+                  <td><span class="occ-tag dorm">Dormitory</span></td>
+                  <td>39 / 60 Beds</td>
+                  <td>
+                    <div class="occ-tbl-rate">
+                      <div class="occ-tbl-bar"><div class="occ-tbl-fill" style="width: 65%; background: #d97706;"></div></div>
+                      <strong>65.0%</strong>
+                    </div>
+                  </td>
+                  <td><span class="occ-status-badge dorm">Checked In</span></td>
+                </tr>
+                <tr>
+                  <td><strong>Dormitory Suite B (VIP Wing)</strong></td>
+                  <td><span class="occ-tag dorm">Dormitory</span></td>
+                  <td>28 / 40 Beds</td>
+                  <td>
+                    <div class="occ-tbl-rate">
+                      <div class="occ-tbl-bar"><div class="occ-tbl-fill" style="width: 70%; background: #d97706;"></div></div>
+                      <strong>70.0%</strong>
+                    </div>
+                  </td>
+                  <td><span class="occ-status-badge dorm">Checked In</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-system-secondary" onclick="closeOccupancyModal()">Close Analytics</button>
+        <button type="button" class="btn-preview-file" onclick="exportOccupancyReport()" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Export Analytics Report</span>
+        </button>
       </div>
     </div>
   </div>
