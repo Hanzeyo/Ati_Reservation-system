@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initFilterTabs();
   initKpiFilters();
   initSearchAndFilter();
+  initViewModeToggle();
   initCardModals();
   initCancellationWorkflow();
   initCopyButtons();
@@ -40,9 +41,12 @@ function initProfileDropdown() {
 let activeStatusFilter = 'all';
 let activeVenueFilter = 'all';
 let activeSearchQuery = '';
+let currentViewMode = 'cards';
 
 function applyAllFilters() {
   const cards = document.querySelectorAll('.res-card');
+  const tableRows = document.querySelectorAll('.res-table-row');
+  const tableWrap = document.getElementById('reservationsTableWrap');
   const emptyState = document.getElementById('emptyResState');
   let visibleCount = 0;
 
@@ -55,17 +59,67 @@ function applyAllFilters() {
     const matchesVenue = (activeVenueFilter === 'all') || (cardVenue === activeVenueFilter);
     const matchesSearch = !activeSearchQuery || cardText.includes(activeSearchQuery);
 
-    if (matchesStatus && matchesVenue && matchesSearch) {
-      card.style.display = 'block';
-      visibleCount++;
+    if (currentViewMode === 'cards') {
+      if (matchesStatus && matchesVenue && matchesSearch) {
+        card.style.display = '';
+        visibleCount++;
+      } else {
+        card.style.display = 'none';
+      }
     } else {
       card.style.display = 'none';
     }
   });
 
+  tableRows.forEach(row => {
+    const rowStatus = row.dataset.status;
+    const rowVenue = row.dataset.venue;
+    const rowText = row.textContent.toLowerCase();
+
+    const matchesStatus = (activeStatusFilter === 'all') || (rowStatus === activeStatusFilter);
+    const matchesVenue = (activeVenueFilter === 'all') || (rowVenue === activeVenueFilter);
+    const matchesSearch = !activeSearchQuery || rowText.includes(activeSearchQuery);
+
+    if (matchesStatus && matchesVenue && matchesSearch) {
+      row.style.display = '';
+      if (currentViewMode === 'table') visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+
+  if (tableWrap) {
+    tableWrap.style.display = currentViewMode === 'table' ? 'block' : 'none';
+  }
+
   if (emptyState) {
     emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
   }
+}
+
+function initViewModeToggle() {
+  const btnCards = document.getElementById('btnViewCards');
+  const btnTable = document.getElementById('btnViewTable');
+
+  if (!btnCards || !btnTable) return;
+
+  btnCards.addEventListener('click', () => {
+    currentViewMode = 'cards';
+    btnCards.classList.add('active');
+    btnCards.setAttribute('aria-pressed', 'true');
+    btnTable.classList.remove('active');
+    btnTable.setAttribute('aria-pressed', 'false');
+    applyAllFilters();
+  });
+
+  btnTable.addEventListener('click', () => {
+    currentViewMode = 'table';
+    btnTable.classList.add('active');
+    btnTable.setAttribute('aria-pressed', 'true');
+    btnCards.classList.remove('active');
+    btnCards.setAttribute('aria-pressed', 'false');
+    applyAllFilters();
+  });
 }
 
 function updateKpiCounts() {
@@ -180,7 +234,16 @@ function initCardModals() {
 
   detailBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      const card = btn.closest('.res-card');
+      let card = btn.closest('.res-card');
+      if (!card) {
+        const row = btn.closest('.res-table-row');
+        if (row) {
+          const ref = row.querySelector('.res-ref-tag')?.textContent.trim();
+          if (ref) {
+            card = document.querySelector(`.res-card[data-ref="${ref}"]`);
+          }
+        }
+      }
       if (!card) return;
 
       // Extract metadata from card
