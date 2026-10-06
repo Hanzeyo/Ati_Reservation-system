@@ -308,7 +308,9 @@ body.booking-body {
   color: #647b6e;
   font-weight: 600;
   font-size: 0.92rem;
-  cursor: pointer;
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
   transition: var(--transition);
 }
 
@@ -445,7 +447,8 @@ body.booking-body {
   font-size: 0.78rem;
   font-weight: 700;
   color: #647b6e;
-  cursor: pointer;
+  cursor: default;
+  pointer-events: none;
   transition: all 0.2s ease;
   padding: 0;
 }
@@ -1945,19 +1948,22 @@ body.booking-body {
 }
 
 .dorm-card-selected-room-badge {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
+  gap: 0.45rem;
   background: #dcfce7;
   color: #166534;
-  font-size: 0.8rem;
-  font-weight: 800;
-  padding: 0.4rem 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
   border-radius: 8px;
-  border: 1px solid #86efac;
+  border: 1.5px solid #86efac;
   margin-top: 0.85rem;
-  margin-bottom: 0.35rem;
-  width: fit-content;
+  margin-bottom: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
   animation: fadeInModal 0.25s ease;
 }
 
@@ -1988,6 +1994,7 @@ body.booking-body {
 }
 
 .room-modal-dialog {
+  position: relative;
   background: #ffffff;
   border-radius: 20px;
   width: 100%;
@@ -2013,7 +2020,8 @@ body.booking-body {
 
 /* Modal Header */
 .room-modal-header {
-  padding: 1.5rem 1.75rem 1.25rem;
+  position: relative;
+  padding: 1.5rem 4.5rem 1.25rem 1.75rem;
   border-bottom: 1px solid #e5ede8;
   display: flex;
   align-items: flex-start;
@@ -2068,26 +2076,34 @@ body.booking-body {
 }
 
 .room-modal-close-btn {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.5rem;
   background: #f1f5f2;
   border: 1px solid #dce5df;
   color: #4b6354;
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  font-size: 1.6rem;
-  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
+  z-index: 20;
+}
+
+.room-modal-close-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 .room-modal-close-btn:hover {
-  background: #dc2626;
-  border-color: #dc2626;
-  color: #ffffff;
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
   transform: rotate(90deg);
 }
 
@@ -2129,7 +2145,7 @@ body.booking-body {
 
 /* Modal Body */
 .room-modal-body {
-  padding: 1.5rem 1.75rem;
+  padding: 1.5rem 1.75rem 2rem;
   overflow-y: auto;
   flex: 1;
   background: #f9fbf9;
@@ -2356,10 +2372,20 @@ body.booking-body {
     gap: 0.65rem;
   }
   .room-modal-header {
-    padding: 1.25rem 1rem;
+    padding: 1.25rem 3.5rem 1rem 1.25rem;
+  }
+  .room-modal-close-btn {
+    top: 1rem;
+    right: 1rem;
+    width: 34px;
+    height: 34px;
+  }
+  .room-modal-close-btn svg {
+    width: 16px;
+    height: 16px;
   }
   .room-modal-body {
-    padding: 1.25rem 1rem;
+    padding: 1.25rem 1rem 1.5rem;
   }
   .room-modal-footer {
     padding: 1rem;
@@ -2375,4 +2401,101 @@ body.booking-body {
   .modal-rooms-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* ==========================================================================
+   Reservation Summary Preview Cards (Step 1 & Step 5)
+   ========================================================================== */
+.step1-selection-summary-card,
+.review-official-summary-card {
+  margin-top: 1.5rem;
+  background: #ffffff;
+  border: 1.5px solid #cce5d4;
+  border-radius: 14px;
+  padding: 1.25rem 1.6rem;
+  box-shadow: 0 4px 16px rgba(23, 84, 50, 0.06);
+  animation: fadeInModal 0.25s ease;
+}
+
+.summary-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #eef4f0;
+  padding-bottom: 0.85rem;
+  margin-bottom: 0.95rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.sch-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #166534;
+  background: #e8f5ed;
+  border: 1px solid #cce5d4;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  display: inline-block;
+  margin-bottom: 0.35rem;
+}
+
+.sch-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #123820;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.sch-rate-pill {
+  background: #daf2e5;
+  color: #046c4e;
+  font-size: 0.9rem;
+  font-weight: 800;
+  padding: 0.35rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid #bce6cf;
+}
+
+.summary-card-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.15rem;
+}
+
+.scb-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.scb-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #627b6c;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.scb-val {
+  font-size: 0.95rem;
+  color: #192e22;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.booking-bottom-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding-top: 1.75rem !important;
+  margin-top: 1.75rem !important;
+  border-top: 1px solid #e2eae4 !important;
+}
+
+.booking-bottom-actions .btn-proceed-step {
+  margin-left: auto;
 }

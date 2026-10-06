@@ -12,6 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initDormRoomSelection();
 });
 
+// Global navigation handle
+let goToStep = null;
+
 // Global state
 const bookingState = {
   currentStep: 1,
@@ -205,11 +208,18 @@ function initFacilitySelection() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
-            Selected Venue
+            Selected Venue ✓
           `;
         }
         bookingState.selectedFacility.roomNumber = null;
         bookingState.selectedFacility.floor = null;
+
+        updateReviewSummary();
+
+        const proceedBtn = document.getElementById('btnProceedStep');
+        if (proceedBtn) {
+          proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time Selection</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        }
       }
 
       updateReviewSummary();
@@ -331,14 +341,21 @@ function openRoomModal(dormId) {
           feedbackBar.style.display = 'flex';
           const fTitle = document.getElementById('modalFeedbackTitle');
           const fSub = document.getElementById('modalFeedbackSub');
-          if (fTitle) fTitle.textContent = `Room ${r.num} Selected`;
-          if (fSub) fSub.textContent = `${data.floor} • ${data.title} (${data.rate}) • Assigned for your booking`;
+          const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
+          if (fTitle) fTitle.textContent = `Room ${r.num} Selected ✓`;
+          if (fSub) fSub.textContent = `${data.floor} • ${data.title} (${data.rate}) • Room Assigned`;
+          if (badgeOk) badgeOk.textContent = '✓ Room Confirmed';
         }
 
         if (confirmBtn) {
           confirmBtn.disabled = false;
-          confirmBtn.innerHTML = `<span>Confirm Room ${r.num} &amp; Proceed &rarr;</span>`;
+          confirmBtn.innerHTML = `<span>Confirm Room ${r.num}</span>`;
         }
+
+        // Close modal and let user review reservation summary in Step 1
+        setTimeout(() => {
+          confirmRoomSelection();
+        }, 400);
       });
 
       gridEl.appendChild(box);
@@ -387,7 +404,7 @@ function confirmRoomSelection() {
     const badgeText = card.querySelector('.d-room-text');
     if (badge && badgeText) {
       badgeText.textContent = `✓ Room ${modalTempSelectedRoom} Assigned (${data.floor})`;
-      badge.style.display = 'inline-flex';
+      badge.style.display = 'flex';
     }
 
     const btn = card.querySelector('.btn-select-facility');
@@ -399,14 +416,17 @@ function confirmRoomSelection() {
   closeRoomModal();
   updateReviewSummary();
 
-  // Advance to Step 2 (Date & Time Selection)
+  // Update Proceed button text so user can review summary then proceed when ready
   const proceedBtn = document.getElementById('btnProceedStep');
   if (proceedBtn) {
-    proceedBtn.innerHTML = `<span>Proceed to Date & Time (Room ${modalTempSelectedRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+    proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (Room ${modalTempSelectedRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+    proceedBtn.style.display = 'inline-flex';
   }
 
-  if (typeof goToStep === 'function') {
-    goToStep(2);
+  // Smooth scroll down to the reservation summary preview card before proceeding
+  const summaryCard = document.getElementById('step1SummaryCard');
+  if (summaryCard) {
+    summaryCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 }
 
@@ -534,14 +554,64 @@ function initStepperNavigation() {
   const stepButtons = document.querySelectorAll('.step-tab-btn');
   const stepViews = document.querySelectorAll('.wizard-step-view');
   const proceedBtn = document.getElementById('btnProceedStep');
+  const backBtn = document.getElementById('btnStepBack');
+  const bottomActions = document.getElementById('bookingBottomActions') || document.querySelector('.booking-bottom-actions');
 
-  function goToStep(stepNumber) {
+  function isDormitorySelected() {
+    return bookingState.selectedFacility?.type === 'dormitories' ||
+           String(bookingState.selectedFacility?.id).startsWith('dorm-');
+  }
+
+  function updateStepperMode() {
+    const isDorm = isDormitorySelected();
+    const stepTabEvent = document.getElementById('stepTabEventDetails');
+    const stepTabDocs = document.getElementById('stepTabDocuments');
+    const stepTabRev = document.getElementById('stepTabReview');
+    const dotEvent = document.getElementById('mobileDotEventDetails');
+    const dotDocs = document.getElementById('mobileDotDocuments');
+    const dotRev = document.getElementById('mobileDotReview');
+
+    if (isDorm) {
+      if (stepTabEvent) stepTabEvent.style.display = 'none';
+      if (dotEvent) dotEvent.style.display = 'none';
+      if (stepTabDocs) {
+        const n = stepTabDocs.querySelector('.step-number');
+        if (n) n.textContent = '3';
+      }
+      if (stepTabRev) {
+        const n = stepTabRev.querySelector('.step-number');
+        if (n) n.textContent = '4';
+      }
+      if (dotDocs) dotDocs.textContent = '3';
+      if (dotRev) dotRev.textContent = '4';
+    } else {
+      if (stepTabEvent) stepTabEvent.style.display = '';
+      if (dotEvent) dotEvent.style.display = '';
+      if (stepTabDocs) {
+        const n = stepTabDocs.querySelector('.step-number');
+        if (n) n.textContent = '4';
+      }
+      if (stepTabRev) {
+        const n = stepTabRev.querySelector('.step-number');
+        if (n) n.textContent = '5';
+      }
+      if (dotDocs) dotDocs.textContent = '4';
+      if (dotRev) dotRev.textContent = '5';
+    }
+  }
+
+  goToStep = function(stepNumber) {
     if (stepNumber < 1 || stepNumber > 5) return;
+
+    const isDorm = isDormitorySelected();
+
+    // If dorm and user tries to go to step 3, redirect to step 4
+    if (isDorm && stepNumber === 3) {
+      stepNumber = 4;
+    }
 
     // Requirement: When reserving a dormitory accommodation, user MUST select a room first before proceeding to Step 2
     if (stepNumber === 2 && bookingState.currentStep === 1) {
-      const isDorm = bookingState.selectedFacility?.type === 'dormitories' ||
-                     ['dormitory-suites', 'executive-vip-suite', 'trainee-quad-quarters', 'twin-deluxe'].includes(bookingState.selectedFacility?.id);
       if (isDorm && !bookingState.selectedFacility?.roomNumber) {
         alert('Please choose an AVAILABLE room unit (highlighted in green, e.g. Room 101, 201, 302) inside your chosen dormitory floor before proceeding to Date & Time Selection.');
         const selectedCard = document.querySelector('.facility-choice-card.selected');
@@ -571,11 +641,12 @@ function initStepperNavigation() {
     }
 
     bookingState.currentStep = stepNumber;
+    updateStepperMode();
 
-    // Update Desktop Stepper Buttons
-    stepButtons.forEach((btn, index) => {
-      const stepIdx = index + 1;
-      btn.classList.remove('active');
+    // Update Desktop Stepper Cards (strictly visual progress indicator cards)
+    stepButtons.forEach((btn) => {
+      const stepIdx = parseInt(btn.dataset.step, 10);
+      btn.classList.remove('active', 'completed');
       if (stepIdx === stepNumber) {
         btn.classList.add('active');
       } else if (stepIdx < stepNumber) {
@@ -584,13 +655,20 @@ function initStepperNavigation() {
     });
 
     // Update Mobile Compact Progress Bar
-    const stepLabels = [
-      'Facility Selection',
-      'Date & Time Selection',
-      'Event & Activity Details',
-      'Document Upload',
-      'Review & Submit'
-    ];
+    const totalSteps = isDorm ? 4 : 5;
+    let visualStepIndex = stepNumber;
+    if (isDorm) {
+      if (stepNumber === 4) visualStepIndex = 3;
+      if (stepNumber === 5) visualStepIndex = 4;
+    }
+
+    const stepLabels = {
+      1: 'Facility Selection',
+      2: 'Date & Time Selection',
+      3: 'Event & Activity Details',
+      4: 'Document Upload',
+      5: 'Review & Submit'
+    };
 
     const mobileBadge = document.getElementById('mobileStepBadge');
     const mobileName = document.getElementById('mobileStepName');
@@ -598,16 +676,16 @@ function initStepperNavigation() {
     const mobileFill = document.getElementById('mobileProgressFill');
     const mobileDots = document.querySelectorAll('.mobile-dot');
 
-    const progressPercent = Math.round((stepNumber / 5) * 100);
+    const progressPercent = Math.round((visualStepIndex / totalSteps) * 100);
 
-    if (mobileBadge) mobileBadge.textContent = `Step ${stepNumber} of 5`;
-    if (mobileName) mobileName.textContent = stepLabels[stepNumber - 1];
+    if (mobileBadge) mobileBadge.textContent = `Step ${visualStepIndex} of ${totalSteps}`;
+    if (mobileName) mobileName.textContent = stepLabels[stepNumber] || 'Reservation Details';
     if (mobilePercent) mobilePercent.textContent = `${progressPercent}%`;
     if (mobileFill) mobileFill.style.width = `${progressPercent}%`;
 
     if (mobileDots) {
-      mobileDots.forEach((dot, index) => {
-        const dotStep = index + 1;
+      mobileDots.forEach((dot) => {
+        const dotStep = parseInt(dot.dataset.step, 10);
         dot.classList.remove('active', 'completed');
         if (dotStep === stepNumber) {
           dot.classList.add('active');
@@ -621,103 +699,177 @@ function initStepperNavigation() {
       view.classList.toggle('active', parseInt(view.dataset.step, 10) === stepNumber);
     });
 
-    // Update Proceed Button and Back Button based on step
-    const backBtn = document.getElementById('btnStepBack');
+    // Bottom Navigation Bar is ALWAYS visible across all steps
+    if (bottomActions) {
+      bottomActions.style.display = 'flex';
+    }
+
+    // Back button behavior
     if (backBtn) {
       backBtn.style.display = stepNumber > 1 ? 'inline-flex' : 'none';
     }
 
+    // Proceed button behavior across all steps
     if (proceedBtn) {
       if (stepNumber === 1) {
-        proceedBtn.innerHTML = `<span>Proceed to Date & Time Selection</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
         proceedBtn.style.display = 'inline-flex';
+        const dormRoom = bookingState.selectedFacility?.roomNumber;
+        if (isDorm && dormRoom) {
+          proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (Room ${dormRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        } else {
+          proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time Selection</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        }
       } else if (stepNumber === 2) {
-        proceedBtn.innerHTML = `<span>Proceed to Event Details</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
         proceedBtn.style.display = 'inline-flex';
+        if (isDorm) {
+          proceedBtn.innerHTML = `<span>Proceed to Document Upload</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        } else {
+          proceedBtn.innerHTML = `<span>Proceed to Event Details</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        }
       } else if (stepNumber === 3) {
+        proceedBtn.style.display = 'inline-flex';
         proceedBtn.innerHTML = `<span>Proceed to Document Upload</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
-        proceedBtn.style.display = 'inline-flex';
       } else if (stepNumber === 4) {
-        proceedBtn.innerHTML = `<span>Review & Confirm Details</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
         proceedBtn.style.display = 'inline-flex';
+        proceedBtn.innerHTML = `<span>Review &amp; Confirm Details</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       } else if (stepNumber === 5) {
-        proceedBtn.style.display = 'none'; // Step 5 has its own submit button
+        // Step 5 has its dedicated submit button inside the official review summary card
+        proceedBtn.style.display = 'none';
       }
     }
 
     window.scrollTo({ top: 120, behavior: 'smooth' });
     updateReviewSummary();
-  }
+  };
 
-  // Desktop step buttons click
-  stepButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const targetStep = parseInt(btn.dataset.step, 10);
-      goToStep(targetStep);
-    });
-  });
+  window.goToStep = goToStep;
 
-  // Mobile step dots click
-  const mobileDots = document.querySelectorAll('.mobile-dot');
-  if (mobileDots) {
-    mobileDots.forEach(dot => {
-      dot.addEventListener('click', () => {
-        const targetStep = parseInt(dot.dataset.step, 10);
-        goToStep(targetStep);
-      });
-    });
-  }
+  // IMPORTANT: Stepper cards & mobile dots are NON-CLICKABLE progress step cards!
+  // Navigation is driven exclusively by the bottom Back & Proceed buttons.
 
+  // Proceed button click listener
   if (proceedBtn) {
     proceedBtn.addEventListener('click', () => {
-      goToStep(bookingState.currentStep + 1);
+      const isDorm = isDormitorySelected();
+      if (bookingState.currentStep === 1) {
+        if (isDorm && !bookingState.selectedFacility?.roomNumber) {
+          alert('Please choose an AVAILABLE room unit (highlighted in green, e.g. Room 101, 201, 302) inside your chosen dormitory floor before proceeding to Date & Time Selection.');
+          const card = document.querySelector('.facility-choice-card.selected');
+          if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+        goToStep(2);
+      } else if (bookingState.currentStep === 2) {
+        if (isDorm) {
+          goToStep(4); // Skip Step 3 for Dormitories
+        } else {
+          goToStep(3);
+        }
+      } else if (bookingState.currentStep === 3) {
+        goToStep(4);
+      } else if (bookingState.currentStep === 4) {
+        goToStep(5);
+      }
     });
   }
 
-  const backBtn = document.getElementById('btnStepBack');
+  // Back button click listener
   if (backBtn) {
     backBtn.addEventListener('click', () => {
-      goToStep(bookingState.currentStep - 1);
+      const isDorm = isDormitorySelected();
+      if (bookingState.currentStep === 4 && isDorm) {
+        goToStep(2); // Skip Step 3 in reverse for Dormitories
+      } else {
+        goToStep(bookingState.currentStep - 1);
+      }
     });
   }
 
-  // Final Submit
+  // Final Submit listener on Step 5
   const finalSubmitBtn = document.getElementById('btnSubmitFinalReservation');
   if (finalSubmitBtn) {
     finalSubmitBtn.addEventListener('click', () => {
-      alert(`Reservation Request Submitted Successfully!\n\nReference: ATI-RES-2026-${Math.floor(1000 + Math.random() * 9000)}\nFacility: ${bookingState.selectedFacility.name}\nDate: ${bookingState.date}\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`);
+      const refNum = `ATI-RES-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      let summaryMsg = `Reservation Request Submitted Successfully!\n\nReference: ${refNum}\nFacility: ${bookingState.selectedFacility.name}`;
+      if (bookingState.selectedFacility.roomNumber) {
+        summaryMsg += `\nAssigned Room: Room ${bookingState.selectedFacility.roomNumber} (${bookingState.selectedFacility.floor || ''})`;
+      }
+      summaryMsg += `\nSchedule: ${bookingState.date}\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`;
+      alert(summaryMsg);
       window.location.href = 'booking.php';
     });
   }
+
+  // Initial stepper setup
+  updateStepperMode();
 }
 
 /* ==========================================================================
-   4. Update Summary on Step 5
+   4. Update Summary on Step 1 (Preview) and Step 5 (Official Summary)
    ========================================================================== */
 function updateReviewSummary() {
-  const summaryVenue = document.getElementById('summaryVenueName');
-  const summaryCap = document.getElementById('summaryVenueCapacity');
-  const summaryRate = document.getElementById('summaryVenueRate');
-  const summaryDate = document.getElementById('summaryReservationDate');
+  const isDorm = bookingState.selectedFacility?.type === 'dormitories' ||
+                 String(bookingState.selectedFacility?.id).startsWith('dorm-');
+  const roomNum = bookingState.selectedFacility?.roomNumber;
+  const floorName = bookingState.selectedFacility?.floor || '';
+  const facilityName = bookingState.selectedFacility?.name || 'Function Hall';
+  const rateText = bookingState.selectedFacility?.roomRate || bookingState.selectedFacility?.rate || '₱5,000/day';
+  const capText = bookingState.selectedFacility?.capacity || '150 - 200 PAX';
 
-  if (summaryVenue) {
-    let name = bookingState.selectedFacility.name;
-    if (bookingState.selectedFacility.roomNumber) {
-      name += ` — Room ${bookingState.selectedFacility.roomNumber} (${bookingState.selectedFacility.floor || ''})`;
+  // 1. Step 1 Summary Preview Card
+  const prevBadge = document.getElementById('summaryPreviewBadge');
+  const prevTitle = document.getElementById('summaryPreviewTitle');
+  const prevRate = document.getElementById('summaryPreviewRate');
+  const prevRoomWrap = document.getElementById('summaryPreviewRoomWrap');
+  const prevRoom = document.getElementById('summaryPreviewRoom');
+  const prevCap = document.getElementById('summaryPreviewCap');
+
+  if (prevBadge) prevBadge.textContent = isDorm ? 'DORMITORY ACCOMMODATION' : 'SELECTED VENUE';
+  if (prevTitle) prevTitle.textContent = facilityName;
+  if (prevRate) prevRate.textContent = rateText;
+  if (prevCap) prevCap.textContent = capText;
+
+  if (prevRoomWrap && prevRoom) {
+    if (isDorm && roomNum) {
+      prevRoomWrap.style.display = 'flex';
+      prevRoom.textContent = `Room ${roomNum} (${floorName})`;
+    } else {
+      prevRoomWrap.style.display = 'none';
+      prevRoom.textContent = 'None';
     }
-    summaryVenue.textContent = name;
   }
-  if (summaryCap) summaryCap.textContent = bookingState.selectedFacility.capacity;
-  if (summaryRate) {
-    const rate = bookingState.selectedFacility.roomRate || bookingState.selectedFacility.rate;
-    summaryRate.textContent = rate;
+
+  // 2. Step 5 Official Review Summary Card
+  const sumBadge = document.getElementById('summaryFacilityBadge');
+  const sumVenue = document.getElementById('summaryVenueName');
+  const sumRate = document.getElementById('summaryVenueRate');
+  const sumRoomWrap = document.getElementById('summaryRoomDetailWrap');
+  const sumRoom = document.getElementById('summaryRoomDetail');
+  const sumFacType = document.getElementById('summaryFacilityType');
+  const sumCap = document.getElementById('summaryVenueCapacity');
+  const sumDate = document.getElementById('summaryReservationDate');
+  const sumTime = document.getElementById('summaryTimeSlot');
+
+  if (sumBadge) sumBadge.textContent = isDorm ? 'DORMITORY ACCOMMODATION' : 'OFFICIAL VENUE RESERVATION';
+  if (sumVenue) sumVenue.textContent = facilityName;
+  if (sumRate) sumRate.textContent = rateText;
+  if (sumFacType) sumFacType.textContent = isDorm ? 'Trainee Dormitory Lodging' : 'Conference & Training Venue';
+  if (sumCap) sumCap.textContent = capText;
+  if (sumDate) sumDate.textContent = bookingState.date || '10/05/2026';
+  if (sumTime) sumTime.textContent = isDorm ? 'Overnight Lodging Stay' : (bookingState.timeSlot || 'Whole Day (8:00 AM - 5:00 PM)');
+
+  if (sumRoomWrap && sumRoom) {
+    if (isDorm && roomNum) {
+      sumRoomWrap.style.display = 'flex';
+      sumRoom.textContent = `Room ${roomNum} (${floorName})`;
+    } else {
+      sumRoomWrap.style.display = 'none';
+      sumRoom.textContent = 'None';
+    }
   }
-  if (summaryDate) summaryDate.textContent = bookingState.date;
 }
 
-/* ==========================================================================
-   5. Interactive Date & Slot Selection (Step 2)
-   ========================================================================== */
+
 function initDateSlotInteractions() {
   const startInput = document.getElementById('startDateInput');
   const endInput = document.getElementById('endDateInput');

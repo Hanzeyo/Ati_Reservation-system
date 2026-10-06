@@ -334,33 +334,33 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
     <div class="stepper-bar-card">
       <!-- Desktop Stepper (5 Tabs) -->
       <div class="stepper-grid">
-        <button type="button" class="step-tab-btn active" data-step="1">
+        <div class="step-tab-btn active" data-step="1">
           <span class="step-number">1</span>
           <span>Facility</span>
-        </button>
-        <button type="button" class="step-tab-btn" data-step="2">
+        </div>
+        <div class="step-tab-btn" data-step="2">
           <span class="step-number">2</span>
           <span>Date & Time</span>
-        </button>
-        <button type="button" class="step-tab-btn" data-step="3">
+        </div>
+        <div class="step-tab-btn" data-step="3" id="stepTabEventDetails" style="<?php echo $reqCategory === 'dormitories' ? 'display: none;' : ''; ?>">
           <span class="step-number">3</span>
           <span>Event Details</span>
-        </button>
-        <button type="button" class="step-tab-btn" data-step="4">
-          <span class="step-number">4</span>
+        </div>
+        <div class="step-tab-btn" data-step="4" id="stepTabDocuments">
+          <span class="step-number"><?php echo $reqCategory === 'dormitories' ? '3' : '4'; ?></span>
           <span>Documents</span>
-        </button>
-        <button type="button" class="step-tab-btn" data-step="5">
-          <span class="step-number">5</span>
+        </div>
+        <div class="step-tab-btn" data-step="5" id="stepTabReview">
+          <span class="step-number"><?php echo $reqCategory === 'dormitories' ? '4' : '5'; ?></span>
           <span>Review & Submit</span>
-        </button>
+        </div>
       </div>
 
       <!-- Compact Mobile Stepper Indicator -->
       <div class="mobile-stepper-progress" id="mobileStepperProgress">
         <div class="mobile-stepper-header">
           <div class="mobile-step-pill">
-            <span class="mobile-step-badge" id="mobileStepBadge">Step 1 of 5</span>
+            <span class="mobile-step-badge" id="mobileStepBadge">Step 1 of <?php echo $reqCategory === 'dormitories' ? '4' : '5'; ?></span>
             <strong class="mobile-step-name" id="mobileStepName">Facility Selection</strong>
           </div>
           <span class="mobile-step-percent" id="mobileStepPercent">20%</span>
@@ -369,11 +369,11 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
           <div class="mobile-progress-fill" id="mobileProgressFill" style="width: 20%;"></div>
         </div>
         <div class="mobile-step-dots">
-          <button type="button" class="mobile-dot active" data-step="1" title="Facility">1</button>
-          <button type="button" class="mobile-dot" data-step="2" title="Date & Time">2</button>
-          <button type="button" class="mobile-dot" data-step="3" title="Event Details">3</button>
-          <button type="button" class="mobile-dot" data-step="4" title="Documents">4</button>
-          <button type="button" class="mobile-dot" data-step="5" title="Review">5</button>
+          <div class="mobile-dot active" data-step="1" title="Facility">1</div>
+          <div class="mobile-dot" data-step="2" title="Date & Time">2</div>
+          <div class="mobile-dot" data-step="3" id="mobileDotEventDetails" title="Event Details" style="<?php echo $reqCategory === 'dormitories' ? 'display: none;' : ''; ?>">3</div>
+          <div class="mobile-dot" data-step="4" id="mobileDotDocuments" title="Documents"><?php echo $reqCategory === 'dormitories' ? '3' : '4'; ?></div>
+          <div class="mobile-dot" data-step="5" id="mobileDotReview" title="Review"><?php echo $reqCategory === 'dormitories' ? '4' : '5'; ?></div>
         </div>
       </div>
     </div>
@@ -687,6 +687,31 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
         </article>
 
       </div>
+
+      <!-- Step 1 Reservation Summary Preview (Visible before proceeding) -->
+      <div class="step1-selection-summary-card" id="step1SummaryCard">
+        <div class="summary-card-header">
+          <div class="sch-left">
+            <span class="sch-badge" id="summaryPreviewBadge">SELECTED VENUE</span>
+            <h4 class="sch-title" id="summaryPreviewTitle">Function Hall</h4>
+          </div>
+          <span class="sch-rate-pill" id="summaryPreviewRate">₱5,000 / day</span>
+        </div>
+        <div class="summary-card-body">
+          <div class="scb-item" id="summaryPreviewRoomWrap" style="display: none;">
+            <span class="scb-label">Assigned Room Unit:</span>
+            <strong class="scb-val" id="summaryPreviewRoom">None</strong>
+          </div>
+          <div class="scb-item">
+            <span class="scb-label">Capacity / Guests:</span>
+            <strong class="scb-val" id="summaryPreviewCap">150 - 200 PAX</strong>
+          </div>
+          <div class="scb-item">
+            <span class="scb-label">Next Action:</span>
+            <strong class="scb-val" style="color: #175432;">Review summary &amp; click Proceed below</strong>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ==========================================================================
@@ -947,34 +972,42 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
         <p class="wizard-form-desc">Please verify your reservation particulars before final submission to the
           administrative approving authority.</p>
 
-        <div
-          style="background: #f7faf8; border: 1.5px solid #dce8e0; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
-            <div>
-              <span style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Selected
-                Venue</span>
-              <h4 id="summaryVenueName" style="color: #175432; font-size: 1.15rem; margin-top: 0.2rem;">Function Hall
-              </h4>
+        <!-- Step 5 Official Reservation Summary (Visible before final submission) -->
+        <div class="review-official-summary-card">
+          <div class="summary-card-header">
+            <div class="sch-left">
+              <span class="sch-badge" id="summaryOfficialBadge">OFFICIAL RESERVATION PARTICULARS</span>
+              <h4 class="sch-title" id="summaryVenueName">Function Hall</h4>
             </div>
-            <div>
-              <span
-                style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Capacity</span>
-              <h4 id="summaryVenueCapacity" style="color: #192e22; font-size: 1.05rem; margin-top: 0.2rem;">150 - 200 PAX
-              </h4>
+            <span class="sch-rate-pill" id="summaryVenueRate">₱5,000 / day</span>
+          </div>
+
+          <div class="summary-card-body" style="margin-bottom: 1.25rem;">
+            <div class="scb-item" id="summaryRoomDetailWrap" style="display: none;">
+              <span class="scb-label">Assigned Room Unit:</span>
+              <strong class="scb-val" id="summaryRoomDetail">Room 102 (1st Floor (Sampaguita))</strong>
             </div>
-            <div>
-              <span style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Rate /
-                Tariff</span>
-              <h4 id="summaryVenueRate" style="color: #192e22; font-size: 1.05rem; margin-top: 0.2rem;">₱5,000/day</h4>
+            <div class="scb-item">
+              <span class="scb-label">Accommodation / Venue Type:</span>
+              <strong class="scb-val" id="summaryFacilityType">Conference &amp; Training Venue</strong>
             </div>
-            <div>
-              <span style="font-size: 0.78rem; font-weight: 700; color: #60796b; text-transform: uppercase;">Reservation Date</span>
-              <h4 id="summaryReservationDate" style="color: #175432; font-size: 1.05rem; margin-top: 0.2rem;">10/05/2026</h4>
+            <div class="scb-item">
+              <span class="scb-label">Capacity / Guests:</span>
+              <strong class="scb-val" id="summaryVenueCapacity">150 - 200 PAX</strong>
+            </div>
+            <div class="scb-item">
+              <span class="scb-label">Reserved Schedule:</span>
+              <strong class="scb-val" id="summaryReservationDate">10/05/2026</strong>
+            </div>
+            <div class="scb-item">
+              <span class="scb-label">Time Window:</span>
+              <strong class="scb-val" id="summaryTimeSlot">Whole Day (8:00 AM - 5:00 PM)</strong>
             </div>
           </div>
-          <div style="font-size: 0.88rem; color: #435b4d; border-top: 1px solid #e1ece4; padding-top: 1rem;">
-            <span>Requested by: <strong>Juan Dela Cruz</strong> (ATI Staff, CDD)</span> &bull;
-            <span>Status after submission: <strong>Pending Administrative Officer Review</strong></span>
+
+          <div style="font-size: 0.88rem; color: #435b4d; border-top: 1px solid #e1ece4; padding-top: 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <span>Requested by: <strong>Juan Dela Cruz</strong> (ATI Staff, CDD)</span>
+            <span class="status-pill-badge" style="background: #fef3c7; color: #92400e; font-weight: 700; font-size: 0.78rem; padding: 0.25rem 0.65rem; border-radius: 999px;">Pending Administrative Review</span>
           </div>
         </div>
 
@@ -988,8 +1021,8 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
       </div>
     </div>
 
-    <!-- Bottom Step Navigation Actions -->
-    <div class="booking-bottom-actions">
+    <!-- Bottom Step Navigation Actions (Always present across all steps) -->
+    <div class="booking-bottom-actions" id="bookingBottomActions">
       <button type="button" class="btn-step-back" id="btnStepBack" style="display: none;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -1023,7 +1056,12 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
           <h3 id="modalDormTitle" class="modal-dorm-title">1st Floor: Sampaguita Dormitory</h3>
           <p id="modalDormFloor" class="modal-dorm-desc">Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.</p>
         </div>
-        <button type="button" class="room-modal-close-btn" id="btnModalClose" aria-label="Close Room Selection">&times;</button>
+        <button type="button" class="room-modal-close-btn" id="btnModalClose" aria-label="Close Room Selection">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <!-- Modal Legend -->
@@ -1057,18 +1095,6 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
           </div>
           <span class="badge-assigned-ok">✓ Ready to Reserve</span>
         </div>
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="room-modal-footer">
-        <button type="button" class="btn-modal-cancel" id="btnModalCancel">Cancel</button>
-        <button type="button" class="btn-modal-confirm" id="btnModalConfirm" disabled>
-          <span>Confirm Room &amp; Proceed to Date Selection</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-            <polyline points="12 5 19 12 12 19"></polyline>
-          </svg>
-        </button>
       </div>
     </div>
   </div>
