@@ -147,10 +147,16 @@ let activeFacilityFilter = 'all';
 document.addEventListener('DOMContentLoaded', function () {
   initDateDisplay();
   renderCalendar();
+
+  // Restore desktop sidebar collapsed preference if previously saved
+  if (window.innerWidth > 960 && localStorage.getItem('admin_sidebar_collapsed') === 'true') {
+    const layout = document.querySelector('.admin-layout-container');
+    if (layout) layout.classList.add('sidebar-collapsed');
+  }
 });
 
 /* ==========================================================================
-   DATE DISPLAY & SIDEBAR TOGGLE
+   DATE DISPLAY & SIDEBAR TOGGLE (RESPONSIVE & DESKTOP)
    ========================================================================== */
 function initDateDisplay() {
   const dateEl = document.getElementById('currentDateDisplay');
@@ -162,18 +168,36 @@ function initDateDisplay() {
 }
 
 function toggleSidebar(forceState) {
+  const layout = document.querySelector('.admin-layout-container');
   const sidebar = document.getElementById('adminSidebar');
   const backdrop = document.getElementById('sidebarBackdrop');
   if (!sidebar) return;
 
-  const willOpen = typeof forceState === 'boolean' ? forceState : !sidebar.classList.contains('open');
+  const isMobile = window.innerWidth <= 960;
 
-  if (willOpen) {
-    sidebar.classList.add('open');
-    if (backdrop) backdrop.classList.add('show');
+  if (isMobile) {
+    const willOpen = typeof forceState === 'boolean' ? forceState : !sidebar.classList.contains('open');
+    if (willOpen) {
+      sidebar.classList.add('open');
+      if (backdrop) backdrop.classList.add('show');
+    } else {
+      sidebar.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('show');
+    }
   } else {
-    sidebar.classList.remove('open');
-    if (backdrop) backdrop.classList.remove('show');
+    // Desktop: toggle collapsed state
+    const isCollapsed = layout ? layout.classList.contains('sidebar-collapsed') : false;
+    const willCollapse = typeof forceState === 'boolean' ? !forceState : !isCollapsed;
+
+    if (layout) {
+      if (willCollapse) {
+        layout.classList.add('sidebar-collapsed');
+        localStorage.setItem('admin_sidebar_collapsed', 'true');
+      } else {
+        layout.classList.remove('sidebar-collapsed');
+        localStorage.setItem('admin_sidebar_collapsed', 'false');
+      }
+    }
   }
 }
 
