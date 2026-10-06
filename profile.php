@@ -261,12 +261,17 @@
          ========================================================================== -->
     <section class="profile-hero-card" aria-label="Staff Identity Banner">
       <div class="profile-hero-cover">
-        <div class="profile-hero-cover-badge">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          <span>Republic of the Philippines &bull; Department of Agriculture</span>
-        </div>
-        <div class="profile-hero-cover-tagline">
-          <span>Agricultural Training Institute &bull; Personnel Portal</span>
+        <!-- Protective Contrast Overlay -->
+        <div class="profile-hero-cover-overlay"></div>
+
+        <!-- Header Content: Crystal-Clear Readable Text Inside Cover -->
+        <div class="profile-hero-cover-content">
+          <div class="profile-hero-agency-badge">
+            <img src="assets/images/ATI_Logo.png" alt="ATI Logo" class="cover-mini-logo">
+            <span>Republic of the Philippines &bull; Department of Agriculture</span>
+          </div>
+          <h2 class="profile-hero-cover-title">Agricultural Training Institute</h2>
+          <p class="profile-hero-cover-subtitle">Official Personnel &bull; Facility &amp; Dormitory Reservation Portal</p>
         </div>
       </div>
 
