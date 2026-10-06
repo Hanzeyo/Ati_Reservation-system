@@ -81,25 +81,23 @@
       box-shadow: 0 22px 55px rgba(5, 20, 11, 0.28), 0 3px 10px rgba(0, 0, 0, 0.08);
     }
 
-    .cat-sec-badge {
-      display: inline-flex;
+    .portal-category-logo-wrap {
+      display: flex;
+      justify-content: center;
       align-items: center;
-      gap: 0.5rem;
-      background: linear-gradient(135deg, #174d2f 0%, #226b42 100%);
-      color: #ffffff;
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding: 0.45rem 1.15rem;
-      border-radius: 9999px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      margin-bottom: 0.95rem;
-      box-shadow: 0 4px 12px rgba(23, 77, 47, 0.22);
+      margin-bottom: 1.25rem;
     }
 
-    .cat-sec-badge svg {
-      stroke: #fcd34d;
+    .portal-category-logo {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 16px rgba(23, 77, 47, 0.2));
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .portal-category-logo:hover {
+      transform: scale(1.08);
     }
 
     .cat-sec-title {
@@ -721,12 +719,9 @@
          CATEGORY INTRO CARD (Matching Design Reference)
          ========================================================================== -->
     <div class="portal-category-intro-card">
-      <span class="cat-sec-badge">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M3 21h18M3 10h18M5 10v11M19 10v11M9 10v11M15 10v11M12 3l9 7H3l9-7z"></path>
-        </svg>
-        Agriculture & Training Venues
-      </span>
+      <div class="portal-category-logo-wrap">
+        <img src="assets/images/ATI_Logo.png" alt="Agricultural Training Institute Official Logo" class="portal-category-logo">
+      </div>
       <h1 class="cat-sec-title">OUR FACILITIES</h1>
       <p class="cat-sec-subtitle">Choose a category below to open a dedicated view of available function halls, training rooms, and dormitory accommodations.</p>
       <div class="cat-sec-divider"></div>
