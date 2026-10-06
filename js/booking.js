@@ -307,18 +307,29 @@ function openRoomModal(dormId) {
         <div class="dorm-bed-icon">${bedIconSvg}</div>
         <div class="dorm-room-num">${r.num}</div>
         <div class="dorm-room-status">${r.available ? 'AVAILABLE' : 'RESERVED'}</div>
+        <div class="dorm-room-hint ${r.available ? 'ready' : 'alt-date'}">${r.available ? 'Ready Oct 5' : 'Book other date'}</div>
       `;
 
       // If previously selected, highlight it
       if (bookingState.selectedFacility?.id === dormId && String(bookingState.selectedFacility?.roomNumber) === String(r.num)) {
         box.classList.add('selected');
         modalTempSelectedRoom = r.num;
+        const isOcc = !r.available;
         if (feedbackBar) {
           feedbackBar.style.display = 'flex';
+          feedbackBar.classList.toggle('alternate-date', isOcc);
           const fTitle = document.getElementById('modalFeedbackTitle');
           const fSub = document.getElementById('modalFeedbackSub');
-          if (fTitle) fTitle.textContent = `Room ${r.num} Selected`;
-          if (fSub) fSub.textContent = `${data.floor} • ${data.title} (${data.rate})`;
+          const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
+          if (isOcc) {
+            if (fTitle) fTitle.textContent = `Room ${r.num} Selected (Occupied on Oct 5)`;
+            if (fSub) fSub.textContent = `${data.floor} • Ready to book for alternate dates in Step 2`;
+            if (badgeOk) badgeOk.textContent = '📅 Pick Alternate Date';
+          } else {
+            if (fTitle) fTitle.textContent = `Room ${r.num} Selected ✓`;
+            if (fSub) fSub.textContent = `${data.floor} • ${data.title} (${data.rate})`;
+            if (badgeOk) badgeOk.textContent = '✓ Ready to Reserve';
+          }
         }
         if (confirmBtn) {
           confirmBtn.disabled = false;
@@ -328,10 +339,7 @@ function openRoomModal(dormId) {
 
       box.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (!r.available) {
-          alert(`Room ${r.num} (${data.floor}) is currently RESERVED for scheduled agricultural training delegates.\n\nPlease select one of the AVAILABLE rooms highlighted in green.`);
-          return;
-        }
+        const isOccupiedOnDefaultDate = !r.available;
 
         gridEl.querySelectorAll('.dorm-room-box.selected').forEach(b => b.classList.remove('selected'));
         box.classList.add('selected');
@@ -339,27 +347,47 @@ function openRoomModal(dormId) {
 
         if (feedbackBar) {
           feedbackBar.style.display = 'flex';
+          feedbackBar.classList.toggle('alternate-date', isOccupiedOnDefaultDate);
           const fTitle = document.getElementById('modalFeedbackTitle');
           const fSub = document.getElementById('modalFeedbackSub');
           const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
-          if (fTitle) fTitle.textContent = `Room ${r.num} Selected ✓`;
-          if (fSub) fSub.textContent = `${data.floor} • ${data.title} (${data.rate}) • Room Assigned`;
-          if (badgeOk) badgeOk.textContent = '✓ Room Confirmed';
+
+          if (isOccupiedOnDefaultDate) {
+            if (fTitle) fTitle.textContent = `Room ${r.num} Selected (Occupied on Oct 5)`;
+            if (fSub) fSub.textContent = `${data.floor} • Proceed to Step 2 to choose an available alternate date for this room.`;
+            if (badgeOk) badgeOk.textContent = '📅 Pick Alternate Date';
+          } else {
+            if (fTitle) fTitle.textContent = `Room ${r.num} Selected ✓`;
+            if (fSub) fSub.textContent = `${data.floor} • ${data.title} (${data.rate}) • Room Assigned`;
+            if (badgeOk) badgeOk.textContent = '✓ Room Confirmed';
+          }
         }
 
         if (confirmBtn) {
           confirmBtn.disabled = false;
-          confirmBtn.innerHTML = `<span>Confirm Room ${r.num}</span>`;
+          if (isOccupiedOnDefaultDate) {
+            confirmBtn.innerHTML = `<span>Select Room ${r.num} &amp; Pick Alternate Date &rarr;</span>`;
+          } else {
+            confirmBtn.innerHTML = `<span>Confirm Room ${r.num}</span>`;
+          }
         }
 
         // Close modal and let user review reservation summary in Step 1
         setTimeout(() => {
-          confirmRoomSelection();
-        }, 400);
+          confirmRoomSelection(isOccupiedOnDefaultDate);
+        }, 450);
       });
 
       gridEl.appendChild(box);
     });
+  }
+
+  if (confirmBtn) {
+    confirmBtn.onclick = () => {
+      const selectedBox = gridEl?.querySelector('.dorm-room-box.selected');
+      const isOccupied = selectedBox?.dataset.available === 'false';
+      confirmRoomSelection(isOccupied);
+    };
   }
 
   if (modal) {
@@ -376,7 +404,7 @@ function closeRoomModal() {
   }
 }
 
-function confirmRoomSelection() {
+function confirmRoomSelection(isOccupiedOnDefaultDate = false) {
   if (!modalTempSelectedRoom || !currentModalDormId) return;
 
   const data = dormFloorData[currentModalDormId];
@@ -391,7 +419,8 @@ function confirmRoomSelection() {
     type: 'dormitories',
     roomNumber: modalTempSelectedRoom,
     floor: data.floor,
-    roomRate: data.rate
+    roomRate: data.rate,
+    occupiedOnDefaultDate: Boolean(isOccupiedOnDefaultDate)
   };
 
   // Update card on page
@@ -403,7 +432,11 @@ function confirmRoomSelection() {
     const badge = card.querySelector('.dorm-card-selected-room-badge');
     const badgeText = card.querySelector('.d-room-text');
     if (badge && badgeText) {
-      badgeText.textContent = `✓ Room ${modalTempSelectedRoom} Assigned (${data.floor})`;
+      if (isOccupiedOnDefaultDate) {
+        badgeText.textContent = `✓ Room ${modalTempSelectedRoom} Selected (Occupied Oct 5 • Pick other date)`;
+      } else {
+        badgeText.textContent = `✓ Room ${modalTempSelectedRoom} Assigned (${data.floor})`;
+      }
       badge.style.display = 'flex';
     }
 
@@ -419,7 +452,11 @@ function confirmRoomSelection() {
   // Update Proceed button text so user can review summary then proceed when ready
   const proceedBtn = document.getElementById('btnProceedStep');
   if (proceedBtn) {
-    proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (Room ${modalTempSelectedRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+    if (isOccupiedOnDefaultDate) {
+      proceedBtn.innerHTML = `<span>Proceed to Choose Date (Room ${modalTempSelectedRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+    } else {
+      proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (Room ${modalTempSelectedRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+    }
     proceedBtn.style.display = 'inline-flex';
   }
 
@@ -636,7 +673,7 @@ function initStepperNavigation() {
     // Requirement: When reserving a dormitory accommodation, user MUST select a room first before proceeding to Step 2
     if (stepNumber === 2 && bookingState.currentStep === 1) {
       if (isDorm && !bookingState.selectedFacility?.roomNumber) {
-        alert('Please choose an AVAILABLE room unit (highlighted in green, e.g. Room 101, 201, 302) inside your chosen dormitory floor before proceeding to Date & Time Selection.');
+        alert('Please choose a room unit (e.g. Room 101, 102, 103) inside your chosen dormitory floor before proceeding to Date & Time Selection.');
         const selectedCard = document.querySelector('.facility-choice-card.selected');
         if (selectedCard) {
           selectedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -656,10 +693,16 @@ function initStepperNavigation() {
       }
     }
 
-    // When advancing to Step 2 (Date & Time Selection), automatically select current date (October 5, 2026)
+    // When advancing to Step 2 (Date & Time Selection)
     if (stepNumber === 2 && bookingState.currentStep === 1) {
-      if (typeof window.selectCurrentDate === 'function') {
-        window.selectCurrentDate();
+      if (bookingState.selectedFacility?.occupiedOnDefaultDate) {
+        if (typeof window.selectAlternateAvailableDateForRoom === 'function') {
+          window.selectAlternateAvailableDateForRoom(bookingState.selectedFacility?.roomNumber);
+        }
+      } else {
+        if (typeof window.selectCurrentDate === 'function') {
+          window.selectCurrentDate();
+        }
       }
     }
 
@@ -731,8 +774,13 @@ function initStepperNavigation() {
       if (stepNumber === 1) {
         proceedBtn.style.display = 'inline-flex';
         const dormRoom = bookingState.selectedFacility?.roomNumber;
+        const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
         if (isDorm && dormRoom) {
-          proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (Room ${dormRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+          if (isOcc) {
+            proceedBtn.innerHTML = `<span>Proceed to Choose Date (Room ${dormRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+          } else {
+            proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (Room ${dormRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+          }
         } else {
           proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time Selection</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
         }
@@ -766,7 +814,7 @@ function initStepperNavigation() {
       const isDorm = isDormitorySelected();
       if (bookingState.currentStep === 1) {
         if (isDorm && !bookingState.selectedFacility?.roomNumber) {
-          alert('Please choose an AVAILABLE room unit (highlighted in green, e.g. Room 101, 201, 302) inside your chosen dormitory floor before proceeding to Date & Time Selection.');
+          alert('Please choose a room unit (e.g. Room 101, 102, 103) inside your chosen dormitory floor before proceeding to Date & Time Selection.');
           const card = document.querySelector('.facility-choice-card.selected');
           if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
           return;
@@ -855,7 +903,12 @@ function updateReviewSummary() {
   if (prevRoomWrap && prevRoom) {
     if (isDorm && roomNum) {
       prevRoomWrap.style.display = 'flex';
-      prevRoom.textContent = `Room ${roomNum} (${floorName})`;
+      const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
+      if (isOcc) {
+        prevRoom.innerHTML = `Room ${roomNum} (${floorName}) <span style="display:inline-block; margin-left:6px; font-size:0.75rem; color:#dc2626; font-weight:700;">(Occupied Oct 5 • Pick alternate date in Step 2)</span>`;
+      } else {
+        prevRoom.textContent = `Room ${roomNum} (${floorName})`;
+      }
     } else {
       prevRoomWrap.style.display = 'none';
       prevRoom.textContent = 'None';
@@ -1005,12 +1058,28 @@ function initDateSlotInteractions() {
     bookingState.selectedStartDay = selectedStart.day;
     bookingState.selectedEndDay = selectedEnd.day;
 
-    if (statusTitle) statusTitle.textContent = 'Selected Slot Available!';
-    if (statusDesc) {
-      if (durationDays === 1) {
-        statusDesc.textContent = `No venue conflicts detected for 1 day duration (${formatDisplayDate(selectedStart)}).`;
+    if (statusTitle) {
+      if (bookingState.selectedFacility?.occupiedOnDefaultDate) {
+        statusTitle.textContent = `Room ${bookingState.selectedFacility?.roomNumber || ''} Available on Selected Date!`;
       } else {
-        statusDesc.textContent = `No venue conflicts detected for ${durationDays} days duration (${formatDisplayDate(selectedStart)} – ${formatDisplayDate(selectedEnd)}).`;
+        statusTitle.textContent = 'Selected Slot Available!';
+      }
+    }
+    if (statusDesc) {
+      const roomNum = bookingState.selectedFacility?.roomNumber;
+      const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
+      if (isOcc && roomNum) {
+        if (durationDays === 1) {
+          statusDesc.textContent = `Room ${roomNum} is confirmed available on ${formatDisplayDate(selectedStart)} (currently occupied on Oct 5–6).`;
+        } else {
+          statusDesc.textContent = `Room ${roomNum} is confirmed available for ${durationDays} days duration (${formatDisplayDate(selectedStart)} – ${formatDisplayDate(selectedEnd)}).`;
+        }
+      } else {
+        if (durationDays === 1) {
+          statusDesc.textContent = `No venue conflicts detected for 1 day duration (${formatDisplayDate(selectedStart)}).`;
+        } else {
+          statusDesc.textContent = `No venue conflicts detected for ${durationDays} days duration (${formatDisplayDate(selectedStart)} – ${formatDisplayDate(selectedEnd)}).`;
+        }
       }
     }
 
@@ -1048,8 +1117,14 @@ function initDateSlotInteractions() {
       return;
     }
 
-    if (btn.classList.contains('reserved') || RESERVED_DATES.has(key)) {
-      alert(`${formatDisplayDate(dateObj)} is already reserved for another official event. Please select an available green slot.`);
+    const isRoomOccupiedThisDate = Boolean(bookingState.selectedFacility?.occupiedOnDefaultDate) && (key === '2026-10-05' || key === '2026-10-06');
+    if (btn.classList.contains('reserved') || RESERVED_DATES.has(key) || isRoomOccupiedThisDate) {
+      if (isRoomOccupiedThisDate) {
+        const roomNum = bookingState.selectedFacility?.roomNumber;
+        alert(`Room ${roomNum} is occupied on ${formatDisplayDate(dateObj)}.\n\nPlease select an available green slot (such as Wednesday, October 7 onwards) to book this room.`);
+      } else {
+        alert(`${formatDisplayDate(dateObj)} is already reserved for another official event. Please select an available green slot.`);
+      }
       return;
     }
 
@@ -1110,8 +1185,11 @@ function initDateSlotInteractions() {
             conflict = `${formatDisplayDate({year: cY, month: cM, day: cD})} has already passed`;
             break;
           }
-          if (RESERVED_DATES.has(cKey)) {
-            conflict = `${formatDisplayDate({year: cY, month: cM, day: cD})} is reserved for another event`;
+          const isRoomOccupiedRangeDate = Boolean(bookingState.selectedFacility?.occupiedOnDefaultDate) && (cKey === '2026-10-05' || cKey === '2026-10-06');
+          if (RESERVED_DATES.has(cKey) || isRoomOccupiedRangeDate) {
+            conflict = isRoomOccupiedRangeDate
+              ? `Room ${bookingState.selectedFacility?.roomNumber || ''} is occupied on ${formatDisplayDate({year: cY, month: cM, day: cD})}`
+              : `${formatDisplayDate({year: cY, month: cM, day: cD})} is reserved for another event`;
             break;
           }
           if (SUSPENDED_DATES.has(cKey)) {
@@ -1168,7 +1246,8 @@ function initDateSlotInteractions() {
       const isPast = isPastDate(viewYear, viewMonth, day);
       const isToday = isTodayDate(viewYear, viewMonth, day);
       const isSuspended = SUSPENDED_DATES.has(key);
-      const isReserved = RESERVED_DATES.has(key);
+      const isRoomOccupiedThisDate = Boolean(bookingState.selectedFacility?.occupiedOnDefaultDate) && (key === '2026-10-05' || key === '2026-10-06');
+      const isReserved = RESERVED_DATES.has(key) || isRoomOccupiedThisDate;
       const isSelected = isDateInRange(dateObj, selectedStart, selectedEnd);
 
       if (isPast) {
@@ -1180,7 +1259,11 @@ function initDateSlotInteractions() {
         btn.title = 'Suspended: Scheduled Facility Maintenance';
       } else if (isReserved) {
         btn.className = 'slot-day-btn reserved';
-        btn.title = 'Reserved for Official Event';
+        if (isRoomOccupiedThisDate) {
+          btn.title = `Room ${bookingState.selectedFacility?.roomNumber || ''} is occupied on this date`;
+        } else {
+          btn.title = 'Reserved for Official Event';
+        }
       } else {
         if (isSelected) {
           btn.className = 'slot-day-btn selected';
@@ -1241,6 +1324,29 @@ function initDateSlotInteractions() {
     updateMonthHeader();
     renderCalendarGrid();
     renderSelectionDetails();
+  };
+
+  // Helper when user chose an occupied room: pre-select earliest open date (October 7, 2026)
+  window.selectAlternateAvailableDateForRoom = function(roomNumber) {
+    viewYear = 2026;
+    viewMonth = 9; // October 2026
+    selectedStart = { year: 2026, month: 9, day: 7 };
+    selectedEnd = { year: 2026, month: 9, day: 7 };
+    mode = 'single';
+    rangeWaitingForEnd = false;
+    if (btnModeSingle) btnModeSingle.classList.add('active');
+    if (btnModeRange) btnModeRange.classList.remove('active');
+    if (endDateWrap) endDateWrap.classList.remove('active-focus');
+    updateMonthHeader();
+    renderCalendarGrid();
+    renderSelectionDetails();
+
+    if (statusTitle) {
+      statusTitle.textContent = `Room ${roomNumber} Available (October 7, 2026)`;
+    }
+    if (statusDesc) {
+      statusDesc.textContent = `Room ${roomNumber} is occupied on Oct 5–6, 2026. Wednesday, October 7, 2026 has been automatically selected as the earliest open date. You can choose any upcoming green slot on the calendar.`;
+    }
   };
 
   // Mode Toggle listeners
