@@ -1,0 +1,378 @@
+/* ==========================================================================
+   ATI Reservation System - Super Admin Master Schedule Stylesheet
+   Executive Calendar Operations, Date Blocking, & Dual-Stage Event Overlays
+   ========================================================================== */
+
+/* Calendar Top Controls & Date Navigation */
+.admin-calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  background: #ffffff;
+  border: 1.5px solid #dce8e0;
+  border-radius: 14px;
+  padding: 1rem 1.35rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(18, 48, 28, 0.03);
+  flex-wrap: wrap;
+}
+
+.month-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.nav-arrow-btn {
+  width: 36px;
+  height: 36px;
+  background: #f1f7f3;
+  border: 1.2px solid #cfe0d5;
+  border-radius: 8px;
+  color: #174d2f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.25rem;
+  font-weight: 700;
+  transition: all 0.18s ease;
+}
+
+.nav-arrow-btn:hover {
+  background: #174d2f;
+  color: #ffffff;
+  border-color: #174d2f;
+}
+
+.current-month-display {
+  font-family: var(--font-serif, 'Playfair Display', serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #142e1d;
+  min-width: 170px;
+  text-align: center;
+}
+
+.btn-today-pill {
+  background: #ffffff;
+  border: 1.2px solid #b7d6c2;
+  color: #175432;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.45rem 0.95rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.btn-today-pill:hover {
+  background: #175432;
+  color: #ffffff;
+  border-color: #175432;
+}
+
+/* Facility & Status Filter Pills */
+.admin-calendar-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.facility-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.fac-pill {
+  background: #f4f8f5;
+  border: 1.2px solid #d4e3d9;
+  color: #3b5746;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.42rem 0.85rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.fac-pill:hover {
+  background: #e8f3ec;
+  color: #174d2f;
+  border-color: #bcd5c5;
+}
+
+.fac-pill.active {
+  background: #174d2f;
+  color: #ffffff;
+  border-color: #174d2f;
+  box-shadow: 0 2px 8px rgba(23, 77, 47, 0.22);
+}
+
+.status-legend-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #4b6354;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.legend-dot.green { background: #16a34a; }
+.legend-dot.amber { background: #d97706; }
+.legend-dot.blue { background: #2563eb; }
+.legend-dot.red { background: #dc2626; }
+
+/* Calendar Board Structure */
+.admin-calendar-board {
+  background: #ffffff;
+  border: 1.5px solid #dce8e0;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(18, 48, 28, 0.04);
+}
+
+.board-weekdays-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #f5f9f6;
+  border-bottom: 1.5px solid #dce8e0;
+}
+
+.weekday-header-cell {
+  padding: 0.85rem 0.5rem;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #19462b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.board-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #e4eee7;
+  gap: 1px;
+}
+
+.calendar-day-cell {
+  background: #ffffff;
+  min-height: 125px;
+  padding: 0.65rem 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: background-color 0.18s ease;
+}
+
+.calendar-day-cell:hover {
+  background-color: #fcfefc;
+}
+
+.calendar-day-cell.inactive-month {
+  background-color: #fafcfb;
+  opacity: 0.45;
+}
+
+.calendar-day-cell.today-cell {
+  background-color: #f3f9f5;
+  border-top: 3px solid #174d2f;
+}
+
+.day-cell-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+}
+
+.day-number {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #1b3825;
+}
+
+.today-cell .day-number {
+  background: #174d2f;
+  color: #ffffff;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+}
+
+.day-badge-quick-add {
+  display: none;
+  font-size: 0.68rem;
+  color: #174d2f;
+  cursor: pointer;
+  background: #e8f5ec;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.calendar-day-cell:hover .day-badge-quick-add {
+  display: block;
+}
+
+/* Day Event Strips */
+.day-events-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.calendar-event-chip {
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-left: 3px solid transparent;
+  text-align: left;
+}
+
+.calendar-event-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+/* Event Color Varieties */
+.calendar-event-chip.status-cleared {
+  background: #dcfce7;
+  color: #14532d;
+  border-left-color: #16a34a;
+}
+
+.calendar-event-chip.status-pending-clear {
+  background: #fef3c7;
+  color: #78350f;
+  border-left-color: #d97706;
+}
+
+.calendar-event-chip.status-pending-rec {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-left-color: #0284c7;
+}
+
+.calendar-event-chip.status-blackout {
+  background: #fee2e2;
+  color: #991b1b;
+  border-left-color: #dc2626;
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(220, 38, 38, 0.05) 6px, rgba(220, 38, 38, 0.05) 12px);
+}
+
+.chip-venue-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.85;
+}
+
+.chip-title-text {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip-more-counter {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #557262;
+  text-align: center;
+  padding: 0.15rem;
+  background: #f1f7f3;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Admin Date Block Alert in Modal */
+.blackout-modal-warning {
+  background: #fff5f5;
+  border: 1.2px solid #fecaca;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.blackout-modal-warning svg {
+  color: #dc2626;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.blackout-modal-warning p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #991b1b;
+  line-height: 1.45;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .calendar-day-cell {
+    min-height: 100px;
+    padding: 0.4rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-calendar-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .month-nav-group {
+    justify-content: space-between;
+  }
+
+  .board-weekdays-row {
+    font-size: 0.7rem;
+  }
+
+  .calendar-day-cell {
+    min-height: 75px;
+    padding: 0.25rem;
+  }
+
+  .chip-venue-tag {
+    display: none;
+  }
+}

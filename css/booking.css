@@ -400,11 +400,6 @@ body.booking-body {
   flex-shrink: 0;
 }
 
-.step-tab-btn:hover {
-  background: #eef6f1;
-  color: var(--primary-green);
-}
-
 .step-tab-btn.active {
   background: #175432;
   color: #ffffff;
@@ -521,13 +516,9 @@ body.booking-body {
   color: #647b6e;
   cursor: default;
   pointer-events: none;
+  user-select: none;
   transition: all 0.2s ease;
   padding: 0;
-}
-
-.mobile-dot:hover {
-  background: #e6f2e9;
-  color: #175432;
 }
 
 .mobile-dot.active {

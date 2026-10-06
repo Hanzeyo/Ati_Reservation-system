@@ -3,6 +3,17 @@
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Master Schedule & Institution-Wide Calendar View
  */
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
+
+$isAdmin = (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'super_admin', 'director', 'recommending_officer']))
+  || (isset($_COOKIE['ati_role']) && in_array($_COOKIE['ati_role'], ['admin', 'super_admin', 'director']));
+
+if ($isAdmin || isset($_GET['admin'])) {
+  header('Location: admin_schedule.php');
+  exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

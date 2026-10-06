@@ -892,7 +892,7 @@ function initStepperNavigation() {
       }
       summaryMsg += `\nSchedule: ${bookingState.date}\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`;
       alert(summaryMsg);
-      window.location.href = 'schedule.php';
+      window.location.href = 'my_reservations.php';
     });
   }
 
