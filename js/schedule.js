@@ -245,12 +245,14 @@ function calculateSystemStatus() {
     totalDaysInMonth,
     daysWithAvailableSlots,
     monthName: MONTH_NAMES[currentMonth],
-    monthEvents
+    monthEvents,
+    facilityCounts
   };
 }
 
 /**
  * Update the 4 Stat Metric Cards on the page with dynamically computed actual status
+ * Simple and clean: value + label inside card
  */
 function updateSystemStatusMetrics() {
   const status = calculateSystemStatus();
@@ -258,60 +260,28 @@ function updateSystemStatusMetrics() {
   // Card 1: Total Events Scheduled
   const elValEvents = document.getElementById('statValueEvents');
   const elLblEvents = document.getElementById('statLabelEvents');
-  const elPillEvents = document.getElementById('statPillEvents');
   if (elValEvents) elValEvents.textContent = `${status.totalEventsCount} Event${status.totalEventsCount === 1 ? '' : 's'}`;
-  if (elLblEvents) {
-    if (activeFilter !== 'all') {
-      elLblEvents.textContent = `${FACILITY_DISPLAY_NAMES[activeFilter] || 'Facility'} in ${status.monthName}`;
-    } else {
-      elLblEvents.textContent = `Scheduled in ${status.monthName}`;
-    }
-  }
-  if (elPillEvents) {
-    elPillEvents.textContent = status.totalEventsCount >= 15 ? '↗ High' : status.totalEventsCount >= 8 ? '↗ Active' : '↘ Light';
-  }
+  if (elLblEvents) elLblEvents.textContent = 'Scheduled this Month';
 
   // Card 2: Highest Demand Venue
   const elValDemand = document.getElementById('statValueDemand');
   const elLblDemand = document.getElementById('statLabelDemand');
-  const elPillDemand = document.getElementById('statPillDemand');
   if (elValDemand) {
-    elValDemand.textContent = status.topFacilityCount > 0 ? status.topFacilityName : 'All Venues Open';
+    elValDemand.textContent = status.topFacilityCount > 0 ? status.topFacilityName : 'Function Hall';
   }
-  if (elLblDemand) {
-    if (status.topFacilityCount > 0) {
-      elLblDemand.textContent = `${status.topFacilityCount} Booking${status.topFacilityCount === 1 ? '' : 's'} in ${status.monthName}`;
-    } else {
-      elLblDemand.textContent = `No bookings in ${status.monthName}`;
-    }
-  }
-  if (elPillDemand) {
-    elPillDemand.textContent = status.topFacilityCount > 0 ? '🔥 Top' : '● Open';
-  }
+  if (elLblDemand) elLblDemand.textContent = 'Highest Demand Venue';
 
   // Card 3: Overall Monthly Occupancy
   const elValOccupancy = document.getElementById('statValueOccupancy');
   const elLblOccupancy = document.getElementById('statLabelOccupancy');
-  const elPillOccupancy = document.getElementById('statPillOccupancy');
   if (elValOccupancy) elValOccupancy.textContent = `${status.occupancyPercent}%`;
-  if (elLblOccupancy) {
-    elLblOccupancy.textContent = `${status.uniqueBookedDays} of ${status.totalDaysInMonth} Days Occupied`;
-  }
-  if (elPillOccupancy) {
-    elPillOccupancy.textContent = status.occupancyPercent >= 75 ? '🔥 Peak' : status.occupancyPercent >= 40 ? '● Optimal' : '○ Low';
-  }
+  if (elLblOccupancy) elLblOccupancy.textContent = 'Overall Monthly Occupancy';
 
   // Card 4: Days with Available Slots
   const elValAvailable = document.getElementById('statValueAvailableDays');
   const elLblAvailable = document.getElementById('statLabelAvailableDays');
-  const elPillAvailable = document.getElementById('statPillAvailable');
   if (elValAvailable) elValAvailable.textContent = `${status.daysWithAvailableSlots} Day${status.daysWithAvailableSlots === 1 ? '' : 's'}`;
-  if (elLblAvailable) {
-    elLblAvailable.textContent = `With Available Slots in ${status.monthName}`;
-  }
-  if (elPillAvailable) {
-    elPillAvailable.textContent = `${status.daysWithAvailableSlots} Open`;
-  }
+  if (elLblAvailable) elLblAvailable.textContent = 'With Available Slots';
 }
 
 /* ==========================================================================
@@ -420,6 +390,9 @@ function initMasterCalendar() {
 
     // Update the 4 Stat Metric Cards on every calendar render
     updateSystemStatusMetrics();
+    if (typeof refreshStatDetailsGlobal === 'function') {
+      refreshStatDetailsGlobal();
+    }
   }
 
   renderCalendarGlobal = renderCalendar;
@@ -477,38 +450,237 @@ function initFacilityFilters() {
 }
 
 /* ==========================================================================
-   3. Interactive System Status Cards Controller
+   3. Interactive System Status Cards Controller (Details on Bottom)
    ========================================================================== */
+let activeStatMode = null; // 'events' | 'demand' | 'occupancy' | 'available' | null
+let refreshStatDetailsGlobal = null;
+
 function initSystemStatusCards() {
   const cardEvents = document.getElementById('statCardEvents');
   const cardDemand = document.getElementById('statCardDemand');
   const cardOccupancy = document.getElementById('statCardOccupancy');
   const cardAvailable = document.getElementById('statCardAvailableDays');
-  const banner = document.getElementById('scheduleStatusBanner');
-  const bannerText = document.getElementById('statusBannerText');
-  const bannerIcon = document.getElementById('statusBannerIcon');
-  const btnReset = document.getElementById('btnResetStatusMode');
+  const panel = document.getElementById('statDetailPanel');
+  const closeBtn = document.getElementById('statDetailCloseBtn');
+  const actionBtn = document.getElementById('statDetailActionBtn');
 
-  function showStatusBanner(icon, text) {
-    if (!banner) return;
-    if (bannerIcon) bannerIcon.textContent = icon;
-    if (bannerText) bannerText.textContent = text;
-    banner.style.display = 'flex';
+  function openStatDetails(mode, isRefresh = false) {
+    if (!panel) return;
+
+    // Toggle off if same card clicked
+    if (!isRefresh && activeStatMode === mode) {
+      closeStatDetails();
+      return;
+    }
+
+    activeStatMode = mode;
+    const status = calculateSystemStatus();
+
+    // Reset card highlight classes
+    [cardEvents, cardDemand, cardOccupancy, cardAvailable].forEach(c => {
+      if (c) c.classList.remove('active-mode');
+    });
+
+    const iconWrap = document.getElementById('statDetailIconWrap');
+    const titleEl = document.getElementById('statDetailTitle');
+    const badgeEl = document.getElementById('statDetailBadge');
+    const descEl = document.getElementById('statDetailDesc');
+    const chipsEl = document.getElementById('statDetailChips');
+
+    // Clean base panel class
+    panel.className = 'stat-detail-panel';
+
+    if (mode === 'events') {
+      if (cardEvents) cardEvents.classList.add('active-mode');
+      panel.classList.add('theme-green');
+
+      if (iconWrap) {
+        iconWrap.className = 'stat-detail-icon-wrap green';
+        iconWrap.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+          </svg>`;
+      }
+      if (titleEl) titleEl.textContent = `Scheduled Events Summary • ${status.monthName} ${currentYear}`;
+      if (badgeEl) {
+        badgeEl.className = 'stat-detail-badge green';
+        badgeEl.textContent = `${status.totalEventsCount} Total Events`;
+      }
+      if (descEl) {
+        descEl.textContent = `A total of ${status.totalEventsCount} confirmed reservation events are scheduled across ATI facilities in ${status.monthName} ${currentYear}. Click on any event chip or button below to inspect full event agendas.`;
+      }
+      if (chipsEl) {
+        const counts = status.facilityCounts || {};
+        const items = [
+          { name: 'Function Hall', key: 'function-hall', count: counts['function-hall'] || 0, icon: '🏛️' },
+          { name: 'Training Hall', key: 'training-hall', count: counts['training-hall'] || 0, icon: '🏫' },
+          { name: 'Mess Hall', key: 'mess-hall', count: counts['mess-hall'] || 0, icon: '🍽️' },
+          { name: 'Boardroom', key: 'boardroom', count: counts['boardroom'] || 0, icon: '💼' },
+          { name: 'Dormitory', key: 'dormitory', count: counts['dormitory'] || 0, icon: '🛏️' }
+        ];
+        chipsEl.innerHTML = items
+          .filter(item => item.count > 0)
+          .map(item => `<span class="stat-chip">${item.icon} <strong>${item.name}:</strong> ${item.count} event${item.count === 1 ? '' : 's'}</span>`)
+          .join('') || '<span class="stat-chip">✨ All Facilities Open</span>';
+      }
+      if (actionBtn) {
+        actionBtn.style.display = 'inline-flex';
+        actionBtn.textContent = '📋 View Full Event List';
+        actionBtn.onclick = () => openMonthlyEventsListModal();
+      }
+
+      // Reset specific filters for overall view
+      isHeatmapActive = false;
+      isAvailableFocusActive = false;
+      if (typeof renderCalendarGlobal === 'function') renderCalendarGlobal();
+
+    } else if (mode === 'demand') {
+      if (cardDemand) cardDemand.classList.add('active-mode');
+      panel.classList.add('theme-blue');
+
+      if (iconWrap) {
+        iconWrap.className = 'stat-detail-icon-wrap blue';
+        iconWrap.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>`;
+      }
+      if (titleEl) titleEl.textContent = `Highest Demand Facility • ${status.topFacilityName}`;
+      if (badgeEl) {
+        badgeEl.className = 'stat-detail-badge blue';
+        badgeEl.textContent = `Top Venue (${status.topFacilityCount} Bookings)`;
+      }
+      const pct = status.totalEventsCount > 0 ? Math.round((status.topFacilityCount / status.totalEventsCount) * 100) : 0;
+      if (descEl) {
+        descEl.textContent = `"${status.topFacilityName}" is currently the most requested facility this month, accounting for ${pct}% of all scheduled events. The calendar grid below has been filtered to highlight only this facility.`;
+      }
+      if (chipsEl) {
+        chipsEl.innerHTML = `
+          <span class="stat-chip">🔥 <strong>${status.topFacilityCount}</strong> Reservations</span>
+          <span class="stat-chip">📊 <strong>${pct}%</strong> of Total Bookings</span>
+          <span class="stat-chip">🔍 Filter Applied to Calendar</span>
+        `;
+      }
+      if (actionBtn) {
+        actionBtn.style.display = 'inline-flex';
+        actionBtn.textContent = '✕ Reset Facility Filter';
+        actionBtn.onclick = () => {
+          activeFilter = 'all';
+          document.querySelectorAll('.fac-pill').forEach(p => {
+            p.classList.toggle('active', p.dataset.facility === 'all');
+          });
+          closeStatDetails();
+        };
+      }
+
+      // Filter calendar to top facility
+      activeFilter = status.topFacilityKey;
+      isHeatmapActive = false;
+      isAvailableFocusActive = false;
+      document.querySelectorAll('.fac-pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.facility === status.topFacilityKey);
+      });
+      if (typeof renderCalendarGlobal === 'function') renderCalendarGlobal();
+
+    } else if (mode === 'occupancy') {
+      if (cardOccupancy) cardOccupancy.classList.add('active-mode');
+      panel.classList.add('theme-amber');
+
+      if (iconWrap) {
+        iconWrap.className = 'stat-detail-icon-wrap amber';
+        iconWrap.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>`;
+      }
+      if (titleEl) titleEl.textContent = `Monthly Facility Occupancy • ${status.occupancyPercent}%`;
+      if (badgeEl) {
+        badgeEl.className = 'stat-detail-badge amber';
+        badgeEl.textContent = status.occupancyPercent >= 75 ? 'Peak Demand' : status.occupancyPercent >= 40 ? 'Optimal Utilization' : 'Light Utilization';
+      }
+      const freeDays = status.totalDaysInMonth - status.uniqueBookedDays;
+      if (descEl) {
+        descEl.textContent = `During ${status.monthName} ${currentYear}, facilities are booked across ${status.uniqueBookedDays} of ${status.totalDaysInMonth} calendar days (${status.occupancyPercent}% occupancy rate). Heatmap view is now active on the calendar grid below.`;
+      }
+      if (chipsEl) {
+        chipsEl.innerHTML = `
+          <span class="stat-chip">📅 <strong>${status.uniqueBookedDays}</strong> Booked Days</span>
+          <span class="stat-chip">✨ <strong>${freeDays}</strong> Free Days</span>
+          <span class="stat-chip">🌡️ Heatmap: 🟢 Free • 🟡 Moderate • 🔴 Busy</span>
+        `;
+      }
+      if (actionBtn) {
+        actionBtn.style.display = 'inline-flex';
+        actionBtn.textContent = '✕ Turn Off Heatmap';
+        actionBtn.onclick = () => closeStatDetails();
+      }
+
+      // Activate Heatmap
+      isHeatmapActive = true;
+      isAvailableFocusActive = false;
+      if (typeof renderCalendarGlobal === 'function') renderCalendarGlobal();
+
+    } else if (mode === 'available') {
+      if (cardAvailable) cardAvailable.classList.add('active-mode');
+      panel.classList.add('theme-purple');
+
+      if (iconWrap) {
+        iconWrap.className = 'stat-detail-icon-wrap purple';
+        iconWrap.innerHTML = `
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>`;
+      }
+      if (titleEl) titleEl.textContent = `Available Days for Reservation • ${status.daysWithAvailableSlots} Days`;
+      if (badgeEl) {
+        badgeEl.className = 'stat-detail-badge purple';
+        badgeEl.textContent = 'Open for Booking';
+      }
+      if (descEl) {
+        descEl.textContent = `There are ${status.daysWithAvailableSlots} days with open slots available for reservation in ${status.monthName} ${currentYear}. Dates with available slots are highlighted in bright green on the calendar below.`;
+      }
+      if (chipsEl) {
+        chipsEl.innerHTML = `
+          <span class="stat-chip">🟢 <strong>${status.daysWithAvailableSlots}</strong> Open Days</span>
+          <span class="stat-chip">⚡ Quick Booking Ready</span>
+          <span class="stat-chip">🎯 Available Slots Highlighted</span>
+        `;
+      }
+      if (actionBtn) {
+        actionBtn.style.display = 'inline-flex';
+        actionBtn.textContent = '➕ Reserve a Facility';
+        actionBtn.onclick = () => {
+          window.location.href = 'booking.php';
+        };
+      }
+
+      // Activate Available Focus
+      isAvailableFocusActive = true;
+      isHeatmapActive = false;
+      if (typeof renderCalendarGlobal === 'function') renderCalendarGlobal();
+    }
+
+    panel.style.display = 'flex';
   }
 
-  function hideStatusBanner() {
-    if (!banner) return;
-    banner.style.display = 'none';
-  }
+  function closeStatDetails() {
+    activeStatMode = null;
+    [cardEvents, cardDemand, cardOccupancy, cardAvailable].forEach(c => {
+      if (c) c.classList.remove('active-mode');
+    });
 
-  function resetAllModes() {
+    if (panel) panel.style.display = 'none';
+
+    // Reset visual modes
     isHeatmapActive = false;
     isAvailableFocusActive = false;
-
-    if (cardOccupancy) cardOccupancy.classList.remove('active-mode');
-    if (cardAvailable) cardAvailable.classList.remove('active-mode');
-    if (cardDemand) cardDemand.classList.remove('active-mode');
-    if (cardEvents) cardEvents.classList.remove('active-mode');
 
     if (activeFilter !== 'all') {
       activeFilter = 'all';
@@ -517,133 +689,49 @@ function initSystemStatusCards() {
       });
     }
 
-    hideStatusBanner();
     if (typeof renderCalendarGlobal === 'function') {
       renderCalendarGlobal();
     }
   }
 
-  if (btnReset) {
-    btnReset.addEventListener('click', resetAllModes);
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeStatDetails);
   }
 
-  // 1. Card 1 (Events Scheduled): Opens Monthly Events List Modal Breakdown
+  // Card click event listeners
   if (cardEvents) {
-    cardEvents.addEventListener('click', () => {
-      openMonthlyEventsListModal();
-    });
+    cardEvents.addEventListener('click', () => openStatDetails('events'));
     cardEvents.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        openMonthlyEventsListModal();
-      }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStatDetails('events'); }
     });
   }
 
-  // 2. Card 2 (Highest Demand Venue): Filter directly to that venue
   if (cardDemand) {
-    cardDemand.addEventListener('click', () => {
-      const status = calculateSystemStatus();
-      const targetFacility = status.topFacilityKey;
-
-      if (activeFilter === targetFacility) {
-        activeFilter = 'all';
-        cardDemand.classList.remove('active-mode');
-        hideStatusBanner();
-      } else {
-        activeFilter = targetFacility;
-        isHeatmapActive = false;
-        isAvailableFocusActive = false;
-        if (cardOccupancy) cardOccupancy.classList.remove('active-mode');
-        if (cardAvailable) cardAvailable.classList.remove('active-mode');
-        cardDemand.classList.add('active-mode');
-
-        document.querySelectorAll('.fac-pill').forEach(p => {
-          p.classList.toggle('active', p.dataset.facility === targetFacility);
-        });
-
-        showStatusBanner(
-          '🔥',
-          `Calendar Filtered to Top Facility: Showing only "${status.topFacilityName}" schedules (${status.topFacilityCount} bookings in ${status.monthName}).`
-        );
-      }
-
-      if (typeof renderCalendarGlobal === 'function') {
-        renderCalendarGlobal();
-      }
-    });
-
+    cardDemand.addEventListener('click', () => openStatDetails('demand'));
     cardDemand.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        cardDemand.click();
-      }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStatDetails('demand'); }
     });
   }
 
-  // 3. Card 3 (Occupancy): Toggle Heatmap View
   if (cardOccupancy) {
-    cardOccupancy.addEventListener('click', () => {
-      isHeatmapActive = !isHeatmapActive;
-      isAvailableFocusActive = false;
-      if (cardAvailable) cardAvailable.classList.remove('active-mode');
-
-      cardOccupancy.classList.toggle('active-mode', isHeatmapActive);
-
-      if (isHeatmapActive) {
-        const status = calculateSystemStatus();
-        showStatusBanner(
-          '🔥',
-          `Occupancy Heatmap Active (${status.occupancyPercent}% monthly rate): 🟢 Free Day (0 events) • 🟡 Moderate (1 event) • 🔴 High / Busy (2+ events). Click card again to disable.`
-        );
-      } else {
-        hideStatusBanner();
-      }
-
-      if (typeof renderCalendarGlobal === 'function') {
-        renderCalendarGlobal();
-      }
-    });
-
+    cardOccupancy.addEventListener('click', () => openStatDetails('occupancy'));
     cardOccupancy.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        cardOccupancy.click();
-      }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStatDetails('occupancy'); }
     });
   }
 
-  // 4. Card 4 (Available Slots): Highlight all open days with available slots
   if (cardAvailable) {
-    cardAvailable.addEventListener('click', () => {
-      isAvailableFocusActive = !isAvailableFocusActive;
-      isHeatmapActive = false;
-      if (cardOccupancy) cardOccupancy.classList.remove('active-mode');
-
-      cardAvailable.classList.toggle('active-mode', isAvailableFocusActive);
-
-      if (isAvailableFocusActive) {
-        const status = calculateSystemStatus();
-        showStatusBanner(
-          '📅',
-          `Available Slots Highlighted: Showing ${status.daysWithAvailableSlots} open days with available reservation slots in ${status.monthName}. Click any green slot to reserve.`
-        );
-      } else {
-        hideStatusBanner();
-      }
-
-      if (typeof renderCalendarGlobal === 'function') {
-        renderCalendarGlobal();
-      }
-    });
-
+    cardAvailable.addEventListener('click', () => openStatDetails('available'));
     cardAvailable.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        cardAvailable.click();
-      }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openStatDetails('available'); }
     });
   }
+
+  refreshStatDetailsGlobal = () => {
+    if (activeStatMode) {
+      openStatDetails(activeStatMode, true);
+    }
+  };
 }
 
 /* ==========================================================================

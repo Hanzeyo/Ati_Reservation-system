@@ -293,105 +293,87 @@
     <div class="schedule-stats-grid">
 
       <!-- Card 1: Total Events Scheduled -->
-      <div class="schedule-stat-card green" id="statCardEvents" role="button" tabindex="0" title="Click to view scheduled events breakdown for this month">
-        <div class="stat-card-inner">
-          <div class="stat-icon-box green">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <div class="stat-header-row">
-              <span class="stat-value" id="statValueEvents">18 Events</span>
-              <span class="stat-micro-pill green" id="statPillEvents">↗ Active</span>
-            </div>
-            <span class="stat-label" id="statLabelEvents">Scheduled this Month</span>
-          </div>
+      <div class="schedule-stat-card green" id="statCardEvents" role="button" tabindex="0" title="Click to view scheduled events stats">
+        <div class="stat-icon-box green">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+          </svg>
         </div>
-        <div class="stat-card-bottom-accent">
-          <span class="stat-action-hint">View schedule breakdown &rarr;</span>
+        <div class="stat-content">
+          <span class="stat-value" id="statValueEvents">18 Events</span>
+          <span class="stat-label" id="statLabelEvents">Scheduled this Month</span>
         </div>
       </div>
 
       <!-- Card 2: Highest Demand Venue -->
-      <div class="schedule-stat-card blue" id="statCardDemand" role="button" tabindex="0" title="Click to filter calendar directly to this venue">
-        <div class="stat-card-inner">
-          <div class="stat-icon-box blue">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <div class="stat-header-row">
-              <span class="stat-value" id="statValueDemand">Function Hall</span>
-              <span class="stat-micro-pill blue" id="statPillDemand">🔥 Top</span>
-            </div>
-            <span class="stat-label" id="statLabelDemand">Highest Demand Venue</span>
-          </div>
+      <div class="schedule-stat-card blue" id="statCardDemand" role="button" tabindex="0" title="Click to filter to highest demand venue">
+        <div class="stat-icon-box blue">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
         </div>
-        <div class="stat-card-bottom-accent">
-          <span class="stat-action-hint">Filter to this venue &rarr;</span>
+        <div class="stat-content">
+          <span class="stat-value" id="statValueDemand">Function Hall</span>
+          <span class="stat-label" id="statLabelDemand">Highest Demand Venue</span>
         </div>
       </div>
 
       <!-- Card 3: Overall Monthly Occupancy -->
-      <div class="schedule-stat-card amber" id="statCardOccupancy" role="button" tabindex="0" title="Click to toggle visual occupancy heatmap view">
-        <div class="stat-card-inner">
-          <div class="stat-icon-box amber">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <div class="stat-header-row">
-              <span class="stat-value" id="statValueOccupancy">68%</span>
-              <span class="stat-micro-pill amber" id="statPillOccupancy">● Optimal</span>
-            </div>
-            <span class="stat-label" id="statLabelOccupancy">Overall Monthly Occupancy</span>
-          </div>
+      <div class="schedule-stat-card amber" id="statCardOccupancy" role="button" tabindex="0" title="Click to view monthly occupancy details">
+        <div class="stat-icon-box amber">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
         </div>
-        <div class="stat-card-bottom-accent">
-          <span class="stat-action-hint">Toggle occupancy heatmap &rarr;</span>
+        <div class="stat-content">
+          <span class="stat-value" id="statValueOccupancy">68%</span>
+          <span class="stat-label" id="statLabelOccupancy">Overall Monthly Occupancy</span>
         </div>
       </div>
 
       <!-- Card 4: Days with Available Slots -->
-      <div class="schedule-stat-card purple" id="statCardAvailableDays" role="button" tabindex="0" title="Click to highlight open days with available slots">
-        <div class="stat-card-inner">
-          <div class="stat-icon-box purple">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-          </div>
-          <div class="stat-content">
-            <div class="stat-header-row">
-              <span class="stat-value" id="statValueAvailableDays">12 Days</span>
-              <span class="stat-micro-pill purple" id="statPillAvailable">🟢 Open</span>
-            </div>
-            <span class="stat-label" id="statLabelAvailableDays">With Available Slots</span>
-          </div>
+      <div class="schedule-stat-card purple" id="statCardAvailableDays" role="button" tabindex="0" title="Click to highlight available slots">
+        <div class="stat-icon-box purple">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
         </div>
-        <div class="stat-card-bottom-accent">
-          <span class="stat-action-hint">Highlight open slots &rarr;</span>
+        <div class="stat-content">
+          <span class="stat-value" id="statValueAvailableDays">12 Days</span>
+          <span class="stat-label" id="statLabelAvailableDays">With Available Slots</span>
         </div>
       </div>
 
     </div>
 
-    <!-- Dynamic System Status Banner (when a stat view mode is active) -->
-    <div class="schedule-status-banner" id="scheduleStatusBanner" style="display: none;">
-      <div style="display: flex; align-items: center; gap: 0.65rem;">
-        <span id="statusBannerIcon" style="font-size: 1.15rem;">ℹ️</span>
-        <span class="schedule-status-banner-text" id="statusBannerText">Status message</span>
+    <!-- Stats Details Panel on the bottom of the cards (appears when a card is clicked) -->
+    <div class="stat-detail-panel" id="statDetailPanel" style="display: none;" role="region" aria-live="polite">
+      <div class="stat-detail-main">
+        <div class="stat-detail-icon-wrap" id="statDetailIconWrap">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle></svg>
+        </div>
+        <div class="stat-detail-info">
+          <div class="stat-detail-header">
+            <span class="stat-detail-title" id="statDetailTitle">Card Stats</span>
+            <span class="stat-detail-badge" id="statDetailBadge">Details</span>
+          </div>
+          <p class="stat-detail-desc" id="statDetailDesc">Description of statistics.</p>
+          <div class="stat-detail-chips" id="statDetailChips">
+            <!-- Breakdown pills dynamically added here -->
+          </div>
+        </div>
       </div>
-      <button type="button" class="schedule-status-banner-btn" id="btnResetStatusMode">Reset Standard View</button>
+      <div class="stat-detail-actions">
+        <button type="button" class="stat-detail-action-btn" id="statDetailActionBtn" style="display: none;"></button>
+        <button type="button" class="stat-detail-close-btn" id="statDetailCloseBtn" aria-label="Close stats details" title="Close stats details">&times;</button>
+      </div>
     </div>
 
     <!-- Calendar Controls Bar -->
