@@ -1070,11 +1070,17 @@ body.booking-body {
 .slot-month-nav {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  justify-content: space-between;
+  width: 216px;
+  min-width: 216px;
+  max-width: 216px;
+  height: 38px;
   background: #edf6f0;
-  padding: 3px 6px;
+  padding: 4px 6px;
   border-radius: 9999px;
   border: 1px solid #d1e7d8;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .slot-month-nav-btn {
@@ -1088,15 +1094,19 @@ body.booking-body {
   border-radius: 50%;
   color: #175432;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .slot-month-nav-btn:hover:not(:disabled) {
   background: #175432;
   color: #ffffff;
   border-color: #175432;
-  transform: scale(1.06);
+}
+
+.slot-month-nav-btn:active:not(:disabled) {
+  background: #0f3922;
 }
 
 .slot-month-nav-btn:disabled {
@@ -1106,15 +1116,18 @@ body.booking-body {
 }
 
 .slot-month-pill {
-  font-size: 0.82rem;
+  flex: 1;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #1b5334;
   background: transparent;
   border: none;
-  padding: 0.2rem 0.6rem;
-  min-width: 110px;
+  padding: 0;
   text-align: center;
   user-select: none;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 
 /* Calendar Grid */

@@ -571,32 +571,60 @@ function initStepperNavigation() {
     const dotDocs = document.getElementById('mobileDotDocuments');
     const dotRev = document.getElementById('mobileDotReview');
 
+    // Both Halls and Dormitories always show all 5 steps (including Event Details)!
+    if (stepTabEvent) stepTabEvent.style.display = '';
+    if (dotEvent) dotEvent.style.display = '';
+    if (stepTabDocs) {
+      const n = stepTabDocs.querySelector('.step-number');
+      if (n) n.textContent = '4';
+    }
+    if (stepTabRev) {
+      const n = stepTabRev.querySelector('.step-number');
+      if (n) n.textContent = '5';
+    }
+    if (dotDocs) dotDocs.textContent = '4';
+    if (dotRev) dotRev.textContent = '5';
+
+    // Contextualize Step 3 Form labels & placeholders for Dormitory vs Hall
+    const step3Title = document.getElementById('step3FormTitle');
+    const step3Desc = document.getElementById('step3FormDesc');
+    const eventTitleLabel = document.getElementById('eventTitleLabel');
+    const eventTitleInput = document.getElementById('eventTitleInput');
+    const eventPaxLabel = document.getElementById('eventPaxLabel');
+    const eventPaxInput = document.getElementById('eventPaxInput');
+    const specialNotesLabel = document.getElementById('specialNotesLabel');
+    const specialNotes = document.getElementById('specialNotes');
+
     if (isDorm) {
-      if (stepTabEvent) stepTabEvent.style.display = 'none';
-      if (dotEvent) dotEvent.style.display = 'none';
-      if (stepTabDocs) {
-        const n = stepTabDocs.querySelector('.step-number');
-        if (n) n.textContent = '3';
+      if (step3Title) step3Title.textContent = 'Step 3: Event & Accommodation Details';
+      if (step3Desc) step3Desc.textContent = 'Provide details regarding your training activity or event, trainees/guests lodging, and specific accommodation requirements.';
+      if (eventTitleLabel) eventTitleLabel.textContent = 'Training Activity / Event Purpose';
+      if (eventTitleInput && !eventTitleInput.value) {
+        eventTitleInput.placeholder = 'e.g. Regional Agricultural Extension Training Delegates Lodging';
       }
-      if (stepTabRev) {
-        const n = stepTabRev.querySelector('.step-number');
-        if (n) n.textContent = '4';
+      if (eventPaxLabel) eventPaxLabel.textContent = 'Number of Trainees / Guests Staying';
+      if (eventPaxInput && !eventPaxInput.value) {
+        eventPaxInput.placeholder = 'e.g. 12';
       }
-      if (dotDocs) dotDocs.textContent = '3';
-      if (dotRev) dotRev.textContent = '4';
+      if (specialNotesLabel) specialNotesLabel.textContent = 'Accommodation Requests & Room Notes (Optional)';
+      if (specialNotes && !specialNotes.value) {
+        specialNotes.placeholder = 'e.g. Late check-in after 7:00 PM; separate male/female quarters; extra linens requested.';
+      }
     } else {
-      if (stepTabEvent) stepTabEvent.style.display = '';
-      if (dotEvent) dotEvent.style.display = '';
-      if (stepTabDocs) {
-        const n = stepTabDocs.querySelector('.step-number');
-        if (n) n.textContent = '4';
+      if (step3Title) step3Title.textContent = 'Step 3: Event & Activity Information';
+      if (step3Desc) step3Desc.textContent = 'Provide details regarding the nature of your activity, participants, and specific requirements.';
+      if (eventTitleLabel) eventTitleLabel.textContent = 'Activity / Event Title';
+      if (eventTitleInput && !eventTitleInput.value) {
+        eventTitleInput.placeholder = 'e.g. Regional Agricultural Extension Coordinators Training 2026';
       }
-      if (stepTabRev) {
-        const n = stepTabRev.querySelector('.step-number');
-        if (n) n.textContent = '5';
+      if (eventPaxLabel) eventPaxLabel.textContent = 'Estimated Number of Attendees';
+      if (eventPaxInput && !eventPaxInput.value) {
+        eventPaxInput.placeholder = 'e.g. 120';
       }
-      if (dotDocs) dotDocs.textContent = '4';
-      if (dotRev) dotRev.textContent = '5';
+      if (specialNotesLabel) specialNotesLabel.textContent = 'Special Equipment / Setup Notes (Optional)';
+      if (specialNotes && !specialNotes.value) {
+        specialNotes.placeholder = 'e.g. Needs 4 wireless microphones, podium banner stand, and registration tables.';
+      }
     }
   }
 
@@ -604,11 +632,6 @@ function initStepperNavigation() {
     if (stepNumber < 1 || stepNumber > 5) return;
 
     const isDorm = isDormitorySelected();
-
-    // If dorm and user tries to go to step 3, redirect to step 4
-    if (isDorm && stepNumber === 3) {
-      stepNumber = 4;
-    }
 
     // Requirement: When reserving a dormitory accommodation, user MUST select a room first before proceeding to Step 2
     if (stepNumber === 2 && bookingState.currentStep === 1) {
@@ -654,18 +677,12 @@ function initStepperNavigation() {
       }
     });
 
-    // Update Mobile Compact Progress Bar
-    const totalSteps = isDorm ? 4 : 5;
-    let visualStepIndex = stepNumber;
-    if (isDorm) {
-      if (stepNumber === 4) visualStepIndex = 3;
-      if (stepNumber === 5) visualStepIndex = 4;
-    }
-
+    // Update Mobile Compact Progress Bar (always 5 steps)
+    const totalSteps = 5;
     const stepLabels = {
       1: 'Facility Selection',
       2: 'Date & Time Selection',
-      3: 'Event & Activity Details',
+      3: isDorm ? 'Accommodation & Event Details' : 'Event & Activity Details',
       4: 'Document Upload',
       5: 'Review & Submit'
     };
@@ -676,9 +693,9 @@ function initStepperNavigation() {
     const mobileFill = document.getElementById('mobileProgressFill');
     const mobileDots = document.querySelectorAll('.mobile-dot');
 
-    const progressPercent = Math.round((visualStepIndex / totalSteps) * 100);
+    const progressPercent = Math.round((stepNumber / totalSteps) * 100);
 
-    if (mobileBadge) mobileBadge.textContent = `Step ${visualStepIndex} of ${totalSteps}`;
+    if (mobileBadge) mobileBadge.textContent = `Step ${stepNumber} of ${totalSteps}`;
     if (mobileName) mobileName.textContent = stepLabels[stepNumber] || 'Reservation Details';
     if (mobilePercent) mobilePercent.textContent = `${progressPercent}%`;
     if (mobileFill) mobileFill.style.width = `${progressPercent}%`;
@@ -709,7 +726,7 @@ function initStepperNavigation() {
       backBtn.style.display = stepNumber > 1 ? 'inline-flex' : 'none';
     }
 
-    // Proceed button behavior across all steps
+    // Proceed button behavior across all 5 steps
     if (proceedBtn) {
       if (stepNumber === 1) {
         proceedBtn.style.display = 'inline-flex';
@@ -721,11 +738,7 @@ function initStepperNavigation() {
         }
       } else if (stepNumber === 2) {
         proceedBtn.style.display = 'inline-flex';
-        if (isDorm) {
-          proceedBtn.innerHTML = `<span>Proceed to Document Upload</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
-        } else {
-          proceedBtn.innerHTML = `<span>Proceed to Event Details</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
-        }
+        proceedBtn.innerHTML = `<span>Proceed to Event Details</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       } else if (stepNumber === 3) {
         proceedBtn.style.display = 'inline-flex';
         proceedBtn.innerHTML = `<span>Proceed to Document Upload</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
@@ -760,11 +773,7 @@ function initStepperNavigation() {
         }
         goToStep(2);
       } else if (bookingState.currentStep === 2) {
-        if (isDorm) {
-          goToStep(4); // Skip Step 3 for Dormitories
-        } else {
-          goToStep(3);
-        }
+        goToStep(3); // Proceeds to Event Details for BOTH dormitories and halls!
       } else if (bookingState.currentStep === 3) {
         goToStep(4);
       } else if (bookingState.currentStep === 4) {
@@ -776,12 +785,23 @@ function initStepperNavigation() {
   // Back button click listener
   if (backBtn) {
     backBtn.addEventListener('click', () => {
-      const isDorm = isDormitorySelected();
-      if (bookingState.currentStep === 4 && isDorm) {
-        goToStep(2); // Skip Step 3 in reverse for Dormitories
-      } else {
-        goToStep(bookingState.currentStep - 1);
-      }
+      goToStep(bookingState.currentStep - 1);
+    });
+  }
+
+  // Step 3 live input bindings
+  const eventTitleInput = document.getElementById('eventTitleInput');
+  const eventPaxInput = document.getElementById('eventPaxInput');
+  if (eventTitleInput) {
+    eventTitleInput.addEventListener('input', () => {
+      bookingState.eventTitle = eventTitleInput.value;
+      updateReviewSummary();
+    });
+  }
+  if (eventPaxInput) {
+    eventPaxInput.addEventListener('input', () => {
+      bookingState.participants = eventPaxInput.value;
+      updateReviewSummary();
     });
   }
 
@@ -793,6 +813,9 @@ function initStepperNavigation() {
       let summaryMsg = `Reservation Request Submitted Successfully!\n\nReference: ${refNum}\nFacility: ${bookingState.selectedFacility.name}`;
       if (bookingState.selectedFacility.roomNumber) {
         summaryMsg += `\nAssigned Room: Room ${bookingState.selectedFacility.roomNumber} (${bookingState.selectedFacility.floor || ''})`;
+      }
+      if (bookingState.eventTitle) {
+        summaryMsg += `\nEvent / Purpose: ${bookingState.eventTitle}`;
       }
       summaryMsg += `\nSchedule: ${bookingState.date}\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`;
       alert(summaryMsg);
@@ -867,6 +890,22 @@ function updateReviewSummary() {
       sumRoom.textContent = 'None';
     }
   }
+
+  // Step 5 Event Details Summary fields
+  const eventTitleInput = document.getElementById('eventTitleInput');
+  const eventPaxInput = document.getElementById('eventPaxInput');
+  const sumEventTitle = document.getElementById('summaryEventTitle');
+  const sumPaxValue = document.getElementById('summaryPaxValue');
+  const sumEventLabel = document.getElementById('summaryEventLabel');
+  const sumPaxLabel = document.getElementById('summaryPaxLabel');
+
+  const curTitle = eventTitleInput?.value?.trim() || bookingState.eventTitle || (isDorm ? 'Agricultural Training Delegates Lodging' : 'Regional Agricultural Training Workshop');
+  const curPax = eventPaxInput?.value?.trim() || bookingState.participants || (isDorm ? '12 Trainees' : '120 Attendees');
+
+  if (sumEventLabel) sumEventLabel.textContent = isDorm ? 'Training / Stay Purpose:' : 'Activity / Event Title:';
+  if (sumEventTitle) sumEventTitle.textContent = curTitle;
+  if (sumPaxLabel) sumPaxLabel.textContent = isDorm ? 'Trainees / Lodgers:' : 'Participants / Attendees:';
+  if (sumPaxValue) sumPaxValue.textContent = curPax;
 }
 
 

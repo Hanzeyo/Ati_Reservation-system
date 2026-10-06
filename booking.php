@@ -342,16 +342,16 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
           <span class="step-number">2</span>
           <span>Date & Time</span>
         </div>
-        <div class="step-tab-btn" data-step="3" id="stepTabEventDetails" style="<?php echo $reqCategory === 'dormitories' ? 'display: none;' : ''; ?>">
+        <div class="step-tab-btn" data-step="3" id="stepTabEventDetails">
           <span class="step-number">3</span>
-          <span>Event Details</span>
+          <span id="stepTabEventName">Event Details</span>
         </div>
         <div class="step-tab-btn" data-step="4" id="stepTabDocuments">
-          <span class="step-number"><?php echo $reqCategory === 'dormitories' ? '3' : '4'; ?></span>
+          <span class="step-number">4</span>
           <span>Documents</span>
         </div>
         <div class="step-tab-btn" data-step="5" id="stepTabReview">
-          <span class="step-number"><?php echo $reqCategory === 'dormitories' ? '4' : '5'; ?></span>
+          <span class="step-number">5</span>
           <span>Review & Submit</span>
         </div>
       </div>
@@ -360,7 +360,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
       <div class="mobile-stepper-progress" id="mobileStepperProgress">
         <div class="mobile-stepper-header">
           <div class="mobile-step-pill">
-            <span class="mobile-step-badge" id="mobileStepBadge">Step 1 of <?php echo $reqCategory === 'dormitories' ? '4' : '5'; ?></span>
+            <span class="mobile-step-badge" id="mobileStepBadge">Step 1 of 5</span>
             <strong class="mobile-step-name" id="mobileStepName">Facility Selection</strong>
           </div>
           <span class="mobile-step-percent" id="mobileStepPercent">20%</span>
@@ -371,9 +371,9 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
         <div class="mobile-step-dots">
           <div class="mobile-dot active" data-step="1" title="Facility">1</div>
           <div class="mobile-dot" data-step="2" title="Date & Time">2</div>
-          <div class="mobile-dot" data-step="3" id="mobileDotEventDetails" title="Event Details" style="<?php echo $reqCategory === 'dormitories' ? 'display: none;' : ''; ?>">3</div>
-          <div class="mobile-dot" data-step="4" id="mobileDotDocuments" title="Documents"><?php echo $reqCategory === 'dormitories' ? '3' : '4'; ?></div>
-          <div class="mobile-dot" data-step="5" id="mobileDotReview" title="Review"><?php echo $reqCategory === 'dormitories' ? '4' : '5'; ?></div>
+          <div class="mobile-dot" data-step="3" id="mobileDotEventDetails" title="Event Details">3</div>
+          <div class="mobile-dot" data-step="4" id="mobileDotDocuments" title="Documents">4</div>
+          <div class="mobile-dot" data-step="5" id="mobileDotReview" title="Review">5</div>
         </div>
       </div>
     </div>
@@ -908,19 +908,18 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
          ========================================================================== -->
     <div class="wizard-step-view" data-step="3">
       <div class="wizard-form-card">
-        <h3 class="wizard-form-title">Step 3: Event & Activity Information</h3>
-        <p class="wizard-form-desc">Provide details regarding the nature of your activity, participants, and specific
-          requirements.</p>
+        <h3 class="wizard-form-title" id="step3FormTitle">Step 3: Event &amp; Activity Information</h3>
+        <p class="wizard-form-desc" id="step3FormDesc">Provide details regarding the nature of your activity, participants, and specific requirements.</p>
 
         <div class="auth-field-group">
-          <label class="auth-field-label" for="eventTitleInput">Activity / Event Title</label>
+          <label class="auth-field-label" for="eventTitleInput" id="eventTitleLabel">Activity / Event Title</label>
           <input type="text" id="eventTitleInput" class="auth-input"
             placeholder="e.g. Regional Agricultural Extension Coordinators Training 2026" style="padding-left: 1rem;">
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
           <div class="auth-field-group">
-            <label class="auth-field-label" for="eventPaxInput">Estimated Number of Attendees</label>
+            <label class="auth-field-label" for="eventPaxInput" id="eventPaxLabel">Estimated Number of Attendees</label>
             <input type="number" id="eventPaxInput" class="auth-input" placeholder="e.g. 120"
               style="padding-left: 1rem;">
           </div>
@@ -932,7 +931,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
         </div>
 
         <div class="auth-field-group">
-          <label class="auth-field-label" for="specialNotes">Special Equipment / Setup Notes (Optional)</label>
+          <label class="auth-field-label" for="specialNotes" id="specialNotesLabel">Special Equipment / Setup Notes (Optional)</label>
           <textarea id="specialNotes" class="auth-input" rows="3"
             placeholder="e.g. Needs 4 wireless microphones, podium banner stand, and registration tables."
             style="padding: 0.8rem 1rem; resize: vertical;"></textarea>
@@ -1002,6 +1001,14 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             <div class="scb-item">
               <span class="scb-label">Time Window:</span>
               <strong class="scb-val" id="summaryTimeSlot">Whole Day (8:00 AM - 5:00 PM)</strong>
+            </div>
+            <div class="scb-item" id="summaryEventWrap">
+              <span class="scb-label" id="summaryEventLabel">Activity / Event Title:</span>
+              <strong class="scb-val" id="summaryEventTitle">Official Training Workshop</strong>
+            </div>
+            <div class="scb-item" id="summaryPaxWrap">
+              <span class="scb-label" id="summaryPaxLabel">Participants / Attendees:</span>
+              <strong class="scb-val" id="summaryPaxValue">As specified</strong>
             </div>
           </div>
 
