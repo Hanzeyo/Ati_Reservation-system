@@ -18,22 +18,105 @@
   <link rel="stylesheet" href="css/mobile-drawer.css?v=<?php echo time(); ?>">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
   <style>
-    .portal-category-wrapper {
-      max-width: 1040px;
-      margin: 2.5rem auto 4rem;
-      padding: 0 1.5rem;
+    /* ==========================================================================
+       HOMEPAGE SCENIC BACKGROUND & ATMOSPHERE
+       ========================================================================== */
+    body.booking-body.homepage-body {
+      background:
+        linear-gradient(180deg, rgba(14, 38, 24, 0.42) 0%, rgba(9, 28, 17, 0.58) 50%, rgba(6, 20, 12, 0.72) 100%),
+        url('assets/images/home_bg.jpg') center center / cover no-repeat fixed,
+        url('https://i.pinimg.com/1200x/9d/b7/c1/9db7c11bd7316998f7213e7784123841.jpg') center center / cover no-repeat fixed;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
+    .homepage-body .booking-topbar {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(220, 232, 224, 0.8);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .portal-category-wrapper {
+      max-width: 1060px;
+      margin: 2.75rem auto 4.5rem;
+      padding: 0 1.5rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ==========================================================================
+       CATEGORY INTRO CARD (FROSTED GLASS ELEVATION)
+       ========================================================================== */
     .portal-category-intro-card {
-      background: #ffffff;
-      border: 1.5px solid #dce8e0;
-      border-radius: 20px;
-      padding: 3rem 2rem 2.5rem;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(255, 255, 255, 0.9);
+      border-top: 4px solid #175432;
+      border-radius: 22px;
+      padding: 3.25rem 2.25rem 2.75rem;
       text-align: center;
       margin-bottom: 2.25rem;
-      box-shadow: 0 8px 30px rgba(23, 77, 47, 0.04);
+      box-shadow: 0 18px 45px rgba(5, 20, 11, 0.22), 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
+    .portal-category-intro-card:hover {
+      box-shadow: 0 22px 55px rgba(5, 20, 11, 0.28), 0 3px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .cat-sec-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #edf7f0;
+      color: #175432;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.4rem 1.05rem;
+      border-radius: 9999px;
+      border: 1px solid #cce4d3;
+      margin-bottom: 0.95rem;
+      box-shadow: 0 2px 6px rgba(23, 84, 50, 0.06);
+    }
+
+    .cat-sec-title {
+      font-family: var(--font-serif);
+      font-size: 2.35rem;
+      font-weight: 900;
+      letter-spacing: 0.03em;
+      color: #0e291a;
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    .cat-sec-subtitle {
+      font-size: 0.98rem;
+      color: #4a6353;
+      max-width: 680px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    .cat-sec-divider {
+      width: 64px;
+      height: 3.5px;
+      background: #eab308;
+      border-radius: 4px;
+      margin: 1.4rem auto 0;
+      box-shadow: 0 1px 4px rgba(234, 179, 8, 0.3);
+    }
+
+    /* ==========================================================================
+       TWO MAIN CATEGORY CARDS (HALLS & DORMITORIES)
+       ========================================================================== */
     .portal-category-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -42,87 +125,171 @@
     }
 
     .portal-cat-card {
-      background: #ffffff;
-      border: 2px solid #dce8e0;
-      border-radius: 20px;
-      padding: 2.25rem 2rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      border-radius: 22px;
+      padding: 2.5rem 2.25rem;
+      box-shadow: 0 16px 40px rgba(5, 20, 11, 0.2), 0 2px 6px rgba(0, 0, 0, 0.06);
       display: flex;
       flex-direction: column;
       text-decoration: none;
       color: inherit;
-      transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
+      cursor: pointer;
     }
 
     .portal-cat-card:hover {
       border-color: #2e7d32;
-      transform: translateY(-5px);
-      box-shadow: 0 14px 32px rgba(23, 84, 50, 0.12);
+      background: #ffffff;
+      transform: translateY(-8px);
+      box-shadow: 0 24px 55px rgba(5, 20, 11, 0.3), 0 0 0 1px rgba(46, 125, 50, 0.4);
+    }
+
+    .portal-cat-card .cat-card-header {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 1rem;
+    }
+
+    .portal-cat-card .cat-count-badge {
+      display: inline-flex;
+      align-items: center;
+      background: #e8f5ec;
+      color: #175432;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.3rem 0.85rem;
+      border-radius: 9999px;
+      border: 1.5px solid #c2e2cc;
+      box-shadow: 0 2px 6px rgba(23, 84, 50, 0.05);
+      transition: all 0.25s ease;
+    }
+
+    .portal-cat-card:hover .cat-count-badge {
+      background: #175432;
+      color: #ffffff;
+      border-color: #175432;
+    }
+
+    .portal-cat-card .cat-icon-container {
+      background: #f2f8f4;
+      border-radius: 16px;
+      padding: 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid #e1eee5;
     }
 
     .portal-cat-card:hover .cat-icon-container {
-      background: #e8f5ec;
-      transform: scale(1.02);
+      background: #e6f5eb;
+      transform: scale(1.03);
+      border-color: #bfe0cb;
+      box-shadow: 0 6px 18px rgba(23, 84, 50, 0.1);
+    }
+
+    .portal-cat-card .cat-card-title {
+      font-family: var(--font-serif);
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #123821;
+      margin-bottom: 0.5rem;
+    }
+
+    .portal-cat-card .cat-card-desc {
+      font-size: 0.92rem;
+      color: #556f60;
+      line-height: 1.55;
+      margin-bottom: 1.75rem;
+      flex-grow: 1;
+    }
+
+    .portal-cat-card .btn-explore-category {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #eaf4ed;
+      color: #175432;
+      font-size: 0.92rem;
+      font-weight: 700;
+      padding: 0.85rem 1.35rem;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      border: 1.5px solid #d0e7d7;
     }
 
     .portal-cat-card:hover .btn-explore-category {
       background: #175432;
-      box-shadow: 0 6px 18px rgba(23, 84, 50, 0.3);
+      color: #ffffff;
+      border-color: #175432;
+      box-shadow: 0 8px 20px rgba(23, 84, 50, 0.32);
+    }
+
+    .portal-cat-card .btn-explore-category svg {
+      transition: transform 0.22s ease;
     }
 
     .portal-cat-card:hover .btn-explore-category svg {
-      transform: translateX(4px);
+      transform: translateX(5px);
     }
 
-    .btn-explore-category {
-      text-decoration: none;
-    }
-
-    .btn-explore-category svg {
-      transition: transform 0.2s ease;
-    }
-
-    /* Quick status bar */
+    /* ==========================================================================
+       QUICK STATUS CARD
+       ========================================================================== */
     .portal-quick-status-card {
-      background: #fbfdfc;
-      border: 1.5px solid #e0ede4;
-      border-radius: 14px;
-      padding: 1.25rem 1.75rem;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      padding: 1.35rem 2rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1.5rem;
       flex-wrap: wrap;
+      box-shadow: 0 14px 35px rgba(5, 20, 11, 0.18), 0 2px 6px rgba(0, 0, 0, 0.05);
+      transition: all 0.25s ease;
+    }
+
+    .portal-quick-status-card:hover {
+      box-shadow: 0 18px 42px rgba(5, 20, 11, 0.24);
     }
 
     .status-left {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.15rem;
     }
 
     .status-icon-bubble {
-      width: 42px;
-      height: 42px;
-      border-radius: 10px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
       background: #eaf4ed;
       color: #175432;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      border: 1px solid #cbe4d4;
     }
 
     .status-text h4 {
-      font-size: 0.95rem;
+      font-size: 0.98rem;
       font-weight: 700;
-      color: #153321;
+      color: #123821;
       margin-bottom: 0.2rem;
     }
 
     .status-text p {
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       color: #556f60;
     }
 
@@ -133,18 +300,21 @@
       background: #ffffff;
       border: 1.5px solid #cce4d3;
       color: #175432;
-      font-size: 0.85rem;
+      font-size: 0.88rem;
       font-weight: 700;
-      padding: 0.55rem 1rem;
-      border-radius: 8px;
+      padding: 0.65rem 1.15rem;
+      border-radius: 10px;
       text-decoration: none;
       transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
     }
 
     .btn-view-bookings:hover {
       background: #175432;
       color: #ffffff;
       border-color: #175432;
+      box-shadow: 0 4px 14px rgba(23, 84, 50, 0.25);
+      transform: translateY(-2px);
     }
 
     @media (max-width: 860px) {
@@ -156,22 +326,30 @@
         margin: 1.5rem auto 3rem;
       }
       .portal-category-intro-card {
-        padding: 2rem 1.25rem 1.75rem;
-        border-radius: 16px;
+        padding: 2.25rem 1.35rem 2rem;
+        border-radius: 18px;
+      }
+      .cat-sec-title {
+        font-size: 1.85rem;
       }
       .portal-cat-card {
-        padding: 1.5rem;
-        border-radius: 16px;
+        padding: 1.75rem 1.5rem;
+        border-radius: 18px;
       }
       .portal-quick-status-card {
         flex-direction: column;
         align-items: flex-start;
+        padding: 1.25rem 1.5rem;
+      }
+      .btn-view-bookings {
+        width: 100%;
+        justify-content: center;
       }
     }
   </style>
 </head>
 
-<body class="booking-body">
+<body class="booking-body homepage-body">
 
   <!-- ==========================================================================
        TOPBAR NAVIGATION (AUTHENTICATED)
