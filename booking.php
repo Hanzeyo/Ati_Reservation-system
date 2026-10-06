@@ -1075,11 +1075,11 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
       <div class="room-modal-legend">
         <div class="legend-item">
           <span class="legend-color-dot available"></span>
-          <span><strong>Available:</strong> Click to assign for your stay</span>
+          <span><strong>Available on Oct 5:</strong> Ready for immediate check-in</span>
         </div>
         <div class="legend-item">
           <span class="legend-color-dot reserved"></span>
-          <span><strong>Reserved:</strong> Occupied by scheduled delegates</span>
+          <span><strong>Occupied on Oct 5:</strong> Click to book for a different date</span>
         </div>
       </div>
 
