@@ -3,6 +3,8 @@
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Super Administrator: Role-Based Access Control (RBAC) & User Management Portal
  */
+$currentRole = isset($_GET['role']) && $_GET['role'] === 'recommendation' ? 'recommendation' : 'clearance';
+$isRecommendation = ($currentRole === 'recommendation');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,7 +73,7 @@
           <span class="menu-label">Dashboard</span>
         </a>
 
-        <a href="admin_dashboard.php#reservationsSection" class="sidebar-menu-item">
+        <a href="admin_approvals.php<?= $isRecommendation ? '?role=recommendation' : '' ?>" class="sidebar-menu-item">
           <div class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -116,7 +118,7 @@
 
         <div class="sidebar-section-title">FACILITY MANAGEMENT</div>
 
-        <a href="admin_dashboard.php#facilityManagementSection" class="sidebar-menu-item">
+        <a href="admin_facilities.php" class="sidebar-menu-item">
           <div class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -126,7 +128,7 @@
           <span class="menu-label">Facilities & Dorms</span>
         </a>
 
-        <a href="schedule.php" class="sidebar-menu-item">
+        <a href="admin_schedule.php" class="sidebar-menu-item">
           <div class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -1176,8 +1178,8 @@
           <div class="form-group-decline" style="margin-bottom: 1rem;">
             <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.4rem;">Designated Clearance Level</label>
             <select id="roleSelectDropdown" style="width: 100%; height: 42px; padding: 0 1rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; font-weight: 600;">
-              <option value="clear">Stage 2: Final Clearance Authority (Director IV / Deputy)</option>
-              <option value="rec">Stage 1: Recommending Officer (Division Chief)</option>
+              <option value="clear">Final Clearance Authority</option>
+              <option value="rec">Recommending Officer</option>
               <option value="gsu">Facility & Maintenance Officer (GSU)</option>
               <option value="staff">Division Personnel / Requestor (ATI Staff)</option>
               <option value="external">External Agency Partner (BPI, PhilRice, Guest)</option>
@@ -1275,8 +1277,8 @@
               <select id="newUserRole"
                 style="width: 100%; height: 40px; padding: 0 0.85rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; font-weight: 600; box-sizing: border-box;">
                 <option value="staff">Division Personnel / Requestor (Standard Staff)</option>
-                <option value="rec">Stage 1: Recommending Officer (Division Chief)</option>
-                <option value="clear">Stage 2: Final Clearance Authority (Director IV)</option>
+                <option value="rec">Recommending Officer</option>
+                <option value="clear">Final Clearance Authority</option>
                 <option value="gsu">Facility & Maintenance Officer (GSU)</option>
                 <option value="external">External Agency Partner (DA Bureaus / Visitors)</option>
               </select>

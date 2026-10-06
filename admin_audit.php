@@ -3,6 +3,8 @@
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Super Administrator: Institutional Audit Trail & Security Logs Portal
  */
+$currentRole = isset($_GET['role']) && $_GET['role'] === 'recommendation' ? 'recommendation' : 'clearance';
+$isRecommendation = ($currentRole === 'recommendation');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,7 +73,7 @@
           <span class="menu-label">Dashboard</span>
         </a>
 
-        <a href="admin_dashboard.php#reservationsSection" class="sidebar-menu-item">
+        <a href="admin_approvals.php<?= $isRecommendation ? '?role=recommendation' : '' ?>" class="sidebar-menu-item">
           <div class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -116,7 +118,7 @@
 
         <div class="sidebar-section-title">FACILITY MANAGEMENT</div>
 
-        <a href="admin_dashboard.php#facilityManagementSection" class="sidebar-menu-item">
+        <a href="admin_facilities.php" class="sidebar-menu-item">
           <div class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -126,7 +128,7 @@
           <span class="menu-label">Facilities & Dorms</span>
         </a>
 
-        <a href="schedule.php" class="sidebar-menu-item">
+        <a href="admin_schedule.php" class="sidebar-menu-item">
           <div class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>

@@ -1,0 +1,420 @@
+/* ==========================================================================
+   ATI Reservation System - Institutional Facilities & Dormitories Manager
+   Dedicated Styles for Asset Cards, Specification Tables, & Maintenance Holds
+   ========================================================================== */
+
+/* Asset View Switcher & Filter Toolbar */
+.facility-mgmt-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.5rem 0 1.25rem 0;
+  flex-wrap: wrap;
+}
+
+.facility-search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: #ffffff;
+  border: 1.5px solid #dce8e0;
+  border-radius: 10px;
+  padding: 0.55rem 0.95rem;
+  min-width: 300px;
+  flex: 1;
+  max-width: 440px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.facility-search-wrapper svg {
+  color: #627b6c;
+  flex-shrink: 0;
+}
+
+.facility-search-wrapper input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: #172c1f;
+  width: 100%;
+}
+
+.facility-search-wrapper input::placeholder {
+  color: #8da496;
+}
+
+.facility-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.facility-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.facility-filter-tab {
+  background: #f4f8f5;
+  border: 1.2px solid #d4e3d9;
+  color: #3b5746;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.42rem 0.85rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.facility-filter-tab:hover {
+  background: #e8f3ec;
+  color: #174d2f;
+  border-color: #bcd5c5;
+}
+
+.facility-filter-tab.active {
+  background: #174d2f;
+  color: #ffffff;
+  border-color: #174d2f;
+  box-shadow: 0 2px 8px rgba(23, 77, 47, 0.22);
+}
+
+/* View Mode Buttons (Grid vs Table) */
+.view-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: #edf4ef;
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid #d8e5dc;
+}
+
+.view-mode-btn {
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0.65rem;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #4b6354;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: all 0.18s ease;
+}
+
+.view-mode-btn.active {
+  background: #ffffff;
+  color: #174d2f;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+/* Facility Grid Layout */
+.facility-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+
+/* Facility Card Item */
+.facility-card-item {
+  background: #ffffff;
+  border: 1.5px solid #e1ece4;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(20, 45, 30, 0.04);
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.facility-card-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(20, 45, 30, 0.08);
+  border-color: #b9d7c3;
+}
+
+.facility-card-media {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: #eaf1ec;
+  overflow: hidden;
+}
+
+.facility-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.facility-card-item:hover .facility-card-img {
+  transform: scale(1.03);
+}
+
+.facility-type-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(16, 45, 28, 0.85);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.facility-status-pill-overlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 0.28rem 0.75rem;
+  border-radius: 9999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(4px);
+}
+
+.facility-status-pill-overlay.state-available {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.facility-status-pill-overlay.state-occupied {
+  background: #d97706;
+  color: #ffffff;
+}
+
+.facility-status-pill-overlay.state-maintenance {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+/* Facility Card Content Body */
+.facility-card-body {
+  padding: 1.25rem 1.35rem 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.facility-card-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.facility-card-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #153321;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.facility-location-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  color: #557262;
+  margin-bottom: 0.85rem;
+}
+
+.facility-location-tag svg {
+  color: #174d2f;
+  flex-shrink: 0;
+}
+
+.facility-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
+  background: #f8faf8;
+  border: 1px solid #e5eee8;
+  padding: 0.75rem 0.95rem;
+  border-radius: 8px;
+  margin-bottom: 0.95rem;
+}
+
+.spec-cell-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.spec-cell-item span.spec-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #637f6f;
+  letter-spacing: 0.04em;
+}
+
+.spec-cell-item strong.spec-val {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #163020;
+}
+
+/* Feature Badges Tags */
+.facility-features-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.feature-pill-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: #f1f7f3;
+  color: #274b35;
+  border: 1px solid #d6e8dc;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+}
+
+/* Facility Card Footer */
+.facility-card-footer {
+  border-top: 1px solid #edf4f0;
+  padding-top: 0.95rem;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.facility-maintenance-quick-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #4b6354;
+}
+
+.card-action-btns {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.btn-card-action {
+  background: #ffffff;
+  border: 1.2px solid #c7ddce;
+  color: #174d2f;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.38rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.18s ease;
+  text-decoration: none;
+}
+
+.btn-card-action:hover {
+  background: #174d2f;
+  color: #ffffff;
+  border-color: #174d2f;
+}
+
+/* Table View Container (Hidden when Grid active) */
+.facility-table-view-container {
+  display: none;
+  background: #ffffff;
+  border: 1.5px solid #e1ece4;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 1.25rem;
+}
+
+.facility-table-thumb {
+  width: 58px;
+  height: 42px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #d5e5db;
+}
+
+.facility-table-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.facility-table-info-text strong {
+  display: block;
+  font-size: 0.9rem;
+  color: #153321;
+}
+
+.facility-table-info-text span {
+  font-size: 0.76rem;
+  color: #5c7768;
+}
+
+/* Maintenance Hold Modal Warning Box */
+.maintenance-alert-box {
+  background: #fff8eb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.maintenance-alert-box svg {
+  color: #d97706;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.maintenance-alert-box p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #92400e;
+  line-height: 1.45;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .facility-cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .facility-mgmt-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .facility-search-wrapper {
+    min-width: 100%;
+    max-width: 100%;
+  }
+
+  .facility-toolbar-actions {
+    justify-content: space-between;
+  }
+}
