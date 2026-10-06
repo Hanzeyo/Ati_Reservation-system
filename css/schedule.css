@@ -116,7 +116,7 @@ body.schedule-body {
   gap: 1.1rem;
   cursor: pointer;
   position: relative;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
   user-select: none;
 }
 
@@ -241,24 +241,12 @@ body.schedule-body {
   align-items: center;
   justify-content: space-between;
   gap: 1.25rem;
-  animation: statDetailSlideDown 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .stat-detail-panel.theme-green { border-left-color: #166534; }
 .stat-detail-panel.theme-blue { border-left-color: #2563eb; }
 .stat-detail-panel.theme-amber { border-left-color: #d97706; }
 .stat-detail-panel.theme-purple { border-left-color: #7c3aed; }
-
-@keyframes statDetailSlideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 .stat-detail-main {
   display: flex;

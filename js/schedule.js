@@ -390,9 +390,6 @@ function initMasterCalendar() {
 
     // Update the 4 Stat Metric Cards on every calendar render
     updateSystemStatusMetrics();
-    if (typeof refreshStatDetailsGlobal === 'function') {
-      refreshStatDetailsGlobal();
-    }
   }
 
   renderCalendarGlobal = renderCalendar;
@@ -405,6 +402,9 @@ function initMasterCalendar() {
         currentYear--;
       }
       renderCalendar();
+      if (activeStatMode && typeof populateStatPanelGlobal === 'function') {
+        populateStatPanelGlobal(activeStatMode);
+      }
     });
   }
 
@@ -416,6 +416,9 @@ function initMasterCalendar() {
         currentYear++;
       }
       renderCalendar();
+      if (activeStatMode && typeof populateStatPanelGlobal === 'function') {
+        populateStatPanelGlobal(activeStatMode);
+      }
     });
   }
 
@@ -424,6 +427,9 @@ function initMasterCalendar() {
       currentYear = 2026;
       currentMonth = 9;
       renderCalendar();
+      if (activeStatMode && typeof populateStatPanelGlobal === 'function') {
+        populateStatPanelGlobal(activeStatMode);
+      }
     });
   }
 
@@ -453,7 +459,7 @@ function initFacilityFilters() {
    3. Interactive System Status Cards Controller (Details on Bottom)
    ========================================================================== */
 let activeStatMode = null; // 'events' | 'demand' | 'occupancy' | 'available' | null
-let refreshStatDetailsGlobal = null;
+let populateStatPanelGlobal = null;
 
 function initSystemStatusCards() {
   const cardEvents = document.getElementById('statCardEvents');
@@ -464,36 +470,18 @@ function initSystemStatusCards() {
   const closeBtn = document.getElementById('statDetailCloseBtn');
   const actionBtn = document.getElementById('statDetailActionBtn');
 
-  function openStatDetails(mode, isRefresh = false) {
+  function populatePanel(mode) {
     if (!panel) return;
-
-    // Toggle off if same card clicked
-    if (!isRefresh && activeStatMode === mode) {
-      closeStatDetails();
-      return;
-    }
-
-    activeStatMode = mode;
     const status = calculateSystemStatus();
-
-    // Reset card highlight classes
-    [cardEvents, cardDemand, cardOccupancy, cardAvailable].forEach(c => {
-      if (c) c.classList.remove('active-mode');
-    });
-
     const iconWrap = document.getElementById('statDetailIconWrap');
     const titleEl = document.getElementById('statDetailTitle');
     const badgeEl = document.getElementById('statDetailBadge');
     const descEl = document.getElementById('statDetailDesc');
     const chipsEl = document.getElementById('statDetailChips');
 
-    // Clean base panel class
-    panel.className = 'stat-detail-panel';
+    panel.className = `stat-detail-panel theme-${mode === 'events' ? 'green' : mode === 'demand' ? 'blue' : mode === 'occupancy' ? 'amber' : 'purple'}`;
 
     if (mode === 'events') {
-      if (cardEvents) cardEvents.classList.add('active-mode');
-      panel.classList.add('theme-green');
-
       if (iconWrap) {
         iconWrap.className = 'stat-detail-icon-wrap green';
         iconWrap.innerHTML = `
@@ -514,11 +502,11 @@ function initSystemStatusCards() {
       if (chipsEl) {
         const counts = status.facilityCounts || {};
         const items = [
-          { name: 'Function Hall', key: 'function-hall', count: counts['function-hall'] || 0, icon: '🏛️' },
-          { name: 'Training Hall', key: 'training-hall', count: counts['training-hall'] || 0, icon: '🏫' },
-          { name: 'Mess Hall', key: 'mess-hall', count: counts['mess-hall'] || 0, icon: '🍽️' },
-          { name: 'Boardroom', key: 'boardroom', count: counts['boardroom'] || 0, icon: '💼' },
-          { name: 'Dormitory', key: 'dormitory', count: counts['dormitory'] || 0, icon: '🛏️' }
+          { name: 'Function Hall', count: counts['function-hall'] || 0, icon: '🏛️' },
+          { name: 'Training Hall', count: counts['training-hall'] || 0, icon: '🏫' },
+          { name: 'Mess Hall', count: counts['mess-hall'] || 0, icon: '🍽️' },
+          { name: 'Boardroom', count: counts['boardroom'] || 0, icon: '💼' },
+          { name: 'Dormitory', count: counts['dormitory'] || 0, icon: '🛏️' }
         ];
         chipsEl.innerHTML = items
           .filter(item => item.count > 0)
@@ -530,16 +518,7 @@ function initSystemStatusCards() {
         actionBtn.textContent = '📋 View Full Event List';
         actionBtn.onclick = () => openMonthlyEventsListModal();
       }
-
-      // Reset specific filters for overall view
-      isHeatmapActive = false;
-      isAvailableFocusActive = false;
-      if (typeof renderCalendarGlobal === 'function') renderCalendarGlobal();
-
     } else if (mode === 'demand') {
-      if (cardDemand) cardDemand.classList.add('active-mode');
-      panel.classList.add('theme-blue');
-
       if (iconWrap) {
         iconWrap.className = 'stat-detail-icon-wrap blue';
         iconWrap.innerHTML = `
@@ -577,20 +556,7 @@ function initSystemStatusCards() {
           closeStatDetails();
         };
       }
-
-      // Filter calendar to top facility
-      activeFilter = status.topFacilityKey;
-      isHeatmapActive = false;
-      isAvailableFocusActive = false;
-      document.querySelectorAll('.fac-pill').forEach(p => {
-        p.classList.toggle('active', p.dataset.facility === status.topFacilityKey);
-      });
-      if (typeof renderCalendarGlobal === 'function') renderCalendarGlobal();
-
     } else if (mode === 'occupancy') {
-      if (cardOccupancy) cardOccupancy.classList.add('active-mode');
-      panel.classList.add('theme-amber');
-
       if (iconWrap) {
         iconWrap.className = 'stat-detail-icon-wrap amber';
         iconWrap.innerHTML = `
@@ -620,16 +586,7 @@ function initSystemStatusCards() {
         actionBtn.textContent = '✕ Turn Off Heatmap';
         actionBtn.onclick = () => closeStatDetails();
       }
-
-      // Activate Heatmap
-      isHeatmapActive = true;
-      isAvailableFocusActive = false;
-      if (typeof renderCalendarGlobal === 'function') renderCalendarGlobal();
-
     } else if (mode === 'available') {
-      if (cardAvailable) cardAvailable.classList.add('active-mode');
-      panel.classList.add('theme-purple');
-
       if (iconWrap) {
         iconWrap.className = 'stat-detail-icon-wrap purple';
         iconWrap.innerHTML = `
@@ -660,14 +617,67 @@ function initSystemStatusCards() {
           window.location.href = 'booking.php';
         };
       }
+    }
+  }
 
-      // Activate Available Focus
-      isAvailableFocusActive = true;
-      isHeatmapActive = false;
-      if (typeof renderCalendarGlobal === 'function') renderCalendarGlobal();
+  function openStatDetails(mode) {
+    if (!panel) return;
+
+    // Toggle off immediately if same card clicked
+    if (activeStatMode === mode) {
+      closeStatDetails();
+      return;
     }
 
+    activeStatMode = mode;
+
+    // Instant card highlight updates
+    if (cardEvents) cardEvents.classList.toggle('active-mode', mode === 'events');
+    if (cardDemand) cardDemand.classList.toggle('active-mode', mode === 'demand');
+    if (cardOccupancy) cardOccupancy.classList.toggle('active-mode', mode === 'occupancy');
+    if (cardAvailable) cardAvailable.classList.toggle('active-mode', mode === 'available');
+
+    // Instant display and fill with zero delay
     panel.style.display = 'flex';
+    populatePanel(mode);
+
+    // Apply calendar state only if needed
+    const status = calculateSystemStatus();
+    let needCalendarRerender = false;
+
+    if (mode === 'events') {
+      if (isHeatmapActive || isAvailableFocusActive || activeFilter !== 'all') {
+        isHeatmapActive = false;
+        isAvailableFocusActive = false;
+        activeFilter = 'all';
+        document.querySelectorAll('.fac-pill').forEach(p => p.classList.toggle('active', p.dataset.facility === 'all'));
+        needCalendarRerender = true;
+      }
+    } else if (mode === 'demand') {
+      if (activeFilter !== status.topFacilityKey || isHeatmapActive || isAvailableFocusActive) {
+        activeFilter = status.topFacilityKey;
+        isHeatmapActive = false;
+        isAvailableFocusActive = false;
+        document.querySelectorAll('.fac-pill').forEach(p => p.classList.toggle('active', p.dataset.facility === status.topFacilityKey));
+        needCalendarRerender = true;
+      }
+    } else if (mode === 'occupancy') {
+      if (!isHeatmapActive || isAvailableFocusActive) {
+        isHeatmapActive = true;
+        isAvailableFocusActive = false;
+        needCalendarRerender = true;
+      }
+    } else if (mode === 'available') {
+      if (!isAvailableFocusActive || isHeatmapActive) {
+        isAvailableFocusActive = true;
+        isHeatmapActive = false;
+        needCalendarRerender = true;
+      }
+    }
+
+    if (needCalendarRerender && typeof renderCalendarGlobal === 'function') {
+      renderCalendarGlobal();
+    }
   }
 
   function closeStatDetails() {
@@ -679,6 +689,7 @@ function initSystemStatusCards() {
     if (panel) panel.style.display = 'none';
 
     // Reset visual modes
+    let needCalendarRerender = isHeatmapActive || isAvailableFocusActive || activeFilter !== 'all';
     isHeatmapActive = false;
     isAvailableFocusActive = false;
 
@@ -689,7 +700,7 @@ function initSystemStatusCards() {
       });
     }
 
-    if (typeof renderCalendarGlobal === 'function') {
+    if (needCalendarRerender && typeof renderCalendarGlobal === 'function') {
       renderCalendarGlobal();
     }
   }
@@ -727,11 +738,7 @@ function initSystemStatusCards() {
     });
   }
 
-  refreshStatDetailsGlobal = () => {
-    if (activeStatMode) {
-      openStatDetails(activeStatMode, true);
-    }
-  };
+  populateStatPanelGlobal = populatePanel;
 }
 
 /* ==========================================================================
