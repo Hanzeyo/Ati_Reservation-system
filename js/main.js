@@ -409,7 +409,7 @@ function initNavigationScrollSpy() {
 
     setTimeout(() => {
       isThrottled = false;
-      const scrollPos = window.scrollY + 120; // offset for sticky navbar
+      const scrollPos = window.scrollY + 85; // offset for sticky navbar
 
       // Check if at the bottom of the page
       if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
@@ -428,36 +428,5 @@ function initNavigationScrollSpy() {
       });
     }, 80);
   });
-}
-
-
-// 2. ScrollSpy: automatically track section as user scrolls
-let isThrottled = false;
-window.addEventListener('scroll', () => {
-  if (isThrottled) return;
-  isThrottled = true;
-
-  setTimeout(() => {
-    isThrottled = false;
-    const headerHeight = document.querySelector('.site-header')?.offsetHeight || 70;
-    const scrollPos = window.scrollY + headerHeight + 30;
-
-    // Check if at the bottom of the page
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
-      setActiveLink('about');
-      return;
-    }
-
-    sections.forEach(section => {
-      const top = section.offsetTop;
-      const height = section.offsetHeight;
-      const id = section.getAttribute('id');
-
-      if (scrollPos >= top && scrollPos < top + height) {
-        setActiveLink(id);
-      }
-    });
-  }, 60);
-});
 }
 

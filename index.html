@@ -7,7 +7,12 @@
   <title>Agricultural Training Institute - Facility and Dormitory Reservation System</title>
   <meta name="description"
     content="Reserve ATI facilities easily for seminars, training sessions, meetings, and events. Check real-time hall availability and submit reservation requests.">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=2">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
 
@@ -36,7 +41,7 @@
         <li><a href="#availability" class="nav-link">Availability</a></li>
         <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
         <li><a href="#about" class="nav-link">About</a></li>
-        <li><a href="login.php" class="btn-sign-in">Sign up</a></li>
+        <li><a href="login.php" class="btn-sign-in">Sign In</a></li>
       </ul>
     </div>
   </header>
@@ -46,19 +51,55 @@
     <section class="hero-section" id="home">
       <div class="container hero-grid">
         <div class="hero-content">
-          <h2 class="hero-title">Welcome to the<br>ATI Reservation<br>System</h2>
+          <div class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            <span>Official ATI Reservation Portal</span>
+          </div>
+          <h2 class="hero-title">Welcome to the<br><span class="hero-title-highlight">ATI Reservation System</span></h2>
           <p class="hero-subtitle">
-            Easily reserve our facilities for your training sessions, conferences, workshops, and official institutional
-            events.
+            Easily reserve our state-of-the-art facilities and accommodations for training sessions, conferences, workshops, and official institutional events.
           </p>
           <div class="hero-actions">
-            <a href="login.php" class="btn-hero-primary" id="heroLoginBtn">Login</a>
-            <a href="#availability" class="btn-hero-secondary" id="heroCheckBtn">Check Availability</a>
+            <a href="login.php" class="btn-hero-primary" id="heroLoginBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                <polyline points="10 17 15 12 10 7"></polyline>
+                <line x1="15" y1="12" x2="3" y2="12"></line>
+              </svg>
+              <span>Login to Reserve</span>
+            </a>
+            <a href="#availability" class="btn-hero-secondary" id="heroCheckBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>Check Availability</span>
+            </a>
+          </div>
+          <div class="hero-features-strip">
+            <div class="hero-feature-item">
+              <span class="feature-icon-check">&#10003;</span>
+              <span>250+ Pax Capacity</span>
+            </div>
+            <div class="hero-feature-item">
+              <span class="feature-icon-check">&#10003;</span>
+              <span>Interactive AV Systems</span>
+            </div>
+            <div class="hero-feature-item">
+              <span class="feature-icon-check">&#10003;</span>
+              <span>Real-Time Scheduling</span>
+            </div>
           </div>
         </div>
 
         <div class="hero-showcase">
           <div class="hero-card" id="heroShowcaseCard">
+            <div class="showcase-status-badge">
+              <span class="status-pulse-dot"></span>
+              <span>Featured Facility</span>
+            </div>
             <div class="showcase-slider">
               <div class="showcase-slide active">
                 <img src="assets/images/function_hall.jpg" alt="Function Hall - Agriculture Training Institute">
@@ -91,6 +132,7 @@
       <div class="container">
         <div class="section-header">
           <h2 class="section-title">Our Facilities</h2>
+          <div class="section-divider"></div>
           <p class="section-subtitle">Choose from our available facilities for your reservation.</p>
         </div>
 
@@ -180,6 +222,7 @@
       <div class="container">
         <div class="section-header">
           <h2 class="section-title">Check Facility Availability</h2>
+          <div class="section-divider"></div>
           <p class="section-subtitle">Select a date to see available facilities.</p>
         </div>
 
@@ -272,12 +315,14 @@
       <div class="container">
         <div class="section-header">
           <h2 class="section-title">How It Works</h2>
+          <div class="section-divider"></div>
           <p class="section-subtitle">Reserve in just a few simple steps.</p>
         </div>
 
         <div class="how-it-works-grid">
           <!-- Step 1 -->
           <div class="step-card">
+            <span class="step-badge">Step 01</span>
             <div class="step-icon-bubble">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -285,7 +330,7 @@
               </svg>
             </div>
             <h3 class="step-title">1. Login</h3>
-            <p class="step-desc">Sign in using your authorized account.</p>
+            <p class="step-desc">Sign in using your authorized account credentials.</p>
           </div>
 
           <div class="step-arrow">
@@ -296,6 +341,7 @@
 
           <!-- Step 2 -->
           <div class="step-card">
+            <span class="step-badge">Step 02</span>
             <div class="step-icon-bubble">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -305,7 +351,7 @@
               </svg>
             </div>
             <h3 class="step-title">2. Check Availability</h3>
-            <p class="step-desc">Select a date and view available facilities.</p>
+            <p class="step-desc">Select an event date and view live facility status.</p>
           </div>
 
           <div class="step-arrow">
@@ -316,6 +362,7 @@
 
           <!-- Step 3 -->
           <div class="step-card">
+            <span class="step-badge">Step 03</span>
             <div class="step-icon-bubble">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -326,7 +373,7 @@
               </svg>
             </div>
             <h3 class="step-title">3. Submit Request</h3>
-            <p class="step-desc">Choose a facility and fill out the reservation form.</p>
+            <p class="step-desc">Select desired halls and complete the reservation form.</p>
           </div>
 
           <div class="step-arrow">
@@ -337,6 +384,7 @@
 
           <!-- Step 4 -->
           <div class="step-card">
+            <span class="step-badge">Step 04</span>
             <div class="step-icon-bubble">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -344,7 +392,7 @@
               </svg>
             </div>
             <h3 class="step-title">4. Wait for Approval</h3>
-            <p class="step-desc">The assigned approver will review and approve or reject your request.</p>
+            <p class="step-desc">The designated administrator reviews and confirms your booking.</p>
           </div>
         </div>
       </div>
