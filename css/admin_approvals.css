@@ -1,0 +1,615 @@
+/* ==========================================================================
+   ATI Reservation System - Approvals Queue & Executive Endorsement Center
+   Dedicated Styles for Dual-Stage Approvals, Dossier Inspector & Permits
+   ========================================================================== */
+
+/* Page Toolbar & Stage Switcher */
+.approvals-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.5rem 0 1.25rem 0;
+  flex-wrap: wrap;
+}
+
+.approvals-search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: #ffffff;
+  border: 1.5px solid #dce8e0;
+  border-radius: 10px;
+  padding: 0.55rem 0.95rem;
+  min-width: 280px;
+  flex: 1;
+  max-width: 420px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.approvals-search-wrapper svg {
+  color: #627b6c;
+  flex-shrink: 0;
+}
+
+.approvals-search-wrapper input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: #172c1f;
+  width: 100%;
+}
+
+.approvals-search-wrapper input::placeholder {
+  color: #8da496;
+}
+
+.approvals-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.approvals-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.approvals-filter-tab {
+  background: #f4f8f5;
+  border: 1.2px solid #d4e3d9;
+  color: #3b5746;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.45rem 0.9rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.approvals-filter-tab:hover {
+  background: #e8f3ec;
+  color: #174d2f;
+  border-color: #bcd5c5;
+}
+
+.approvals-filter-tab.active {
+  background: #174d2f;
+  color: #ffffff;
+  border-color: #174d2f;
+  box-shadow: 0 2px 6px rgba(23, 77, 47, 0.2);
+}
+
+.approvals-filter-tab .tab-count {
+  background: rgba(0, 0, 0, 0.08);
+  font-size: 0.72rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+}
+
+.approvals-filter-tab.active .tab-count {
+  background: #246a42;
+  color: #ffffff;
+}
+
+/* Dual Admin Persona Switcher Banner */
+.persona-switcher-banner {
+  background: linear-gradient(135deg, #f7faf8 0%, #edf5f0 100%);
+  border: 1.5px solid #d5e5db;
+  border-radius: 14px;
+  padding: 1.15rem 1.4rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.persona-current-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.persona-avatar-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #174d2f;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 10px rgba(23, 77, 47, 0.2);
+  flex-shrink: 0;
+}
+
+.persona-avatar-icon.director {
+  background: #854d0e;
+}
+
+.persona-details h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #153321;
+  margin: 0 0 0.2rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.persona-details p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #557262;
+}
+
+.persona-switch-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #ffffff;
+  padding: 0.35rem;
+  border-radius: 10px;
+  border: 1.2px solid #dce8e0;
+}
+
+.btn-persona-toggle {
+  padding: 0.42rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: #557262;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-persona-toggle:hover {
+  color: #174d2f;
+  background: #f4f8f5;
+}
+
+.btn-persona-toggle.active {
+  background: #174d2f;
+  color: #ffffff;
+  box-shadow: 0 2px 5px rgba(23, 77, 47, 0.25);
+}
+
+.btn-persona-toggle.active.director {
+  background: #854d0e;
+}
+
+/* Bulk Actions Sticky Floating Bar */
+.bulk-actions-floating-bar {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #172c1f;
+  color: #ffffff;
+  padding: 0.75rem 1.4rem;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  z-index: 1000;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bulk-actions-floating-bar.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.bulk-selection-count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bulk-selection-badge {
+  background: #246a42;
+  color: #ffffff;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+}
+
+.bulk-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-bulk-action {
+  padding: 0.45rem 0.95rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-bulk-action.recommend {
+  background: #d97706;
+  color: #ffffff;
+}
+
+.btn-bulk-action.recommend:hover {
+  background: #b45309;
+}
+
+.btn-bulk-action.clearance {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.btn-bulk-action.clearance:hover {
+  background: #059669;
+}
+
+.btn-bulk-action.secondary {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.btn-bulk-action.secondary:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Approvals Table Enhancements */
+.approvals-table-card {
+  background: #ffffff;
+  border: 1px solid #dce8e0;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.approvals-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.approvals-table th {
+  background: #f8faf8;
+  color: #244633;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.85rem 1rem;
+  border-bottom: 1.5px solid #dce8e0;
+  white-space: nowrap;
+}
+
+.approvals-table td {
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid #edf3ef;
+  font-size: 0.86rem;
+  vertical-align: middle;
+}
+
+.approvals-table tr:hover {
+  background: #fafdfb;
+}
+
+.approvals-table tr.row-selected {
+  background: #edf7f1;
+}
+
+/* Stage Stepper Progress Indicator */
+.stage-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 190px;
+}
+
+.stage-step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+}
+
+.step-node {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  border: 2px solid #d1ded6;
+  background: #ffffff;
+  color: #8da496;
+  z-index: 2;
+  transition: all 0.2s ease;
+}
+
+.stage-step-item.completed .step-node {
+  background: #174d2f;
+  border-color: #174d2f;
+  color: #ffffff;
+}
+
+.stage-step-item.active .step-node {
+  background: #d97706;
+  border-color: #d97706;
+  color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2);
+}
+
+.stage-step-item.rejected .step-node {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.step-caption {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #637f6f;
+  margin-top: 0.25rem;
+  white-space: nowrap;
+}
+
+.stage-step-item.active .step-caption {
+  color: #d97706;
+  font-weight: 800;
+}
+
+.stage-step-item.completed .step-caption {
+  color: #174d2f;
+}
+
+.step-connector-line {
+  flex: 1;
+  height: 2px;
+  background: #dce8e0;
+  margin: 0 -4px 14px -4px;
+  z-index: 1;
+}
+
+.step-connector-line.done {
+  background: #174d2f;
+}
+
+/* Urgency Badges */
+.urgency-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.urgency-badge.urgent {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.urgency-badge.medium {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.urgency-badge.normal {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+/* Dossier Modal Layout */
+.dossier-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.25rem;
+}
+
+.dossier-card-section {
+  background: #ffffff;
+  border: 1.5px solid #dce8e0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.dossier-section-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #153321;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.dossier-data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.85rem;
+}
+
+.dossier-field-item label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #637f6f;
+  text-transform: uppercase;
+  margin-bottom: 0.15rem;
+}
+
+.dossier-field-item .field-value {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #172c1f;
+}
+
+/* Endorsement Action Box inside Modal */
+.action-decision-box {
+  background: #f7faf8;
+  border: 1.5px solid #d2e4d8;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-top: 1rem;
+}
+
+.action-decision-box.stage1 {
+  border-left: 4px solid #d97706;
+}
+
+.action-decision-box.stage2 {
+  border-left: 4px solid #10b981;
+}
+
+/* Permit Document Preview */
+.permit-document-sheet {
+  background: #ffffff;
+  border: 2px solid #174d2f;
+  border-radius: 8px;
+  padding: 2.25rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #111827;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.permit-header {
+  text-align: center;
+  border-bottom: 2px solid #174d2f;
+  padding-bottom: 1.2rem;
+  margin-bottom: 1.4rem;
+}
+
+.permit-header-logo {
+  width: 68px;
+  height: 68px;
+  margin-bottom: 0.5rem;
+}
+
+.permit-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #174d2f;
+  margin: 0.35rem 0 0.15rem 0;
+  text-transform: uppercase;
+}
+
+.permit-subtitle {
+  font-size: 0.82rem;
+  color: #4b5563;
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.permit-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-size: 0.88rem;
+}
+
+.permit-table td {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #e5e7eb;
+}
+
+.permit-table td.label-cell {
+  background: #f9fafb;
+  font-weight: 700;
+  color: #374151;
+  width: 32%;
+}
+
+.permit-signatures-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+}
+
+.signature-block {
+  text-align: center;
+}
+
+.signature-line {
+  border-top: 1.5px solid #111827;
+  margin-top: 2.5rem;
+  padding-top: 0.4rem;
+}
+
+.signature-name {
+  font-weight: 800;
+  font-size: 0.95rem;
+  margin: 0;
+  color: #174d2f;
+}
+
+.signature-title {
+  font-size: 0.76rem;
+  color: #4b5563;
+  margin: 0;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #permitPrintWrapper, #permitPrintWrapper * {
+    visibility: visible;
+  }
+  #permitPrintWrapper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  .dossier-grid {
+    grid-template-columns: 1fr;
+  }
+}
