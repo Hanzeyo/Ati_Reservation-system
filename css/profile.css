@@ -57,35 +57,34 @@ body.profile-body {
   flex: 1;
 }
 
-/* Breadcrumbs */
+/* Page Location Indicator (My Profile alone) */
 .profile-breadcrumb {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #637d6e;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.profile-breadcrumb a {
-  color: #175432;
-  text-decoration: none;
-  transition: var(--transition);
-}
-
-.profile-breadcrumb a:hover {
-  text-decoration: underline;
-}
-
-.profile-breadcrumb span.sep {
-  color: #a4b8ab;
+  margin-bottom: 1.25rem;
 }
 
 .profile-breadcrumb span.current {
-  color: #213829;
-  font-weight: 700;
+  color: #174d2f;
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: #edf6f0;
+  border: 1px solid #d3ead7;
+  padding: 0.35rem 0.95rem;
+  border-radius: 9999px;
+}
+
+.profile-breadcrumb span.current::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2e7d32;
 }
 
 /* ==========================================================================
@@ -102,10 +101,10 @@ body.profile-body {
 }
 
 .profile-hero-cover {
-  height: 220px;
+  height: 200px;
   background-color: #123320;
   background-image: url('../assets/images/profile_header.jpg'), url('https://i.pinimg.com/1200x/95/4a/5f/954a5f7f16298c9c3a29788e1050b3ef.jpg');
-  background-position: center 35%;
+  background-position: center 36%;
   background-size: cover;
   background-repeat: no-repeat;
   position: relative;
@@ -115,66 +114,8 @@ body.profile-body {
 .profile-hero-cover-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(7, 24, 14, 0.52) 0%, rgba(6, 20, 11, 0.76) 50%, rgba(5, 17, 10, 0.94) 100%);
-  z-index: 1;
-}
-
-.profile-hero-cover-content {
-  position: absolute;
-  top: 1.5rem;
-  left: 2.25rem;
-  right: 2.25rem;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
-  max-width: 820px;
-}
-
-.profile-hero-agency-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: #ffffff;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  padding: 0.35rem 0.85rem;
-  border-radius: 9999px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
-  width: fit-content;
-}
-
-.cover-mini-logo {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-}
-
-.profile-hero-cover-title {
-  font-family: var(--font-serif);
-  font-size: clamp(1.4rem, 2.8vw, 1.95rem);
-  font-weight: 800;
-  color: #ffffff;
-  margin: 0;
-  line-height: 1.15;
-  letter-spacing: -0.015em;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95), 0 1px 3px rgba(0, 0, 0, 0.8);
-}
-
-.profile-hero-cover-subtitle {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: #d1fae5;
-  margin: 0;
-  line-height: 1.35;
-  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.95);
+  background: linear-gradient(180deg, rgba(7, 24, 14, 0.08) 0%, rgba(6, 20, 11, 0.28) 60%, rgba(5, 17, 10, 0.65) 100%);
+  pointer-events: none;
 }
 
 .profile-hero-body {
@@ -1337,21 +1278,7 @@ body.is-editing .field-locked-note {
 
 @media (max-width: 768px) {
   .profile-hero-cover {
-    height: 185px;
-  }
-
-  .profile-hero-cover-content {
-    left: 1.25rem;
-    right: 1.25rem;
-    top: 1.15rem;
-  }
-
-  .profile-hero-cover-title {
-    font-size: 1.35rem;
-  }
-
-  .profile-hero-cover-subtitle {
-    font-size: 0.78rem;
+    height: 165px;
   }
 
   .profile-hero-body {

@@ -246,10 +246,8 @@
        ========================================================================== -->
   <main class="profile-main-wrapper" id="profileMainContent">
 
-    <!-- Breadcrumbs -->
-    <nav class="profile-breadcrumb" aria-label="Breadcrumb">
-      <a href="home.php">Home</a>
-      <span class="sep">/</span>
+    <!-- Page Location (My Profile alone) -->
+    <nav class="profile-breadcrumb" aria-label="Page Location">
       <span class="current">My Profile</span>
     </nav>
 
@@ -257,22 +255,12 @@
     <input type="file" id="profilePicInput" accept="image/png, image/jpeg, image/webp" aria-label="Upload profile photo">
 
     <!-- ==========================================================================
-         HERO PROFILE BANNER CARD (PERFECTLY ALIGNED & 100% READABLE)
+         HERO PROFILE BANNER CARD (CLEAN COVER, PERFECT ALIGNMENT & 100% READABLE)
          ========================================================================== -->
     <section class="profile-hero-card" aria-label="Staff Identity Banner">
       <div class="profile-hero-cover">
         <!-- Protective Contrast Overlay -->
         <div class="profile-hero-cover-overlay"></div>
-
-        <!-- Header Content: Crystal-Clear Readable Text Inside Cover -->
-        <div class="profile-hero-cover-content">
-          <div class="profile-hero-agency-badge">
-            <img src="assets/images/ATI_Logo.png" alt="ATI Logo" class="cover-mini-logo">
-            <span>Republic of the Philippines &bull; Department of Agriculture</span>
-          </div>
-          <h2 class="profile-hero-cover-title">Agricultural Training Institute</h2>
-          <p class="profile-hero-cover-subtitle">Official Personnel &bull; Facility &amp; Dormitory Reservation Portal</p>
-        </div>
       </div>
 
       <div class="profile-hero-body">
