@@ -392,7 +392,7 @@ function initNavigationScrollSpy() {
 
   // 1. Click Listener: instantly shift underline when clicked
   navLinks.forEach(link => {
-    link.addEventListener('click', function(e) {
+    link.addEventListener('click', function (e) {
       const targetId = this.getAttribute('href');
       if (targetId && targetId.startsWith('#')) {
         navLinks.forEach(l => l.classList.remove('active'));
@@ -428,5 +428,36 @@ function initNavigationScrollSpy() {
       });
     }, 80);
   });
+}
+
+
+// 2. ScrollSpy: automatically track section as user scrolls
+let isThrottled = false;
+window.addEventListener('scroll', () => {
+  if (isThrottled) return;
+  isThrottled = true;
+
+  setTimeout(() => {
+    isThrottled = false;
+    const headerHeight = document.querySelector('.site-header')?.offsetHeight || 70;
+    const scrollPos = window.scrollY + headerHeight + 30;
+
+    // Check if at the bottom of the page
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
+      setActiveLink('about');
+      return;
+    }
+
+    sections.forEach(section => {
+      const top = section.offsetTop;
+      const height = section.offsetHeight;
+      const id = section.getAttribute('id');
+
+      if (scrollPos >= top && scrollPos < top + height) {
+        setActiveLink(id);
+      }
+    });
+  }, 60);
+});
 }
 
