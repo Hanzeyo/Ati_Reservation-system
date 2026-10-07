@@ -341,6 +341,26 @@ function initFacilitySelection() {
     }
     updateReviewSummary();
   }
+
+  // Pre-initialize default Dormitory selection if on dormitory page or dorm card is pre-selected
+  const isDormPageInit = window.location.pathname.includes('dormitory_booking');
+  const defaultDormCard = document.querySelector('.facility-choice-card.selected[data-facility-type="dormitories"]');
+  if (defaultDormCard && (!defaultHallCard || isDormPageInit)) {
+    const dormId = defaultDormCard.dataset.id;
+    const dormData = dormFloorData[dormId];
+    bookingState.selectedFacility = {
+      id: dormId,
+      name: defaultDormCard.dataset.name,
+      rate: defaultDormCard.dataset.rate,
+      capacity: defaultDormCard.dataset.capacity,
+      type: 'dormitories',
+      roomNumber: null,
+      floor: dormData?.floor || defaultDormCard.dataset.name,
+      roomRate: defaultDormCard.dataset.rate,
+      occupiedOnDefaultDate: false
+    };
+    updateReviewSummary();
+  }
 }
 
 function openFacilityModal(facilityId) {
@@ -668,6 +688,7 @@ const confirmRoomSelection = confirmFacilitySelection;
    2. Filter & Category Selection (Halls vs Dormitories)
    ========================================================================== */
 function initFacilityFilters() {
+  const isDormPage = window.location.pathname.includes('dormitory_booking');
   const categoryCards = document.querySelectorAll('.category-pick-card, .portal-cat-card');
   const exploreButtons = document.querySelectorAll('.btn-explore-category');
   const filterPills = document.querySelectorAll('.filter-pill');
@@ -701,7 +722,7 @@ function initFacilityFilters() {
       if (catName === 'halls') {
         activeCategoryName.textContent = 'Halls (4 Available)';
       } else if (catName === 'dormitories') {
-        activeCategoryName.textContent = 'Dormitories (6 Floors)';
+        activeCategoryName.textContent = isDormPage ? 'Dormitories (6 Floors Available)' : 'Dormitories (6 Floors)';
       } else {
         activeCategoryName.textContent = 'All Facilities (10 Total)';
       }
@@ -723,7 +744,7 @@ function initFacilityFilters() {
 
     facilityCards.forEach(card => {
       const type = card.dataset.facilityType;
-      const isVisible = (catName === 'all' || type === catName);
+      const isVisible = (catName === 'all' || type === catName || isDormPage);
       card.style.display = isVisible ? 'flex' : 'none';
 
       if (isVisible) {
@@ -774,9 +795,11 @@ function initFacilityFilters() {
   const requestedCat = urlParams.get('category');
   if (requestedCat === 'dormitories' || requestedCat === 'halls' || requestedCat === 'all') {
     switchCategory(requestedCat, false);
+  } else if (isDormPage) {
+    switchCategory('dormitories', false);
   } else {
     const activePill = document.querySelector('.filter-pill.active');
-    const defaultCat = activePill ? activePill.dataset.categoryFilter : 'dormitories';
+    const defaultCat = activePill ? activePill.dataset.categoryFilter : 'halls';
     switchCategory(defaultCat, false);
   }
 }

@@ -344,7 +344,7 @@
   <main class="booking-main-wrapper">
 
     <!-- Switch Banner: Quick Jump to Facility Reservations -->
-    <a href="booking.php" class="booking-switch-banner" title="Switch to Facility Reservation Portal">
+    <a href="booking.php?category=halls" class="booking-switch-banner" title="Switch to Facility Reservation Portal">
       <div>
         <strong style="display: block; font-size: 0.92rem; color: #064e3b;">Looking to reserve a Function Hall or
           Training Venue instead?</strong>
@@ -912,11 +912,11 @@
         <div class="room-modal-header">
           <div class="room-modal-header-info">
             <div class="modal-badge-row">
-              <span class="modal-dorm-pill-tag">DORMITORY ROOM PLAN</span>
-              <span class="modal-dorm-rate-pill">₱500 / night</span>
+              <span class="modal-dorm-pill-tag" id="modalCategoryPill">DORMITORY ROOM PLAN</span>
+              <span class="modal-dorm-rate-pill" id="modalDormRate">₱500 / night</span>
             </div>
             <h3 class="modal-dorm-title" id="modalDormTitle">1st Floor: Sampaguita Dormitory</h3>
-            <p class="modal-dorm-desc">Select rooms to allocate for delegates and trainees.</p>
+            <p class="modal-dorm-desc" id="modalDormFloor">Select rooms to allocate for delegates and trainees.</p>
           </div>
           <button type="button" class="room-modal-close-btn" id="btnModalClose" onclick="closeRoomModal()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -925,8 +925,35 @@
             </svg>
           </button>
         </div>
+        <!-- Modal Legend -->
+        <div class="room-modal-legend">
+          <div class="legend-item">
+            <span class="legend-color-dot available"></span>
+            <span id="modalLegendAvailText"><strong>Available:</strong> Click to assign for your stay</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-color-dot reserved"></span>
+            <span id="modalLegendResText"><strong>Reserved:</strong> Occupied by scheduled delegates</span>
+          </div>
+        </div>
         <div class="room-modal-body">
           <div class="modal-rooms-grid" id="modalRoomsGrid"></div>
+
+          <!-- Feedback Bar inside modal -->
+          <div class="modal-room-feedback-bar" id="modalRoomFeedback" style="display: none;">
+            <div class="modal-feedback-left">
+              <div class="mf-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <div>
+                <div class="mf-title" id="modalFeedbackTitle">Room Selected</div>
+                <div class="mf-sub" id="modalFeedbackSub">Standard Trainee Dormitory (₱500 / night)</div>
+              </div>
+            </div>
+            <span class="badge-assigned-ok">✓ Ready to Allocate</span>
+          </div>
         </div>
       </div>
     </div>

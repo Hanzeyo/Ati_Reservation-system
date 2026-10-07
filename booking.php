@@ -3,9 +3,9 @@
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Step-by-Step Facility Booking Portal
  */
-$reqCategory = isset($_GET['category']) ? strtolower(trim($_GET['category'])) : 'dormitories';
+$reqCategory = isset($_GET['category']) ? strtolower(trim($_GET['category'])) : 'halls';
 if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
-  $reqCategory = 'dormitories';
+  $reqCategory = 'halls';
 }
 ?>
 <!DOCTYPE html>

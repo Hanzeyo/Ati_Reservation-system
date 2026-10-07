@@ -689,7 +689,7 @@
     <div class="portal-category-grid">
 
       <!-- 1. Halls Category Card -->
-      <a href="booking.php" class="portal-cat-card" id="cardCatHalls" title="Explore ATI Halls">
+      <a href="booking.php?category=halls" class="portal-cat-card" id="cardCatHalls" title="Explore ATI Halls">
         <div class="cat-card-header">
           <span class="cat-count-badge">4 Venues Available</span>
         </div>
