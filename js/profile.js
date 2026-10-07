@@ -842,7 +842,7 @@ function initKpiModals() {
           btnGo.innerHTML = '<span>View 2 Pending Bookings &rarr;</span>';
         } else if (kpiKey === 'total') {
           btnGo.href = 'my_reservations.php';
-          btnGo.innerHTML = '<span>Go to Booking History &rarr;</span>';
+          btnGo.innerHTML = '<span>Go to My Reservations &rarr;</span>';
         } else if (kpiKey === 'service') {
           btnGo.href = 'my_reservations.php';
           btnGo.innerHTML = '<span>View My Bookings &rarr;</span>';
