@@ -369,25 +369,31 @@
         grid-template-columns: 1fr;
         gap: 1.5rem;
       }
+
       .portal-category-wrapper {
         margin: 1.5rem auto 3rem;
       }
+
       .portal-category-intro-card {
         padding: 2.25rem 1.35rem 2rem;
         border-radius: 18px;
       }
+
       .cat-sec-title {
         font-size: 1.85rem;
       }
+
       .portal-cat-card {
         padding: 1.75rem 1.5rem;
         border-radius: 18px;
       }
+
       .portal-quick-status-card {
         flex-direction: column;
         align-items: flex-start;
         padding: 1.25rem 1.5rem;
       }
+
       .btn-view-bookings {
         width: 100%;
         justify-content: center;
@@ -432,26 +438,14 @@
           <span>New Reservation</span>
         </a>
 
-        <!-- Facility Reservations (Halls) -->
-        <a href="my_reservations.php" class="booking-nav-item" title="Facility Reservations (Halls & Venues)">
+        <!-- My Reservations -->
+        <a href="my_reservations.php" class="booking-nav-item" title="My Reservations">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
-          <span>Reservation History</span>
+          <span>My Reservations</span>
           <span class="nav-badge-count">4</span>
-        </a>
-
-        <!-- Dormitory Bookings (Lodging) -->
-        <a href="booking_history.php" class="booking-nav-item" title="Booking History (Dormitories & Rooms)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 4v16"></path>
-            <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
-            <path d="M2 17h20"></path>
-            <path d="M6 8v9"></path>
-          </svg>
-          <span>Booking History</span>
-          <span class="nav-badge-count blue">2</span>
         </a>
 
         <!-- Master Schedule -->
@@ -499,7 +493,7 @@
                 <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
                 <path d="M2 17h20"></path>
               </svg>
-              <span>Dormitory Bookings</span>
+              <span>Booking History</span>
             </a>
             <a href="admin_dashboard.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -552,7 +546,8 @@
         </div>
         <button type="button" class="drawer-close-btn" id="mobileDrawerClose" onclick="toggleMobileDrawer(false)"
           aria-label="Close Navigation Menu">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -607,23 +602,8 @@
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               </svg>
             </div>
-            <span class="drawer-link-text">Facility Reservations</span>
+            <span class="drawer-link-text">My Reservations</span>
             <span class="drawer-badge-count">4</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </a>
-
-          <a href="booking_history.php" class="drawer-nav-link">
-            <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M2 4v16"></path>
-                <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
-                <path d="M2 17h20"></path>
-              </svg>
-            </div>
-            <span class="drawer-link-text">Booking History (Dormitory)</span>
-            <span class="drawer-badge-count blue">2</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -688,16 +668,18 @@
   </div>
 
   <main class="portal-category-wrapper">
-    
+
     <!-- ==========================================================================
          CATEGORY INTRO CARD (Matching Design Reference)
          ========================================================================== -->
     <div class="portal-category-intro-card">
       <div class="portal-category-logo-wrap">
-        <img src="assets/images/ATI_Logo.png" alt="Agricultural Training Institute Official Logo" class="portal-category-logo">
+        <img src="assets/images/ATI_Logo.png" alt="Agricultural Training Institute Official Logo"
+          class="portal-category-logo">
       </div>
       <h1 class="cat-sec-title">OUR FACILITIES</h1>
-      <p class="cat-sec-subtitle">Choose a category below to open a dedicated view of available function halls, training rooms, and dormitory accommodations.</p>
+      <p class="cat-sec-subtitle">Choose a category below to open a dedicated view of available function halls, training
+        rooms, and dormitory accommodations.</p>
       <div class="cat-sec-divider"></div>
     </div>
 
@@ -705,26 +687,28 @@
          TWO MAIN CATEGORY CARDS (Halls vs Dormitories)
          ========================================================================== -->
     <div class="portal-category-grid">
-      
+
       <!-- 1. Halls Category Card -->
       <a href="booking.php" class="portal-cat-card" id="cardCatHalls" title="Explore ATI Halls">
         <div class="cat-card-header">
           <span class="cat-count-badge">4 Venues Available</span>
         </div>
         <div class="cat-icon-container">
-          <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#174d2f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#174d2f" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round">
             <!-- Classical Hall Building with Pediment & Columns -->
-            <path d="M6 22L32 7L58 22H6Z" fill="#d7f0df"/>
-            <path d="M10 22V26H54V22"/>
-            <rect x="15" y="26" width="7" height="26" rx="2" fill="#d7f0df"/>
-            <rect x="28.5" y="26" width="7" height="26" rx="2" fill="#d7f0df"/>
-            <rect x="42" y="26" width="7" height="26" rx="2" fill="#d7f0df"/>
-            <path d="M9 52H55V56H9V52Z"/>
-            <path d="M5 56H59V60H5V56Z"/>
+            <path d="M6 22L32 7L58 22H6Z" fill="#d7f0df" />
+            <path d="M10 22V26H54V22" />
+            <rect x="15" y="26" width="7" height="26" rx="2" fill="#d7f0df" />
+            <rect x="28.5" y="26" width="7" height="26" rx="2" fill="#d7f0df" />
+            <rect x="42" y="26" width="7" height="26" rx="2" fill="#d7f0df" />
+            <path d="M9 52H55V56H9V52Z" />
+            <path d="M5 56H59V60H5V56Z" />
           </svg>
         </div>
         <h2 class="cat-card-title">Halls</h2>
-        <p class="cat-card-desc">Function auditoriums, audio-visual training rooms, executive boardrooms &amp; mess dining facilities.</p>
+        <p class="cat-card-desc">Function auditoriums, audio-visual training rooms, executive boardrooms &amp; mess
+          dining facilities.</p>
       </a>
 
       <!-- 2. Dormitories Category Card -->
@@ -733,23 +717,25 @@
           <span class="cat-count-badge">4 Room Types</span>
         </div>
         <div class="cat-icon-container">
-          <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#b45309" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#b45309" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round">
             <!-- Multi-story Dormitory Accommodation Building -->
-            <rect x="23" y="10" width="18" height="46" rx="2" fill="#fef3c7"/>
-            <rect x="9" y="22" width="14" height="34" rx="2" fill="#fef3c7"/>
-            <rect x="41" y="22" width="14" height="34" rx="2" fill="#fef3c7"/>
-            <rect x="13" y="28" width="6" height="6" rx="1"/>
-            <rect x="13" y="40" width="6" height="6" rx="1"/>
-            <rect x="45" y="28" width="6" height="6" rx="1"/>
-            <rect x="45" y="40" width="6" height="6" rx="1"/>
-            <rect x="28" y="16" width="8" height="6" rx="1"/>
-            <rect x="28" y="28" width="8" height="6" rx="1"/>
-            <rect x="28" y="44" width="8" height="12" rx="1"/>
-            <line x1="5" y1="56" x2="59" y2="56"/>
+            <rect x="23" y="10" width="18" height="46" rx="2" fill="#fef3c7" />
+            <rect x="9" y="22" width="14" height="34" rx="2" fill="#fef3c7" />
+            <rect x="41" y="22" width="14" height="34" rx="2" fill="#fef3c7" />
+            <rect x="13" y="28" width="6" height="6" rx="1" />
+            <rect x="13" y="40" width="6" height="6" rx="1" />
+            <rect x="45" y="28" width="6" height="6" rx="1" />
+            <rect x="45" y="40" width="6" height="6" rx="1" />
+            <rect x="28" y="16" width="8" height="6" rx="1" />
+            <rect x="28" y="28" width="8" height="6" rx="1" />
+            <rect x="28" y="44" width="8" height="12" rx="1" />
+            <line x1="5" y1="56" x2="59" y2="56" />
           </svg>
         </div>
         <h2 class="cat-card-title">Dormitories</h2>
-        <p class="cat-card-desc">Executive VIP suites, shared trainee quarters, guest lecturer rooms &amp; twin accommodations.</p>
+        <p class="cat-card-desc">Executive VIP suites, shared trainee quarters, guest lecturer rooms &amp; twin
+          accommodations.</p>
       </a>
 
     </div>
@@ -763,7 +749,7 @@
       if (!overlay) return;
       if (open) {
         overlay.style.display = 'block';
-        requestAnimationFrame(function() {
+        requestAnimationFrame(function () {
           overlay.classList.add('show');
         });
         document.body.style.overflow = 'hidden';
@@ -772,14 +758,14 @@
         overlay.classList.remove('show');
         document.body.style.overflow = '';
         if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
-        setTimeout(function() {
+        setTimeout(function () {
           if (!overlay.classList.contains('show')) overlay.style.display = 'none';
         }, 280);
       }
     }
 
     // Profile Dropdown Toggle
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       var profileBadge = document.getElementById('userProfileBadge');
       var profileDropdown = document.getElementById('profileDropdown');
 
@@ -787,7 +773,7 @@
       var avatar = localStorage.getItem('ati_user_avatar');
       var profile = localStorage.getItem('ati_user_profile');
       if (avatar) {
-        document.querySelectorAll('.user-avatar-circle, .drawer-avatar').forEach(function(c) {
+        document.querySelectorAll('.user-avatar-circle, .drawer-avatar').forEach(function (c) {
           c.innerHTML = '<img src="' + avatar + '" alt="Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">';
         });
       }
@@ -795,21 +781,21 @@
         try {
           var p = JSON.parse(profile);
           if (p.fullName) {
-            document.querySelectorAll('.user-name, .dropdown-user-name, .drawer-profile-info h5').forEach(function(el) {
+            document.querySelectorAll('.user-name, .dropdown-user-name, .drawer-profile-info h5').forEach(function (el) {
               el.textContent = p.fullName;
             });
           }
-        } catch(e) {}
+        } catch (e) { }
       }
 
       if (profileBadge && profileDropdown) {
-        profileBadge.addEventListener('click', function(e) {
+        profileBadge.addEventListener('click', function (e) {
           e.stopPropagation();
           profileDropdown.classList.toggle('show');
           profileDropdown.classList.toggle('active');
         });
 
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
           if (!profileBadge.contains(e.target) && !profileDropdown.contains(e.target)) {
             profileDropdown.classList.remove('show');
             profileDropdown.classList.remove('active');

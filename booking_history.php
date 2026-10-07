@@ -6,22 +6,27 @@
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dormitory Booking History | ATI Reservation Portal</title>
-  <meta name="description" content="Official Dormitory Lodging & Room Booking History for the Agriculture Training Institute.">
+  <meta name="description"
+    content="Official Dormitory Lodging & Room Booking History for the Agriculture Training Institute.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/my_reservations.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=<?php echo time(); ?>">
 </head>
+
 <body class="my-res-body">
 
   <!-- ==========================================================================
@@ -33,8 +38,8 @@
       <a href="home.php" class="booking-brand" style="text-decoration: none;" title="ATI Reservation Portal">
         <img src="assets/images/ATI_Logo.png" alt="Agricultural Training Institute Logo" class="booking-brand-logo">
         <div class="booking-brand-text">
-          <h1>ATI Reservation Portal</h1>
-          <p>Department of Agriculture &bull; Central Office</p>
+          <h1>Agricultural Training Institute</h1>
+          <p>Facility and Dormitory Reservation System</p>
         </div>
       </a>
 
@@ -58,26 +63,14 @@
           <span>New Reservation</span>
         </a>
 
-        <!-- Facility Reservations (Halls) -->
-        <a href="my_reservations.php" class="booking-nav-item" title="Facility Reservations (Halls & Venues)">
+        <!-- My Reservations -->
+        <a href="my_reservations.php" class="booking-nav-item active" title="My Reservations">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
-          <span>Reservation History</span>
+          <span>My Reservations</span>
           <span class="nav-badge-count">4</span>
-        </a>
-
-        <!-- Dormitory Bookings (Lodging) - Active -->
-        <a href="booking_history.php" class="booking-nav-item active" title="Booking History (Dormitories & Rooms)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 4v16"></path>
-            <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
-            <path d="M2 17h20"></path>
-            <path d="M6 8v9"></path>
-          </svg>
-          <span>Booking History</span>
-          <span class="nav-badge-count blue">2</span>
         </a>
 
         <!-- Master Schedule -->
@@ -125,7 +118,7 @@
                 <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
                 <path d="M2 17h20"></path>
               </svg>
-              <span>Dormitory Bookings</span>
+              <span>Booking History</span>
             </a>
             <a href="admin_dashboard.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -150,7 +143,8 @@
       </nav>
 
       <!-- Mobile Hamburger Menu Button -->
-      <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileDrawer(true)" aria-label="Open Navigation Menu" aria-expanded="false">
+      <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileDrawer(true)"
+        aria-label="Open Navigation Menu" aria-expanded="false">
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
@@ -161,20 +155,24 @@
   <!-- ==========================================================================
        MOBILE NAVIGATION DRAWER OVERLAY
        ========================================================================== -->
-  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay" onclick="if(event.target===this) toggleMobileDrawer(false);" style="display: none;">
+  <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"
+    onclick="if(event.target===this) toggleMobileDrawer(false);" style="display: none;">
     <div class="mobile-nav-drawer" id="mobileNavDrawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation">
-      
+
       <!-- Drawer Header -->
       <div class="drawer-header">
         <div class="drawer-brand">
-          <img src="assets/images/ATI_Logo.png" alt="ATI Logo" class="drawer-logo" style="width: 36px; height: 36px; object-fit: contain;">
+          <img src="assets/images/ATI_Logo.png" alt="ATI Logo" class="drawer-logo"
+            style="width: 36px; height: 36px; object-fit: contain;">
           <div>
             <h4>ATI Portal</h4>
             <p>Central Office</p>
           </div>
         </div>
-        <button type="button" class="drawer-close-btn" id="mobileDrawerClose" onclick="toggleMobileDrawer(false)" aria-label="Close Navigation Menu">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <button type="button" class="drawer-close-btn" id="mobileDrawerClose" onclick="toggleMobileDrawer(false)"
+          aria-label="Close Navigation Menu">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -196,7 +194,7 @@
         <!-- Main Navigation Section -->
         <div class="drawer-nav-section">
           <div class="drawer-section-label">PORTAL NAVIGATION</div>
-          
+
           <a href="home.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -205,68 +203,83 @@
               </svg>
             </div>
             <span class="drawer-link-text">Home</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
           </a>
 
           <a href="booking.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14"></path>
+                <path d="M5 12h14"></path>
+              </svg>
             </div>
             <span class="drawer-link-text">New Reservation</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
           </a>
 
-          <a href="my_reservations.php" class="drawer-nav-link">
+          <a href="my_reservations.php" class="drawer-nav-link active">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               </svg>
             </div>
-            <span class="drawer-link-text">Facility Reservations</span>
+            <span class="drawer-link-text">My Reservations</span>
             <span class="drawer-badge-count">4</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </a>
-
-          <a href="booking_history.php" class="drawer-nav-link active">
-            <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M2 4v16"></path>
-                <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
-                <path d="M2 17h20"></path>
-              </svg>
-            </div>
-            <span class="drawer-link-text">Booking History (Dormitory)</span>
-            <span class="drawer-badge-count blue">2</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
           </a>
 
           <a href="schedule.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
             </div>
             <span class="drawer-link-text">Master Schedule</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
           </a>
         </div>
 
         <!-- Account Settings Section in Drawer -->
         <div class="drawer-nav-section">
           <div class="drawer-section-label">ACCOUNT & SETTINGS</div>
-          
+
           <a href="profile.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
             </div>
             <span class="drawer-link-text">My Profile</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
           </a>
 
           <a href="admin_dashboard.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
             </div>
             <span class="drawer-link-text">Admin Dashboard</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
           </a>
         </div>
       </div>
@@ -288,42 +301,58 @@
   <!-- ==========================================================================
        MAIN CONTENT CONTAINER
        ========================================================================== -->
-  <main class="my-res-main">
+  <main class="my-res-main-wrapper">
 
-    <!-- Switch Banner: Quick Jump to Facility Reservations -->
-    <a href="my_reservations.php" class="history-switch-banner" title="Switch to Facility Reservation History">
-      <div class="switch-banner-left">
-        <div class="switch-banner-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-        </div>
-        <div class="switch-banner-text">
-          <strong>Looking for Function Halls & Venues?</strong>
-          <span>View your 4 active & past facility reservations (Function Hall, Training Hall A, Boardroom, Mess Hall)</span>
-        </div>
+    <!-- Category Segmented Control (Facility Reservations vs Dormitory Bookings) -->
+    <div class="history-category-segmented-bar">
+      <div class="category-segmented-container">
+        <!-- Tab 1: Facility Reservations -->
+        <a href="my_reservations.php" class="category-segment-btn" title="View Facility Reservations">
+          <div class="seg-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </div>
+          <div class="seg-text">
+            <span class="seg-title">Facility Reservations</span>
+            <span class="seg-subtitle">Function Hall, Training Halls, Boardrooms &amp; Mess Hall</span>
+          </div>
+          <span class="seg-count-badge">4</span>
+        </a>
+
+        <!-- Tab 2: Dormitory Bookings (Active) -->
+        <a href="booking_history.php" class="category-segment-btn active" title="View Dormitory Bookings">
+          <div class="seg-icon dorm-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 4v16"></path>
+              <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+              <path d="M2 17h20"></path>
+              <path d="M6 8v9"></path>
+            </svg>
+          </div>
+          <div class="seg-text">
+            <span class="seg-title">Dormitory Bookings</span>
+            <span class="seg-subtitle">Trainee Accommodations, Suites &amp; Bed Allocations</span>
+          </div>
+          <span class="seg-count-badge blue">2</span>
+        </a>
       </div>
-      <span class="switch-banner-btn">
-        <span>Go to Facility Reservations</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </span>
-    </a>
+    </div>
 
     <!-- Page Header Section -->
-    <section class="my-res-header-section">
-      <div class="my-res-title-group">
-        <div class="my-res-top-badge dorm-hero-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+    <section class="my-res-header">
+      <div class="my-res-header-text">
+        <div class="my-res-top-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M2 4v16"></path>
             <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
             <path d="M2 17h20"></path>
-            <path d="M6 8v9"></path>
           </svg>
-          <span>Official Dormitory Lodging & Room Bookings</span>
+          <span>Official Dormitory Lodging &amp; Room Bookings</span>
         </div>
         <h2>Dormitory Booking History</h2>
-        <p>Monitor your official dormitory lodging bookings, track room & bed assignments with dormitory custodians, download lodging slips, and view room access security gate passes.</p>
+        <p>Monitor your official dormitory lodging bookings, track room &amp; bed assignments with dormitory custodians, download lodging slips, and view room access security gate passes.</p>
       </div>
 
       <a href="booking.php?category=dormitories" class="btn-new-res-action">
@@ -348,9 +377,8 @@
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-number" id="kpiTotal">2</span>
+          <span class="stat-value" id="kpiTotal">2</span>
           <span class="stat-label">Total Dormitory Bookings</span>
-          <span class="stat-subtext">Active & past accommodations</span>
         </div>
       </div>
 
@@ -363,9 +391,8 @@
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-number" id="kpiPending">1</span>
+          <span class="stat-value" id="kpiPending">1</span>
           <span class="stat-label">Pending Custodian Review</span>
-          <span class="stat-subtext">Bed assignment in evaluation</span>
         </div>
       </div>
 
@@ -378,9 +405,8 @@
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-number" id="kpiApproved">1</span>
+          <span class="stat-value" id="kpiApproved">1</span>
           <span class="stat-label">Confirmed &amp; Keys Ready</span>
-          <span class="stat-subtext">Gate pass &amp; key turnover issued</span>
         </div>
       </div>
 
@@ -393,25 +419,23 @@
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-number" id="kpiCompleted">0</span>
+          <span class="stat-value" id="kpiCompleted">0</span>
           <span class="stat-label">Checked Out &amp; Concluded</span>
-          <span class="stat-subtext">Archived lodging history</span>
         </div>
       </div>
     </section>
 
-    <!-- ==========================================================================
-         FILTER & SEARCH TOOLBAR
-         ========================================================================== -->
-    <div class="reservations-toolbar">
-      
+    <!-- Filter & Search Toolbar (Card Wrapper & Aligned Controls) -->
+    <div class="my-res-toolbar-card">
+
       <!-- Search Input -->
       <div class="search-box-wrap">
         <svg viewBox="0 0 24 24" fill="none">
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-        <input type="text" id="resSearchInput" class="search-input" placeholder="Search by Booking Ref #, lodging purpose, room...">
+        <input type="text" id="resSearchInput" class="search-input"
+          placeholder="Search ref, lodging purpose, or room...">
         <button type="button" class="btn-clear-search" id="btnClearSearch" title="Clear search" style="display: none;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -424,7 +448,8 @@
       <div class="toolbar-controls-right">
         <!-- Room/Wing Dropdown Filter -->
         <div class="custom-facility-dropdown" id="facilityDropdown">
-          <button type="button" class="facility-dropdown-btn" id="facilityDropdownBtn" aria-haspopup="listbox" aria-expanded="false" title="Filter by Wing / Room Type">
+          <button type="button" class="facility-dropdown-btn" id="facilityDropdownBtn" aria-haspopup="listbox"
+            aria-expanded="false" title="Filter by Wing / Room Type">
             <span class="facility-btn-icon">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M2 4v16"></path>
@@ -433,26 +458,36 @@
               </svg>
             </span>
             <span class="facility-btn-label" id="facilityDropdownLabel">All Wings &amp; Suites</span>
-            <svg class="facility-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <svg class="facility-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.2">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
-          
+
           <div class="facility-dropdown-menu" id="facilityDropdownMenu" role="listbox" aria-label="Filter by Wing">
             <div class="facility-option active" data-value="all" role="option" aria-selected="true">
               <span class="opt-bullet all"></span>
               <span class="opt-name">All Wings &amp; Suites</span>
-              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
             </div>
             <div class="facility-option" data-value="exec-wing" role="option">
               <span class="opt-bullet"></span>
               <span class="opt-name">Executive Wing</span>
-              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
             </div>
             <div class="facility-option" data-value="suites" role="option">
               <span class="opt-bullet"></span>
               <span class="opt-name">Dormitory Suites A &amp; B</span>
-              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
             </div>
           </div>
         </div>
@@ -484,23 +519,16 @@
     </div>
 
     <!-- ==========================================================================
-         DORMITORY BOOKINGS CONTAINER (CARDS VIEW & TABLE VIEW)
+         Booking History CONTAINER (CARDS VIEW & TABLE VIEW)
          ========================================================================== -->
     <section class="reservations-container" id="reservationsList">
 
       <!-- CARD 1: DORMITORY SUITES A & B (PENDING CUSTODIAN ALLOCATION) -->
-      <article class="res-card" 
-               data-status="pending" 
-               data-category="dormitory" 
-               data-venue="suites" 
-               data-ref="ATI-BK-2026-1055" 
-               data-venue-title="Dormitory Suites A & B"
-               data-dates="Nov 10 - 14, 2026 (4 Nights)"
-               data-time="Check-in 02:00 PM • Check-out 11:00 AM"
-               data-pax="24 Trainees (12 Twin Bed Rooms)"
-               data-division="Partnership & Accreditation Division (PAD)"
-               data-status-text="Pending Custodian Bed Allotment">
-        
+      <article class="res-card" data-status="pending" data-category="dormitory" data-venue="suites"
+        data-ref="ATI-BK-2026-1055" data-venue-title="Dormitory Suites A & B" data-dates="Nov 10 - 14, 2026 (4 Nights)"
+        data-time="Check-in 02:00 PM • Check-out 11:00 AM" data-pax="24 Trainees (12 Twin Bed Rooms)"
+        data-division="Partnership & Accreditation Division (PAD)" data-status-text="Pending Custodian Bed Allotment">
+
         <div class="res-card-media">
           <img src="assets/images/dormitory.jpg" alt="ATI Dormitory Suites">
           <span class="venue-thumb-pill dorm-pill">Dormitory Suites</span>
@@ -511,7 +539,10 @@
             <div class="res-ref-group">
               <span class="res-ref-tag dorm-ref">ATI-BK-2026-1055</span>
               <button type="button" class="btn-copy-ref" data-ref="ATI-BK-2026-1055" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
               </button>
               <span class="res-timestamp">&bull; Oct 04, 2026</span>
             </div>
@@ -525,19 +556,34 @@
 
           <div class="res-details-chips">
             <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
               <span>Nov 10 – 14, 2026 (4 Nights)</span>
             </div>
             <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
               <span>In: 02:00 PM • Out: 11:00 AM</span>
             </div>
             <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              </svg>
               <span>Floors 3 &amp; 4 (Suites A &amp; B)</span>
             </div>
             <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
               <span>24 Delegates (12 Rooms)</span>
             </div>
           </div>
@@ -551,7 +597,8 @@
               <div class="progress-segment" title="4. Bed Allotment & Keys Release"></div>
             </div>
             <div class="routing-status-label">
-              <span class="routing-step-desc"><strong style="color: #b45309;">Step 3 of 4:</strong> Dormitory Custodian Room & Bed Assignment in Progress</span>
+              <span class="routing-step-desc"><strong style="color: #b45309;">Step 3 of 4:</strong> Dormitory Custodian
+                Room & Bed Assignment in Progress</span>
               <span class="routing-note">Gender-segregated room allocation requested. Linens requested.</span>
             </div>
           </div>
@@ -559,33 +606,38 @@
 
         <div class="res-card-side-actions">
           <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
             <span>View Details</span>
           </button>
           <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-1055">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
             <span>Download</span>
           </button>
           <button type="button" class="btn-card-action outline-danger js-cancel-res">
-            <svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <svg viewBox="0 0 24 24" fill="none">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
             <span>Cancel</span>
           </button>
         </div>
       </article>
 
       <!-- CARD 2: DORMITORY EXECUTIVE WING (APPROVED & CONFIRMED) -->
-      <article class="res-card" 
-               data-status="approved" 
-               data-category="dormitory" 
-               data-venue="exec-wing" 
-               data-ref="ATI-RES-2026-0941" 
-               data-venue-title="ATI Dormitory (Executive Wing)"
-               data-dates="Oct 05 - 07, 2026 (2 Nights)"
-               data-time="Check-in 02:00 PM • Check-out 12:00 PM"
-               data-pax="8 Delegates (4 Twin Rooms)"
-               data-division="Career Development Division (CDD)"
-               data-status-text="Confirmed & Approved">
-        
+      <article class="res-card" data-status="approved" data-category="dormitory" data-venue="exec-wing"
+        data-ref="ATI-RES-2026-0941" data-venue-title="ATI Dormitory (Executive Wing)"
+        data-dates="Oct 05 - 07, 2026 (2 Nights)" data-time="Check-in 02:00 PM • Check-out 12:00 PM"
+        data-pax="8 Delegates (4 Twin Rooms)" data-division="Career Development Division (CDD)"
+        data-status-text="Confirmed & Approved">
+
         <div class="res-card-media">
           <img src="assets/images/dormitory.jpg" alt="ATI Dormitory Executive Wing">
           <span class="venue-thumb-pill dorm-pill">Dormitory (Executive)</span>
@@ -596,7 +648,10 @@
             <div class="res-ref-group">
               <span class="res-ref-tag dorm-ref">ATI-RES-2026-0941</span>
               <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0941" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
               </button>
               <span class="res-timestamp">&bull; Approved Sep 22, 2026</span>
             </div>
@@ -610,19 +665,34 @@
 
           <div class="res-details-chips">
             <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
               <span>Oct 05 – 07, 2026 (2 Nights)</span>
             </div>
             <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
               <span>In: 02:00 PM • Out: 12:00 PM</span>
             </div>
             <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              </svg>
               <span>Rooms 201-204 (Exec Wing)</span>
             </div>
             <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
               <span>8 Resource Speakers</span>
             </div>
           </div>
@@ -636,23 +706,38 @@
               <div class="progress-segment filled" title="4. Keys Ready (Done)"></div>
             </div>
             <div class="routing-status-label">
-              <span class="routing-step-desc"><strong style="color: #16a34a;">Step 4 of 4:</strong> Keys Allocation Ready at Lobby Desk</span>
+              <span class="routing-step-desc"><strong style="color: #16a34a;">Step 4 of 4:</strong> Keys Allocation
+                Ready at Lobby Desk</span>
               <span class="routing-note">Towels &amp; linens provided. Curfew: 10:00 PM</span>
             </div>
           </div>
         </div>
 
         <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action primary" onclick="showGatePassModal('ATI-RES-2026-0941', 'Guest Lecturers & Resource Persons Lodging', 'ATI Dormitory Executive Wing', 'Oct 05 - 07, 2026')">
-            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <button type="button" class="btn-card-action primary"
+            onclick="showGatePassModal('ATI-RES-2026-0941', 'Guest Lecturers & Resource Persons Lodging', 'ATI Dormitory Executive Wing', 'Oct 05 - 07, 2026')">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
             <span>Gate Pass &amp; QR</span>
           </button>
           <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
             <span>View Details</span>
           </button>
           <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0941">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
             <span>Download</span>
           </button>
         </div>
@@ -674,23 +759,27 @@
             <tr class="res-table-row" data-status="pending" data-category="dormitory" data-venue="suites">
               <td data-label="Ref & Wing">
                 <span class="res-ref-tag dorm-ref">ATI-BK-2026-1055</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Dormitory Suites A &amp; B</div>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Dormitory Suites
+                  A &amp; B</div>
               </td>
               <td data-label="Lodging Purpose">
                 <div style="font-weight: 800; color: #142e20;">National Young Farmers Camp Participant Lodging</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Partnership &amp; Accreditation Division (PAD) &bull; 24 Delegates (12 Rooms)</div>
+                <div style="font-size: 0.78rem; color: #556e5f;">Partnership &amp; Accreditation Division (PAD) &bull;
+                  24 Delegates (12 Rooms)</div>
               </td>
               <td data-label="Stay Duration">
                 <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Nov 10 – 14, 2026 (4 Nights)</div>
                 <div style="font-size: 0.76rem; color: #617b6c;">In: 02:00 PM • Out: 11:00 AM</div>
               </td>
               <td data-label="Custodian Status">
-                <span class="res-status-badge pending"><span class="status-dot-pulse"></span><span>Custodian Review (Step 3/4)</span></span>
+                <span class="res-status-badge pending"><span class="status-dot-pulse"></span><span>Custodian Review
+                    (Step 3/4)</span></span>
               </td>
               <td style="text-align: right;" data-label="Actions">
                 <div style="display: inline-flex; gap: 0.4rem;">
                   <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-1055">Slip</button>
+                  <button type="button" class="btn-card-action secondary js-download-slip"
+                    data-ref="ATI-BK-2026-1055">Slip</button>
                 </div>
               </td>
             </tr>
@@ -698,22 +787,27 @@
             <tr class="res-table-row" data-status="approved" data-category="dormitory" data-venue="exec-wing">
               <td data-label="Ref & Wing">
                 <span class="res-ref-tag dorm-ref">ATI-RES-2026-0941</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Dormitory (Executive Wing)</div>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Dormitory
+                  (Executive Wing)</div>
               </td>
               <td data-label="Lodging Purpose">
                 <div style="font-weight: 800; color: #142e20;">Guest Lecturers & Resource Persons Lodging</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Career Development Division (CDD) &bull; 8 Speakers (4 Rooms)</div>
+                <div style="font-size: 0.78rem; color: #556e5f;">Career Development Division (CDD) &bull; 8 Speakers (4
+                  Rooms)</div>
               </td>
               <td data-label="Stay Duration">
                 <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Oct 05 – 07, 2026 (2 Nights)</div>
                 <div style="font-size: 0.76rem; color: #617b6c;">In: 02:00 PM • Out: 12:00 PM</div>
               </td>
               <td data-label="Custodian Status">
-                <span class="res-status-badge approved"><span class="status-dot-pulse"></span><span>Keys Allocation Ready</span></span>
+                <span class="res-status-badge approved"><span class="status-dot-pulse"></span><span>Keys Allocation
+                    Ready</span></span>
               </td>
               <td style="text-align: right;" data-label="Actions">
                 <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action primary" onclick="showGatePassModal('ATI-RES-2026-0941', 'Guest Lecturers & Resource Persons Lodging', 'ATI Dormitory Executive Wing', 'Oct 05 - 07, 2026')">Pass &amp; QR</button>
+                  <button type="button" class="btn-card-action primary"
+                    onclick="showGatePassModal('ATI-RES-2026-0941', 'Guest Lecturers & Resource Persons Lodging', 'ATI Dormitory Executive Wing', 'Oct 05 - 07, 2026')">Pass
+                    &amp; QR</button>
                   <button type="button" class="btn-card-action secondary js-view-details">Details</button>
                 </div>
               </td>
@@ -730,8 +824,9 @@
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
         </div>
-        <h3>No Dormitory Bookings Found</h3>
-        <p>No dormitory lodging requests match your current filters. Try resetting the status or room search parameters.</p>
+        <h3>No Booking History Found</h3>
+        <p>No dormitory lodging requests match your current filters. Try resetting the status or room search parameters.
+        </p>
         <button type="button" class="btn-reset-filters" id="btnResetFilters">Reset All Filters</button>
       </div>
 
@@ -753,7 +848,8 @@
           </div>
         </div>
         <button type="button" class="modal-close-btn" onclick="closeGatePassModal()" aria-label="Close modal">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -762,7 +858,9 @@
 
       <div class="modal-body pass-body">
         <div class="pass-verified-ribbon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
           <span>AUTHORIZED ENTRY &bull; ROOM KEYS RELEASE CLEARANCE</span>
         </div>
 
@@ -821,11 +919,16 @@
 
             <div class="pass-security-notes">
               <div class="note-item">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
                 <span>Present this digital pass at the Lobby Desk to claim registered room keys.</span>
               </div>
               <div class="note-item">
-                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
                 <span>Curfew: 10:00 PM. Visitors must sign the custodian registry logbook.</span>
               </div>
             </div>
@@ -836,7 +939,11 @@
       <div class="modal-footer">
         <button type="button" class="btn-modal-secondary" onclick="closeGatePassModal()">Close</button>
         <button type="button" class="btn-modal-primary" onclick="window.print()">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
           <span>Print / Save Pass</span>
         </button>
       </div>
@@ -857,7 +964,8 @@
           </div>
         </div>
         <button type="button" class="modal-close-btn" onclick="closeDetailsModal()" aria-label="Close modal">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -871,7 +979,11 @@
       <div class="modal-footer">
         <button type="button" class="btn-modal-secondary" onclick="closeDetailsModal()">Close</button>
         <button type="button" class="btn-modal-primary" id="detBtnPrintSlip">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
           <span>Download Lodging Slip</span>
         </button>
       </div>
@@ -890,16 +1002,17 @@
       if (!overlay) return;
       if (open) {
         overlay.style.display = 'block';
-        requestAnimationFrame(function() { overlay.classList.add('show'); });
+        requestAnimationFrame(function () { overlay.classList.add('show'); });
         document.body.style.overflow = 'hidden';
         if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
       } else {
         overlay.classList.remove('show');
         document.body.style.overflow = '';
-        setTimeout(function() { overlay.style.display = 'none'; }, 260);
+        setTimeout(function () { overlay.style.display = 'none'; }, 260);
         if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
       }
     }
   </script>
 </body>
+
 </html>

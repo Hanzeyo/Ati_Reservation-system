@@ -1,6 +1,6 @@
 /**
  * ATI Reservation System - My Reservations Dashboard Controller
- * Handles filtering, category separation (Facility Reservations vs Dormitory Bookings),
+ * Handles filtering, category separation (Facility Reservations vs Booking History),
  * search, routing modal views, gatepass generation, and cancellation
  */
 
@@ -53,12 +53,12 @@ function syncGlobalProfileHeader() {
       if (p.fullName) {
         document.querySelectorAll('.user-name, .dropdown-user-name, .drawer-profile-info h5').forEach(el => el.textContent = p.fullName);
       }
-    } catch(e) {}
+    } catch (e) { }
   }
 }
 
 /* ==========================================================================
-   2. Category Segregation (Facility Reservations vs Dormitory Bookings)
+   2. Category Segregation (Facility Reservations vs Booking History)
    ========================================================================== */
 let activeCategoryType = 'all'; // 'all' | 'facility' | 'dormitory'
 let activeStatusFilter = 'all';
@@ -96,20 +96,20 @@ function initCategorySwitcher() {
 
     // Dynamic Heading & Meta
     if (cat === 'facility') {
-      if (pageHeading) pageHeading.textContent = 'Facility Reservation History';
-      if (pageSubtext) pageSubtext.textContent = 'Monitor your official facility reservation requests for function halls, training rooms, and boardrooms, follow live administrative routing clearances, download official slips, and access gate passes.';
-      if (pageBadge) pageBadge.textContent = 'Official Facility Reservations & Halls';
-      document.title = 'Facility Reservation History | ATI Reservation Portal';
+      if (pageHeading) pageHeading.textContent = 'My Facility Reservations';
+      if (pageSubtext) pageSubtext.textContent = 'Track your official facility reservation requests for function halls, training rooms, and boardrooms, follow live administrative routing clearances, download official slips, and access gate passes.';
+      if (pageBadge) pageBadge.textContent = 'Official Facility Reservations';
+      document.title = 'My Facility Reservations | ATI Reservation Portal';
     } else if (cat === 'dormitory') {
-      if (pageHeading) pageHeading.textContent = 'Dormitory Booking History';
-      if (pageSubtext) pageSubtext.textContent = 'Monitor your official dormitory lodging bookings, track room & bed assignments with dormitory custodians, download lodging slips, and view room access security gate passes.';
-      if (pageBadge) pageBadge.textContent = 'Official Dormitory Lodging & Room Bookings';
-      document.title = 'Dormitory Booking History | ATI Reservation Portal';
+      if (pageHeading) pageHeading.textContent = 'My Booking History';
+      if (pageSubtext) pageSubtext.textContent = 'Track your official dormitory lodging requests, check room & bed assignments with dormitory custodians, download lodging slips, and access gate passes.';
+      if (pageBadge) pageBadge.textContent = 'Official Booking History';
+      document.title = 'My Booking History | ATI Reservation Portal';
     } else {
-      if (pageHeading) pageHeading.textContent = 'Complete History Log';
-      if (pageSubtext) pageSubtext.textContent = 'Monitor your active and historical facility reservations and dormitory room bookings, follow live routing clearances through approving units, and download official documents.';
-      if (pageBadge) pageBadge.textContent = 'Official Records & Activity Log';
-      document.title = 'Activity & History Records | ATI Reservation Portal';
+      if (pageHeading) pageHeading.textContent = 'My Reservations';
+      if (pageSubtext) pageSubtext.textContent = 'Track the status of your active reservations, monitor live administrative routing clearances, download official reservation slips, and generate QR gate passes.';
+      if (pageBadge) pageBadge.textContent = 'Official Reservations & Venues';
+      document.title = 'My Reservations | ATI Reservation Portal';
     }
 
     if (updateUrl) {
@@ -555,7 +555,7 @@ function initCardModals() {
 /* ==========================================================================
    5. Gate Pass & QR Modal
    ========================================================================== */
-window.showGatePassModal = function(ref, title, venue, dates) {
+window.showGatePassModal = function (ref, title, venue, dates) {
   const modal = document.getElementById('gatePassModal');
   if (!modal) return;
 

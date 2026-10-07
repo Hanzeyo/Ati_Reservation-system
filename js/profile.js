@@ -60,7 +60,7 @@ function loadSavedProfile() {
       if (displayFullName) displayFullName.textContent = profile.fullName;
       if (valFullName) valFullName.textContent = profile.fullName;
       if (inpFullName) inpFullName.value = profile.fullName;
-      
+
       const topName = document.getElementById('topbarUserName');
       const dropName = document.getElementById('dropdownUserName');
       const drawName = document.getElementById('drawerUserName');
@@ -73,7 +73,7 @@ function loadSavedProfile() {
       const subtitle = `${profile.position} • ${profile.division}`;
       const displaySubtitle = document.getElementById('displayRoleSubtitle');
       if (displaySubtitle) displaySubtitle.textContent = subtitle;
-      
+
       const topRole = document.getElementById('topbarUserRole');
       const dropRole = document.getElementById('dropdownUserRole');
       const drawRole = document.getElementById('drawerUserRole');
@@ -269,7 +269,7 @@ function initPhotoUpload() {
   if (removeBtn) {
     removeBtn.addEventListener('click', () => {
       localStorage.removeItem('ati_user_avatar');
-      
+
       const currentName = document.getElementById('displayFullName')?.textContent || 'Juan Dela Cruz';
       const initials = getInitials(currentName);
 
@@ -489,7 +489,7 @@ function saveProfileEdits() {
   const empStatus = document.getElementById('inpEmpStatus')?.value.trim() || 'Permanent Regular Staff';
   const supervisor = document.getElementById('inpSupervisor')?.value.trim() || 'Dr. Ma. Cecilia Villacorta';
   const station = document.getElementById('inpStation')?.value.trim() || 'ATI Central Office • Diliman, QC';
-  
+
   const email = document.getElementById('inpEmail')?.value.trim() || 'juan.delacruz@ati.da.gov.ph';
   const altEmail = document.getElementById('inpAltEmail')?.value.trim() || 'jdelacruz.ati@gmail.com';
   const phone = document.getElementById('inpPhone')?.value.trim() || '+63 917 842 5901';
@@ -632,7 +632,7 @@ function initKpiModals() {
   const kpiData = {
     total: {
       title: 'Total Reservations Filed (5 Bookings)',
-      subtitle: 'Complete chronological history of official facility & dormitory bookings',
+      subtitle: 'Complete chronological history of official facility & Booking History',
       html: `
         <div class="stat-modal-section-title">Staff Booking Log (Juan Dela Cruz)</div>
         <div class="stat-res-list">
@@ -918,7 +918,7 @@ function initPasswordModal() {
   });
 }
 
-window.handlePasswordSubmit = function(e) {
+window.handlePasswordSubmit = function (e) {
   e.preventDefault();
   const newPwd = document.getElementById('inpNewPwd')?.value;
   const confirmPwd = document.getElementById('inpConfirmPwd')?.value;
