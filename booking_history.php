@@ -288,45 +288,61 @@
   <!-- ==========================================================================
        MAIN CONTENT CONTAINER
        ========================================================================== -->
-  <main class="my-res-main">
+  <main class="my-res-main-wrapper">
 
-    <!-- Switch Banner: Quick Jump to Facility Reservations -->
-    <a href="my_reservations.php" class="history-switch-banner" title="Switch to Facility Reservation History">
-      <div class="switch-banner-left">
-        <div class="switch-banner-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-        </div>
-        <div class="switch-banner-text">
-          <strong>Looking for Function Halls & Venues?</strong>
-          <span>View your 4 active & past facility reservations (Function Hall, Training Hall A, Boardroom, Mess Hall)</span>
-        </div>
+    <!-- Primary Category Segregation Switcher (Facility Reservations vs Dormitory Bookings) -->
+    <div class="history-category-segmented-bar">
+      <div class="category-segmented-container">
+        <!-- Tab 1: Facility Venues & Halls (Link) -->
+        <a href="my_reservations.php" class="category-segment-btn" title="Switch to Facility Reservation History">
+          <div class="seg-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </div>
+          <div class="seg-text">
+            <span class="seg-title">Facility Reservations</span>
+            <span class="seg-subtitle">Function Hall, Training Halls, Boardrooms &amp; Mess Hall</span>
+          </div>
+          <span class="seg-count-badge">4</span>
+        </a>
+
+        <!-- Tab 2: Dormitory Lodging & Rooms (Active) -->
+        <a href="booking_history.php" class="category-segment-btn active" title="Currently Viewing Dormitory Lodging History">
+          <div class="seg-icon dorm-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M2 4v16"></path>
+              <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+              <path d="M2 17h20"></path>
+              <path d="M6 8v9"></path>
+            </svg>
+          </div>
+          <div class="seg-text">
+            <span class="seg-title">Dormitory Bookings</span>
+            <span class="seg-subtitle">Official Lodging, Trainee Rooms &amp; Bed Allocations</span>
+          </div>
+          <span class="seg-count-badge blue">2</span>
+        </a>
       </div>
-      <span class="switch-banner-btn">
-        <span>Go to Facility Reservations</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </span>
-    </a>
+    </div>
 
-    <!-- Page Header Section -->
-    <section class="my-res-header-section">
-      <div class="my-res-title-group">
-        <div class="my-res-top-badge dorm-hero-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+    <!-- Header Section -->
+    <section class="my-res-header">
+      <div class="my-res-header-text">
+        <div class="my-res-top-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M2 4v16"></path>
             <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
             <path d="M2 17h20"></path>
-            <path d="M6 8v9"></path>
           </svg>
-          <span>Official Dormitory Lodging & Room Bookings</span>
+          <span>Official Dormitory Lodging &amp; Rooms</span>
         </div>
-        <h2>Dormitory Booking History</h2>
-        <p>Monitor your official dormitory lodging bookings, track room & bed assignments with dormitory custodians, download lodging slips, and view room access security gate passes.</p>
+        <h2 id="pageHeadingTitle">Dormitory Booking History</h2>
+        <p id="pageHeadingSubtext">Monitor your official dormitory lodging bookings, track room &amp; bed assignments with dormitory custodians, download lodging slips, and view room access security gate passes.</p>
       </div>
 
-      <a href="booking.php?category=dormitories" class="btn-new-res-action">
+      <a href="dormitory_booking.php" class="btn-new-res-action">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -339,7 +355,7 @@
     <section class="my-res-stats-grid" aria-label="Dormitory Summary Statistics">
       <!-- Total -->
       <div class="my-res-stat-card active-filter" data-filter="all">
-        <div class="stat-icon-box blue">
+        <div class="stat-icon-box green">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 4v16"></path>
             <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
@@ -348,9 +364,8 @@
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-number" id="kpiTotal">2</span>
-          <span class="stat-label">Total Dormitory Bookings</span>
-          <span class="stat-subtext">Active & past accommodations</span>
+          <span class="stat-value" id="kpiTotal">2</span>
+          <span class="stat-label">Total Bookings</span>
         </div>
       </div>
 
@@ -363,39 +378,35 @@
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-number" id="kpiPending">1</span>
-          <span class="stat-label">Pending Custodian Review</span>
-          <span class="stat-subtext">Bed assignment in evaluation</span>
+          <span class="stat-value" id="kpiPending">1</span>
+          <span class="stat-label">Pending Custodian</span>
         </div>
       </div>
 
       <!-- Confirmed & Key Ready -->
       <div class="my-res-stat-card" data-filter="approved">
-        <div class="stat-icon-box green">
+        <div class="stat-icon-box blue">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
             <polyline points="22 4 12 14.01 9 11.01"></polyline>
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-number" id="kpiApproved">1</span>
-          <span class="stat-label">Confirmed &amp; Keys Ready</span>
-          <span class="stat-subtext">Gate pass &amp; key turnover issued</span>
+          <span class="stat-value" id="kpiApproved">1</span>
+          <span class="stat-label">Keys Ready</span>
         </div>
       </div>
 
       <!-- Completed / Checked Out -->
       <div class="my-res-stat-card" data-filter="completed">
-        <div class="stat-icon-box gray">
+        <div class="stat-icon-box slate">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 11l3 3L22 4"></path>
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-number" id="kpiCompleted">0</span>
-          <span class="stat-label">Checked Out &amp; Concluded</span>
-          <span class="stat-subtext">Archived lodging history</span>
+          <span class="stat-value" id="kpiCompleted">0</span>
+          <span class="stat-label">Past / Checked Out</span>
         </div>
       </div>
     </section>
@@ -403,7 +414,7 @@
     <!-- ==========================================================================
          FILTER & SEARCH TOOLBAR
          ========================================================================== -->
-    <div class="reservations-toolbar">
+    <div class="my-res-toolbar-card">
       
       <!-- Search Input -->
       <div class="search-box-wrap">

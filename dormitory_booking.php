@@ -1,8 +1,12 @@
 <?php
 /**
- * Agriculture Training Institute - Facility and Dormitory Reservation System
+ * Agriculture Training Institute - Dormitory Booking System
  * Step-by-Step Dormitory Lodging & Room Booking Portal
  */
+if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['halls', 'hall', 'venue', 'venues', 'facility'])) {
+    header("Location: booking.php");
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -17,48 +21,6 @@
   <link rel="stylesheet" href="css/booking.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=<?php echo time(); ?>">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
-  <style>
-    .dorm-hero-pill {
-      background: #eff6ff;
-      border: 1px solid #bfdbfe;
-      color: #1e40af;
-    }
-    .dorm-hero-pill .pulse-dot {
-      background: #2563eb;
-    }
-    .booking-switch-banner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-      border: 1.5px solid #a7f3d0;
-      border-radius: 12px;
-      padding: 0.85rem 1.25rem;
-      margin-bottom: 1.75rem;
-      text-decoration: none;
-      color: #065f46;
-      transition: all 0.22s ease;
-    }
-    .booking-switch-banner:hover {
-      background: #d1fae5;
-      border-color: #059669;
-      transform: translateY(-2px);
-    }
-    .booking-switch-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: #ffffff;
-      color: #065f46;
-      font-weight: 700;
-      font-size: 0.8rem;
-      padding: 0.45rem 0.85rem;
-      border-radius: 8px;
-      border: 1px solid #a7f3d0;
-      flex-shrink: 0;
-    }
-  </style>
 </head>
 
 <body class="booking-body">
@@ -331,21 +293,9 @@
        ========================================================================== -->
   <main class="booking-main-wrapper">
 
-    <!-- Switch Banner: Quick Jump to Facility Reservations -->
-    <a href="booking.php" class="booking-switch-banner" title="Switch to Facility Reservation Portal">
-      <div>
-        <strong style="display: block; font-size: 0.92rem; color: #064e3b;">Looking to reserve a Function Hall or Training Venue instead?</strong>
-        <span style="font-size: 0.8rem; color: #047857;">Submit requests for Function Hall, Training Hall A, Boardroom, and Mess Hall</span>
-      </div>
-      <span class="booking-switch-btn">
-        <span>Go to Facility Reservations</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </span>
-    </a>
-
     <!-- Header Section -->
     <section class="booking-header-section">
-      <div class="booking-assistant-pill dorm-hero-pill">
+      <div class="booking-assistant-pill">
         <span class="pulse-dot"></span>
         <span>Dormitory Lodging &amp; Room Booking Assistant</span>
       </div>
@@ -409,7 +359,7 @@
       
       <div class="facility-category-nav-header" id="facilitiesSectionAnchor">
         <div class="category-nav-left">
-          <a href="home.php" class="btn-return-home" title="Back to Category Selection">
+          <a href="home.php" class="btn-return-home" title="Back to Portal Selection">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
@@ -419,6 +369,14 @@
             <span class="indicator-dot"></span>
             <span id="activeCategoryName">Dormitories (6 Floors Available)</span>
           </span>
+        </div>
+
+        <div class="filter-pills-list">
+          <button type="button" class="filter-pill active" id="btnFilterDormitories">Dormitories (6 Floors)</button>
+          <a href="booking.php" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;" title="Switch to Facility Venue Reservation Portal">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            <span>Reserve Facility Venue &rarr;</span>
+          </a>
         </div>
       </div>
 

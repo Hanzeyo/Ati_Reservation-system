@@ -676,15 +676,23 @@ function initFacilityFilters() {
   const activeCategoryName = document.getElementById('activeCategoryName');
   const anchorSection = document.getElementById('facilitiesSectionAnchor');
 
+  const isDormPage = window.location.pathname.includes('dormitory_booking');
+  const defaultPageCat = isDormPage ? 'dormitories' : 'halls';
+
   function switchCategory(catName, shouldScroll = false) {
+    let validCat = catName;
+    if (!validCat || (validCat !== 'halls' && validCat !== 'dormitories' && validCat !== 'all')) {
+      validCat = defaultPageCat;
+    }
+
     // 1. Update Category Cards Active State (if present)
     categoryCards.forEach(card => {
-      const isTarget = card.dataset.category === catName;
+      const isTarget = card.dataset.category === validCat;
       card.classList.toggle('active', isTarget);
       const btn = card.querySelector('.btn-explore-category span');
       if (btn) {
         if (isTarget) {
-          btn.textContent = catName === 'halls' ? 'Selected: Halls ✓' : 'Selected: Dormitories ✓';
+          btn.textContent = validCat === 'halls' ? 'Selected: Halls ✓' : 'Selected: Dormitories ✓';
         } else {
           btn.textContent = card.dataset.category === 'halls' ? 'Explore Halls' : 'Explore Dormitories';
         }
@@ -693,24 +701,27 @@ function initFacilityFilters() {
 
     // 2. Update Filter Pills
     filterPills.forEach(pill => {
-      pill.classList.toggle('active', pill.dataset.categoryFilter === catName);
+      const pCat = pill.dataset.categoryFilter;
+      if (pCat) {
+        pill.classList.toggle('active', pCat === validCat);
+      }
     });
 
     // 3. Update Heading & Badge Indicator
     if (activeCategoryName) {
-      if (catName === 'halls') {
-        activeCategoryName.textContent = 'Halls (4 Available)';
-      } else if (catName === 'dormitories') {
-        activeCategoryName.textContent = 'Dormitories (6 Floors)';
+      if (validCat === 'halls') {
+        activeCategoryName.textContent = 'Halls & Venues (4 Available)';
+      } else if (validCat === 'dormitories') {
+        activeCategoryName.textContent = 'Dormitories (6 Floors Available)';
       } else {
         activeCategoryName.textContent = 'All Facilities (10 Total)';
       }
     }
 
     if (sectionHeading) {
-      if (catName === 'halls') {
-        sectionHeading.textContent = 'AVAILABLE HALLS & VENUES (4):';
-      } else if (catName === 'dormitories') {
+      if (validCat === 'halls') {
+        sectionHeading.textContent = 'AVAILABLE FACILITY VENUES & HALLS (4):';
+      } else if (validCat === 'dormitories') {
         sectionHeading.textContent = 'AVAILABLE DORMITORY FLOORS (6):';
       } else {
         sectionHeading.textContent = 'ALL AVAILABLE FACILITIES & ROOMS (10):';
@@ -722,8 +733,8 @@ function initFacilityFilters() {
     let currentSelectedVisible = false;
 
     facilityCards.forEach(card => {
-      const type = card.dataset.facilityType;
-      const isVisible = (catName === 'all' || type === catName);
+      const type = card.dataset.facilityType || defaultPageCat;
+      const isVisible = (validCat === 'all' || type === validCat);
       card.style.display = isVisible ? 'flex' : 'none';
 
       if (isVisible) {
@@ -733,6 +744,13 @@ function initFacilityFilters() {
         }
       }
     });
+
+    // Safety fallback: if no cards are visible, make all cards on this page visible
+    const visibleCount = Array.from(facilityCards).filter(c => c.style.display !== 'none').length;
+    if (visibleCount === 0 && facilityCards.length > 0) {
+      facilityCards.forEach(c => c.style.display = 'flex');
+      firstVisibleCard = facilityCards[0];
+    }
 
     // If current selected card is now hidden, select the first visible card!
     if (!currentSelectedVisible && firstVisibleCard) {
@@ -765,20 +783,20 @@ function initFacilityFilters() {
   filterPills.forEach(pill => {
     pill.addEventListener('click', () => {
       const cat = pill.dataset.categoryFilter;
-      switchCategory(cat, false);
+      if (cat) {
+        switchCategory(cat, false);
+      }
     });
   });
 
   // Check URL query parameters for pre-selected category (e.g. ?category=dormitories)
   const urlParams = new URLSearchParams(window.location.search);
-  const requestedCat = urlParams.get('category');
-  if (requestedCat === 'dormitories' || requestedCat === 'halls' || requestedCat === 'all') {
-    switchCategory(requestedCat, false);
-  } else {
+  let requestedCat = urlParams.get('category');
+  if (requestedCat !== 'dormitories' && requestedCat !== 'halls' && requestedCat !== 'all') {
     const activePill = document.querySelector('.filter-pill.active');
-    const defaultCat = activePill ? activePill.dataset.categoryFilter : 'dormitories';
-    switchCategory(defaultCat, false);
+    requestedCat = (activePill && activePill.dataset.categoryFilter) ? activePill.dataset.categoryFilter : defaultPageCat;
   }
+  switchCategory(requestedCat, false);
 }
 
 /* ==========================================================================
