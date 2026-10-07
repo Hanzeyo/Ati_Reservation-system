@@ -72,14 +72,14 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
         <!-- New Reservation -->
         <a href="booking.php" class="booking-nav-item">
           <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 5v14"></path>
-            <path d="M5 12h14"></path>
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
           </svg>
           <span>New Reservation</span>
         </a>
 
         <!-- My Reservations - Active -->
-        <a href="my_reservations.php" class="booking-nav-item active" data-cat-nav="facility" title="My Reservations">
+        <a href="my_reservations.php" class="booking-nav-item active" title="My Reservations">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
@@ -226,8 +226,8 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
           <a href="booking.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 5v14"></path>
-                <path d="M5 12h14"></path>
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
               </svg>
             </div>
             <span class="drawer-link-text">New Reservation</span>
@@ -357,8 +357,8 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
     <!-- Primary Category Segregation Switcher (Facility Reservations vs Booking History) -->
     <div class="history-category-segmented-bar">
       <div class="category-segmented-container">
-        <!-- Tab 1: Facility Venues & Halls (Active) -->
-        <a href="my_reservations.php" class="category-segment-btn active" title="View Facility Reservations">
+        <!-- Tab 1: Active Reservations (Active) -->
+        <a href="my_reservations.php" class="category-segment-btn active" title="View Active Reservations">
           <div class="seg-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -366,27 +366,25 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
             </svg>
           </div>
           <div class="seg-text">
-            <span class="seg-title">Facility Reservations</span>
-            <span class="seg-subtitle">Function Hall, Training Halls, Boardrooms &amp; Mess Hall</span>
+            <span class="seg-title">Active Reservations</span>
+            <span class="seg-subtitle">Pending Clearances &amp; Upcoming Confirmed Schedules</span>
           </div>
           <span class="seg-count-badge">4</span>
         </a>
 
-        <!-- Tab 2: Dormitory Lodging & Rooms (Link) -->
+        <!-- Tab 2: Booking History (Link to History Archive) -->
         <a href="booking_history.php" class="category-segment-btn" title="View Booking History">
-          <div class="seg-icon dorm-icon">
+          <div class="seg-icon history-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M2 4v16"></path>
-              <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
-              <path d="M2 17h20"></path>
-              <path d="M6 8v9"></path>
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
           </div>
           <div class="seg-text">
             <span class="seg-title">Booking History</span>
-            <span class="seg-subtitle">Trainee Accommodations, Suites &amp; Bed Allocations</span>
+            <span class="seg-subtitle">Completed Activities &amp; Cancelled Requests Archive</span>
           </div>
-          <span class="seg-count-badge blue">2</span>
+          <span class="seg-count-badge blue">6</span>
         </a>
       </div>
     </div>

@@ -85,14 +85,9 @@ function initCategorySwitcher() {
       }
     });
 
-    // Update navigation active styles
-    document.querySelectorAll('.booking-nav-item[data-cat-nav]').forEach(item => {
-      if (item.dataset.catNav === cat) {
-        item.classList.add('active');
-      } else {
-        item.classList.remove('active');
-      }
-    });
+    // Ensure "My Reservations" nav item remains active
+    const myResNav = document.querySelector('a.booking-nav-item[href*="my_reservations"]');
+    if (myResNav) myResNav.classList.add('active');
 
     // Dynamic Heading & Meta
     if (cat === 'facility') {
@@ -147,7 +142,7 @@ function applyAllFilters() {
   const cards = document.querySelectorAll('.res-card');
   const tableRows = document.querySelectorAll('.res-table-row');
   const tableWrap = document.getElementById('reservationsTableWrap');
-  const emptyState = document.getElementById('emptyResState');
+  const emptyState = document.getElementById('emptyResState') || document.getElementById('emptyReservationsState');
   let visibleCount = 0;
 
   cards.forEach(card => {
@@ -158,7 +153,16 @@ function applyAllFilters() {
 
     const matchesCategory = (activeCategoryType === 'all') || (cardCat === activeCategoryType);
     const matchesStatus = (activeStatusFilter === 'all') || (cardStatus === activeStatusFilter);
-    const matchesVenue = (activeVenueFilter === 'all') || (cardVenue === activeVenueFilter);
+    let matchesVenue = false;
+    if (activeVenueFilter === 'all') {
+      matchesVenue = true;
+    } else if (activeVenueFilter === 'facility' || activeVenueFilter === 'dormitory') {
+      matchesVenue = (cardCat === activeVenueFilter);
+    } else if (activeVenueFilter === 'completed' || activeVenueFilter === 'cancelled') {
+      matchesVenue = (cardStatus === activeVenueFilter);
+    } else {
+      matchesVenue = (cardVenue === activeVenueFilter);
+    }
     const matchesSearch = !activeSearchQuery || cardText.includes(activeSearchQuery);
 
     if (currentViewMode === 'cards') {
@@ -181,7 +185,16 @@ function applyAllFilters() {
 
     const matchesCategory = (activeCategoryType === 'all') || (rowCat === activeCategoryType);
     const matchesStatus = (activeStatusFilter === 'all') || (rowStatus === activeStatusFilter);
-    const matchesVenue = (activeVenueFilter === 'all') || (rowVenue === activeVenueFilter);
+    let matchesVenue = false;
+    if (activeVenueFilter === 'all') {
+      matchesVenue = true;
+    } else if (activeVenueFilter === 'facility' || activeVenueFilter === 'dormitory') {
+      matchesVenue = (rowCat === activeVenueFilter);
+    } else if (activeVenueFilter === 'completed' || activeVenueFilter === 'cancelled') {
+      matchesVenue = (rowStatus === activeVenueFilter);
+    } else {
+      matchesVenue = (rowVenue === activeVenueFilter);
+    }
     const matchesSearch = !activeSearchQuery || rowText.includes(activeSearchQuery);
 
     if (matchesCategory && matchesStatus && matchesVenue && matchesSearch) {
@@ -229,11 +242,13 @@ function initViewModeToggle() {
 }
 
 function updateKpiCounts() {
+  const isHistoryPage = window.location.pathname.includes('booking_history') || document.body.classList.contains('booking-history-page') || document.title.includes('Booking History');
   const cards = document.querySelectorAll('.res-card');
   let total = 0;
   let pending = 0;
   let approved = 0;
   let completed = 0;
+  let cancelled = 0;
 
   let totalAll = 0;
   let totalFacility = 0;
@@ -243,17 +258,29 @@ function updateKpiCounts() {
     const status = card.dataset.status;
     const cat = card.dataset.category || (card.dataset.venue === 'dormitory' ? 'dormitory' : 'facility');
 
-    if (status !== 'cancelled') {
+    if (isHistoryPage) {
       totalAll++;
       if (cat === 'facility') totalFacility++;
       if (cat === 'dormitory') totalDorm++;
-    }
 
-    if (activeCategoryType === 'all' || cat === activeCategoryType) {
-      if (status !== 'cancelled') total++;
-      if (status === 'pending') pending++;
-      if (status === 'approved') approved++;
-      if (status === 'completed') completed++;
+      if (activeCategoryType === 'all' || cat === activeCategoryType) {
+        total++;
+        if (status === 'completed') completed++;
+        if (status === 'cancelled') cancelled++;
+      }
+    } else {
+      if (status !== 'cancelled') {
+        totalAll++;
+        if (cat === 'facility') totalFacility++;
+        if (cat === 'dormitory') totalDorm++;
+      }
+
+      if (activeCategoryType === 'all' || cat === activeCategoryType) {
+        if (status !== 'cancelled') total++;
+        if (status === 'pending') pending++;
+        if (status === 'approved') approved++;
+        if (status === 'completed') completed++;
+      }
     }
   });
 
@@ -261,6 +288,8 @@ function updateKpiCounts() {
   const kpiPending = document.getElementById('kpiPending');
   const kpiApproved = document.getElementById('kpiApproved');
   const kpiCompleted = document.getElementById('kpiCompleted');
+  const kpiCancelled = document.getElementById('kpiCancelled');
+  const kpiArchive = document.getElementById('kpiArchive');
   const catCountAll = document.getElementById('catCountAll');
   const catCountFacility = document.getElementById('catCountFacility');
   const catCountDormitory = document.getElementById('catCountDormitory');
@@ -271,6 +300,8 @@ function updateKpiCounts() {
   if (kpiPending) kpiPending.textContent = pending;
   if (kpiApproved) kpiApproved.textContent = approved;
   if (kpiCompleted) kpiCompleted.textContent = completed;
+  if (kpiCancelled) kpiCancelled.textContent = cancelled;
+  if (kpiArchive) kpiArchive.textContent = total;
 
   if (catCountAll) catCountAll.textContent = totalAll;
   if (catCountFacility) catCountFacility.textContent = totalFacility;
@@ -481,6 +512,72 @@ function initCardModals() {
                 <h5>4. Final Approval & Gate Pass Released</h5>
                 <p>Approved by Engr. R. Santos, Chief Administrative Officer. Venue reserved on Master Schedule.</p>
                 <span class="routing-timestamp">Oct 02, 2026 • 03:30 PM</span>
+              </div>
+            </div>
+          `;
+        } else if (statusClass === 'completed') {
+          routingList.innerHTML = `
+            <div class="routing-item">
+              <div class="routing-icon-badge done">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5>1. Request Created & Verified</h5>
+                <p>Activity design submitted and scheduled on the portal.</p>
+                <span class="routing-timestamp">Phase 1 Complete</span>
+              </div>
+            </div>
+            <div class="routing-item">
+              <div class="routing-icon-badge done">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5>2. Division & Custodian Endorsement</h5>
+                <p>Endorsed by Division Head & clearance signed by Administrative Officer / Custodian.</p>
+                <span class="routing-timestamp">Phase 2 Complete</span>
+              </div>
+            </div>
+            <div class="routing-item">
+              <div class="routing-icon-badge done">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5>3. Execution & Event Utilization</h5>
+                <p>Event / lodging was held and utilized according to approved arrangements.</p>
+                <span class="routing-timestamp">Schedule Concluded</span>
+              </div>
+            </div>
+            <div class="routing-item">
+              <div class="routing-icon-badge done" style="background: #e8f5e9; border-color: #86efac;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5 style="color: #166534;">4. Turnover, Checkout & Permanent Archive</h5>
+                <p>Premises inspected, keys returned, attendance logs recorded. Permanently archived.</p>
+                <span class="routing-timestamp" style="color: #16a34a; font-weight: 700;">Concluded &amp; Archived</span>
+              </div>
+            </div>
+          `;
+        } else if (statusClass === 'cancelled') {
+          routingList.innerHTML = `
+            <div class="routing-item">
+              <div class="routing-icon-badge done">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5>1. Request Created & Submitted</h5>
+                <p>Initial reservation application was submitted to the ATI reservation desk.</p>
+                <span class="routing-timestamp">Booking reference generated</span>
+              </div>
+            </div>
+            <div class="routing-item">
+              <div class="routing-icon-badge" style="background: #fee2e2; border-color: #fca5a5;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5 style="color: #991b1b;">2. Cancelled / Disapproved Record</h5>
+                <p>This reservation has been cancelled or disapproved. Venue/rooms were released back to inventory.</p>
+                <span class="routing-timestamp" style="color: #dc2626; font-weight: 700;">Record Closed &amp; Archived</span>
               </div>
             </div>
           `;

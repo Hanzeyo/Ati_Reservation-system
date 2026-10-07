@@ -708,6 +708,55 @@ body.my-res-body {
   color: #475569;
 }
 
+.stat-icon-box.red,
+.stat-icon-box.rose {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.res-cancellation-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 0.6rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  margin-top: 0.35rem;
+}
+
+.res-cancellation-notice svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  stroke: #dc2626;
+  margin-top: 2px;
+}
+
+.res-concluded-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  padding: 0.55rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.35rem;
+}
+
+.res-concluded-summary svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  stroke: #16a34a;
+}
+
 .stat-content {
   display: flex;
   flex-direction: column;
