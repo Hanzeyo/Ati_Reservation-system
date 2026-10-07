@@ -148,6 +148,16 @@ $isRecommendation = ($currentRole === 'recommendation');
           <span class="menu-label">Audit Trail Log</span>
         </a>
 
+        <a href="admin_settings.php" class="sidebar-menu-item">
+          <div class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </div>
+          <span class="menu-label">System Settings</span>
+        </a>
+
         <div class="sidebar-section-title">PORTAL SWITCH</div>
 
         <a href="home.php" class="sidebar-menu-item client-switch">
@@ -221,7 +231,7 @@ $isRecommendation = ($currentRole === 'recommendation');
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <span id="currentDateDisplay">Monday, Oct 05, 2026</span>
+            <span id="currentDateDisplay"><?php echo date('D, M d, Y \bull; h:i:s A'); ?></span>
           </div>
         </div>
       </header>
@@ -313,7 +323,7 @@ $isRecommendation = ($currentRole === 'recommendation');
           </div>
 
           <!-- Monthly Revenue / Utilization -->
-          <div class="my-res-stat-card" data-kpi="revenue" onclick="showAdminToast('October 2026 Estimated Utilization: ₱284,500 across all institutional facilities.', 'info')" title="Click to view monthly utilization summary">
+          <div class="my-res-stat-card" data-kpi="revenue" id="cardUtilizationKpi" onclick="openUtilizationModal()" title="Click to view monthly utilization analytics & financial report">
             <div class="stat-icon-box emerald">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -1475,6 +1485,395 @@ $isRecommendation = ($currentRole === 'recommendation');
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: ESTIMATED MONTHLY UTILIZATION & FINANCIAL ANALYTICS (₱284,500)
+       ========================================================================== -->
+  <div class="admin-modal-overlay" id="utilizationModal" style="display: none;" onclick="if(event.target===this) closeUtilizationModal()">
+    <div class="admin-modal-card occupancy-analytics-modal">
+      <div class="admin-modal-header">
+        <div class="modal-title-wrap">
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <div class="stat-icon-box emerald" style="width: 32px; height: 32px; font-size: 0.9rem;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8.5 17V7h4.5a3 3 0 0 1 0 6H8.5"></path>
+                <line x1="6" y1="9.5" x2="15.5" y2="9.5"></line>
+                <line x1="6" y1="12" x2="15.5" y2="12"></line>
+              </svg>
+            </div>
+            <div>
+              <h4 style="margin: 0; font-size: 1.2rem; color: #174d2f;">Estimated Monthly Utilization &amp; Revenue Analytics</h4>
+              <p style="margin: 0.15rem 0 0; font-size: 0.8rem; color: #556f60;">Fiscal revenue breakdown for October 2026 across institutional halls and dormitories</p>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeUtilizationModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="admin-modal-body occupancy-modal-scroll">
+        <!-- 1. Top Summary Metric Cards -->
+        <div class="occ-metrics-grid">
+          <div class="occ-metric-card primary">
+            <span class="occ-metric-lbl">Total Estimated Revenue</span>
+            <div class="occ-metric-val" id="utilModalTotalVal">₱284,500</div>
+            <div class="occ-metric-sub">October 2026 &bull; <strong>100%</strong> of Projected Budget</div>
+            <div class="occ-bar-track"><div class="occ-bar-fill" style="width: 100%; background: #16a34a;"></div></div>
+          </div>
+
+          <div class="occ-metric-card">
+            <span class="occ-metric-lbl">Function Halls &amp; Venues</span>
+            <div class="occ-metric-val">₱178,500</div>
+            <div class="occ-metric-sub"><strong>62.7%</strong> &bull; 4 Venues (48 Operational Days)</div>
+            <div class="occ-bar-track"><div class="occ-bar-fill" style="width: 62.7%; background: #174d2f;"></div></div>
+          </div>
+
+          <div class="occ-metric-card">
+            <span class="occ-metric-lbl">Dormitory Lodging</span>
+            <div class="occ-metric-val">₱106,000</div>
+            <div class="occ-metric-sub"><strong>37.3%</strong> &bull; 6 Floors (179 Room-Nights)</div>
+            <div class="occ-bar-track"><div class="occ-bar-fill" style="width: 37.3%; background: #d97706;"></div></div>
+          </div>
+
+          <div class="occ-metric-card">
+            <span class="occ-metric-lbl">Average Yield / Booking</span>
+            <div class="occ-metric-val" style="color: #0d9488;">₱7,902</div>
+            <div class="occ-metric-sub">Across 36 Active Reservations</div>
+            <div class="occ-bar-track"><div class="occ-bar-fill" style="width: 84%; background: #0d9488;"></div></div>
+          </div>
+        </div>
+
+        <!-- 2. Controls & Switcher Toolbar -->
+        <div class="occ-graph-toolbar">
+          <div class="occ-toggle-group">
+            <button type="button" class="occ-btn-toggle active" id="btnToggleUtilBarGraph" onclick="switchUtilizationGraph('bar')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>Revenue by Asset (Bar Graph)</span>
+            </button>
+            <button type="button" class="occ-btn-toggle" id="btnToggleUtilLineGraph" onclick="switchUtilizationGraph('line')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              <span>Weekly Trend (Line Graph)</span>
+            </button>
+          </div>
+
+          <div class="occ-range-group">
+            <label for="utilTimeRangeSelect" style="font-size: 0.8rem; font-weight: 700; color: #4b6354;">Period:</label>
+            <select id="utilTimeRangeSelect" class="occ-range-select" onchange="updateUtilizationTimeRange(this.value)">
+              <option value="month" selected>Full Month of October 2026 (₱284,500)</option>
+              <option value="september">September 2026 (₱261,000)</option>
+              <option value="q4">Quarter 4 Projection (₱845,000)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 3. Graph Container -->
+        <div class="occ-chart-surface">
+          <!-- VIEW A: BAR GRAPH (Revenue by Facility) -->
+          <div id="utilBarGraphView" class="occ-graph-pane">
+            <div class="occ-chart-caption">
+              <span class="occ-legend-pill"><span class="occ-dot hall"></span> Halls (₱5k/day max)</span>
+              <span class="occ-legend-pill"><span class="occ-dot dorm"></span> Dorms (₱500-₱800/night)</span>
+              <span class="occ-legend-pill"><span class="occ-target-line"></span> Monthly Target (₱50k avg)</span>
+            </div>
+
+            <!-- SVG Bar Graph -->
+            <div class="occ-svg-container">
+              <svg viewBox="0 0 740 280" class="occ-bar-svg" preserveAspectRatio="xMidYMid meet">
+                <!-- Grid Lines -->
+                <line x1="60" y1="40" x2="710" y2="40" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="85" x2="710" y2="85" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="130" x2="710" y2="130" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="175" x2="710" y2="175" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="220" x2="710" y2="220" stroke="#d5e3d8" stroke-width="1.5"></line>
+
+                <!-- Benchmark Line: ₱50k -> y = 130 -->
+                <line x1="60" y1="130" x2="710" y2="130" stroke="#16a34a" stroke-dasharray="6 3" stroke-width="1.8"></line>
+                <text x="712" y="133" font-size="10" fill="#16a34a" font-weight="700">₱50k Benchmark</text>
+
+                <!-- Y Axis Labels -->
+                <text x="45" y="44" font-size="11" fill="#789080" text-anchor="end">₱100k</text>
+                <text x="45" y="89" font-size="11" fill="#789080" text-anchor="end">₱75k</text>
+                <text x="45" y="134" font-size="11" fill="#789080" text-anchor="end">₱50k</text>
+                <text x="45" y="179" font-size="11" fill="#789080" text-anchor="end">₱25k</text>
+                <text x="45" y="224" font-size="11" fill="#789080" text-anchor="end">₱0</text>
+
+                <!-- Bar 1: Serrano Function Hall (₱85k) -> height = 153. y = 67 -->
+                <g class="occ-bar-group" tabindex="0">
+                  <rect x="85" y="67" width="56" height="153" rx="6" fill="url(#gradUtilHall)" class="bar-rect"></rect>
+                  <text x="113" y="59" font-size="12" font-weight="800" fill="#174d2f" text-anchor="middle">₱85.0k</text>
+                  <text x="113" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Function Hall</text>
+                  <text x="113" y="255" font-size="10" fill="#698572" text-anchor="middle">17 Days</text>
+                </g>
+
+                <!-- Bar 2: Training Hall A (₱48k) -> height = 86. y = 134 -->
+                <g class="occ-bar-group" tabindex="0">
+                  <rect x="190" y="134" width="56" height="86" rx="6" fill="url(#gradUtilHall)" class="bar-rect"></rect>
+                  <text x="218" y="126" font-size="12" font-weight="800" fill="#174d2f" text-anchor="middle">₱48.0k</text>
+                  <text x="218" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Training Hall</text>
+                  <text x="218" y="255" font-size="10" fill="#698572" text-anchor="middle">16 Days</text>
+                </g>
+
+                <!-- Bar 3: Mess Hall (₱28k) -> height = 50. y = 170 -->
+                <g class="occ-bar-group" tabindex="0">
+                  <rect x="295" y="170" width="56" height="50" rx="6" fill="url(#gradUtilHall)" class="bar-rect"></rect>
+                  <text x="323" y="162" font-size="12" font-weight="800" fill="#174d2f" text-anchor="middle">₱28.0k</text>
+                  <text x="323" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Mess Hall</text>
+                  <text x="323" y="255" font-size="10" fill="#698572" text-anchor="middle">8 Days</text>
+                </g>
+
+                <!-- Bar 4: Boardroom (₱17.5k) -> height = 31. y = 189 -->
+                <g class="occ-bar-group" tabindex="0">
+                  <rect x="400" y="189" width="56" height="31" rx="6" fill="url(#gradUtilHall)" class="bar-rect"></rect>
+                  <text x="428" y="181" font-size="12" font-weight="800" fill="#174d2f" text-anchor="middle">₱17.5k</text>
+                  <text x="428" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Boardroom</text>
+                  <text x="428" y="255" font-size="10" fill="#698572" text-anchor="middle">7 Days</text>
+                </g>
+
+                <!-- Bar 5: Dorm Floors 1-4 Trainee (₱62k) -> height = 111. y = 109 -->
+                <g class="occ-bar-group" tabindex="0">
+                  <rect x="505" y="109" width="56" height="111" rx="6" fill="url(#gradUtilDorm)" class="bar-rect"></rect>
+                  <text x="533" y="101" font-size="12" font-weight="800" fill="#d97706" text-anchor="middle">₱62.0k</text>
+                  <text x="533" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Dorm Flr 1–4</text>
+                  <text x="533" y="255" font-size="10" fill="#698572" text-anchor="middle">124 Nights</text>
+                </g>
+
+                <!-- Bar 6: Dorm Floors 5-6 VIP (₱44k) -> height = 79. y = 141 -->
+                <g class="occ-bar-group" tabindex="0">
+                  <rect x="610" y="141" width="56" height="79" rx="6" fill="url(#gradUtilVIP)" class="bar-rect"></rect>
+                  <text x="638" y="133" font-size="12" font-weight="800" fill="#10b981" text-anchor="middle">₱44.0k</text>
+                  <text x="638" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">VIP Flr 5–6</text>
+                  <text x="638" y="255" font-size="10" fill="#698572" text-anchor="middle">55 Nights</text>
+                </g>
+
+                <!-- Gradients -->
+                <defs>
+                  <linearGradient id="gradUtilHall" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#1b5e33"></stop>
+                    <stop offset="100%" stop-color="#2a824b"></stop>
+                  </linearGradient>
+                  <linearGradient id="gradUtilDorm" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#d97706"></stop>
+                    <stop offset="100%" stop-color="#f59e0b"></stop>
+                  </linearGradient>
+                  <linearGradient id="gradUtilVIP" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#059669"></stop>
+                    <stop offset="100%" stop-color="#10b981"></stop>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <!-- VIEW B: LINE GRAPH (Weekly Revenue Cash Flow) -->
+          <div id="utilLineGraphView" class="occ-graph-pane" style="display: none;">
+            <div class="occ-chart-caption">
+              <span class="occ-legend-pill"><span class="occ-dot" style="background: #10b981;"></span> Weekly Invoiced Revenue (₱)</span>
+              <span class="occ-legend-pill"><span class="occ-target-line"></span> Weekly Average (₱71,125)</span>
+            </div>
+
+            <div class="occ-svg-container">
+              <svg viewBox="0 0 740 280" class="occ-line-svg" preserveAspectRatio="xMidYMid meet">
+                <!-- Grid Lines -->
+                <line x1="60" y1="40" x2="710" y2="40" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="85" x2="710" y2="85" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="130" x2="710" y2="130" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="175" x2="710" y2="175" stroke="#e8efe9" stroke-dasharray="4 4" stroke-width="1"></line>
+                <line x1="60" y1="220" x2="710" y2="220" stroke="#d5e3d8" stroke-width="1.5"></line>
+
+                <!-- Target Average Line: ₱71k -> y = 92 -->
+                <line x1="60" y1="92" x2="710" y2="92" stroke="#eab308" stroke-dasharray="6 3" stroke-width="1.8"></line>
+                <text x="712" y="95" font-size="10" fill="#b45309" font-weight="700">₱71.1k Wkly Avg</text>
+
+                <!-- Y Axis Labels -->
+                <text x="45" y="44" font-size="11" fill="#789080" text-anchor="end">₱100k</text>
+                <text x="45" y="89" font-size="11" fill="#789080" text-anchor="end">₱75k</text>
+                <text x="45" y="134" font-size="11" fill="#789080" text-anchor="end">₱50k</text>
+                <text x="45" y="179" font-size="11" fill="#789080" text-anchor="end">₱25k</text>
+                <text x="45" y="224" font-size="11" fill="#789080" text-anchor="end">₱0</text>
+
+                <!-- Area fill polygon -->
+                <polygon points="120,220 120,118 260,82 400,56 540,102 650,148 650,220" fill="url(#gradUtilLineArea)"></polygon>
+
+                <!-- Polyline stroke -->
+                <polyline points="120,118 260,82 400,56 540,102 650,148" fill="none" stroke="#059669" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></polyline>
+
+                <!-- Data Points & Labels -->
+                <g class="occ-pt-group">
+                  <circle cx="120" cy="118" r="6" fill="#ffffff" stroke="#059669" stroke-width="3"></circle>
+                  <text x="120" y="104" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">₱56.5k</text>
+                  <text x="120" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Week 1</text>
+                  <text x="120" y="255" font-size="10" fill="#698572" text-anchor="middle">Oct 1–7</text>
+                </g>
+
+                <g class="occ-pt-group">
+                  <circle cx="260" cy="82" r="6" fill="#ffffff" stroke="#059669" stroke-width="3"></circle>
+                  <text x="260" y="68" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">₱76.5k</text>
+                  <text x="260" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Week 2</text>
+                  <text x="260" y="255" font-size="10" fill="#698572" text-anchor="middle">Oct 8–14</text>
+                </g>
+
+                <g class="occ-pt-group">
+                  <circle cx="400" cy="56" r="7.5" fill="#f59e0b" stroke="#b45309" stroke-width="3"></circle>
+                  <text x="400" y="40" font-size="12" font-weight="800" fill="#b45309" text-anchor="middle">₱91.0k (Peak)</text>
+                  <text x="400" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Week 3</text>
+                  <text x="400" y="255" font-size="10" fill="#698572" text-anchor="middle">Oct 15–21</text>
+                </g>
+
+                <g class="occ-pt-group">
+                  <circle cx="540" cy="102" r="6" fill="#ffffff" stroke="#059669" stroke-width="3"></circle>
+                  <text x="540" y="88" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">₱65.5k</text>
+                  <text x="540" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Week 4</text>
+                  <text x="540" y="255" font-size="10" fill="#698572" text-anchor="middle">Oct 22–28</text>
+                </g>
+
+                <g class="occ-pt-group">
+                  <circle cx="650" cy="148" r="6" fill="#ffffff" stroke="#059669" stroke-width="3"></circle>
+                  <text x="650" y="134" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">₱40.0k</text>
+                  <text x="650" y="240" font-size="11" font-weight="700" fill="#2d4233" text-anchor="middle">Final Days</text>
+                  <text x="650" y="255" font-size="10" fill="#698572" text-anchor="middle">Oct 29–31</text>
+                </g>
+
+                <defs>
+                  <linearGradient id="gradUtilLineArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#10b981" stop-opacity="0.30"></stop>
+                    <stop offset="100%" stop-color="#10b981" stop-opacity="0.02"></stop>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Detailed Financial Breakdown Table -->
+        <div class="occ-breakdown-section">
+          <h5 style="margin: 0 0 0.75rem; font-size: 0.95rem; font-weight: 800; color: #174d2f; display: flex; align-items: center; justify-content: space-between;">
+            <span>Facility Asset Revenue &amp; Billing Contribution</span>
+            <span style="font-size: 0.75rem; font-weight: 600; color: #60796b;">Total ₱284,500 Invoiced</span>
+          </h5>
+
+          <div class="occ-table-wrap">
+            <table class="occ-breakdown-table">
+              <thead>
+                <tr>
+                  <th>Facility Asset</th>
+                  <th>Category</th>
+                  <th>Rate Schedule</th>
+                  <th>Utilized Units</th>
+                  <th>Total Invoiced</th>
+                  <th>% Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Serrano Function Hall</strong></td>
+                  <td><span class="occ-tag hall">Function Hall</span></td>
+                  <td>₱5,000 / day</td>
+                  <td>17 Days</td>
+                  <td><strong style="color: #174d2f;">₱85,000</strong></td>
+                  <td>
+                    <div class="occ-tbl-rate">
+                      <div class="occ-tbl-bar"><div class="occ-tbl-fill" style="width: 29.9%; background: #174d2f;"></div></div>
+                      <strong>29.9%</strong>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Training Hall A (AV Room)</strong></td>
+                  <td><span class="occ-tag hall">Training Hall</span></td>
+                  <td>₱3,000 / day</td>
+                  <td>16 Days</td>
+                  <td><strong style="color: #174d2f;">₱48,000</strong></td>
+                  <td>
+                    <div class="occ-tbl-rate">
+                      <div class="occ-tbl-bar"><div class="occ-tbl-fill" style="width: 16.9%; background: #174d2f;"></div></div>
+                      <strong>16.9%</strong>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Dormitory Floors 1–4 (Trainee Bunk)</strong></td>
+                  <td><span class="occ-tag dorm">Trainee Dorm</span></td>
+                  <td>₱500 / night</td>
+                  <td>124 Room-Nights</td>
+                  <td><strong style="color: #d97706;">₱62,000</strong></td>
+                  <td>
+                    <div class="occ-tbl-rate">
+                      <div class="occ-tbl-bar"><div class="occ-tbl-fill" style="width: 21.8%; background: #d97706;"></div></div>
+                      <strong>21.8%</strong>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Dormitory Floors 5–6 (VIP Suites)</strong></td>
+                  <td><span class="occ-tag dorm" style="background: #e0f2fe; color: #0369a1; border-color: #bae6fd;">VIP Dorm</span></td>
+                  <td>₱800 / night</td>
+                  <td>55 Room-Nights</td>
+                  <td><strong style="color: #0369a1;">₱44,000</strong></td>
+                  <td>
+                    <div class="occ-tbl-rate">
+                      <div class="occ-tbl-bar"><div class="occ-tbl-fill" style="width: 15.5%; background: #0284c7;"></div></div>
+                      <strong>15.5%</strong>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Mess Hall &amp; Dining Area</strong></td>
+                  <td><span class="occ-tag hall">Dining Hall</span></td>
+                  <td>₱3,500 / day</td>
+                  <td>8 Days</td>
+                  <td><strong style="color: #174d2f;">₱28,000</strong></td>
+                  <td>
+                    <div class="occ-tbl-rate">
+                      <div class="occ-tbl-bar"><div class="occ-tbl-fill" style="width: 9.8%; background: #174d2f;"></div></div>
+                      <strong>9.8%</strong>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td><strong>Executive Boardroom</strong></td>
+                  <td><span class="occ-tag hall">Executive Hall</span></td>
+                  <td>₱2,500 / day</td>
+                  <td>7 Days</td>
+                  <td><strong style="color: #174d2f;">₱17,500</strong></td>
+                  <td>
+                    <div class="occ-tbl-rate">
+                      <div class="occ-tbl-bar"><div class="occ-tbl-fill" style="width: 6.1%; background: #2563eb;"></div></div>
+                      <strong>6.1%</strong>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-system-secondary" onclick="closeUtilizationModal()">Close Analytics</button>
+        <button type="button" class="btn-preview-file" onclick="exportUtilizationReport()" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Export Financial Report (CSV)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ==========================================================================
        TOAST NOTIFICATION CONTAINER
        ========================================================================== -->

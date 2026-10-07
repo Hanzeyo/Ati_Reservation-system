@@ -58,25 +58,25 @@
           <span>New Reservation</span>
         </a>
 
-        <!-- Facility Reservations (Halls) -->
-        <a href="my_reservations.php" class="booking-nav-item" title="Facility Reservations (Halls & Venues)">
+        <!-- Facility Bookings (Halls) -->
+        <a href="my_reservations.php" class="booking-nav-item" title="Your Bookings (Facilities & Venues)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
-          <span>Reservation History</span>
+          <span>Your Bookings</span>
           <span class="nav-badge-count">4</span>
         </a>
 
-        <!-- Dormitory Bookings (Lodging) - Active -->
-        <a href="booking_history.php" class="booking-nav-item active" title="Booking History (Dormitories & Rooms)">
+        <!-- Dormitory Reservations (Lodging) - Active -->
+        <a href="booking_history.php" class="booking-nav-item active" title="Your Reservations (Dormitories & Lodging)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 4v16"></path>
             <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
             <path d="M2 17h20"></path>
             <path d="M6 8v9"></path>
           </svg>
-          <span>Booking History</span>
+          <span>Your Reservations</span>
           <span class="nav-badge-count blue">2</span>
         </a>
 
@@ -103,42 +103,45 @@
 
           <div class="profile-dropdown" id="profileDropdown">
             <div class="dropdown-header-info">
-              <div class="dropdown-user-name">Juan Dela Cruz</div>
-              <div class="dropdown-user-email"><span class="user-verified-dot"></span> ATI Personnel &bull; CDD</div>
+              <div class="dropdown-avatar-circle">JD</div>
+              <div class="dropdown-user-meta">
+                <div class="dropdown-user-name">Juan Dela Cruz</div>
+                <div class="dropdown-user-email">juan.delacruz@ati.da.gov.ph</div>
+              </div>
             </div>
             <a href="profile.php" class="dropdown-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
               </svg>
               <span>My Profile</span>
             </a>
-            <a href="my_reservations.php" class="dropdown-item dropdown-item-mobile-only">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <a href="my_reservations.php" class="dropdown-item">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
               </svg>
-              <span>Facility Reservations</span>
+              <span>Your Bookings</span>
             </a>
-            <a href="booking_history.php" class="dropdown-item active dropdown-item-mobile-only">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <a href="booking_history.php" class="dropdown-item active">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M2 4v16"></path>
                 <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
                 <path d="M2 17h20"></path>
+                <path d="M6 8v9"></path>
               </svg>
-              <span>Dormitory Bookings</span>
+              <span>Your Reservations</span>
             </a>
-            <a href="admin_dashboard.php" class="dropdown-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
+            <a href="javascript:void(0)" onclick="openUserSettingsModal(); if (typeof closeProfileDropdown === 'function') closeProfileDropdown(); return false;" class="dropdown-item">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
               </svg>
-              <span>Admin Dashboard</span>
+              <span>Settings</span>
             </a>
-            <div style="height: 1px; background: #e5ede7; margin: 0.35rem 0;"></div>
+            <div class="dropdown-divider"></div>
             <a href="index.php" class="dropdown-item danger">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
                 <line x1="21" y1="12" x2="9" y2="12"></line>
@@ -222,7 +225,7 @@
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               </svg>
             </div>
-            <span class="drawer-link-text">Facility Reservations</span>
+            <span class="drawer-link-text">Your Bookings</span>
             <span class="drawer-badge-count">4</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
@@ -235,7 +238,7 @@
                 <path d="M2 17h20"></path>
               </svg>
             </div>
-            <span class="drawer-link-text">Booking History (Dormitory)</span>
+            <span class="drawer-link-text">Your Reservations</span>
             <span class="drawer-badge-count blue">2</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
@@ -290,11 +293,11 @@
        ========================================================================== -->
   <main class="my-res-main-wrapper">
 
-    <!-- Primary Category Segregation Switcher (Facility Reservations vs Dormitory Bookings) -->
+    <!-- Primary Category Segregation Switcher (Facility Bookings vs Dormitory Reservations) -->
     <div class="history-category-segmented-bar">
       <div class="category-segmented-container">
         <!-- Tab 1: Facility Venues & Halls (Link) -->
-        <a href="my_reservations.php" class="category-segment-btn" title="Switch to Facility Reservation History">
+        <a href="my_reservations.php" class="category-segment-btn" title="Switch to Facility Bookings">
           <div class="seg-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -302,14 +305,14 @@
             </svg>
           </div>
           <div class="seg-text">
-            <span class="seg-title">Facility Reservations</span>
+            <span class="seg-title">Your Bookings</span>
             <span class="seg-subtitle">Function Hall, Training Halls, Boardrooms &amp; Mess Hall</span>
           </div>
           <span class="seg-count-badge">4</span>
         </a>
 
         <!-- Tab 2: Dormitory Lodging & Rooms (Active) -->
-        <a href="booking_history.php" class="category-segment-btn active" title="Currently Viewing Dormitory Lodging History">
+        <a href="booking_history.php" class="category-segment-btn active" title="Currently Viewing Dormitory Reservations">
           <div class="seg-icon dorm-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M2 4v16"></path>
@@ -319,7 +322,7 @@
             </svg>
           </div>
           <div class="seg-text">
-            <span class="seg-title">Dormitory Bookings</span>
+            <span class="seg-title">Your Reservations</span>
             <span class="seg-subtitle">Official Lodging, Trainee Rooms &amp; Bed Allocations</span>
           </div>
           <span class="seg-count-badge blue">2</span>
@@ -338,8 +341,8 @@
           </svg>
           <span>Official Dormitory Lodging &amp; Rooms</span>
         </div>
-        <h2 id="pageHeadingTitle">Dormitory Booking History</h2>
-        <p id="pageHeadingSubtext">Monitor your official dormitory lodging bookings, track room &amp; bed assignments with dormitory custodians, download lodging slips, and view room access security gate passes.</p>
+        <h2 id="pageHeadingTitle">Your Reservations</h2>
+        <p id="pageHeadingSubtext">Monitor your official dormitory reservations, track room &amp; bed assignments with dormitory custodians, download lodging slips, and view room access security gate passes.</p>
       </div>
 
       <a href="dormitory_booking.php" class="btn-new-res-action">
@@ -894,6 +897,7 @@
 
   <!-- JavaScript -->
   <script src="js/my_reservations.js?v=<?php echo time(); ?>"></script>
+  <script src="js/user_settings.js?v=<?php echo time(); ?>"></script>
   <script>
     function toggleMobileDrawer(open) {
       var overlay = document.getElementById('mobileDrawerOverlay');

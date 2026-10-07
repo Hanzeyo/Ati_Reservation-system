@@ -155,11 +155,27 @@ function toggleSidebar(forceState) {
 
 function initDateDisplay() {
   const dateEl = document.getElementById('currentDateDisplay');
-  if (dateEl) {
-    const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
-    const today = new Date();
-    dateEl.textContent = today.toLocaleDateString('en-US', options);
+  if (!dateEl) return;
+
+  function updateClock() {
+    const now = new Date();
+    const datePart = now.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    const timePart = now.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+    dateEl.textContent = `${datePart} • ${timePart}`;
   }
+
+  updateClock();
+  setInterval(updateClock, 1000);
 }
 
 /* ==========================================================================
@@ -637,7 +653,7 @@ function showAdminToast(message, type = 'success') {
 }
 
 function openSystemSettings() {
-  showAdminToast('System Settings module active. Administrative policies up to date.');
+  window.location.href = 'admin_settings.php';
 }
 
 /* ==========================================================================
@@ -917,11 +933,62 @@ function exportOccupancyReport() {
   }, 600);
 }
 
-// ESC key listener to close modal
+// ESC key listener to close modals
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
     closeOccupancyModal();
+    closeUtilizationModal();
   }
 });
+
+/* ==========================================================================
+   UTILIZATION & REVENUE ANALYTICS MODAL CONTROLLERS (₱284,500)
+   ========================================================================== */
+function openUtilizationModal() {
+  const modal = document.getElementById('utilizationModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeUtilizationModal() {
+  const modal = document.getElementById('utilizationModal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+
+function switchUtilizationGraph(type) {
+  const barView = document.getElementById('utilBarGraphView');
+  const lineView = document.getElementById('utilLineGraphView');
+  const btnBar = document.getElementById('btnToggleUtilBarGraph');
+  const btnLine = document.getElementById('btnToggleUtilLineGraph');
+
+  if (type === 'bar') {
+    if (barView) barView.style.display = 'block';
+    if (lineView) lineView.style.display = 'none';
+    if (btnBar) btnBar.classList.add('active');
+    if (btnLine) btnLine.classList.remove('active');
+  } else if (type === 'line') {
+    if (barView) barView.style.display = 'none';
+    if (lineView) lineView.style.display = 'block';
+    if (btnBar) btnBar.classList.remove('active');
+    if (btnLine) btnLine.classList.add('active');
+  }
+}
+
+function updateUtilizationTimeRange(range) {
+  const toastMsg = range === 'september' ? 'Loaded September 2026 Monthly Utilization (₱261,000)'
+                 : range === 'month' ? 'Loaded Full October 2026 Monthly Utilization (₱284,500)'
+                 : 'Loaded Q4 2026 Projected Utilization (₱845,000)';
+  showAdminToast(toastMsg, 'info');
+}
+
+function exportUtilizationReport() {
+  showAdminToast('Official Monthly Utilization & Financial Report exported as CSV.', 'success');
+}
+
 
 

@@ -249,86 +249,107 @@ body.my-res-body {
   white-space: nowrap;
 }
 
-/* Profile Dropdown (Modern Enterprise Card) */
+/* Profile Dropdown Menu (Clean Design Matching Reference) */
 .profile-dropdown {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
+  width: 250px;
   background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.12), 0 3px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #e1ebe3;
-  width: 240px;
-  padding: 0.6rem;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), 0 3px 10px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2ebe4;
+  padding: 0.65rem 0.55rem;
   display: none;
   z-index: 150;
   transform-origin: top right;
+  animation: dropdownFade 0.16s ease-out;
 }
 
 .profile-dropdown.show,
 .profile-dropdown.active {
   display: block !important;
-  animation: dropdownFade 0.16s ease-out;
 }
 
 .dropdown-header-info {
-  padding: 0.65rem 0.85rem 0.75rem;
-  border-bottom: 1px solid #eef4f0;
-  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.65rem 0.75rem;
+  border-bottom: 1px solid #edf3ef;
+  margin-bottom: 0.45rem;
+}
+
+.dropdown-avatar-circle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #175432, #2e7d32);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.92rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(23, 84, 50, 0.2);
+}
+
+.dropdown-user-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
 .dropdown-user-name {
-  font-size: 0.88rem;
-  font-weight: 800;
-  color: #142e20;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #111827;
   line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dropdown-user-email {
-  font-size: 0.73rem;
-  color: #556f61;
-  margin-top: 0.2rem;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-
-.dropdown-user-email .user-verified-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #16a34a;
-  display: inline-block;
+  font-size: 0.76rem;
+  color: #6b7280;
+  margin-top: 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dropdown-item {
   display: flex;
   align-items: center;
-  gap: 0.7rem;
-  padding: 0.65rem 0.85rem;
-  font-size: 0.86rem;
-  font-weight: 600;
-  color: #314a3b;
+  gap: 0.75rem;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #374151;
+  border-radius: 10px;
   text-decoration: none;
-  border-radius: 9px;
   transition: all 0.15s ease;
   position: relative;
 }
 
 .dropdown-item svg {
-  stroke: #526f5f;
+  stroke: #4b5563;
+  width: 17px;
+  height: 17px;
   transition: stroke 0.15s ease, transform 0.15s ease;
   flex-shrink: 0;
 }
 
 .dropdown-item:hover {
-  background: #f1f8f3;
-  color: var(--primary-green);
+  background: #f3f4f6;
+  color: #111827;
 }
 
 .dropdown-item:hover svg {
-  stroke: var(--primary-green);
-  transform: scale(1.08);
+  stroke: #111827;
+  transform: scale(1.05);
 }
 
 .dropdown-item.active {
@@ -341,49 +362,30 @@ body.my-res-body {
   stroke: #175432;
 }
 
-.dropdown-item-badge {
-  margin-left: auto;
-  font-size: 0.68rem;
-  font-weight: 700;
-  background: #e2f1e6;
-  color: #175432;
-  padding: 0.15rem 0.5rem;
-  border-radius: 9999px;
+.dropdown-divider {
+  height: 1px;
+  background: #edf3ef;
+  margin: 0.4rem 0.35rem;
 }
 
 .dropdown-item.danger {
-  color: #b91c1c;
+  color: #dc2626;
 }
 
 .dropdown-item.danger svg {
-  stroke: #b91c1c;
+  stroke: #dc2626;
 }
 
 .dropdown-item.danger:hover {
-  background: #fff1f2;
-  color: #991b1b;
+  background: #fef2f2;
+  color: #b91c1c;
 }
 
 .dropdown-item.danger:hover svg {
-  stroke: #991b1b;
+  stroke: #b91c1c;
 }
 
-/* Profile Dropdown Navigation items: Hidden on desktop, visible only in mobile mode */
-.profile-dropdown .dropdown-item-mobile-only,
-.profile-dropdown .dropdown-mobile-only,
-.profile-dropdown a[href*="my_reservations.php"],
-.profile-dropdown a[href*="booking_history.php"] {
-  display: none !important;
-}
 
-@media (max-width: 900px) {
-  .profile-dropdown .dropdown-item-mobile-only,
-  .profile-dropdown .dropdown-mobile-only,
-  .profile-dropdown a[href*="my_reservations.php"],
-  .profile-dropdown a[href*="booking_history.php"] {
-    display: flex !important;
-  }
-}
 
 @keyframes dropdownFade {
   from {

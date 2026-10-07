@@ -1,0 +1,585 @@
+/**
+ * Agriculture Training Institute - Facility and Dormitory Reservation System
+ * System Settings & Governance Stylesheet
+ */
+
+/* Main Settings Layout Grid */
+.settings-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding-bottom: 3rem;
+}
+
+/* Overview Banner */
+.settings-hero-card {
+  background: linear-gradient(135deg, #174d2f 0%, #1f6b3e 100%);
+  color: #ffffff;
+  border-radius: 14px;
+  padding: 1.75rem 2rem;
+  box-shadow: 0 4px 20px rgba(23, 77, 47, 0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.settings-hero-info h2 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 0.35rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.settings-hero-info p {
+  font-size: 0.85rem;
+  color: #d1e7d8;
+  margin: 0;
+  max-width: 650px;
+  line-height: 1.45;
+}
+
+.settings-hero-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.settings-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ffffff;
+  backdrop-filter: blur(4px);
+}
+
+.settings-badge-pill.active {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #86efac;
+}
+
+.settings-badge-pill .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+/* Settings Tabs Navigation */
+.settings-tabs-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  padding: 0.5rem;
+  border-radius: 12px;
+  border: 1.5px solid #e1e9e3;
+  overflow-x: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.settings-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.65rem 1.15rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #556c5e;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.16s ease;
+}
+
+.settings-tab-btn:hover {
+  background: #f1f8f3;
+  color: #174d2f;
+}
+
+.settings-tab-btn.active {
+  background: #174d2f;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(23, 77, 47, 0.25);
+}
+
+.settings-tab-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* Settings Panels */
+.settings-panel {
+  display: none;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.settings-panel.active {
+  display: flex;
+}
+
+/* Settings Card & Section Structure */
+.settings-section-card {
+  background: #ffffff;
+  border: 1.5px solid #e1e9e3;
+  border-radius: 12px;
+  padding: 1.5rem 1.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.settings-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1.5px solid #edf3ef;
+  gap: 1rem;
+}
+
+.settings-card-title-group h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #173824;
+  margin: 0 0 0.25rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settings-card-title-group p {
+  font-size: 0.8rem;
+  color: #657b6f;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.settings-header-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 6px;
+  background: #f0f7f2;
+  color: #166534;
+  border: 1px solid #d1e7d8;
+  white-space: nowrap;
+}
+
+/* Form Controls Grid */
+.settings-fields-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.settings-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.settings-field-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.settings-field-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1a3325;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-field-hint {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #718779;
+}
+
+.settings-input,
+.settings-select,
+.settings-textarea {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid #d2ded5;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #162d1f;
+  background: #ffffff;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: all 0.16s ease;
+}
+
+.settings-input:focus,
+.settings-select:focus,
+.settings-textarea:focus {
+  outline: none;
+  border-color: #174d2f;
+  box-shadow: 0 0 0 3px rgba(23, 77, 47, 0.12);
+}
+
+.settings-input[readonly] {
+  background: #f6faf7;
+  color: #556c5e;
+  cursor: not-allowed;
+}
+
+.settings-input-with-affix {
+  display: flex;
+  align-items: center;
+}
+
+.settings-input-affix {
+  background: #eef5f0;
+  border: 1.5px solid #d2ded5;
+  border-right: none;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #174d2f;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.settings-input-with-affix .settings-input {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* Switch Row */
+.settings-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  background: #f9fbf9;
+  border: 1.5px solid #e1ebe3;
+  border-radius: 10px;
+  gap: 1rem;
+}
+
+.settings-switch-info h5 {
+  margin: 0 0 0.15rem 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #173824;
+}
+
+.settings-switch-info p {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #657b6f;
+  line-height: 1.35;
+}
+
+/* Toggle Switch Slider */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider-round {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: .24s;
+  border-radius: 24px;
+}
+
+.slider-round:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .24s;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+input:checked + .slider-round {
+  background-color: #174d2f;
+}
+
+input:checked + .slider-round:before {
+  transform: translateX(20px);
+}
+
+/* Rate Matrix Card Table */
+.settings-rate-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-top: 0.5rem;
+}
+
+.settings-rate-table th {
+  background: #f4f8f5;
+  color: #486152;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1.5px solid #d9e6dc;
+  text-align: left;
+}
+
+.settings-rate-table td {
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid #eef4f0;
+  vertical-align: middle;
+}
+
+.settings-rate-table tbody tr:hover {
+  background: #fbfdfb;
+}
+
+.rate-facility-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.rate-facility-name {
+  font-weight: 700;
+  color: #173824;
+  font-size: 0.85rem;
+}
+
+.rate-facility-desc {
+  font-size: 0.72rem;
+  color: #657b6f;
+}
+
+.rate-input-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rate-currency-prefix {
+  font-weight: 700;
+  color: #174d2f;
+  font-size: 0.85rem;
+}
+
+.rate-num-input {
+  width: 110px;
+  padding: 0.4rem 0.65rem;
+  border: 1.5px solid #c9dacd;
+  border-radius: 6px;
+  font-weight: 700;
+  color: #163321;
+  font-size: 0.84rem;
+}
+
+.badge-vip-pill {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.badge-standard-pill {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+/* Actions Footer */
+.settings-sticky-footer {
+  position: sticky;
+  bottom: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid #cfe0d4;
+  border-radius: 12px;
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  z-index: 20;
+  margin-top: 1rem;
+}
+
+.settings-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.settings-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.btn-settings-save {
+  background: #174d2f;
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.84rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  box-shadow: 0 2px 8px rgba(23, 77, 47, 0.25);
+}
+
+.btn-settings-save:hover {
+  background: #113a23;
+  transform: translateY(-1px);
+}
+
+.btn-settings-reset {
+  background: #ffffff;
+  color: #657b6f;
+  border: 1.5px solid #d2ded5;
+  padding: 0.65rem 1.15rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.84rem;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.btn-settings-reset:hover {
+  background: #f6fbf8;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.btn-settings-backup {
+  background: #eef7f0;
+  color: #174d2f;
+  border: 1.5px solid #cce2d2;
+  padding: 0.65rem 1.15rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.84rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.btn-settings-backup:hover {
+  background: #174d2f;
+  color: #ffffff;
+}
+
+/* Quick Test Buttons */
+.btn-mini-test {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #f1f8f3;
+  color: #174d2f;
+  border: 1px solid #c7e0ce;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-mini-test:hover {
+  background: #174d2f;
+  color: #ffffff;
+}
+
+/* Confirmation Modal for Reset */
+.settings-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 30, 20, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.settings-modal-box {
+  background: #ffffff;
+  border-radius: 14px;
+  max-width: 480px;
+  width: 100%;
+  padding: 1.75rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: 1.5px solid #e1ebe3;
+}
+
+.settings-modal-box h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #b91c1c;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.settings-modal-box p {
+  font-size: 0.85rem;
+  color: #556c5e;
+  line-height: 1.5;
+  margin: 0 0 1.25rem 0;
+}
+
+.settings-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
