@@ -372,7 +372,7 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
         </div>
 
         <div class="filter-pills-list">
-          <button type="button" class="filter-pill active" id="btnFilterDormitories">Dormitories (6 Floors)</button>
+          <button type="button" class="filter-pill active" id="btnFilterDormitories" data-category-filter="dormitories">Dormitories (6 Floors)</button>
           <a href="booking.php" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;" title="Switch to Facility Venue Reservation Portal">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             <span>Reserve Facility Venue &rarr;</span>
@@ -392,22 +392,23 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
 
       <!-- Facility Cards Grid (6 Floors) -->
       <div class="facility-selection-grid" id="facilitySelectionGrid">
-        <!-- 1st Floor: Sampaguita Dormitory -->
+        <!-- 1st Floor: Sampaguita Dormitory (VIP Suite) -->
         <article class="facility-choice-card dorm-suite-card selected" data-id="dorm-floor-1" data-name="1st Floor: Sampaguita Dormitory"
-          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories">
+          data-rate="₱800/night" data-capacity="VIP SUITE (24 BEDS)" data-facility-type="dormitories">
           <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="1st Floor: Sampaguita Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
+            <img src="assets/images/dormitory.jpg" alt="1st Floor: Sampaguita VIP Dormitory" loading="lazy">
+            <span class="facility-cap-badge">VIP SUITE (24 BEDS)</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">1ST FLOOR &bull; SAMPAGUITA DORMITORY</span>
+            <span class="facility-category-tag">1ST FLOOR &bull; SAMPAGUITA VIP SUITE</span>
             <h3 class="facility-title">1st Floor: Sampaguita Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
+            <div class="facility-rate-tag">Standard Rate: ₱800/night</div>
             <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
+              <span class="amenity-pill">Aircon Suite</span>
+              <span class="amenity-pill">Ensuite Bathroom</span>
+              <span class="amenity-pill">Workstation</span>
+              <span class="amenity-pill">Wardrobe Lockers</span>
+              <span class="amenity-pill">Hot Shower</span>
             </div>
             <div class="dorm-card-selected-room-badge" style="display: none;">
               <span class="d-room-text">✓ Room Selected</span>
@@ -419,22 +420,23 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
           </div>
         </article>
 
-        <!-- 2nd Floor: Ilang-Ilang Dormitory -->
+        <!-- 2nd Floor: Ilang-Ilang Dormitory (Trainee Bunk) -->
         <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-2" data-name="2nd Floor: Ilang-Ilang Dormitory"
           data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories">
           <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="2nd Floor: Ilang-Ilang Dormitory" loading="lazy">
+            <img src="assets/images/dormitory_bunk.jpg" alt="2nd Floor: Ilang-Ilang Trainee Quarters" loading="lazy">
             <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">2ND FLOOR &bull; ILANG-ILANG DORMITORY</span>
+            <span class="facility-category-tag">2ND FLOOR &bull; ILANG-ILANG TRAINEE DORM</span>
             <h3 class="facility-title">2nd Floor: Ilang-Ilang Dormitory</h3>
             <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
             <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
+              <span class="amenity-pill">Wooden Bunk Beds</span>
+              <span class="amenity-pill">Full Aircon</span>
               <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
+              <span class="amenity-pill">Study Desks</span>
+              <span class="amenity-pill">Common Lounge</span>
             </div>
             <div class="dorm-card-selected-room-badge" style="display: none;">
               <span class="d-room-text">✓ Room Selected</span>
@@ -446,22 +448,23 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
           </div>
         </article>
 
-        <!-- 3rd Floor: Gumamela Dormitory -->
+        <!-- 3rd Floor: Gumamela Dormitory (Executive Twin Room) -->
         <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-3" data-name="3rd Floor: Gumamela Dormitory"
-          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories">
+          data-rate="₱700/night" data-capacity="TWIN SUITE (24 BEDS)" data-facility-type="dormitories">
           <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="3rd Floor: Gumamela Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
+            <img src="assets/images/dormitory.jpg" alt="3rd Floor: Gumamela Executive Dormitory" loading="lazy">
+            <span class="facility-cap-badge">TWIN SUITE (24 BEDS)</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">3RD FLOOR &bull; GUMAMELA DORMITORY</span>
+            <span class="facility-category-tag">3RD FLOOR &bull; GUMAMELA RESIDENCE</span>
             <h3 class="facility-title">3rd Floor: Gumamela Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
+            <div class="facility-rate-tag">Standard Rate: ₱700/night</div>
             <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
+              <span class="amenity-pill">Executive Twin Beds</span>
+              <span class="amenity-pill">Private Bath</span>
+              <span class="amenity-pill">Workstation</span>
+              <span class="amenity-pill">Air-Conditioned</span>
+              <span class="amenity-pill">High-Speed WiFi</span>
             </div>
             <div class="dorm-card-selected-room-badge" style="display: none;">
               <span class="d-room-text">✓ Room Selected</span>
@@ -473,22 +476,22 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
           </div>
         </article>
 
-        <!-- 4th Floor: Rosal Dormitory -->
+        <!-- 4th Floor: Rosal Dormitory (Trainee Delegation Quarters) -->
         <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-4" data-name="4th Floor: Rosal Dormitory"
           data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories">
           <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="4th Floor: Rosal Dormitory" loading="lazy">
+            <img src="assets/images/dormitory_bunk.jpg" alt="4th Floor: Rosal Trainee Hall" loading="lazy">
             <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">4TH FLOOR &bull; ROSAL DORMITORY</span>
+            <span class="facility-category-tag">4TH FLOOR &bull; ROSAL TRAINEE HALL</span>
             <h3 class="facility-title">4th Floor: Rosal Dormitory</h3>
             <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
             <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
+              <span class="amenity-pill">Trainee Bunk Beds</span>
               <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
+              <span class="amenity-pill">Study Desks</span>
+              <span class="amenity-pill">Delegation Lounge</span>
             </div>
             <div class="dorm-card-selected-room-badge" style="display: none;">
               <span class="d-room-text">✓ Room Selected</span>
@@ -500,22 +503,23 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
           </div>
         </article>
 
-        <!-- 5th Floor: Waling-Waling Dormitory -->
+        <!-- 5th Floor: Waling-Waling Dormitory (VIP Speaker Suite) -->
         <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-5" data-name="5th Floor: Waling-Waling Dormitory"
-          data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories">
+          data-rate="₱800/night" data-capacity="VIP RESIDENCE (24 BEDS)" data-facility-type="dormitories">
           <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="5th Floor: Waling-Waling Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
+            <img src="assets/images/dormitory.jpg" alt="5th Floor: Waling-Waling VIP Dormitory" loading="lazy">
+            <span class="facility-cap-badge">VIP RESIDENCE (24 BEDS)</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">5TH FLOOR &bull; WALING-WALING DORMITORY</span>
+            <span class="facility-category-tag">5TH FLOOR &bull; WALING-WALING VIP SUITE</span>
             <h3 class="facility-title">5th Floor: Waling-Waling Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
+            <div class="facility-rate-tag">Standard Rate: ₱800/night</div>
             <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
+              <span class="amenity-pill">VIP Guest Suite</span>
+              <span class="amenity-pill">Ensuite Shower</span>
+              <span class="amenity-pill">Executive Desk</span>
+              <span class="amenity-pill">Personal Fridge</span>
+              <span class="amenity-pill">Air-Conditioned</span>
             </div>
             <div class="dorm-card-selected-room-badge" style="display: none;">
               <span class="d-room-text">✓ Room Selected</span>
@@ -527,22 +531,23 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
           </div>
         </article>
 
-        <!-- 6th Floor: Tayabak Dormitory -->
+        <!-- 6th Floor: Tayabak Dormitory (Quiet Study Trainee Floor) -->
         <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-6" data-name="6th Floor: Tayabak Dormitory"
           data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories">
           <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="6th Floor: Tayabak Dormitory" loading="lazy">
+            <img src="assets/images/dormitory_bunk.jpg" alt="6th Floor: Tayabak Study Quarters" loading="lazy">
             <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">6TH FLOOR &bull; TAYABAK DORMITORY</span>
+            <span class="facility-category-tag">6TH FLOOR &bull; TAYABAK STUDY DORM</span>
             <h3 class="facility-title">6th Floor: Tayabak Dormitory</h3>
             <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
             <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
+              <span class="amenity-pill">Bunk Bed Quarters</span>
+              <span class="amenity-pill">Quiet Study Hall</span>
+              <span class="amenity-pill">Air-Conditioned</span>
+              <span class="amenity-pill">Reading Lamps</span>
+              <span class="amenity-pill">Lockers</span>
             </div>
             <div class="dorm-card-selected-room-badge" style="display: none;">
               <span class="d-room-text">✓ Room Selected</span>

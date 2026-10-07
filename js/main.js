@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initModals();
   initMobileMenu();
   initNavigationScrollSpy();
+  initLandingFilters();
 });
 
 /* ==========================================================================
@@ -289,6 +290,27 @@ function initModals() {
       desc: 'A welcoming, naturally lit dining facility designed for delegate meals, networking breaks, and catered agricultural community banquets.',
       capacity: 'Up to 150 Persons',
       features: ['Buffet & Food Service Counters', 'Sanitation & Handwash Stations', 'Direct Access to Kitchen Area', 'Comfortable Solid Wood Seating']
+    },
+    'executive-boardroom': {
+      title: 'Executive Boardroom',
+      image: 'assets/images/boardroom.jpg',
+      desc: 'A dedicated VIP conference space tailored for high-level committee meetings, video conferences, and strategic agricultural planning sessions.',
+      capacity: 'Up to 30 Persons',
+      features: ['Executive Leather Seating', 'PTZ Video Conference System', 'Acoustic Wall Paneling', 'Nespresso Coffee Bar']
+    },
+    'sampaguita-dorm': {
+      title: 'Sampaguita VIP Suite',
+      image: 'assets/images/dormitory.jpg',
+      desc: 'Premium lodging accommodations designed for visiting speakers, department officials, and VIP dignitaries with ensuite bath facilities.',
+      capacity: '2 - 4 Guests (VIP Suite)',
+      features: ['Air-conditioned Suite', 'Ensuite Bathroom & Hot Water', 'Dedicated Work Desk', 'Wardrobe & Digital Lockers']
+    },
+    'ilang-ilang-dorm': {
+      title: 'Ilang-Ilang Trainee Quarters',
+      image: 'assets/images/dormitory_bunk.jpg',
+      desc: 'Spacious, air-conditioned trainee accommodation floor fitted with durable solid wood bunk beds and individual student lockers.',
+      capacity: 'Up to 48 Trainees (12 Rooms)',
+      features: ['Solid Wood Bunk Beds', 'Individual Secure Lockers', 'Central Air-Conditioning', 'Study Lounges & Common Area']
     }
   };
 
@@ -472,6 +494,33 @@ function initNavigationScrollSpy() {
         }
       });
     }, 80);
+  });
+}
+
+/* ==========================================================================
+   5. Landing Page Facilities Category Filter Tabs
+   ========================================================================== */
+function initLandingFilters() {
+  const filterTabs = document.querySelectorAll('.facility-filter-tab');
+  const cards = document.querySelectorAll('#landingFacilitiesGrid .facility-card');
+
+  if (!filterTabs.length || !cards.length) return;
+
+  filterTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      filterTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      const filter = tab.dataset.filter;
+      cards.forEach(card => {
+        const cat = card.dataset.category;
+        if (filter === 'all' || cat === filter) {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
   });
 }
 

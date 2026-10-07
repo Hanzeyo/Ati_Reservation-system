@@ -46,8 +46,8 @@ const dormFloorData = {
   'dorm-floor-1': {
     title: '1st Floor: Sampaguita Dormitory',
     floor: '1st Floor (Sampaguita)',
-    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
-    rate: '₱500 / night',
+    desc: 'Executive VIP dormitory floor with 10 air-conditioned suites, private ensuite baths, and workstations.',
+    rate: '₱800 / night',
     rooms: [
       { num: '101', available: true },
       { num: '102', available: true },
@@ -58,109 +58,97 @@ const dormFloorData = {
       { num: '107', available: false },
       { num: '108', available: true },
       { num: '109', available: true },
-      { num: '110', available: true },
-      { num: '111', available: false },
-      { num: '112', available: true }
+      { num: '110', available: true }
     ]
   },
   'dorm-floor-2': {
     title: '2nd Floor: Ilang-Ilang Dormitory',
     floor: '2nd Floor (Ilang-Ilang)',
-    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
+    desc: 'Standard trainee dormitory floor with 10 air-conditioned rooms, wooden bunk beds, and individual lockers.',
     rate: '₱500 / night',
     rooms: [
       { num: '201', available: true },
       { num: '202', available: false },
-      { num: '203', available: false },
+      { num: '203', available: true },
       { num: '204', available: false },
-      { num: '205', available: false },
+      { num: '205', available: true },
       { num: '206', available: true },
       { num: '207', available: false },
-      { num: '208', available: false },
+      { num: '208', available: true },
       { num: '209', available: false },
-      { num: '210', available: false },
-      { num: '211', available: false },
-      { num: '212', available: true }
+      { num: '210', available: true }
     ]
   },
   'dorm-floor-3': {
     title: '3rd Floor: Gumamela Dormitory',
     floor: '3rd Floor (Gumamela)',
-    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
-    rate: '₱500 / night',
+    desc: 'Executive twin-bed dormitory floor with 10 air-conditioned rooms, workstations, and study lounges.',
+    rate: '₱700 / night',
     rooms: [
-      { num: '301', available: false },
+      { num: '301', available: true },
       { num: '302', available: true },
       { num: '303', available: false },
-      { num: '304', available: false },
+      { num: '304', available: true },
       { num: '305', available: true },
       { num: '306', available: false },
-      { num: '307', available: false },
+      { num: '307', available: true },
       { num: '308', available: false },
       { num: '309', available: true },
-      { num: '310', available: true },
-      { num: '311', available: false },
-      { num: '312', available: false }
+      { num: '310', available: true }
     ]
   },
   'dorm-floor-4': {
     title: '4th Floor: Rosal Dormitory',
     floor: '4th Floor (Rosal)',
-    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
+    desc: 'Trainee delegation quarters with 10 air-conditioned rooms, single bunk beds, and common lounge.',
     rate: '₱500 / night',
     rooms: [
-      { num: '401', available: false },
+      { num: '401', available: true },
       { num: '402', available: false },
       { num: '403', available: true },
       { num: '404', available: false },
-      { num: '405', available: false },
+      { num: '405', available: true },
       { num: '406', available: false },
       { num: '407', available: true },
-      { num: '408', available: false },
+      { num: '408', available: true },
       { num: '409', available: false },
-      { num: '410', available: false },
-      { num: '411', available: true },
-      { num: '412', available: false }
+      { num: '410', available: true }
     ]
   },
   'dorm-floor-5': {
     title: '5th Floor: Waling-Waling Dormitory',
     floor: '5th Floor (Waling-Waling)',
-    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
-    rate: '₱500 / night',
+    desc: 'VIP resource speaker residence floor with 10 premium air-conditioned suites and executive desks.',
+    rate: '₱800 / night',
     rooms: [
-      { num: '501', available: false },
+      { num: '501', available: true },
       { num: '502', available: true },
       { num: '503', available: false },
-      { num: '504', available: false },
-      { num: '505', available: false },
+      { num: '504', available: true },
+      { num: '505', available: true },
       { num: '506', available: true },
       { num: '507', available: false },
-      { num: '508', available: false },
+      { num: '508', available: true },
       { num: '509', available: false },
-      { num: '510', available: true },
-      { num: '511', available: false },
-      { num: '512', available: false }
+      { num: '510', available: true }
     ]
   },
   'dorm-floor-6': {
-    title: '6th Floor: Tayabak Dormitory',
-    floor: '6th Floor (Tayabak)',
-    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
+    title: '6th Floor: Dama de Noche Dormitory',
+    floor: '6th Floor (Dama de Noche)',
+    desc: 'Quiet study and research trainee floor with 10 air-conditioned rooms, reading lamps, and personal lockers.',
     rate: '₱500 / night',
     rooms: [
       { num: '601', available: true },
       { num: '602', available: false },
-      { num: '603', available: false },
+      { num: '603', available: true },
       { num: '604', available: true },
       { num: '605', available: false },
-      { num: '606', available: false },
+      { num: '606', available: true },
       { num: '607', available: false },
       { num: '608', available: true },
-      { num: '609', available: false },
-      { num: '610', available: false },
-      { num: '611', available: false },
-      { num: '612', available: true }
+      { num: '609', available: true },
+      { num: '610', available: false }
     ]
   }
 };
@@ -1762,7 +1750,7 @@ function syncGlobalProfileHeader() {
       if (p.fullName) {
         document.querySelectorAll('.user-name, .dropdown-user-name, .drawer-profile-info h5').forEach(el => el.textContent = p.fullName);
       }
-    } catch(e) {}
+    } catch (e) { }
   }
 }
 

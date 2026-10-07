@@ -649,13 +649,59 @@ button {
   margin: 0 auto;
 }
 
-/* ==========================================================================
-   Our Facilities Section (Matched with Internal Category Cards)
-   ========================================================================== */
+/* Filter Tabs for Facilities */
+.facility-filter-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  margin-bottom: clamp(1.5rem, 2.5vh, 2.2rem);
+  flex-wrap: wrap;
+}
+
+.facility-filter-tab {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #2e5940;
+  background: #f1f8f3;
+  border: 1.5px solid #c8e3d2;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.facility-filter-tab:hover {
+  background: #e2f2e7;
+  color: #174d2f;
+  transform: translateY(-2px);
+  border-color: #aed9bc;
+}
+
+.facility-filter-tab.active {
+  background: #174d2f;
+  color: #ffffff;
+  border-color: #174d2f;
+  box-shadow: 0 4px 14px rgba(23, 77, 47, 0.28);
+}
+
 .facilities-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: clamp(1rem, 1.8vw, 1.65rem);
+}
+
+@media (max-width: 992px) {
+  .facilities-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .facilities-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .facility-card {
@@ -730,8 +776,36 @@ button {
   font-size: clamp(0.82rem, 0.95vw, 0.88rem);
   color: #4b6354;
   line-height: 1.45;
+  margin-bottom: clamp(0.5rem, 0.9vh, 0.65rem);
+}
+
+.facility-bubble-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
   margin-bottom: clamp(0.65rem, 1.1vh, 0.85rem);
   flex-grow: 1;
+}
+
+.facility-bubble-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #174d2f;
+  background: #edf6f0;
+  padding: 0.22rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid #c8e4d3;
+  line-height: 1.25;
+  box-shadow: 0 1px 2px rgba(23, 77, 47, 0.04);
+  transition: all 0.2s ease;
+}
+
+.facility-card:hover .facility-bubble-tag {
+  background: #e2f2e7;
+  border-color: #add9bc;
+  color: #0f3821;
 }
 
 .facility-footer {

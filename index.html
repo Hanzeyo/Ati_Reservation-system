@@ -286,19 +286,32 @@
         <div class="section-header">
           <h2 class="section-title">Our Facilities</h2>
           <div class="section-divider"></div>
-          <p class="section-subtitle">Choose from our available facilities for your reservation.</p>
+          <p class="section-subtitle">Choose from our available halls, meeting spaces, and dormitory lodging accommodations.</p>
         </div>
 
-        <div class="facilities-grid">
+        <!-- Category Filter Tabs -->
+        <div class="facility-filter-tabs" id="landingFacilityFilters">
+          <button type="button" class="facility-filter-tab active" data-filter="all">All Facilities (6)</button>
+          <button type="button" class="facility-filter-tab" data-filter="halls">Halls &amp; Venues (4)</button>
+          <button type="button" class="facility-filter-tab" data-filter="dorms">Dormitories &amp; Lodging (2)</button>
+        </div>
+
+        <div class="facilities-grid" id="landingFacilitiesGrid">
           <!-- Facility 1: Function Hall -->
-          <article class="facility-card">
+          <article class="facility-card" data-category="halls">
             <div class="facility-img-wrapper">
               <img src="assets/images/function_hall.jpg" alt="Function Hall" loading="lazy">
               <span class="facility-badge">Cap: 250 Pax</span>
             </div>
             <div class="facility-body">
               <h3 class="facility-name">Function Hall</h3>
-              <p class="facility-desc">Suitable for seminars, meetings, and large events.</p>
+              <p class="facility-desc">Suitable for seminars, meetings, and large official gatherings.</p>
+              <div class="facility-bubble-tags">
+                <span class="facility-bubble-tag">Central Aircon</span>
+                <span class="facility-bubble-tag">Dual Projector</span>
+                <span class="facility-bubble-tag">Sound System</span>
+                <span class="facility-bubble-tag">VIP Lounge</span>
+              </div>
               <div class="facility-footer">
                 <span class="facility-meta">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -317,14 +330,20 @@
           </article>
 
           <!-- Facility 2: Training Hall -->
-          <article class="facility-card">
+          <article class="facility-card" data-category="halls">
             <div class="facility-img-wrapper">
               <img src="assets/images/training_hall.jpg" alt="Training Hall" loading="lazy">
               <span class="facility-badge">Cap: 80 Pax</span>
             </div>
             <div class="facility-body">
               <h3 class="facility-name">Training Hall</h3>
-              <p class="facility-desc">For training sessions, workshops, and educational activities.</p>
+              <p class="facility-desc">For training sessions, workshops, and interactive educational activities.</p>
+              <div class="facility-bubble-tags">
+                <span class="facility-bubble-tag">Modular Desks</span>
+                <span class="facility-bubble-tag">Smart Display</span>
+                <span class="facility-bubble-tag">WiFi Access</span>
+                <span class="facility-bubble-tag">Whiteboards</span>
+              </div>
               <div class="facility-footer">
                 <span class="facility-meta">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -341,14 +360,20 @@
           </article>
 
           <!-- Facility 3: Mess Hall -->
-          <article class="facility-card">
+          <article class="facility-card" data-category="halls">
             <div class="facility-img-wrapper">
               <img src="assets/images/mess_hall.jpg" alt="Mess Hall" loading="lazy">
               <span class="facility-badge">Cap: 150 Pax</span>
             </div>
             <div class="facility-body">
               <h3 class="facility-name">Mess Hall</h3>
-              <p class="facility-desc">For meals, gatherings, and related activities.</p>
+              <p class="facility-desc">For meals, gatherings, banquets, and official dining events.</p>
+              <div class="facility-bubble-tags">
+                <span class="facility-bubble-tag">Buffet Counters</span>
+                <span class="facility-bubble-tag">Kitchen Access</span>
+                <span class="facility-bubble-tag">Handwash Area</span>
+                <span class="facility-bubble-tag">Patio Deck</span>
+              </div>
               <div class="facility-footer">
                 <span class="facility-meta">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -358,9 +383,104 @@
                     <line x1="10" y1="1" x2="10" y2="4"></line>
                     <line x1="14" y1="1" x2="14" y2="4"></line>
                   </svg>
-                  Dining & Buffet
+                  Dining &amp; Buffet
                 </span>
                 <button type="button" class="facility-btn js-view-facility" data-facility="mess-hall">
+                  Details &rarr;
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Facility 4: Executive Boardroom -->
+          <article class="facility-card" data-category="halls">
+            <div class="facility-img-wrapper">
+              <img src="assets/images/boardroom.jpg" alt="Executive Boardroom" loading="lazy">
+              <span class="facility-badge">Cap: 30 Pax</span>
+            </div>
+            <div class="facility-body">
+              <h3 class="facility-name">Executive Boardroom</h3>
+              <p class="facility-desc">VIP conference room for executive committee meetings and briefings.</p>
+              <div class="facility-bubble-tags">
+                <span class="facility-bubble-tag">Leather Chairs</span>
+                <span class="facility-bubble-tag">Video Conf Cam</span>
+                <span class="facility-bubble-tag">Acoustic Walls</span>
+                <span class="facility-bubble-tag">Coffee Bar</span>
+              </div>
+              <div class="facility-footer">
+                <span class="facility-meta">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                  </svg>
+                  VIP Conference
+                </span>
+                <button type="button" class="facility-btn js-view-facility" data-facility="executive-boardroom">
+                  Details &rarr;
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Facility 5: Sampaguita VIP Suite (Dormitory) -->
+          <article class="facility-card" data-category="dorms">
+            <div class="facility-img-wrapper">
+              <img src="assets/images/dormitory.jpg" alt="Sampaguita VIP Suite Dormitory" loading="lazy">
+              <span class="facility-badge">VIP Suite: 2-4 Beds</span>
+            </div>
+            <div class="facility-body">
+              <h3 class="facility-name">Sampaguita VIP Suite</h3>
+              <p class="facility-desc">Executive lodging for guest speakers and dignitaries with ensuite bath.</p>
+              <div class="facility-bubble-tags">
+                <span class="facility-bubble-tag">Aircon Suite</span>
+                <span class="facility-bubble-tag">Ensuite Bath</span>
+                <span class="facility-bubble-tag">Workstation</span>
+                <span class="facility-bubble-tag">Hot Shower</span>
+              </div>
+              <div class="facility-footer">
+                <span class="facility-meta">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 4v16"></path>
+                    <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                    <path d="M2 17h20"></path>
+                    <path d="M6 8v9"></path>
+                  </svg>
+                  VIP Lodging
+                </span>
+                <button type="button" class="facility-btn js-view-facility" data-facility="sampaguita-dorm">
+                  Details &rarr;
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Facility 6: Ilang-Ilang Trainee Quarters (Dormitory) -->
+          <article class="facility-card" data-category="dorms">
+            <div class="facility-img-wrapper">
+              <img src="assets/images/dormitory_bunk.jpg" alt="Ilang-Ilang Trainee Quarters" loading="lazy">
+              <span class="facility-badge">Cap: 48 Beds</span>
+            </div>
+            <div class="facility-body">
+              <h3 class="facility-name">Ilang-Ilang Trainee Dorm</h3>
+              <p class="facility-desc">Comfortable delegation quarters with sturdy wooden bunk beds and lockers.</p>
+              <div class="facility-bubble-tags">
+                <span class="facility-bubble-tag">Wooden Bunk Beds</span>
+                <span class="facility-bubble-tag">Full Aircon</span>
+                <span class="facility-bubble-tag">Personal Lockers</span>
+                <span class="facility-bubble-tag">Study Desks</span>
+              </div>
+              <div class="facility-footer">
+                <span class="facility-meta">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 4v16"></path>
+                    <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                    <path d="M2 17h20"></path>
+                    <path d="M6 8v9"></path>
+                  </svg>
+                  Trainee Quarters
+                </span>
+                <button type="button" class="facility-btn js-view-facility" data-facility="ilang-ilang-dorm">
                   Details &rarr;
                 </button>
               </div>
