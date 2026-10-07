@@ -359,7 +359,8 @@
     gap: 0.85rem !important;
   }
 
-  .booking-nav-center {
+  .booking-nav-center,
+  .user-profile-menu {
     display: none !important;
   }
 
