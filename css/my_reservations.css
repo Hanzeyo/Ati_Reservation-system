@@ -368,6 +368,23 @@ body.my-res-body {
   stroke: #991b1b;
 }
 
+/* Profile Dropdown Navigation items: Hidden on desktop, visible only in mobile mode */
+.profile-dropdown .dropdown-item-mobile-only,
+.profile-dropdown .dropdown-mobile-only,
+.profile-dropdown a[href*="my_reservations.php"],
+.profile-dropdown a[href*="booking_history.php"] {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .profile-dropdown .dropdown-item-mobile-only,
+  .profile-dropdown .dropdown-mobile-only,
+  .profile-dropdown a[href*="my_reservations.php"],
+  .profile-dropdown a[href*="booking_history.php"] {
+    display: flex !important;
+  }
+}
+
 @keyframes dropdownFade {
   from {
     opacity: 0;

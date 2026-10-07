@@ -299,18 +299,32 @@ function initModals() {
       features: ['Executive Leather Seating', 'PTZ Video Conference System', 'Acoustic Wall Paneling', 'Nespresso Coffee Bar']
     },
     'sampaguita-dorm': {
-      title: 'Sampaguita VIP Suite',
-      image: 'assets/images/dormitory.jpg',
-      desc: 'Premium lodging accommodations designed for visiting speakers, department officials, and VIP dignitaries with ensuite bath facilities.',
-      capacity: '2 - 4 Guests (VIP Suite)',
-      features: ['Air-conditioned Suite', 'Ensuite Bathroom & Hot Water', 'Dedicated Work Desk', 'Wardrobe & Digital Lockers']
+      title: '1st Floor: Sampaguita Dormitory',
+      image: 'assets/images/dormitory_bunk.jpg',
+      desc: 'Spacious, air-conditioned trainee accommodation floor (Floors 1 to 4) fitted with sturdy wooden bunk beds and individual secure lockers.',
+      capacity: '10 Rooms (40 Beds per Floor)',
+      features: ['Wooden Bunk Beds', 'Individual Secure Lockers', 'Central Air-Conditioning', 'Study Lounges & Common Area']
     },
     'ilang-ilang-dorm': {
-      title: 'Ilang-Ilang Trainee Quarters',
+      title: '2nd Floor: Ilang-Ilang Trainee Dormitory',
       image: 'assets/images/dormitory_bunk.jpg',
-      desc: 'Spacious, air-conditioned trainee accommodation floor fitted with durable solid wood bunk beds and individual student lockers.',
-      capacity: 'Up to 48 Trainees (12 Rooms)',
-      features: ['Solid Wood Bunk Beds', 'Individual Secure Lockers', 'Central Air-Conditioning', 'Study Lounges & Common Area']
+      desc: 'Standard trainee accommodation floor featuring air-conditioned rooms, wooden bunk beds, and dedicated delegation lounges.',
+      capacity: '10 Rooms (40 Beds)',
+      features: ['Solid Wood Bunk Beds', 'Individual Secure Lockers', 'Central Air-Conditioning', 'Study Desks & Lounge']
+    },
+    'waling-waling-dorm': {
+      title: '5th Floor: Waling-Waling VIP Suite',
+      image: 'assets/images/dormitory.jpg',
+      desc: 'Premium 5th floor VIP accommodations designed for resource speakers, department officials, and executive dignitaries with ensuite bath facilities.',
+      capacity: '10 VIP Suites (20 Beds)',
+      features: ['Air-Conditioned VIP Suite', 'Ensuite Bathroom & Hot Shower', 'Executive Workstation', 'Personal Refrigerator & Lockers']
+    },
+    'dama-de-noche-dorm': {
+      title: '6th Floor: Dama de Noche VIP Penthouse',
+      image: 'assets/images/dormitory.jpg',
+      desc: 'Top-floor 6th level VIP executive penthouse residence with premium appointments, scenic views, and ensuite accommodations.',
+      capacity: '10 VIP Suites (20 Beds)',
+      features: ['Top-Floor VIP Penthouse', 'Ensuite Bath & Hot Shower', 'Executive Workstation', 'Digital Lockers & Wardrobe']
     }
   };
 

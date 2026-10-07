@@ -327,6 +327,24 @@ body.booking-body {
   stroke: #991b1b;
 }
 
+/* Profile Dropdown Navigation items: Hidden on desktop, visible only in mobile mode */
+.profile-dropdown .dropdown-item-mobile-only,
+.profile-dropdown .dropdown-mobile-only,
+.profile-dropdown a[href*="my_reservations.php"],
+.profile-dropdown a[href*="booking_history.php"] {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+
+  .profile-dropdown .dropdown-item-mobile-only,
+  .profile-dropdown .dropdown-mobile-only,
+  .profile-dropdown a[href*="my_reservations.php"],
+  .profile-dropdown a[href*="booking_history.php"] {
+    display: flex !important;
+  }
+}
+
 /* ==========================================================================
    Main Booking Layout
    ========================================================================== */
@@ -972,41 +990,49 @@ body.booking-body {
   margin-bottom: 1.15rem;
 }
 
-/* Amenities Bubble Tags */
+/* Amenities Bubble Tags (Small, Compact & Uniform) */
 .facility-amenities-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.38rem;
+  align-items: center;
+  align-content: flex-start;
+  gap: 0.35rem 0.45rem;
   margin-bottom: 1.25rem;
-  flex-grow: 1;
+  min-height: 52px;
 }
 
 .amenity-pill {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: #174d2f;
-  background: #edf6f0;
-  padding: 0.24rem 0.65rem;
+  color: #143e27;
+  background: #e4f3e9;
+  height: 24px;
+  padding: 0 0.65rem;
   border-radius: 9999px;
-  border: 1px solid #c8e4d3;
+  border: 1px solid #b8e0c7;
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  box-shadow: 0 1px 3px rgba(23, 77, 47, 0.04);
-  transition: all 0.2s ease;
+  justify-content: center;
+  line-height: 1;
+  white-space: nowrap;
   letter-spacing: 0.01em;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+  flex-grow: 0;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .facility-choice-card:hover .amenity-pill {
-  background: #e2f2e7;
-  border-color: #add9bc;
-  color: #0f3821;
+  background: #d6ecdd;
+  border-color: #9cccaa;
+  color: #0b321c;
 }
 
 .facility-choice-card.selected .amenity-pill {
-  background: #d8edd9;
-  border-color: #8ac69e;
-  color: #0a2f1a;
+  background: #c8e6d2;
+  border-color: #7fbd96;
+  color: #072614;
 }
 
 /* Card Action Button */

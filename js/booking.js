@@ -46,8 +46,8 @@ const dormFloorData = {
   'dorm-floor-1': {
     title: '1st Floor: Sampaguita Dormitory',
     floor: '1st Floor (Sampaguita)',
-    desc: 'Executive VIP dormitory floor with 10 air-conditioned suites, private ensuite baths, and workstations.',
-    rate: '₱800 / night',
+    desc: 'Ground level trainee delegation floor with 10 air-conditioned rooms, wooden bunk beds, and individual lockers.',
+    rate: '₱500 / night',
     rooms: [
       { num: '101', available: true },
       { num: '102', available: true },
@@ -82,8 +82,8 @@ const dormFloorData = {
   'dorm-floor-3': {
     title: '3rd Floor: Gumamela Dormitory',
     floor: '3rd Floor (Gumamela)',
-    desc: 'Executive twin-bed dormitory floor with 10 air-conditioned rooms, workstations, and study lounges.',
-    rate: '₱700 / night',
+    desc: 'Standard trainee delegation floor with 10 air-conditioned rooms, wooden bunk beds, and study lounges.',
+    rate: '₱500 / night',
     rooms: [
       { num: '301', available: true },
       { num: '302', available: true },
@@ -118,7 +118,7 @@ const dormFloorData = {
   'dorm-floor-5': {
     title: '5th Floor: Waling-Waling Dormitory',
     floor: '5th Floor (Waling-Waling)',
-    desc: 'VIP resource speaker residence floor with 10 premium air-conditioned suites and executive desks.',
+    desc: 'VIP resource speaker & executive floor with 10 luxury air-conditioned suites, ensuite baths, and workstations.',
     rate: '₱800 / night',
     rooms: [
       { num: '501', available: true },
@@ -136,8 +136,8 @@ const dormFloorData = {
   'dorm-floor-6': {
     title: '6th Floor: Dama de Noche Dormitory',
     floor: '6th Floor (Dama de Noche)',
-    desc: 'Quiet study and research trainee floor with 10 air-conditioned rooms, reading lamps, and personal lockers.',
-    rate: '₱500 / night',
+    desc: 'Top-floor VIP executive residence with 10 premium air-conditioned suites, ensuite bathrooms, and scenic views.',
+    rate: '₱800 / night',
     rooms: [
       { num: '601', available: true },
       { num: '602', available: false },
