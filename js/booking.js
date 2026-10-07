@@ -9,18 +9,17 @@ document.addEventListener('DOMContentLoaded', () => {
   initDateSlotInteractions();
   initProfileDropdown();
   initMobileDrawer();
-  initDormRoomSelection();
 });
 
 // Global navigation handle
 let goToStep = null;
 
-// Global state
+// Global state for Venue / Facility Booking
 const bookingState = {
   currentStep: 1,
   selectedFacility: {
     id: 'function-hall',
-    name: 'Function Hall',
+    name: 'Serrano Function Hall',
     rate: '₱5,000/day',
     capacity: '200 PAX',
     type: 'halls',
@@ -40,126 +39,13 @@ const bookingState = {
 };
 
 /* ==========================================================================
-   1. Facility Selection & Dormitory Room Floor Data (Modal Popup)
-   ========================================================================== */
-const dormFloorData = {
-  'dorm-floor-1': {
-    title: '1st Floor: Sampaguita Dormitory',
-    floor: '1st Floor (Sampaguita)',
-    desc: 'Ground level trainee delegation floor with 10 air-conditioned rooms, wooden bunk beds, and individual lockers.',
-    rate: '₱500 / night',
-    rooms: [
-      { num: '101', available: true },
-      { num: '102', available: true },
-      { num: '103', available: false },
-      { num: '104', available: true },
-      { num: '105', available: true },
-      { num: '106', available: true },
-      { num: '107', available: false },
-      { num: '108', available: true },
-      { num: '109', available: true },
-      { num: '110', available: true }
-    ]
-  },
-  'dorm-floor-2': {
-    title: '2nd Floor: Ilang-Ilang Dormitory',
-    floor: '2nd Floor (Ilang-Ilang)',
-    desc: 'Standard trainee dormitory floor with 10 air-conditioned rooms, wooden bunk beds, and individual lockers.',
-    rate: '₱500 / night',
-    rooms: [
-      { num: '201', available: true },
-      { num: '202', available: false },
-      { num: '203', available: true },
-      { num: '204', available: false },
-      { num: '205', available: true },
-      { num: '206', available: true },
-      { num: '207', available: false },
-      { num: '208', available: true },
-      { num: '209', available: false },
-      { num: '210', available: true }
-    ]
-  },
-  'dorm-floor-3': {
-    title: '3rd Floor: Gumamela Dormitory',
-    floor: '3rd Floor (Gumamela)',
-    desc: 'Standard trainee delegation floor with 10 air-conditioned rooms, wooden bunk beds, and study lounges.',
-    rate: '₱500 / night',
-    rooms: [
-      { num: '301', available: true },
-      { num: '302', available: true },
-      { num: '303', available: false },
-      { num: '304', available: true },
-      { num: '305', available: true },
-      { num: '306', available: false },
-      { num: '307', available: true },
-      { num: '308', available: false },
-      { num: '309', available: true },
-      { num: '310', available: true }
-    ]
-  },
-  'dorm-floor-4': {
-    title: '4th Floor: Rosal Dormitory',
-    floor: '4th Floor (Rosal)',
-    desc: 'Trainee delegation quarters with 10 air-conditioned rooms, single bunk beds, and common lounge.',
-    rate: '₱500 / night',
-    rooms: [
-      { num: '401', available: true },
-      { num: '402', available: false },
-      { num: '403', available: true },
-      { num: '404', available: false },
-      { num: '405', available: true },
-      { num: '406', available: false },
-      { num: '407', available: true },
-      { num: '408', available: true },
-      { num: '409', available: false },
-      { num: '410', available: true }
-    ]
-  },
-  'dorm-floor-5': {
-    title: '5th Floor: Waling-Waling Dormitory',
-    floor: '5th Floor (Waling-Waling)',
-    desc: 'VIP resource speaker & executive floor with 10 luxury air-conditioned suites, ensuite baths, and workstations.',
-    rate: '₱800 / night',
-    rooms: [
-      { num: '501', available: true },
-      { num: '502', available: true },
-      { num: '503', available: false },
-      { num: '504', available: true },
-      { num: '505', available: true },
-      { num: '506', available: true },
-      { num: '507', available: false },
-      { num: '508', available: true },
-      { num: '509', available: false },
-      { num: '510', available: true }
-    ]
-  },
-  'dorm-floor-6': {
-    title: '6th Floor: Dama de Noche Dormitory',
-    floor: '6th Floor (Dama de Noche)',
-    desc: 'Top-floor VIP executive residence with 10 premium air-conditioned suites, ensuite bathrooms, and scenic views.',
-    rate: '₱800 / night',
-    rooms: [
-      { num: '601', available: true },
-      { num: '602', available: false },
-      { num: '603', available: true },
-      { num: '604', available: true },
-      { num: '605', available: false },
-      { num: '606', available: true },
-      { num: '607', available: false },
-      { num: '608', available: true },
-      { num: '609', available: true },
-      { num: '610', available: false }
-    ]
-  }
-};
-/* ==========================================================================
-   1. Facility Selection & Hall Layout / Dorm Room Data (Interactive Modal)
+   1. Facility Selection & All 6 Hall Layouts (In Order)
    ========================================================================== */
 const hallLayoutData = {
   'function-hall': {
-    title: 'Function Hall',
+    title: 'Serrano Function Hall',
     location: 'Main Administration Building • Ground Floor',
-    desc: 'Flagship multi-purpose event auditorium with central aircon, stage lighting, sound system, and VIP holding lounge.',
+    desc: 'Flagship multi-purpose event auditorium with central aircon, stage lighting, high-power sound system, and VIP holding lounge.',
     rate: '₱5,000 / day',
     layouts: [
       { id: 'fh-theater', name: 'Theater Setup', cap: '200 PAX', available: true, desc: 'Row seating facing main presentation stage' },
@@ -184,18 +70,32 @@ const hallLayoutData = {
       { id: 'tha-breakout', name: 'Breakout Stations', cap: '50 PAX', available: true, desc: 'Individual station whiteboards & display corners' }
     ]
   },
-  'mess-hall': {
-    title: 'Mess Hall & Dining Area',
-    location: 'Hostel & Dining Complex • Ground Floor',
-    desc: 'Institutional dining facility equipped with commercial buffet counters, beverage stations, and patio deck.',
-    rate: '₱3,500 / day',
+  'training-hall-b': {
+    title: 'Training Hall B (Agri-Fisheries)',
+    location: 'Agri-Fisheries Building • 1st Floor',
+    desc: 'Specialized technical training venue equipped with demonstration tables, wet lab access, and technical teaching equipment.',
+    rate: '₱3,000 / day',
     layouts: [
-      { id: 'mh-buffet', name: 'Full Buffet Dining', cap: '100 PAX', available: true, desc: 'Dual-line self-service buffet and dining tables' },
-      { id: 'mh-banquet', name: 'Formal Plated Service', cap: '80 PAX', available: true, desc: 'Head table VIP service with course runners' },
-      { id: 'mh-cafeteria', name: 'Cafeteria Standard', cap: '100 PAX', available: true, desc: 'Long-table communal dining arrangement' },
-      { id: 'mh-patio', name: 'Patio & Deck Combo', cap: '60 PAX', available: false, desc: 'Indoor-outdoor dining layout (Book other date)' },
-      { id: 'mh-mixer', name: 'Cocktail & Social', cap: '100 PAX', available: true, desc: 'High-top cocktail tables and appetizer station' },
-      { id: 'mh-fellowship', name: 'Fellowship Night', cap: '90 PAX', available: true, desc: 'Dinner tables with acoustic music stage setup' }
+      { id: 'thb-workshop', name: 'Workshop Benches', cap: '50 PAX', available: true, desc: 'Hands-on practical workstations for agricultural trainees' },
+      { id: 'thb-lecture', name: 'Technical Lecture', cap: '80 PAX', available: true, desc: 'Standard lecture seating facing dual laser display' },
+      { id: 'thb-demo', name: 'Demonstration Lab', cap: '50 PAX', available: true, desc: 'Central demonstration platform with perimeter seating' },
+      { id: 'thb-modular', name: 'Modular Group Pods', cap: '60 PAX', available: false, desc: 'Interactive workshop configuration (Book other date)' },
+      { id: 'thb-av', name: 'AV Presentation', cap: '70 PAX', available: true, desc: 'High-definition multimedia training setup' },
+      { id: 'thb-hybrid', name: 'Hybrid Training', cap: '45 PAX', available: true, desc: 'Webinar broadcast setup with multi-camera recording' }
+    ]
+  },
+  'four-h-center': {
+    title: '4-H Learning Center',
+    location: '4-H Youth Building • 2nd Floor',
+    desc: 'Configurable multi-purpose training hall for youth agricultural leadership, digital farmer programs, and group forums.',
+    rate: '₱3,000 / day',
+    layouts: [
+      { id: '4h-workshop', name: 'Multi-Purpose Workshop', cap: '70 PAX', available: true, desc: 'Flexible modular tables with mobile whiteboards' },
+      { id: '4h-youth', name: 'Youth Delegation Pods', cap: '60 PAX', available: true, desc: 'Collaborative team clusters for youth delegates' },
+      { id: '4h-circle', name: 'Seminar Circle', cap: '50 PAX', available: false, desc: 'Town hall circular discussion layout (Book other date)' },
+      { id: '4h-digital', name: 'Digital Agri Display', cap: '60 PAX', available: true, desc: 'Smart screen workstation layout for smart farming apps' },
+      { id: '4h-theater', name: 'Forum Theater', cap: '80 PAX', available: true, desc: 'Auditorium style seating for youth assemblies' },
+      { id: '4h-collab', name: 'Group Collaboration', cap: '60 PAX', available: true, desc: 'Brainstorming layout with interactive 4K display' }
     ]
   },
   'executive-boardroom': {
@@ -211,6 +111,20 @@ const hallLayoutData = {
       { id: 'eb-strategy', name: 'Closed Strategy Session', cap: '18 PAX', available: true, desc: 'Private soundproof layout with document displays' },
       { id: 'eb-delegation', name: 'Diplomatic Delegation', cap: '20 PAX', available: true, desc: 'Formal protocol seating with desk flags & mics' }
     ]
+  },
+  'mess-hall': {
+    title: 'ATI Mess Hall & Dining Pavilion',
+    location: 'Hostel & Dining Complex • Ground Floor',
+    desc: 'Institutional dining facility equipped with commercial buffet counters, beverage stations, and patio deck.',
+    rate: '₱3,500 / day',
+    layouts: [
+      { id: 'mh-buffet', name: 'Full Buffet Dining', cap: '100 PAX', available: true, desc: 'Dual-line self-service buffet and dining tables' },
+      { id: 'mh-banquet', name: 'Formal Plated Service', cap: '80 PAX', available: true, desc: 'Head table VIP service with course runners' },
+      { id: 'mh-cafeteria', name: 'Cafeteria Standard', cap: '100 PAX', available: true, desc: 'Long-table communal dining arrangement' },
+      { id: 'mh-patio', name: 'Patio & Deck Combo', cap: '60 PAX', available: false, desc: 'Indoor-outdoor dining layout (Book other date)' },
+      { id: 'mh-mixer', name: 'Cocktail & Social', cap: '100 PAX', available: true, desc: 'High-top cocktail tables and appetizer station' },
+      { id: 'mh-fellowship', name: 'Fellowship Night', cap: '90 PAX', available: true, desc: 'Dinner tables with acoustic music stage setup' }
+    ]
   }
 };
 
@@ -222,42 +136,37 @@ function initFacilitySelection() {
 
   cards.forEach(card => {
     const selectBtn = card.querySelector('.btn-select-facility');
-    const isDorm = card.dataset.facilityType === 'dormitories' || card.dataset.id.startsWith('dorm-floor-');
 
     function selectCard(openModal = true) {
       cards.forEach(c => {
         c.classList.remove('selected');
         const btn = c.querySelector('.btn-select-facility');
         if (btn) {
-          const isCDorm = c.dataset.facilityType === 'dormitories' || c.dataset.id.startsWith('dorm-floor-');
-          if (isCDorm) {
-            btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Room &amp; View Floor Plan`;
-          } else {
-            btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Setup &amp; View Floor Plan`;
-          }
+          btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Setup &amp; View Floor Plan`;
         }
       });
 
       card.classList.add('selected');
+      const hallId = card.dataset.id;
+      const hallData = hallLayoutData[hallId] || hallLayoutData['function-hall'];
+      const defaultLayout = hallData.layouts[0];
 
       bookingState.selectedFacility = {
-        id: card.dataset.id,
-        name: card.dataset.name,
-        rate: card.dataset.rate,
-        capacity: card.dataset.capacity,
-        type: card.dataset.facilityType,
-        roomNumber: isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.roomNumber || null) : null) : null,
-        floor: isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.floor || null) : null) : null,
-        roomRate: isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.roomRate || null) : null) : null,
-        setupName: !isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.setupName || null) : null) : null,
-        setupCap: !isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.setupCap || null) : null) : null,
-        location: !isDorm ? (hallLayoutData[card.dataset.id]?.location || null) : null,
-        setupRate: !isDorm ? (card.dataset.rate || null) : null,
-        occupiedOnDefaultDate: bookingState.selectedFacility?.id === card.dataset.id ? Boolean(bookingState.selectedFacility?.occupiedOnDefaultDate) : false
+        id: hallId,
+        name: card.dataset.name || hallData.title,
+        rate: card.dataset.rate || hallData.rate,
+        capacity: defaultLayout.cap,
+        type: 'halls',
+        setupId: defaultLayout.id,
+        setupName: defaultLayout.name,
+        setupCap: defaultLayout.cap,
+        location: hallData.location,
+        setupRate: card.dataset.rate || hallData.rate,
+        occupiedOnDefaultDate: false
       };
 
       if (openModal) {
-        openFacilityModal(card.dataset.id);
+        openFacilityModal(hallId);
       } else {
         updateReviewSummary();
       }
@@ -300,21 +209,21 @@ function initFacilitySelection() {
     }
   });
 
-  // Pre-initialize default Function Hall setup badge if Function Hall is selected
+  // Pre-initialize default Function Hall setup badge
   const defaultHallCard = document.querySelector('.facility-choice-card.selected[data-id="function-hall"]');
   if (defaultHallCard) {
     const defaultLayout = hallLayoutData['function-hall'].layouts[0];
     bookingState.selectedFacility = {
       id: 'function-hall',
-      name: 'Function Hall',
-      rate: '₱5,000/day',
+      name: 'Serrano Function Hall',
+      rate: '₱5,000 / day',
       capacity: defaultLayout.cap,
       type: 'halls',
       setupId: defaultLayout.id,
       setupName: defaultLayout.name,
       setupCap: defaultLayout.cap,
       location: hallLayoutData['function-hall'].location,
-      setupRate: '₱5,000/day',
+      setupRate: '₱5,000 / day',
       occupiedOnDefaultDate: false
     };
     const badge = defaultHallCard.querySelector('.hall-selected-setup-badge');
@@ -329,13 +238,53 @@ function initFacilitySelection() {
     }
     updateReviewSummary();
   }
+
+  // Pre-select facility from URL parameter if provided
+  const urlParamFacility = new URLSearchParams(window.location.search).get('facility') || new URLSearchParams(window.location.search).get('hall');
+  if (urlParamFacility && hallLayoutData[urlParamFacility]) {
+    const targetCard = document.querySelector(`.facility-choice-card[data-id="${urlParamFacility}"]`);
+    if (targetCard) {
+      document.querySelectorAll('.facility-choice-card').forEach(c => {
+        c.classList.remove('selected');
+        const b = c.querySelector('.hall-selected-setup-badge');
+        if (b) b.style.display = 'none';
+        const bt = c.querySelector('.btn-select-facility');
+        if (bt) bt.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Setup & View Floor Plan`;
+      });
+      targetCard.classList.add('selected');
+      const hData = hallLayoutData[urlParamFacility];
+      const dLayout = hData.layouts[0];
+      bookingState.selectedFacility = {
+        id: urlParamFacility,
+        name: targetCard.dataset.name || hData.title,
+        rate: targetCard.dataset.rate || hData.rate,
+        capacity: dLayout.cap,
+        type: 'halls',
+        setupId: dLayout.id,
+        setupName: dLayout.name,
+        setupCap: dLayout.cap,
+        location: hData.location,
+        setupRate: targetCard.dataset.rate || hData.rate,
+        occupiedOnDefaultDate: false
+      };
+      const badge = targetCard.querySelector('.hall-selected-setup-badge');
+      const badgeText = targetCard.querySelector('.d-room-text');
+      if (badge && badgeText) {
+        badgeText.textContent = `✓ ${dLayout.name} Selected (${dLayout.cap})`;
+        badge.style.display = 'flex';
+      }
+      const btn = targetCard.querySelector('.btn-select-facility');
+      if (btn) {
+        btn.innerHTML = `✓ ${dLayout.name} Selected (Click to change)`;
+      }
+      updateReviewSummary();
+    }
+  }
 }
 
 function openFacilityModal(facilityId) {
-  const isDorm = Boolean(dormFloorData[facilityId]);
-  const isHall = Boolean(hallLayoutData[facilityId]);
-
-  if (!isDorm && !isHall) return;
+  const data = hallLayoutData[facilityId];
+  if (!data) return;
 
   currentModalFacilityId = facilityId;
   modalTempSelectedItem = null;
@@ -347,177 +296,116 @@ function openFacilityModal(facilityId) {
   const rateEl = document.getElementById('modalDormRate');
   const gridEl = document.getElementById('modalRoomsGrid');
   const feedbackBar = document.getElementById('modalRoomFeedback');
-  const confirmBtn = document.getElementById('btnModalConfirm');
   const legendAvail = document.getElementById('modalLegendAvailText');
   const legendRes = document.getElementById('modalLegendResText');
 
   if (feedbackBar) feedbackBar.style.display = 'none';
 
-  if (isDorm) {
-    const data = dormFloorData[facilityId];
-    if (catPill) catPill.textContent = 'DORMITORY FLOOR PLAN & ROOM SELECTION';
-    if (titleEl) titleEl.textContent = data.title;
-    if (floorEl) floorEl.textContent = `${data.floor} • ${data.desc}`;
-    if (rateEl) rateEl.textContent = data.rate;
-    if (legendAvail) legendAvail.innerHTML = '<strong>Available:</strong> Click to assign for your stay';
-    if (legendRes) legendRes.innerHTML = '<strong>Reserved:</strong> Occupied by scheduled delegates';
+  if (catPill) catPill.textContent = 'VENUE SETUP & FLOOR PLAN SELECTION';
+  if (titleEl) titleEl.textContent = data.title;
+  if (floorEl) floorEl.textContent = `${data.location} • ${data.desc}`;
+  if (rateEl) rateEl.textContent = data.rate;
+  if (legendAvail) legendAvail.innerHTML = '<strong>Available:</strong> Click to assign layout setup';
+  if (legendRes) legendRes.innerHTML = '<strong>Reserved:</strong> Setup reserved for existing booking';
 
-    if (gridEl) {
-      gridEl.className = 'modal-rooms-grid';
-      gridEl.innerHTML = '';
-      const bedIconSvg = `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
-        </svg>
+  if (gridEl) {
+    gridEl.className = 'modal-rooms-grid hall-layout-mode';
+    gridEl.innerHTML = '';
+
+    const hallIcons = {
+      'fh-theater': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M7 18h10M3 21h18"/></svg>',
+      'fh-classroom': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10M12 16v4"/></svg>',
+      'fh-banquet': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
+      'fh-ushape': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4v11a5 5 0 0 0 10 0V4"/><rect x="3" y="3" width="4" height="3"/><rect x="13" y="3" width="4" height="3"/></svg>',
+      'fh-conference': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="6" width="16" height="12" rx="2"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg>',
+      'fh-exhibition': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+      'tha-pods': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>',
+      'tha-lecture': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10M12 16v4"/></svg>',
+      'tha-circle': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>',
+      'tha-computer': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+      'tha-seminar': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M7 18h10M3 21h18"/></svg>',
+      'tha-breakout': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
+      'thb-workshop': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+      'thb-lecture': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10M12 16v4"/></svg>',
+      'thb-demo': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
+      'thb-modular': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>',
+      'thb-av': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>',
+      'thb-hybrid': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>',
+      '4h-workshop': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+      '4h-youth': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+      '4h-circle': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>',
+      '4h-digital': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+      '4h-theater': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M7 18h10M3 21h18"/></svg>',
+      '4h-collab': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+      'eb-board': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="10" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+      'eb-videoconf': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>',
+      'eb-briefing': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>',
+      'eb-hearing': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>',
+      'eb-strategy': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+      'eb-delegation': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+      'mh-buffet': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
+      'mh-banquet': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/></svg>',
+      'mh-cafeteria': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="6" rx="1"/><rect x="3" y="15" width="18" height="3" rx="1"/></svg>',
+      'mh-patio': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+      'mh-mixer': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="6 2 18 2 12 11 12 22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>',
+      'mh-fellowship': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
+      'default': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>'
+    };
+
+    data.layouts.forEach(l => {
+      const box = document.createElement('div');
+      box.className = `dorm-room-box hall-layout-box ${l.available ? 'available' : 'reserved'}`;
+      box.dataset.item = l.id;
+      box.dataset.available = l.available ? 'true' : 'false';
+
+      const iconSvg = hallIcons[l.id] || hallIcons['default'];
+
+      box.innerHTML = `
+        <div class="dorm-bed-icon">${iconSvg}</div>
+        <div class="dorm-room-num" style="font-size: 1.05rem;">${l.name}</div>
+        <span class="layout-cap-badge">${l.cap}</span>
+        <div class="dorm-room-status">${l.available ? 'AVAILABLE' : 'RESERVED'}</div>
+        <div class="dorm-room-hint ${l.available ? 'ready' : 'alt-date'}">${l.available ? 'Ready Oct 5' : 'Book other date'}</div>
+        <div class="layout-desc-text">${l.desc}</div>
       `;
 
-      data.rooms.forEach(r => {
-        const box = document.createElement('div');
-        box.className = `dorm-room-box ${r.available ? 'available' : 'reserved'}`;
-        box.dataset.item = r.num;
-        box.dataset.available = r.available ? 'true' : 'false';
+      if (bookingState.selectedFacility?.id === facilityId && (bookingState.selectedFacility?.setupName === l.name || bookingState.selectedFacility?.setupId === l.id)) {
+        box.classList.add('selected');
+        modalTempSelectedItem = l.id;
+      }
 
-        box.innerHTML = `
-          <div class="dorm-bed-icon">${bedIconSvg}</div>
-          <div class="dorm-room-num">${r.num}</div>
-          <div class="dorm-room-status">${r.available ? 'AVAILABLE' : 'RESERVED'}</div>
-          <div class="dorm-room-hint ${r.available ? 'ready' : 'alt-date'}">${r.available ? 'Ready Oct 5' : 'Book other date'}</div>
-        `;
+      box.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOcc = !l.available;
+        gridEl.querySelectorAll('.dorm-room-box.selected').forEach(b => b.classList.remove('selected'));
+        box.classList.add('selected');
+        modalTempSelectedItem = l.id;
 
-        if (bookingState.selectedFacility?.id === facilityId && String(bookingState.selectedFacility?.roomNumber) === String(r.num)) {
-          box.classList.add('selected');
-          modalTempSelectedItem = r.num;
+        if (feedbackBar) {
+          feedbackBar.style.display = 'flex';
+          feedbackBar.classList.toggle('alternate-date', isOcc);
+          const fTitle = document.getElementById('modalFeedbackTitle');
+          const fSub = document.getElementById('modalFeedbackSub');
+          const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
+
+          if (isOcc) {
+            if (fTitle) fTitle.textContent = `${l.name} Selected (Reserved on Oct 5)`;
+            if (fSub) fSub.textContent = `${data.title} • Proceed to Step 2 to choose an available alternate date for this setup.`;
+            if (badgeOk) badgeOk.textContent = '📅 Pick Alternate Date';
+          } else {
+            if (fTitle) fTitle.textContent = `${l.name} Selected ✓ (${l.cap})`;
+            if (fSub) fSub.textContent = `${data.title} • ${data.location} (${data.rate}) • Layout Confirmed`;
+            if (badgeOk) badgeOk.textContent = '✓ Setup Confirmed';
+          }
         }
 
-        box.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const isOcc = !r.available;
-          gridEl.querySelectorAll('.dorm-room-box.selected').forEach(b => b.classList.remove('selected'));
-          box.classList.add('selected');
-          modalTempSelectedItem = r.num;
-
-          if (feedbackBar) {
-            feedbackBar.style.display = 'flex';
-            feedbackBar.classList.toggle('alternate-date', isOcc);
-            const fTitle = document.getElementById('modalFeedbackTitle');
-            const fSub = document.getElementById('modalFeedbackSub');
-            const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
-
-            if (isOcc) {
-              if (fTitle) fTitle.textContent = `Room ${r.num} Selected (Occupied on Oct 5)`;
-              if (fSub) fSub.textContent = `${data.floor} • Proceed to Step 2 to choose an available alternate date for this room.`;
-              if (badgeOk) badgeOk.textContent = '📅 Pick Alternate Date';
-            } else {
-              if (fTitle) fTitle.textContent = `Room ${r.num} Selected ✓`;
-              if (fSub) fSub.textContent = `${data.floor} • ${data.title} (${data.rate}) • Room Assigned`;
-              if (badgeOk) badgeOk.textContent = '✓ Room Confirmed';
-            }
-          }
-
-          setTimeout(() => {
-            confirmFacilitySelection(isOcc);
-          }, 450);
-        });
-
-        gridEl.appendChild(box);
+        setTimeout(() => {
+          confirmFacilitySelection(isOcc);
+        }, 450);
       });
-    }
-  } else if (isHall) {
-    const data = hallLayoutData[facilityId];
-    if (catPill) catPill.textContent = 'VENUE SETUP & FLOOR PLAN SELECTION';
-    if (titleEl) titleEl.textContent = data.title;
-    if (floorEl) floorEl.textContent = `${data.location} • ${data.desc}`;
-    if (rateEl) rateEl.textContent = data.rate;
-    if (legendAvail) legendAvail.innerHTML = '<strong>Available:</strong> Click to assign layout setup';
-    if (legendRes) legendRes.innerHTML = '<strong>Reserved:</strong> Setup reserved for existing booking';
 
-    if (gridEl) {
-      gridEl.className = 'modal-rooms-grid hall-layout-mode';
-      gridEl.innerHTML = '';
-
-      const hallIcons = {
-        'fh-theater': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M7 18h10M3 21h18"/></svg>',
-        'fh-classroom': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10M12 16v4"/></svg>',
-        'fh-banquet': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
-        'fh-ushape': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4v11a5 5 0 0 0 10 0V4"/><rect x="3" y="3" width="4" height="3"/><rect x="13" y="3" width="4" height="3"/></svg>',
-        'fh-conference': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="6" width="16" height="12" rx="2"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg>',
-        'fh-exhibition': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
-        'tha-pods': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>',
-        'tha-lecture': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10M12 16v4"/></svg>',
-        'tha-circle': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>',
-        'tha-computer': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
-        'tha-seminar': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M7 18h10M3 21h18"/></svg>',
-        'tha-breakout': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
-        'mh-buffet': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>',
-        'mh-banquet': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/></svg>',
-        'mh-cafeteria': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="6" rx="1"/><rect x="3" y="15" width="18" height="3" rx="1"/></svg>',
-        'mh-patio': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
-        'mh-mixer': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="6 2 18 2 12 11 12 22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>',
-        'mh-fellowship': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
-        'eb-board': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="10" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
-        'eb-videoconf': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>',
-        'eb-briefing': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>',
-        'eb-hearing': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>',
-        'eb-strategy': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
-        'eb-delegation': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
-        'default': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>'
-      };
-
-      data.layouts.forEach(l => {
-        const box = document.createElement('div');
-        box.className = `dorm-room-box hall-layout-box ${l.available ? 'available' : 'reserved'}`;
-        box.dataset.item = l.id;
-        box.dataset.available = l.available ? 'true' : 'false';
-
-        const iconSvg = hallIcons[l.id] || hallIcons['default'];
-
-        box.innerHTML = `
-          <div class="dorm-bed-icon">${iconSvg}</div>
-          <div class="dorm-room-num" style="font-size: 1.05rem;">${l.name}</div>
-          <span class="layout-cap-badge">${l.cap}</span>
-          <div class="dorm-room-status">${l.available ? 'AVAILABLE' : 'RESERVED'}</div>
-          <div class="dorm-room-hint ${l.available ? 'ready' : 'alt-date'}">${l.available ? 'Ready Oct 5' : 'Book other date'}</div>
-          <div class="layout-desc-text">${l.desc}</div>
-        `;
-
-        if (bookingState.selectedFacility?.id === facilityId && (bookingState.selectedFacility?.setupName === l.name || bookingState.selectedFacility?.setupId === l.id)) {
-          box.classList.add('selected');
-          modalTempSelectedItem = l.id;
-        }
-
-        box.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const isOcc = !l.available;
-          gridEl.querySelectorAll('.dorm-room-box.selected').forEach(b => b.classList.remove('selected'));
-          box.classList.add('selected');
-          modalTempSelectedItem = l.id;
-
-          if (feedbackBar) {
-            feedbackBar.style.display = 'flex';
-            feedbackBar.classList.toggle('alternate-date', isOcc);
-            const fTitle = document.getElementById('modalFeedbackTitle');
-            const fSub = document.getElementById('modalFeedbackSub');
-            const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
-
-            if (isOcc) {
-              if (fTitle) fTitle.textContent = `${l.name} Selected (Reserved on Oct 5)`;
-              if (fSub) fSub.textContent = `${data.title} • Proceed to Step 2 to choose an available alternate date for this setup.`;
-              if (badgeOk) badgeOk.textContent = '📅 Pick Alternate Date';
-            } else {
-              if (fTitle) fTitle.textContent = `${l.name} Selected ✓ (${l.cap})`;
-              if (fSub) fSub.textContent = `${data.title} • ${data.location} (${data.rate}) • Layout Confirmed`;
-              if (badgeOk) badgeOk.textContent = '✓ Setup Confirmed';
-            }
-          }
-
-          setTimeout(() => {
-            confirmFacilitySelection(isOcc);
-          }, 450);
-        });
-
-        gridEl.appendChild(box);
-      });
-    }
+      gridEl.appendChild(box);
+    });
   }
 
   if (modal) {
@@ -539,107 +427,55 @@ const openRoomModal = openFacilityModal;
 function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
   if (!modalTempSelectedItem || !currentModalFacilityId) return;
 
-  const isDorm = Boolean(dormFloorData[currentModalFacilityId]);
-  const isHall = Boolean(hallLayoutData[currentModalFacilityId]);
+  const data = hallLayoutData[currentModalFacilityId];
+  if (!data) return;
 
-  if (isDorm) {
-    const data = dormFloorData[currentModalFacilityId];
-    if (!data) return;
+  const layout = data.layouts.find(l => l.id === modalTempSelectedItem) || data.layouts[0];
 
-    bookingState.selectedFacility = {
-      id: currentModalFacilityId,
-      name: data.title,
-      rate: data.rate,
-      capacity: document.querySelector(`.facility-choice-card[data-id="${currentModalFacilityId}"]`)?.dataset.capacity || '48 BEDS',
-      type: 'dormitories',
-      roomNumber: modalTempSelectedItem,
-      floor: data.floor,
-      roomRate: data.rate,
-      occupiedOnDefaultDate: Boolean(isOccupiedOnDefaultDate)
-    };
+  bookingState.selectedFacility = {
+    id: currentModalFacilityId,
+    name: data.title,
+    rate: data.rate,
+    capacity: layout.cap,
+    type: 'halls',
+    setupId: layout.id,
+    setupName: layout.name,
+    setupCap: layout.cap,
+    location: data.location,
+    setupRate: data.rate,
+    occupiedOnDefaultDate: Boolean(isOccupiedOnDefaultDate)
+  };
 
-    const card = document.querySelector(`.facility-choice-card[data-id="${currentModalFacilityId}"]`);
-    if (card) {
-      document.querySelectorAll('.facility-choice-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
+  const card = document.querySelector(`.facility-choice-card[data-id="${currentModalFacilityId}"]`);
+  if (card) {
+    document.querySelectorAll('.facility-choice-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
 
-      const badge = card.querySelector('.dorm-card-selected-room-badge:not(.hall-selected-setup-badge)');
-      const badgeText = badge?.querySelector('.d-room-text');
-      if (badge && badgeText) {
-        if (isOccupiedOnDefaultDate) {
-          badgeText.textContent = `✓ Room ${modalTempSelectedItem} Selected (Occupied Oct 5 • Pick other date)`;
-        } else {
-          badgeText.textContent = `✓ Room ${modalTempSelectedItem} Assigned (${data.floor})`;
-        }
-        badge.style.display = 'flex';
-      }
-
-      const btn = card.querySelector('.btn-select-facility');
-      if (btn) {
-        btn.innerHTML = `✓ Room ${modalTempSelectedItem} Selected (Click to change)`;
-      }
-    }
-
-    const proceedBtn = document.getElementById('btnProceedStep');
-    if (proceedBtn) {
+    const badge = card.querySelector('.hall-selected-setup-badge');
+    const badgeText = badge?.querySelector('.d-room-text');
+    if (badge && badgeText) {
       if (isOccupiedOnDefaultDate) {
-        proceedBtn.innerHTML = `<span>Proceed to Choose Date (Room ${modalTempSelectedItem})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        badgeText.textContent = `✓ ${layout.name} Selected (Reserved Oct 5 • Pick other date)`;
       } else {
-        proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (Room ${modalTempSelectedItem})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        badgeText.textContent = `✓ ${layout.name} Selected (${layout.cap})`;
       }
-      proceedBtn.style.display = 'inline-flex';
-    }
-  } else if (isHall) {
-    const data = hallLayoutData[currentModalFacilityId];
-    if (!data) return;
-
-    const layout = data.layouts.find(l => l.id === modalTempSelectedItem) || data.layouts[0];
-
-    bookingState.selectedFacility = {
-      id: currentModalFacilityId,
-      name: data.title,
-      rate: data.rate,
-      capacity: layout.cap,
-      type: 'halls',
-      setupId: layout.id,
-      setupName: layout.name,
-      setupCap: layout.cap,
-      location: data.location,
-      setupRate: data.rate,
-      occupiedOnDefaultDate: Boolean(isOccupiedOnDefaultDate)
-    };
-
-    const card = document.querySelector(`.facility-choice-card[data-id="${currentModalFacilityId}"]`);
-    if (card) {
-      document.querySelectorAll('.facility-choice-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-
-      const badge = card.querySelector('.hall-selected-setup-badge');
-      const badgeText = badge?.querySelector('.d-room-text');
-      if (badge && badgeText) {
-        if (isOccupiedOnDefaultDate) {
-          badgeText.textContent = `✓ ${layout.name} Selected (Reserved Oct 5 • Pick other date)`;
-        } else {
-          badgeText.textContent = `✓ ${layout.name} Selected (${layout.cap})`;
-        }
-        badge.style.display = 'flex';
-      }
-
-      const btn = card.querySelector('.btn-select-facility');
-      if (btn) {
-        btn.innerHTML = `✓ ${layout.name} Selected (Click to change)`;
-      }
+      badge.style.display = 'flex';
     }
 
-    const proceedBtn = document.getElementById('btnProceedStep');
-    if (proceedBtn) {
-      if (isOccupiedOnDefaultDate) {
-        proceedBtn.innerHTML = `<span>Proceed to Choose Date (${layout.name})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
-      } else {
-        proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (${layout.name})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
-      }
-      proceedBtn.style.display = 'inline-flex';
+    const btn = card.querySelector('.btn-select-facility');
+    if (btn) {
+      btn.innerHTML = `✓ ${layout.name} Selected (Click to change)`;
     }
+  }
+
+  const proceedBtn = document.getElementById('btnProceedStep');
+  if (proceedBtn) {
+    if (isOccupiedOnDefaultDate) {
+      proceedBtn.innerHTML = `<span>Proceed to Choose Date (${layout.name})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+    } else {
+      proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (${layout.name})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+    }
+    proceedBtn.style.display = 'inline-flex';
   }
 
   closeFacilityModal();
@@ -653,142 +489,29 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
 const confirmRoomSelection = confirmFacilitySelection;
 
 /* ==========================================================================
-   2. Filter & Category Selection (Halls vs Dormitories)
+   2. Filter & Category Selection (Facility Halls & Venues)
    ========================================================================== */
 function initFacilityFilters() {
-  const categoryCards = document.querySelectorAll('.category-pick-card, .portal-cat-card');
-  const exploreButtons = document.querySelectorAll('.btn-explore-category');
-  const filterPills = document.querySelectorAll('.filter-pill');
   const facilityCards = document.querySelectorAll('.facility-choice-card');
   const sectionHeading = document.getElementById('categorySectionHeading');
   const activeCategoryName = document.getElementById('activeCategoryName');
-  const anchorSection = document.getElementById('facilitiesSectionAnchor');
 
-  const isDormPage = window.location.pathname.includes('dormitory_booking');
-  const defaultPageCat = isDormPage ? 'dormitories' : 'halls';
-
-  function switchCategory(catName, shouldScroll = false) {
-    let validCat = catName;
-    if (!validCat || (validCat !== 'halls' && validCat !== 'dormitories' && validCat !== 'all')) {
-      validCat = defaultPageCat;
-    }
-
-    // 1. Update Category Cards Active State (if present)
-    categoryCards.forEach(card => {
-      const isTarget = card.dataset.category === validCat;
-      card.classList.toggle('active', isTarget);
-      const btn = card.querySelector('.btn-explore-category span');
-      if (btn) {
-        if (isTarget) {
-          btn.textContent = validCat === 'halls' ? 'Selected: Halls ✓' : 'Selected: Dormitories ✓';
-        } else {
-          btn.textContent = card.dataset.category === 'halls' ? 'Explore Halls' : 'Explore Dormitories';
-        }
-      }
-    });
-
-    // 2. Update Filter Pills
-    filterPills.forEach(pill => {
-      const pCat = pill.dataset.categoryFilter;
-      if (pCat) {
-        pill.classList.toggle('active', pCat === validCat);
-      }
-    });
-
-    // 3. Update Heading & Badge Indicator
-    if (activeCategoryName) {
-      if (validCat === 'halls') {
-        activeCategoryName.textContent = 'Halls & Venues (4 Available)';
-      } else if (validCat === 'dormitories') {
-        activeCategoryName.textContent = 'Dormitories (6 Floors Available)';
-      } else {
-        activeCategoryName.textContent = 'All Facilities (10 Total)';
-      }
-    }
-
-    if (sectionHeading) {
-      if (validCat === 'halls') {
-        sectionHeading.textContent = 'AVAILABLE FACILITY VENUES & HALLS (4):';
-      } else if (validCat === 'dormitories') {
-        sectionHeading.textContent = 'AVAILABLE DORMITORY FLOORS (6):';
-      } else {
-        sectionHeading.textContent = 'ALL AVAILABLE FACILITIES & ROOMS (10):';
-      }
-    }
-
-    // 4. Show/Hide Matching Facility Cards
-    let firstVisibleCard = null;
-    let currentSelectedVisible = false;
-
-    facilityCards.forEach(card => {
-      const type = card.dataset.facilityType || defaultPageCat;
-      const isVisible = (validCat === 'all' || type === validCat);
-      card.style.display = isVisible ? 'flex' : 'none';
-
-      if (isVisible) {
-        if (!firstVisibleCard) firstVisibleCard = card;
-        if (card.classList.contains('selected')) {
-          currentSelectedVisible = true;
-        }
-      }
-    });
-
-    // Safety fallback: if no cards are visible, make all cards on this page visible
-    const visibleCount = Array.from(facilityCards).filter(c => c.style.display !== 'none').length;
-    if (visibleCount === 0 && facilityCards.length > 0) {
-      facilityCards.forEach(c => c.style.display = 'flex');
-      firstVisibleCard = facilityCards[0];
-    }
-
-    // If current selected card is now hidden, select the first visible card!
-    if (!currentSelectedVisible && firstVisibleCard) {
-      firstVisibleCard.click();
-    }
-
-    // Smooth scroll down to facilities list if requested
-    if (shouldScroll && anchorSection) {
-      anchorSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  if (activeCategoryName) {
+    activeCategoryName.textContent = 'Halls & Venues (6 Available)';
   }
 
-  // Bind Category Cards & Explore Buttons (if rendered)
-  categoryCards.forEach(card => {
-    card.addEventListener('click', () => {
-      const cat = card.dataset.category;
-      switchCategory(cat, true);
-    });
-  });
-
-  exploreButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const targetCat = btn.dataset.targetCategory;
-      switchCategory(targetCat, true);
-    });
-  });
-
-  // Bind Filter Pills
-  filterPills.forEach(pill => {
-    pill.addEventListener('click', () => {
-      const cat = pill.dataset.categoryFilter;
-      if (cat) {
-        switchCategory(cat, false);
-      }
-    });
-  });
-
-  // Check URL query parameters for pre-selected category (e.g. ?category=dormitories)
-  const urlParams = new URLSearchParams(window.location.search);
-  let requestedCat = urlParams.get('category');
-  if (requestedCat !== 'dormitories' && requestedCat !== 'halls' && requestedCat !== 'all') {
-    const activePill = document.querySelector('.filter-pill.active');
-    requestedCat = (activePill && activePill.dataset.categoryFilter) ? activePill.dataset.categoryFilter : defaultPageCat;
+  if (sectionHeading) {
+    sectionHeading.textContent = 'AVAILABLE FACILITY VENUES & HALLS (6):';
   }
-  switchCategory(requestedCat, false);
+
+  // Ensure all 6 hall cards remain visible in order
+  facilityCards.forEach(card => {
+    card.style.display = 'flex';
+  });
 }
 
 /* ==========================================================================
-   3. Stepper Wizard Flow
+   3. Stepper Wizard Flow (Dedicated to Facility Venue Booking)
    ========================================================================== */
 function initStepperNavigation() {
   const stepButtons = document.querySelectorAll('.step-tab-btn');
@@ -797,13 +520,7 @@ function initStepperNavigation() {
   const backBtn = document.getElementById('btnStepBack');
   const bottomActions = document.getElementById('bookingBottomActions') || document.querySelector('.booking-bottom-actions');
 
-  function isDormitorySelected() {
-    return bookingState.selectedFacility?.type === 'dormitories' ||
-      String(bookingState.selectedFacility?.id).startsWith('dorm-');
-  }
-
   function updateStepperMode() {
-    const isDorm = isDormitorySelected();
     const stepTabEvent = document.getElementById('stepTabEventDetails');
     const stepTabDocs = document.getElementById('stepTabDocuments');
     const stepTabRev = document.getElementById('stepTabReview');
@@ -811,7 +528,6 @@ function initStepperNavigation() {
     const dotDocs = document.getElementById('mobileDotDocuments');
     const dotRev = document.getElementById('mobileDotReview');
 
-    // Both Halls and Dormitories always show all 5 steps (including Event Details)!
     if (stepTabEvent) stepTabEvent.style.display = '';
     if (dotEvent) dotEvent.style.display = '';
     if (stepTabDocs) {
@@ -825,7 +541,7 @@ function initStepperNavigation() {
     if (dotDocs) dotDocs.textContent = '4';
     if (dotRev) dotRev.textContent = '5';
 
-    // Contextualize Step 3 Form labels & placeholders for Dormitory vs Hall
+    // Step 3 Labels for Venue & Activity Booking
     const step3Title = document.getElementById('step3FormTitle');
     const step3Desc = document.getElementById('step3FormDesc');
     const eventTitleLabel = document.getElementById('eventTitleLabel');
@@ -835,55 +551,28 @@ function initStepperNavigation() {
     const specialNotesLabel = document.getElementById('specialNotesLabel');
     const specialNotes = document.getElementById('specialNotes');
 
-    if (isDorm) {
-      if (step3Title) step3Title.textContent = 'Step 3: Event & Accommodation Details';
-      if (step3Desc) step3Desc.textContent = 'Provide details regarding your training activity or event, trainees/guests lodging, and specific accommodation requirements.';
-      if (eventTitleLabel) eventTitleLabel.textContent = 'Training Activity / Event Purpose';
-      if (eventTitleInput && !eventTitleInput.value) {
-        eventTitleInput.placeholder = 'e.g. Regional Agricultural Extension Training Delegates Lodging';
-      }
-      if (eventPaxLabel) eventPaxLabel.textContent = 'Number of Trainees / Guests Staying';
-      if (eventPaxInput && !eventPaxInput.value) {
-        eventPaxInput.placeholder = 'e.g. 12';
-      }
-      if (specialNotesLabel) specialNotesLabel.textContent = 'Accommodation Requests & Room Notes (Optional)';
-      if (specialNotes && !specialNotes.value) {
-        specialNotes.placeholder = 'e.g. Late check-in after 7:00 PM; separate male/female quarters; extra linens requested.';
-      }
-    } else {
-      if (step3Title) step3Title.textContent = 'Step 3: Event & Activity Information';
-      if (step3Desc) step3Desc.textContent = 'Provide details regarding the nature of your activity, participants, and specific requirements.';
-      if (eventTitleLabel) eventTitleLabel.textContent = 'Activity / Event Title';
-      if (eventTitleInput && !eventTitleInput.value) {
-        eventTitleInput.placeholder = 'e.g. Regional Agricultural Extension Coordinators Training 2026';
-      }
-      if (eventPaxLabel) eventPaxLabel.textContent = 'Estimated Number of Attendees';
-      if (eventPaxInput && !eventPaxInput.value) {
-        eventPaxInput.placeholder = 'e.g. 120';
-      }
-      if (specialNotesLabel) specialNotesLabel.textContent = 'Special Equipment / Setup Notes (Optional)';
-      if (specialNotes && !specialNotes.value) {
-        specialNotes.placeholder = 'e.g. Needs 4 wireless microphones, podium banner stand, and registration tables.';
-      }
+    if (step3Title) step3Title.textContent = 'Step 3: Event & Activity Information';
+    if (step3Desc) step3Desc.textContent = 'Provide details regarding the nature of your activity, participants, and specific requirements.';
+    if (eventTitleLabel) eventTitleLabel.textContent = 'Activity / Event Title';
+    if (eventTitleInput && !eventTitleInput.value) {
+      eventTitleInput.placeholder = 'e.g. Regional Agricultural Extension Coordinators Training 2026';
+    }
+    if (eventPaxLabel) eventPaxLabel.textContent = 'Estimated Number of Attendees';
+    if (eventPaxInput && !eventPaxInput.value) {
+      eventPaxInput.placeholder = 'e.g. 120';
+    }
+    if (specialNotesLabel) specialNotesLabel.textContent = 'Special Equipment / Setup Notes (Optional)';
+    if (specialNotes && !specialNotes.value) {
+      specialNotes.placeholder = 'e.g. Needs 4 wireless microphones, podium banner stand, and registration tables.';
     }
   }
 
   goToStep = function (stepNumber) {
     if (stepNumber < 1 || stepNumber > 5) return;
 
-    const isDorm = isDormitorySelected();
-
-    // Requirement: When reserving, user MUST select a room or hall setup unit before proceeding to Step 2
+    // Requirement: User MUST select a venue layout setup before proceeding to Step 2
     if (stepNumber === 2 && bookingState.currentStep === 1) {
-      if (isDorm && !bookingState.selectedFacility?.roomNumber) {
-        alert('Please choose a room unit (e.g. Room 101, 102, 103) inside your chosen dormitory floor before proceeding to Date & Time Selection.');
-        const selectedCard = document.querySelector('.facility-choice-card.selected');
-        if (selectedCard) {
-          selectedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        return;
-      }
-      if (!isDorm && !bookingState.selectedFacility?.setupName) {
+      if (!bookingState.selectedFacility?.setupName) {
         alert('Please choose a venue layout & setup (e.g. Theater Setup, Classroom Setup, Banquet Dining) before proceeding to Date & Time Selection.');
         const selectedCard = document.querySelector('.facility-choice-card.selected');
         if (selectedCard) {
@@ -908,8 +597,7 @@ function initStepperNavigation() {
     if (stepNumber === 2 && bookingState.currentStep === 1) {
       if (bookingState.selectedFacility?.occupiedOnDefaultDate) {
         if (typeof window.selectAlternateAvailableDateForRoom === 'function') {
-          const itemLabel = isDorm ? `Room ${bookingState.selectedFacility?.roomNumber}` : bookingState.selectedFacility?.setupName;
-          window.selectAlternateAvailableDateForRoom(itemLabel);
+          window.selectAlternateAvailableDateForRoom(bookingState.selectedFacility?.setupName);
         }
       } else {
         if (typeof window.selectCurrentDate === 'function') {
@@ -921,7 +609,7 @@ function initStepperNavigation() {
     bookingState.currentStep = stepNumber;
     updateStepperMode();
 
-    // Update Desktop Stepper Cards (strictly visual progress indicator cards)
+    // Update Desktop Stepper Cards
     stepButtons.forEach((btn) => {
       const stepIdx = parseInt(btn.dataset.step, 10);
       btn.classList.remove('active', 'completed');
@@ -932,12 +620,12 @@ function initStepperNavigation() {
       }
     });
 
-    // Update Mobile Compact Progress Bar (always 5 steps)
+    // Update Mobile Compact Progress Bar (5 steps)
     const totalSteps = 5;
     const stepLabels = {
-      1: 'Facility Selection',
+      1: 'Venue Selection',
       2: 'Date & Time Selection',
-      3: isDorm ? 'Accommodation & Event Details' : 'Event & Activity Details',
+      3: 'Event & Activity Details',
       4: 'Document Upload',
       5: 'Review & Submit'
     };
@@ -951,7 +639,7 @@ function initStepperNavigation() {
     const progressPercent = Math.round((stepNumber / totalSteps) * 100);
 
     if (mobileBadge) mobileBadge.textContent = `Step ${stepNumber} of ${totalSteps}`;
-    if (mobileName) mobileName.textContent = stepLabels[stepNumber] || 'Reservation Details';
+    if (mobileName) mobileName.textContent = stepLabels[stepNumber] || 'Booking Details';
     if (mobilePercent) mobilePercent.textContent = `${progressPercent}%`;
     if (mobileFill) mobileFill.style.width = `${progressPercent}%`;
 
@@ -971,30 +659,20 @@ function initStepperNavigation() {
       view.classList.toggle('active', parseInt(view.dataset.step, 10) === stepNumber);
     });
 
-    // Bottom Navigation Bar is ALWAYS visible across all steps
     if (bottomActions) {
       bottomActions.style.display = 'flex';
     }
 
-    // Back button behavior
     if (backBtn) {
       backBtn.style.display = stepNumber > 1 ? 'inline-flex' : 'none';
     }
 
-    // Proceed button behavior across all 5 steps
     if (proceedBtn) {
       if (stepNumber === 1) {
         proceedBtn.style.display = 'inline-flex';
-        const dormRoom = bookingState.selectedFacility?.roomNumber;
         const hallSetup = bookingState.selectedFacility?.setupName;
         const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
-        if (isDorm && dormRoom) {
-          if (isOcc) {
-            proceedBtn.innerHTML = `<span>Proceed to Choose Date (Room ${dormRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
-          } else {
-            proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (Room ${dormRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
-          }
-        } else if (!isDorm && hallSetup) {
+        if (hallSetup) {
           if (isOcc) {
             proceedBtn.innerHTML = `<span>Proceed to Choose Date (${hallSetup})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
           } else {
@@ -1011,9 +689,8 @@ function initStepperNavigation() {
         proceedBtn.innerHTML = `<span>Proceed to Document Upload</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       } else if (stepNumber === 4) {
         proceedBtn.style.display = 'inline-flex';
-        proceedBtn.innerHTML = `<span>Review &amp; Confirm Details</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        proceedBtn.innerHTML = `<span>Review &amp; Confirm Booking</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       } else if (stepNumber === 5) {
-        // Step 5 has its dedicated submit button inside the official review summary card
         proceedBtn.style.display = 'none';
       }
     }
@@ -1024,21 +701,11 @@ function initStepperNavigation() {
 
   window.goToStep = goToStep;
 
-  // IMPORTANT: Stepper cards & mobile dots are NON-CLICKABLE progress step cards!
-  // Navigation is driven exclusively by the bottom Back & Proceed buttons.
-
   // Proceed button click listener
   if (proceedBtn) {
     proceedBtn.addEventListener('click', () => {
-      const isDorm = isDormitorySelected();
       if (bookingState.currentStep === 1) {
-        if (isDorm && !bookingState.selectedFacility?.roomNumber) {
-          alert('Please choose a room unit (e.g. Room 101, 102, 103) inside your chosen dormitory floor before proceeding to Date & Time Selection.');
-          const card = document.querySelector('.facility-choice-card.selected');
-          if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          return;
-        }
-        if (!isDorm && !bookingState.selectedFacility?.setupName) {
+        if (!bookingState.selectedFacility?.setupName) {
           alert('Please choose a venue layout & setup (e.g. Theater Setup, Classroom Setup, Banquet Dining) before proceeding to Date & Time Selection.');
           const card = document.querySelector('.facility-choice-card.selected');
           if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1046,7 +713,7 @@ function initStepperNavigation() {
         }
         goToStep(2);
       } else if (bookingState.currentStep === 2) {
-        goToStep(3); // Proceeds to Event Details for BOTH dormitories and halls!
+        goToStep(3);
       } else if (bookingState.currentStep === 3) {
         goToStep(4);
       } else if (bookingState.currentStep === 4) {
@@ -1082,40 +749,56 @@ function initStepperNavigation() {
   const finalSubmitBtn = document.getElementById('btnSubmitFinalReservation');
   if (finalSubmitBtn) {
     finalSubmitBtn.addEventListener('click', () => {
-      const refNum = `ATI-RES-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-      const isDorm = isDormitorySelected();
+      const refNum = `ATI-BK-2026-${Math.floor(1000 + Math.random() * 9000)}`;
 
-      // Persist to localStorage for live sync with Master Schedule & My Reservations
+      // Persist to localStorage for live sync with Your Bookings (my_reservations.php)
       try {
-        const stored = JSON.parse(localStorage.getItem('ati_system_reservations') || '[]');
-        const targetFacilityKey = isDorm ? 'dormitory' : (bookingState.selectedFacility?.id || 'function-hall');
-        const newRes = {
+        const stored = JSON.parse(localStorage.getItem('ati_facility_bookings') || '[]');
+        const newBooking = {
           id: Date.now(),
           ref: refNum,
-          title: bookingState.eventTitle || (isDorm ? `Dorm Stay: ${bookingState.selectedFacility?.name || 'Dormitory'}` : `${bookingState.selectedFacility?.name || 'Facility'} Reservation`),
+          type: 'facility',
+          title: bookingState.eventTitle || `${bookingState.selectedFacility?.name || 'Facility'} Booking`,
           facility: bookingState.selectedFacility?.name || 'Facility',
-          facilityKey: targetFacilityKey,
+          facilityKey: bookingState.selectedFacility?.id || 'function-hall',
+          setupName: bookingState.selectedFacility?.setupName || 'Standard Layout',
+          setupCap: bookingState.selectedFacility?.setupCap || '100 PAX',
           date: bookingState.dateRaw || '2026-10-20',
           time: bookingState.time || '08:00 AM - 05:00 PM',
-          division: 'Online Reservation',
-          attendees: bookingState.participants ? `${bookingState.participants} Guests` : '15 Participants',
-          status: 'Approved & Confirmed',
-          roomNumber: bookingState.selectedFacility?.roomNumber || null
+          division: document.getElementById('divisionInput')?.value || 'Career Development Division (CDD)',
+          attendees: bookingState.participants ? `${bookingState.participants} Attendees` : '120 Attendees',
+          status: 'Pending Administrative Clearance',
+          statusCode: 'pending',
+          notes: document.getElementById('specialNotes')?.value || ''
         };
-        stored.push(newRes);
-        localStorage.setItem('ati_system_reservations', JSON.stringify(stored));
+        stored.unshift(newBooking);
+        localStorage.setItem('ati_facility_bookings', JSON.stringify(stored));
+
+        // Also sync to global reservations list tagged as facility
+        const sysRes = JSON.parse(localStorage.getItem('ati_system_reservations') || '[]');
+        sysRes.unshift({
+          id: Date.now(),
+          ref: refNum,
+          type: 'facility',
+          title: newBooking.title,
+          facility: newBooking.facility,
+          facilityKey: newBooking.facilityKey,
+          date: newBooking.date,
+          time: newBooking.time,
+          division: newBooking.division,
+          attendees: newBooking.attendees,
+          status: 'Pending Administrative Clearance'
+        });
+        localStorage.setItem('ati_system_reservations', JSON.stringify(sysRes));
       } catch (err) {
         console.warn('Could not save to localStorage:', err);
       }
 
-      let summaryMsg = `Reservation Request Submitted Successfully!\n\nReference: ${refNum}\nFacility: ${bookingState.selectedFacility.name}`;
-      if (bookingState.selectedFacility.roomNumber) {
-        summaryMsg += `\nAssigned Room: Room ${bookingState.selectedFacility.roomNumber} (${bookingState.selectedFacility.floor || ''})`;
-      }
+      let summaryMsg = `Official Facility Booking Request Submitted Successfully!\n\nReference: ${refNum}\nVenue: ${bookingState.selectedFacility.name}\nLayout Setup: ${bookingState.selectedFacility.setupName} (${bookingState.selectedFacility.setupCap})`;
       if (bookingState.eventTitle) {
-        summaryMsg += `\nEvent / Purpose: ${bookingState.eventTitle}`;
+        summaryMsg += `\nActivity Title: ${bookingState.eventTitle}`;
       }
-      summaryMsg += `\nSchedule: ${bookingState.date}\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`;
+      summaryMsg += `\nSchedule: ${bookingState.date}\nTime Slot: ${bookingState.timeSlot}\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`;
       alert(summaryMsg);
       window.location.href = 'my_reservations.php';
     });
@@ -1129,15 +812,12 @@ function initStepperNavigation() {
    4. Update Summary on Step 1 (Preview) and Step 5 (Official Summary)
    ========================================================================== */
 function updateReviewSummary() {
-  const isDorm = bookingState.selectedFacility?.type === 'dormitories' ||
-    String(bookingState.selectedFacility?.id).startsWith('dorm-');
-  const roomNum = bookingState.selectedFacility?.roomNumber;
-  const floorName = bookingState.selectedFacility?.floor || '';
   const hallSetup = bookingState.selectedFacility?.setupName;
   const hallCap = bookingState.selectedFacility?.setupCap;
-  const facilityName = bookingState.selectedFacility?.name || 'Function Hall';
-  const rateText = bookingState.selectedFacility?.roomRate || bookingState.selectedFacility?.setupRate || bookingState.selectedFacility?.rate || '₱5,000/day';
-  const capText = isDorm ? (bookingState.selectedFacility?.capacity || '48 BEDS') : (hallCap || bookingState.selectedFacility?.capacity || '150 - 200 PAX');
+  const facilityName = bookingState.selectedFacility?.name || 'Serrano Function Hall';
+  const rateText = bookingState.selectedFacility?.setupRate || bookingState.selectedFacility?.rate || '₱5,000 / day';
+  const capText = hallCap || bookingState.selectedFacility?.capacity || '150 - 200 PAX';
+  const locationText = bookingState.selectedFacility?.location || hallLayoutData[bookingState.selectedFacility?.id]?.location || 'Main Administration Building • Ground Floor';
 
   // 1. Step 1 Summary Preview Card
   const prevBadge = document.getElementById('summaryPreviewBadge');
@@ -1148,22 +828,13 @@ function updateReviewSummary() {
   const prevUnitLabel = document.getElementById('summaryPreviewUnitLabel');
   const prevCap = document.getElementById('summaryPreviewCap');
 
-  if (prevBadge) prevBadge.textContent = isDorm ? 'DORMITORY ACCOMMODATION' : 'SELECTED VENUE';
+  if (prevBadge) prevBadge.textContent = 'SELECTED VENUE';
   if (prevTitle) prevTitle.textContent = facilityName;
   if (prevRate) prevRate.textContent = rateText;
   if (prevCap) prevCap.textContent = capText;
 
   if (prevRoomWrap && prevRoom) {
-    if (isDorm && roomNum) {
-      if (prevUnitLabel) prevUnitLabel.textContent = 'Assigned Room Unit:';
-      prevRoomWrap.style.display = 'flex';
-      const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
-      if (isOcc) {
-        prevRoom.innerHTML = `Room ${roomNum} (${floorName}) <span style="display:inline-block; margin-left:6px; font-size:0.75rem; color:#dc2626; font-weight:700;">(Occupied Oct 5 • Pick alternate date in Step 2)</span>`;
-      } else {
-        prevRoom.textContent = `Room ${roomNum} (${floorName})`;
-      }
-    } else if (!isDorm && hallSetup) {
+    if (hallSetup) {
       if (prevUnitLabel) prevUnitLabel.textContent = 'Assigned Setup & Layout:';
       prevRoomWrap.style.display = 'flex';
       const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
@@ -1179,7 +850,7 @@ function updateReviewSummary() {
   }
 
   // 2. Step 5 Official Review Summary Card
-  const sumBadge = document.getElementById('summaryFacilityBadge') || document.getElementById('summaryOfficialBadge');
+  const sumBadge = document.getElementById('summaryOfficialBadge') || document.getElementById('summaryFacilityBadge');
   const sumVenue = document.getElementById('summaryVenueName');
   const sumRate = document.getElementById('summaryVenueRate');
   const sumRoomWrap = document.getElementById('summaryRoomDetailWrap');
@@ -1190,26 +861,22 @@ function updateReviewSummary() {
   const sumDate = document.getElementById('summaryReservationDate');
   const sumTime = document.getElementById('summaryTimeSlot');
 
-  if (sumBadge) sumBadge.textContent = isDorm ? 'DORMITORY ACCOMMODATION PARTICULARS' : 'OFFICIAL VENUE RESERVATION PARTICULARS';
+  if (sumBadge) sumBadge.textContent = 'OFFICIAL FACILITY BOOKING PARTICULARS';
   if (sumVenue) sumVenue.textContent = facilityName;
   if (sumRate) sumRate.textContent = rateText;
-  if (sumFacType) sumFacType.textContent = isDorm ? 'Trainee Dormitory Lodging' : 'Conference & Training Venue';
+  if (sumFacType) sumFacType.textContent = locationText;
   if (sumCap) sumCap.textContent = capText;
   if (sumDate) sumDate.textContent = bookingState.date || '10/05/2026';
-  if (sumTime) sumTime.textContent = isDorm ? 'Overnight Lodging Stay' : (bookingState.timeSlot || 'Whole Day (8:00 AM - 5:00 PM)');
+  if (sumTime) sumTime.textContent = bookingState.timeSlot || 'Whole Day (8:00 AM - 5:00 PM)';
 
   if (sumRoomWrap && sumRoom) {
-    if (isDorm && roomNum) {
-      if (sumRoomLabel) sumRoomLabel.textContent = 'Assigned Room Unit:';
-      sumRoomWrap.style.display = 'flex';
-      sumRoom.textContent = `Room ${roomNum} (${floorName})`;
-    } else if (!isDorm && hallSetup) {
-      if (sumRoomLabel) sumRoomLabel.textContent = 'Assigned Setup & Layout:';
+    if (hallSetup) {
+      if (sumRoomLabel) sumRoomLabel.textContent = 'Assigned Venue Setup:';
       sumRoomWrap.style.display = 'flex';
       sumRoom.textContent = `${hallSetup} (${hallCap})`;
     } else {
       sumRoomWrap.style.display = 'none';
-      sumRoom.textContent = 'None';
+      sumRoom.textContent = 'Standard Layout';
     }
   }
 
@@ -1221,12 +888,12 @@ function updateReviewSummary() {
   const sumEventLabel = document.getElementById('summaryEventLabel');
   const sumPaxLabel = document.getElementById('summaryPaxLabel');
 
-  const curTitle = eventTitleInput?.value?.trim() || bookingState.eventTitle || (isDorm ? 'Agricultural Training Delegates Lodging' : 'Regional Agricultural Training Workshop');
-  const curPax = eventPaxInput?.value?.trim() || bookingState.participants || (isDorm ? '12 Trainees' : (hallCap || '120 Attendees'));
+  const curTitle = eventTitleInput?.value?.trim() || bookingState.eventTitle || 'Regional Agricultural Training Workshop';
+  const curPax = eventPaxInput?.value?.trim() || bookingState.participants || (hallCap || '120 Attendees');
 
-  if (sumEventLabel) sumEventLabel.textContent = isDorm ? 'Training / Stay Purpose:' : 'Activity / Event Title:';
+  if (sumEventLabel) sumEventLabel.textContent = 'Activity / Event Title:';
   if (sumEventTitle) sumEventTitle.textContent = curTitle;
-  if (sumPaxLabel) sumPaxLabel.textContent = isDorm ? 'Trainees / Lodgers:' : 'Participants / Attendees:';
+  if (sumPaxLabel) sumPaxLabel.textContent = 'Participants / Attendees:';
   if (sumPaxValue) sumPaxValue.textContent = curPax;
 }
 
@@ -1815,9 +1482,3 @@ function initMobileDrawer() {
   });
 }
 
-/* ==========================================================================
-   6. Dormitory Room Interactive Selection (All 4 Floors)
-   ========================================================================== */
-function initDormRoomSelection() {
-  // Room selection modal is dynamically controlled
-}

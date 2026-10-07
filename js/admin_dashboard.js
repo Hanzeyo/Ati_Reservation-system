@@ -988,7 +988,36 @@ function updateUtilizationTimeRange(range) {
 
 function exportUtilizationReport() {
   showAdminToast('Official Monthly Utilization & Financial Report exported as CSV.', 'success');
+}/* ==========================================================================
+   LIVE DATE & TIME TICKER (ADMIN PORTAL)
+   ========================================================================== */
+function initLiveAdminClock() {
+  const dateEl = document.getElementById('currentDateDisplay');
+  if (!dateEl) return;
+
+  function updateClock() {
+    const now = new Date();
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const dayName = days[now.getDay()];
+    const monthName = months[now.getMonth()];
+    const dateNum = String(now.getDate()).padStart(2, '0');
+    const year = now.getFullYear();
+
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? String(hours).padStart(2, '0') : '12';
+
+    dateEl.innerHTML = `${dayName}, ${monthName} ${dateNum}, ${year} &bull; ${hours}:${minutes}:${seconds} ${ampm}`;
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
 }
 
-
-
+document.addEventListener('DOMContentLoaded', () => {
+  initLiveAdminClock();
+});

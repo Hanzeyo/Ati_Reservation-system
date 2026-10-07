@@ -211,8 +211,38 @@
       font-size: 0.95rem;
       color: #3b5745;
       line-height: 1.6;
-      margin-bottom: 0;
+      margin-bottom: 1.75rem;
       flex-grow: 1;
+    }
+
+    #cardCatHalls .btn-explore-category {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #174d2f 0%, #206740 100%);
+      color: #ffffff;
+      font-size: 0.92rem;
+      font-weight: 700;
+      padding: 0.9rem 1.4rem;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 18px rgba(23, 77, 47, 0.28);
+      border: 1px solid #174d2f;
+      margin-top: auto;
+    }
+
+    #cardCatHalls:hover .btn-explore-category {
+      background: linear-gradient(135deg, #0e3520 0%, #174d2f 100%);
+      box-shadow: 0 10px 24px rgba(23, 77, 47, 0.4);
+    }
+
+    #cardCatHalls .btn-explore-category svg {
+      transition: transform 0.22s ease;
+    }
+
+    #cardCatHalls:hover .btn-explore-category svg {
+      transform: translateX(5px);
     }
 
     /* ---------------- 2. DORMITORIES CARD (HARVEST GOLD THEME) ---------------- */
@@ -275,8 +305,38 @@
       font-size: 0.95rem;
       color: #5c442a;
       line-height: 1.6;
-      margin-bottom: 0;
+      margin-bottom: 1.75rem;
       flex-grow: 1;
+    }
+
+    #cardCatDormitories .btn-explore-category {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: #ffffff;
+      font-size: 0.92rem;
+      font-weight: 700;
+      padding: 0.9rem 1.4rem;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      box-shadow: 0 6px 18px rgba(217, 119, 6, 0.28);
+      border: 1px solid #d97706;
+      margin-top: auto;
+    }
+
+    #cardCatDormitories:hover .btn-explore-category {
+      background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+      box-shadow: 0 10px 24px rgba(217, 119, 6, 0.4);
+    }
+
+    #cardCatDormitories .btn-explore-category svg {
+      transition: transform 0.22s ease;
+    }
+
+    #cardCatDormitories:hover .btn-explore-category svg {
+      transform: translateX(5px);
     }
 
     .portal-cat-card .cat-card-header {
@@ -341,6 +401,13 @@
       color: #4a6353;
     }
 
+    .status-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
     .btn-view-bookings {
       display: inline-flex;
       align-items: center;
@@ -362,6 +429,121 @@
       color: #ffffff;
       box-shadow: 0 6px 16px rgba(23, 77, 47, 0.35);
       transform: translateY(-2px);
+    }
+
+    .btn-view-bookings.gold {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      border-color: #d97706;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.22);
+    }
+
+    .btn-view-bookings.gold:hover {
+      background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+      box-shadow: 0 6px 16px rgba(217, 119, 6, 0.35);
+    }
+
+    /* ==========================================================================
+       SHOWCASE FACILITIES & DORMITORIES SECTION
+       ========================================================================== */
+    .portal-facilities-showcase {
+      margin-top: 3.5rem;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(246, 252, 248, 0.95) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid rgba(162, 215, 180, 0.85);
+      border-radius: 22px;
+      padding: 2.75rem 2rem 3rem;
+      box-shadow: 0 18px 45px rgba(5, 20, 11, 0.16);
+    }
+
+    .portal-showcase-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .portal-showcase-title {
+      font-family: var(--font-serif);
+      font-size: 1.95rem;
+      font-weight: 800;
+      color: #0c331d;
+      margin-bottom: 0.5rem;
+    }
+
+    .portal-showcase-subtitle {
+      font-size: 0.95rem;
+      color: #435f4f;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    .portal-filter-tabs {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.25rem;
+    }
+
+    .portal-filter-btn {
+      padding: 0.65rem 1.4rem;
+      border-radius: 9999px;
+      border: 1.5px solid #d4e7db;
+      background: #ffffff;
+      color: #2b533a;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.22s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .portal-filter-btn:hover {
+      background: #eaf6ee;
+      border-color: #174d2f;
+      color: #174d2f;
+    }
+
+    .portal-filter-btn.active {
+      background: linear-gradient(135deg, #174d2f 0%, #206740 100%);
+      color: #ffffff;
+      border-color: #174d2f;
+      box-shadow: 0 4px 14px rgba(23, 77, 47, 0.25);
+    }
+
+    .portal-facility-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: linear-gradient(135deg, #174d2f 0%, #206740 100%);
+      color: #ffffff;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 0.45rem 0.95rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(23, 77, 47, 0.2);
+    }
+
+    .portal-facility-action-btn:hover {
+      background: linear-gradient(135deg, #0d3520 0%, #174d2f 100%);
+      color: #ffffff;
+      transform: translateX(3px);
+      box-shadow: 0 4px 12px rgba(23, 77, 47, 0.35);
+    }
+
+    .portal-facility-action-btn.gold {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);
+    }
+
+    .portal-facility-action-btn.gold:hover {
+      background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
     }
 
     @media (max-width: 860px) {
@@ -388,9 +570,17 @@
         align-items: flex-start;
         padding: 1.25rem 1.5rem;
       }
+      .status-actions {
+        width: 100%;
+        flex-direction: column;
+      }
       .btn-view-bookings {
         width: 100%;
         justify-content: center;
+      }
+      .portal-facilities-showcase {
+        padding: 1.75rem 1.25rem 2rem;
+        border-radius: 18px;
       }
     }
   </style>
@@ -423,13 +613,13 @@
           <span>Home</span>
         </a>
 
-        <!-- New Reservation -->
-        <a href="booking.php" class="booking-nav-item">
+        <!-- Book Facility Action -->
+        <a href="booking.php" class="booking-nav-item" title="Book Facility (Halls & Venues)">
           <svg viewBox="0 0 24 24" fill="none">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            <path d="M12 5v14"></path>
+            <path d="M5 12h14"></path>
           </svg>
-          <span>New Reservation</span>
+          <span>+ Book Facility</span>
         </a>
 
         <!-- Facility Bookings (Halls) -->
@@ -600,14 +790,40 @@
             </svg>
           </a>
 
-          <a href="booking.php" class="drawer-nav-link">
+        <!-- Quick Actions Section in Drawer -->
+        <div class="drawer-nav-section">
+          <div class="drawer-section-label">QUICK ACTIONS</div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <a href="booking.php" class="drawer-nav-link" style="background: linear-gradient(135deg, #174d2f 0%, #226b42 100%); color: #ffffff; font-weight: 800; border-radius: 10px; padding: 0.75rem 0.95rem; box-shadow: 0 4px 12px rgba(23,77,47,0.25);">
+              <div class="drawer-link-icon" style="color: #ffffff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              </div>
+              <span class="drawer-link-text">+ Book Facility</span>
+              <span style="font-size: 0.68rem; background: rgba(255,255,255,0.22); padding: 0.15rem 0.45rem; border-radius: 999px;">Halls</span>
+            </a>
+
+            <a href="dormitory_booking.php" class="drawer-nav-link" style="background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%); color: #ffffff; font-weight: 800; border-radius: 10px; padding: 0.75rem 0.95rem; box-shadow: 0 4px 12px rgba(2,132,199,0.25);">
+              <div class="drawer-link-icon" style="color: #ffffff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              </div>
+              <span class="drawer-link-text">+ Reserve Dormitory</span>
+              <span style="font-size: 0.68rem; background: rgba(255,255,255,0.22); padding: 0.15rem 0.45rem; border-radius: 999px;">Rooms</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Main Navigation Section -->
+        <div class="drawer-nav-section">
+          <div class="drawer-section-label">PORTAL NAVIGATION</div>
+
+          <a href="home.php" class="drawer-nav-link active">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
               </svg>
             </div>
-            <span class="drawer-link-text">New Reservation</span>
+            <span class="drawer-link-text">Home</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -671,6 +887,13 @@
             <span class="drawer-link-text">My Profile</span>
           </a>
 
+          <a href="javascript:void(0)" onclick="toggleMobileDrawer(false); openUserSettingsModal();" class="drawer-nav-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
+            <span class="drawer-link-text">Settings</span>
+          </a>
+
           <a href="admin_dashboard.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none">
@@ -721,7 +944,7 @@
       <!-- 1. Halls Category Card -->
       <a href="booking.php" class="portal-cat-card" id="cardCatHalls" title="Explore ATI Halls">
         <div class="cat-card-header">
-          <span class="cat-count-badge">4 Venues Available</span>
+          <span class="cat-count-badge">6 Venues Available</span>
         </div>
         <div class="cat-icon-container">
           <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#174d2f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -737,12 +960,18 @@
         </div>
         <h2 class="cat-card-title">Halls</h2>
         <p class="cat-card-desc">Function auditoriums, audio-visual training rooms, executive boardrooms &amp; mess dining facilities.</p>
+        <div class="btn-explore-category">
+          <span>Explore Halls</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
       </a>
 
       <!-- 2. Dormitories Category Card -->
       <a href="dormitory_booking.php" class="portal-cat-card" id="cardCatDormitories" title="Explore ATI Dormitories">
         <div class="cat-card-header">
-          <span class="cat-count-badge">4 Room Types</span>
+          <span class="cat-count-badge">6 Floors / 60 Rooms</span>
         </div>
         <div class="cat-icon-container">
           <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#b45309" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -762,9 +991,267 @@
         </div>
         <h2 class="cat-card-title">Dormitories</h2>
         <p class="cat-card-desc">Executive VIP suites, shared trainee quarters, guest lecturer rooms &amp; twin accommodations.</p>
+        <div class="btn-explore-category">
+          <span>Explore Dormitories</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
       </a>
 
     </div>
+
+    <!-- ==========================================================================
+         USER RESERVATION QUICK STATUS
+         ========================================================================== -->
+    <div class="portal-quick-status-card">
+      <div class="status-left">
+        <div class="status-icon-bubble">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <div class="status-text">
+          <h4>Looking for your active bookings &amp; reservations?</h4>
+          <p>You have <strong>4</strong> active facility bookings and <strong>2</strong> dormitory reservations on file. Track verification, schedules, and approval status anytime.</p>
+        </div>
+      </div>
+      <div class="status-actions">
+        <a href="my_reservations.php" class="btn-view-bookings" title="View Your Facility Bookings">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          </svg>
+          <span>Your Bookings (4)</span>
+        </a>
+        <a href="booking_history.php" class="btn-view-bookings gold" title="View Your Dormitory Reservations">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 4v16"></path>
+            <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+            <path d="M2 17h20"></path>
+          </svg>
+          <span>Your Reservations (2)</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         FEATURED FACILITIES & LODGING CARDS SHOWCASE
+         ========================================================================== -->
+    <section class="portal-facilities-showcase">
+      <div class="portal-showcase-header">
+        <h2 class="portal-showcase-title">All Available Facilities &amp; Lodging</h2>
+        <p class="portal-showcase-subtitle">Browse and select any venue or dormitory accommodation directly to initiate an official reservation.</p>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="portal-filter-tabs" id="portalFacilityFilters">
+        <button type="button" class="portal-filter-btn active" data-filter="all">All Facilities (6)</button>
+        <button type="button" class="portal-filter-btn" data-filter="halls">Halls &amp; Venues (4)</button>
+        <button type="button" class="portal-filter-btn" data-filter="dorms">Dormitories &amp; Lodging (2)</button>
+      </div>
+
+      <!-- Facility Cards Grid -->
+      <div class="facilities-grid" id="portalFacilitiesGrid">
+        
+        <!-- 1. Serrano Function Hall -->
+        <article class="facility-card" data-category="halls">
+          <div class="facility-img-wrapper">
+            <img src="assets/images/function_hall.jpg" alt="Serrano Function Hall" loading="lazy">
+            <span class="facility-badge">Cap: 200 Pax</span>
+          </div>
+          <div class="facility-body">
+            <h3 class="facility-name">Serrano Function Hall</h3>
+            <p class="facility-desc">Flagship multi-purpose auditorium for seminars, large conventions, and institutional assemblies.</p>
+            <div class="facility-bubble-tags">
+              <span class="facility-bubble-tag">Central Aircon</span>
+              <span class="facility-bubble-tag">Dual Projector</span>
+              <span class="facility-bubble-tag">Sound System</span>
+              <span class="facility-bubble-tag">VIP Lounge</span>
+            </div>
+            <div class="facility-footer">
+              <span class="facility-meta">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                </svg>
+                200 Capacity
+              </span>
+              <a href="booking.php?facility=function-hall" class="portal-facility-action-btn">
+                <span>Book Facility</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 2. Training Hall A -->
+        <article class="facility-card" data-category="halls">
+          <div class="facility-img-wrapper">
+            <img src="assets/images/training_hall.jpg" alt="Training Hall A" loading="lazy">
+            <span class="facility-badge">Cap: 80 Pax</span>
+          </div>
+          <div class="facility-body">
+            <h3 class="facility-name">Training Hall A</h3>
+            <p class="facility-desc">Interactive workshop hall with flexible modular seating, smart monitors, and presenter booth.</p>
+            <div class="facility-bubble-tags">
+              <span class="facility-bubble-tag">Modular Desks</span>
+              <span class="facility-bubble-tag">Smart Display</span>
+              <span class="facility-bubble-tag">High-speed WiFi</span>
+              <span class="facility-bubble-tag">Whiteboards</span>
+            </div>
+            <div class="facility-footer">
+              <span class="facility-meta">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                </svg>
+                Interactive Lab
+              </span>
+              <a href="booking.php?facility=training-hall-a" class="portal-facility-action-btn">
+                <span>Book Facility</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 3. Mess Hall Dining Pavilion -->
+        <article class="facility-card" data-category="halls">
+          <div class="facility-img-wrapper">
+            <img src="assets/images/mess_hall.jpg" alt="Mess Hall Dining Pavilion" loading="lazy">
+            <span class="facility-badge">Cap: 150 Pax</span>
+          </div>
+          <div class="facility-body">
+            <h3 class="facility-name">Mess Hall Dining Pavilion</h3>
+            <p class="facility-desc">Dedicated institutional dining venue for official banquets, delegate meals, and catered buffets.</p>
+            <div class="facility-bubble-tags">
+              <span class="facility-bubble-tag">Buffet Counters</span>
+              <span class="facility-bubble-tag">Kitchen Access</span>
+              <span class="facility-bubble-tag">Sanitation Station</span>
+              <span class="facility-bubble-tag">Patio Deck</span>
+            </div>
+            <div class="facility-footer">
+              <span class="facility-meta">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                  <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                  <line x1="6" y1="1" x2="6" y2="4"></line>
+                  <line x1="10" y1="1" x2="10" y2="4"></line>
+                </svg>
+                Dining &amp; Buffet
+              </span>
+              <a href="booking.php?facility=mess-hall" class="portal-facility-action-btn">
+                <span>Book Facility</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 4. Executive Boardroom -->
+        <article class="facility-card" data-category="halls">
+          <div class="facility-img-wrapper">
+            <img src="assets/images/boardroom.jpg" alt="Executive Boardroom" loading="lazy">
+            <span class="facility-badge">Cap: 30 Pax</span>
+          </div>
+          <div class="facility-body">
+            <h3 class="facility-name">Executive Boardroom</h3>
+            <p class="facility-desc">High-level executive briefing room with premium leather chairs, 4K display, and teleconference system.</p>
+            <div class="facility-bubble-tags">
+              <span class="facility-bubble-tag">Executive Chairs</span>
+              <span class="facility-bubble-tag">Video Conf Cam</span>
+              <span class="facility-bubble-tag">Acoustic Walls</span>
+              <span class="facility-bubble-tag">Coffee Bar</span>
+            </div>
+            <div class="facility-footer">
+              <span class="facility-meta">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+                VIP Conference
+              </span>
+              <a href="booking.php?facility=executive-boardroom" class="portal-facility-action-btn">
+                <span>Book Facility</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 5. 1st Floor: Sampaguita Dormitory -->
+        <article class="facility-card" data-category="dorms">
+          <div class="facility-img-wrapper">
+            <img src="assets/images/dormitory_bunk.jpg" alt="1st Floor: Sampaguita Trainee Dormitory" loading="lazy">
+            <span class="facility-badge">10 Rooms (40 Beds)</span>
+          </div>
+          <div class="facility-body">
+            <h3 class="facility-name">1st Floor: Sampaguita Dorm</h3>
+            <p class="facility-desc">Comfortable delegation quarters on floors 1–4 with sturdy wooden bunk beds, lockers, and air conditioning.</p>
+            <div class="facility-bubble-tags">
+              <span class="facility-bubble-tag">Wooden Bunks</span>
+              <span class="facility-bubble-tag">Full Aircon</span>
+              <span class="facility-bubble-tag">Personal Lockers</span>
+              <span class="facility-bubble-tag">Study Desks</span>
+            </div>
+            <div class="facility-footer">
+              <span class="facility-meta">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 4v16"></path>
+                  <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                  <path d="M2 17h20"></path>
+                  <path d="M6 8v9"></path>
+                </svg>
+                Trainee Quarters
+              </span>
+              <a href="dormitory_booking.php" class="portal-facility-action-btn gold">
+                <span>Reserve Dormitory</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <!-- 6. 5th Floor: Waling-Waling VIP Suite -->
+        <article class="facility-card" data-category="dorms">
+          <div class="facility-img-wrapper">
+            <img src="assets/images/dormitory.jpg" alt="5th Floor: Waling-Waling VIP Suite" loading="lazy">
+            <span class="facility-badge">10 VIP Suites (20 Beds)</span>
+          </div>
+          <div class="facility-body">
+            <h3 class="facility-name">5th Floor: Waling-Waling VIP Suite</h3>
+            <p class="facility-desc">Executive lodging for visiting resource speakers, national trainers, and VIP dignitaries with ensuite baths.</p>
+            <div class="facility-bubble-tags">
+              <span class="facility-bubble-tag">VIP Suite</span>
+              <span class="facility-bubble-tag">Ensuite Bath</span>
+              <span class="facility-bubble-tag">Workstation</span>
+              <span class="facility-bubble-tag">Hot Shower</span>
+            </div>
+            <div class="facility-footer">
+              <span class="facility-meta">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 4v16"></path>
+                  <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                  <path d="M2 17h20"></path>
+                  <path d="M6 8v9"></path>
+                </svg>
+                VIP Executive
+              </span>
+              <a href="dormitory_booking.php" class="portal-facility-action-btn gold">
+                <span>Reserve Dormitory</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </a>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
 
   </main>
 
@@ -828,6 +1315,26 @@
           }
         });
       }
+
+      // Facility Filter Tabs for Home Portal Showcase
+      var filterBtns = document.querySelectorAll('#portalFacilityFilters .portal-filter-btn');
+      var facilityCards = document.querySelectorAll('#portalFacilitiesGrid .facility-card');
+
+      filterBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          filterBtns.forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          var filterVal = btn.getAttribute('data-filter');
+
+          facilityCards.forEach(function(card) {
+            if (filterVal === 'all' || card.getAttribute('data-category') === filterVal) {
+              card.style.display = 'flex';
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      });
     });
   </script>
   <script src="js/user_settings.js?v=<?php echo time(); ?>"></script>

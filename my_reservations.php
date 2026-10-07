@@ -61,13 +61,13 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
           <span>Home</span>
         </a>
 
-        <!-- New Reservation -->
-        <a href="booking.php" class="booking-nav-item">
+        <!-- Book Facility Action -->
+        <a href="booking.php" class="booking-nav-item" title="Book Facility (Halls & Venues)">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M12 5v14"></path>
             <path d="M5 12h14"></path>
           </svg>
-          <span>New Reservation</span>
+          <span>+ Book Facility</span>
         </a>
 
         <!-- Facility Bookings (Halls) - Active -->
@@ -208,6 +208,28 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
           </div>
         </div>
 
+        <!-- Quick Reservation & Booking Action Section in Drawer -->
+        <div class="drawer-nav-section">
+          <div class="drawer-section-label">QUICK ACTIONS</div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <a href="booking.php" class="drawer-nav-link" style="background: linear-gradient(135deg, #174d2f 0%, #226b42 100%); color: #ffffff; font-weight: 800; border-radius: 10px; padding: 0.75rem 0.95rem; box-shadow: 0 4px 12px rgba(23,77,47,0.25);">
+              <div class="drawer-link-icon" style="color: #ffffff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              </div>
+              <span class="drawer-link-text">+ Book Facility</span>
+              <span style="font-size: 0.68rem; background: rgba(255,255,255,0.22); padding: 0.15rem 0.45rem; border-radius: 999px;">Halls</span>
+            </a>
+
+            <a href="dormitory_booking.php" class="drawer-nav-link" style="background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%); color: #ffffff; font-weight: 800; border-radius: 10px; padding: 0.75rem 0.95rem; box-shadow: 0 4px 12px rgba(2,132,199,0.25);">
+              <div class="drawer-link-icon" style="color: #ffffff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              </div>
+              <span class="drawer-link-text">+ Reserve Dormitory</span>
+              <span style="font-size: 0.68rem; background: rgba(255,255,255,0.22); padding: 0.15rem 0.45rem; border-radius: 999px;">Rooms</span>
+            </a>
+          </div>
+        </div>
+
         <!-- Main Navigation Section -->
         <div class="drawer-nav-section">
           <div class="drawer-section-label">PORTAL NAVIGATION</div>
@@ -220,14 +242,6 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
               </svg>
             </div>
             <span class="drawer-link-text">Home</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </a>
-
-          <a href="booking.php" class="drawer-nav-link">
-            <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
-            </div>
-            <span class="drawer-link-text">New Reservation</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
 
@@ -275,11 +289,18 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
             <span class="drawer-link-text">My Profile</span>
           </a>
 
-          <a href="my_reservations.php?type=all" class="drawer-nav-link <?php echo $activeType === 'all' ? 'active' : ''; ?>">
+          <a href="javascript:void(0)" onclick="toggleMobileDrawer(false); openUserSettingsModal();" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </div>
-            <span class="drawer-link-text">Complete History Log</span>
+            <span class="drawer-link-text">Settings</span>
+          </a>
+
+          <a href="admin_dashboard.php" class="drawer-nav-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </div>
+            <span class="drawer-link-text">Admin Dashboard</span>
           </a>
         </div>
       </div>
@@ -396,12 +417,12 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
         <p id="pageHeadingSubtext">View and manage all the facility spaces you have booked (function halls, training rooms, and boardrooms), track routing approvals, and access gate passes.</p>
       </div>
 
-      <a href="booking.php?category=halls" class="btn-new-res-action">
+      <a href="booking.php?category=halls" class="btn-new-res-action" title="Book Facility">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        <span>Reserve Venue</span>
+        <span>+ Book Facility</span>
       </a>
     </section>
 
@@ -418,8 +439,8 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiTotal">6</span>
-          <span class="stat-label">Total Records</span>
+          <span class="stat-value" id="kpiTotal">4</span>
+          <span class="stat-label">Total Bookings</span>
         </div>
       </div>
 
@@ -432,8 +453,8 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiPending">3</span>
-          <span class="stat-label">Pending Review</span>
+          <span class="stat-value" id="kpiPending">2</span>
+          <span class="stat-label">Pending Clearance</span>
         </div>
       </div>
 
@@ -446,8 +467,8 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiApproved">2</span>
-          <span class="stat-label">Confirmed & Approved</span>
+          <span class="stat-value" id="kpiApproved">1</span>
+          <span class="stat-label">Confirmed &amp; Approved</span>
         </div>
       </div>
 
@@ -492,7 +513,7 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               </svg>
             </span>
-            <span class="facility-btn-label" id="facilityDropdownLabel">All Facilities</span>
+            <span class="facility-btn-label" id="facilityDropdownLabel">All Venues</span>
             <svg class="facility-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
@@ -501,14 +522,14 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
           <div class="facility-dropdown-menu" id="facilityDropdownMenu" role="listbox" aria-label="Filter by Facility">
             <div class="facility-option active" data-value="all" role="option" aria-selected="true">
               <span class="opt-bullet all"></span>
-              <span class="opt-name">All Facilities</span>
+              <span class="opt-name">All Venues</span>
               <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
             <div class="facility-option" data-value="function-hall" role="option">
               <span class="opt-bullet"></span>
-              <span class="opt-name">Function Hall</span>
+              <span class="opt-name">Serrano Function Hall</span>
               <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
@@ -520,23 +541,30 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
+            <div class="facility-option" data-value="training-hall-b" role="option">
+              <span class="opt-bullet"></span>
+              <span class="opt-name">Training Hall B (Agri-Fisheries)</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="four-h-center" role="option">
+              <span class="opt-bullet"></span>
+              <span class="opt-name">4-H Learning Center</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
             <div class="facility-option" data-value="boardroom" role="option">
               <span class="opt-bullet"></span>
-              <span class="opt-name">Boardroom</span>
+              <span class="opt-name">Executive Boardroom</span>
               <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
             <div class="facility-option" data-value="mess-hall" role="option">
               <span class="opt-bullet"></span>
-              <span class="opt-name">Mess Hall</span>
-              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </div>
-            <div class="facility-option" data-value="dormitory" role="option">
-              <span class="opt-bullet"></span>
-              <span class="opt-name">Dormitory</span>
+              <span class="opt-name">ATI Mess Hall &amp; Dining</span>
               <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
@@ -830,175 +858,6 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
         </div>
       </article>
 
-      <!-- CARD 4: DORMITORY (APPROVED & CONFIRMED) -->
-      <article class="res-card" 
-               data-status="approved" 
-               data-category="dormitory" 
-               data-venue="dormitory" 
-               data-ref="ATI-RES-2026-0941" 
-               data-venue-title="ATI Dormitory (Executive Wing)"
-               data-dates="Oct 05 - 07, 2026 (2 Nights)"
-               data-time="Check-in 02:00 PM • Check-out 12:00 PM"
-               data-pax="8 Delegates (4 Twin Rooms)"
-               data-division="Career Development Division (CDD)"
-               data-status-text="Confirmed & Approved">
-        
-        <div class="res-card-media">
-          <img src="assets/images/dormitory.jpg" alt="ATI Dormitory">
-          <span class="venue-thumb-pill dorm-pill">Dormitory (Executive)</span>
-        </div>
-
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag dorm-ref">ATI-RES-2026-0941</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0941" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              </button>
-              <span class="res-timestamp">&bull; Approved Sep 22, 2026</span>
-            </div>
-            <div class="res-status-badge approved">
-              <span class="status-dot-pulse"></span>
-              <span>Confirmed &amp; Approved</span>
-            </div>
-          </div>
-
-          <h3 class="res-event-title">Guest Lecturers & Resource Persons Lodging (Visayas & Mindanao Trainers)</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-              <span>Oct 05 – 07, 2026 (2 Nights)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              <span>In: 02:00 PM • Out: 12:00 PM</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-              <span>Rooms 201-204 (Exec Wing)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-              <span>8 Resource Speakers</span>
-            </div>
-          </div>
-
-          <!-- Mini Routing Stepper / Progress Bar -->
-          <div class="res-mini-routing">
-            <div class="routing-progress-bar">
-              <div class="progress-segment filled" title="1. Submitted (Done)"></div>
-              <div class="progress-segment filled" title="2. Endorsed (Done)"></div>
-              <div class="progress-segment filled" title="3. Custodian Cleared (Done)"></div>
-              <div class="progress-segment filled" title="4. Keys Ready (Done)"></div>
-            </div>
-            <div class="routing-status-label">
-              <span class="routing-step-desc"><strong style="color: #16a34a;">Step 4 of 4:</strong> Keys Allocation Ready at Lobby Desk</span>
-              <span class="routing-note">Towels &amp; linens provided. Curfew: 10:00 PM</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action primary" onclick="showGatePassModal('ATI-RES-2026-0941', 'Guest Lecturers & Resource Persons Lodging', 'ATI Dormitory Executive Wing', 'Oct 05 - 07, 2026')">
-            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-            <span>Gate Pass &amp; QR</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0941">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>Download</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- CARD 6: DORMITORY SUITES A & B (PENDING CUSTODIAN ALLOCATION) -->
-      <article class="res-card" 
-               data-status="pending" 
-               data-category="dormitory" 
-               data-venue="dormitory" 
-               data-ref="ATI-BK-2026-1055" 
-               data-venue-title="Dormitory Suites A & B"
-               data-dates="Nov 10 - 14, 2026 (4 Nights)"
-               data-time="Check-in 02:00 PM • Check-out 11:00 AM"
-               data-pax="24 Trainees (12 Twin Bed Rooms)"
-               data-division="Partnership & Accreditation Division (PAD)"
-               data-status-text="Pending Custodian Bed Allotment">
-        
-        <div class="res-card-media">
-          <img src="assets/images/dormitory.jpg" alt="ATI Dormitory Suites">
-          <span class="venue-thumb-pill dorm-pill">Dormitory Suites</span>
-        </div>
-
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag dorm-ref">ATI-BK-2026-1055</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-BK-2026-1055" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-              </button>
-              <span class="res-timestamp">&bull; Oct 04, 2026</span>
-            </div>
-            <div class="res-status-badge pending">
-              <span class="status-dot-pulse"></span>
-              <span>Pending Custodian Bed Allotment</span>
-            </div>
-          </div>
-
-          <h3 class="res-event-title">National Young Farmers Camp Participant Lodging (Batch 4)</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-              <span>Nov 10 – 14, 2026 (4 Nights)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              <span>In: 02:00 PM • Out: 11:00 AM</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-              <span>Floors 3 &amp; 4 (Suites A &amp; B)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-              <span>24 Delegates (12 Rooms)</span>
-            </div>
-          </div>
-
-          <!-- Mini Routing Stepper / Progress Bar -->
-          <div class="res-mini-routing">
-            <div class="routing-progress-bar">
-              <div class="progress-segment filled" title="1. Booking Request Submitted (Done)"></div>
-              <div class="progress-segment filled" title="2. Division Endorsed (Done)"></div>
-              <div class="progress-segment active-pulse" title="3. Dormitory Custodian Review (Under Evaluation)"></div>
-              <div class="progress-segment" title="4. Bed Allotment & Keys Release"></div>
-            </div>
-            <div class="routing-status-label">
-              <span class="routing-step-desc"><strong style="color: #b45309;">Step 3 of 4:</strong> Dormitory Custodian Room & Bed Assignment in Progress</span>
-              <span class="routing-note">Gender-segregated room allocation requested. Linens requested.</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-1055">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>Download</span>
-          </button>
-          <button type="button" class="btn-card-action outline-danger js-cancel-res">
-            <svg viewBox="0 0 24 24" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            <span>Cancel</span>
-          </button>
-        </div>
-      </article>
 
       <!-- CARD 5: MESS HALL (COMPLETED / HISTORICAL) -->
       <article class="res-card" 
@@ -1166,53 +1025,6 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
               </td>
             </tr>
 
-            <tr class="res-table-row" data-status="approved" data-category="dormitory" data-venue="dormitory">
-              <td>
-                <span class="res-ref-tag dorm-ref">ATI-RES-2026-0941</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Dormitory (Executive Wing)</div>
-              </td>
-              <td>
-                <div style="font-weight: 800; color: #142e20;">Guest Lecturers & Resource Persons Lodging</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Career Development Division (CDD) &bull; 8 Speakers (4 Rooms)</div>
-              </td>
-              <td>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Oct 05 – 07, 2026 (2 Nights)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">In: 02:00 PM • Out: 12:00 PM</div>
-              </td>
-              <td>
-                <span class="res-status-badge approved"><span class="status-dot-pulse"></span><span>Keys Allocation Ready</span></span>
-              </td>
-              <td style="text-align: right;">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action primary" onclick="showGatePassModal('ATI-RES-2026-0941', 'Guest Lecturers & Resource Persons Lodging', 'ATI Dormitory Executive Wing', 'Oct 05 - 07, 2026')">Pass &amp; QR</button>
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr class="res-table-row" data-status="pending" data-category="dormitory" data-venue="dormitory">
-              <td>
-                <span class="res-ref-tag dorm-ref">ATI-BK-2026-1055</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Dormitory Suites A &amp; B</div>
-              </td>
-              <td>
-                <div style="font-weight: 800; color: #142e20;">National Young Farmers Camp Participant Lodging</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Partnership &amp; Accreditation Division (PAD) &bull; 24 Delegates (12 Rooms)</div>
-              </td>
-              <td>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Nov 10 – 14, 2026 (4 Nights)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">In: 02:00 PM • Out: 11:00 AM</div>
-              </td>
-              <td>
-                <span class="res-status-badge pending"><span class="status-dot-pulse"></span><span>Custodian Review (Step 3/4)</span></span>
-              </td>
-              <td style="text-align: right;">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-1055">Slip</button>
-                </div>
-              </td>
-            </tr>
 
             <tr class="res-table-row" data-status="completed" data-category="facility" data-venue="mess-hall">
               <td>

@@ -52,13 +52,13 @@ $reqCategory = 'halls';
           <span>Home</span>
         </a>
 
-        <!-- New Reservation (Active) -->
-        <a href="booking.php" class="booking-nav-item active">
+        <!-- Book Facility Action (Active) -->
+        <a href="booking.php" class="booking-nav-item active" title="Book Facility (Halls & Venues)">
           <svg viewBox="0 0 24 24" fill="none">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            <path d="M12 5v14"></path>
+            <path d="M5 12h14"></path>
           </svg>
-          <span>New Reservation</span>
+          <span>+ Book Facility</span>
         </a>
 
         <!-- Facility Bookings (Halls) -->
@@ -203,6 +203,28 @@ $reqCategory = 'halls';
           </div>
         </div>
 
+        <!-- Quick Reservation & Booking Action Section in Drawer -->
+        <div class="drawer-nav-section">
+          <div class="drawer-section-label">QUICK ACTIONS</div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <a href="booking.php" class="drawer-nav-link active" style="background: linear-gradient(135deg, #174d2f 0%, #226b42 100%); color: #ffffff; font-weight: 800; border-radius: 10px; padding: 0.75rem 0.95rem; box-shadow: 0 4px 12px rgba(23,77,47,0.25);">
+              <div class="drawer-link-icon" style="color: #ffffff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              </div>
+              <span class="drawer-link-text">+ Book Facility</span>
+              <span style="font-size: 0.68rem; background: rgba(255,255,255,0.22); padding: 0.15rem 0.45rem; border-radius: 999px;">Halls</span>
+            </a>
+
+            <a href="dormitory_booking.php" class="drawer-nav-link" style="background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%); color: #ffffff; font-weight: 800; border-radius: 10px; padding: 0.75rem 0.95rem; box-shadow: 0 4px 12px rgba(2,132,199,0.25);">
+              <div class="drawer-link-icon" style="color: #ffffff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              </div>
+              <span class="drawer-link-text">+ Reserve Dormitory</span>
+              <span style="font-size: 0.68rem; background: rgba(255,255,255,0.22); padding: 0.15rem 0.45rem; border-radius: 999px;">Rooms</span>
+            </a>
+          </div>
+        </div>
+
         <!-- Main Navigation Section -->
         <div class="drawer-nav-section">
           <div class="drawer-section-label">PORTAL NAVIGATION</div>
@@ -215,19 +237,6 @@ $reqCategory = 'halls';
               </svg>
             </div>
             <span class="drawer-link-text">Home</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </a>
-
-          <a href="booking.php" class="drawer-nav-link active">
-            <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M12 5v14"></path>
-                <path d="M5 12h14"></path>
-              </svg>
-            </div>
-            <span class="drawer-link-text">New Reservation</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -291,14 +300,18 @@ $reqCategory = 'halls';
             <span class="drawer-link-text">My Profile</span>
           </a>
 
-          <a href="my_reservations.php?type=all" class="drawer-nav-link">
+          <a href="javascript:void(0)" onclick="toggleMobileDrawer(false); openUserSettingsModal();" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
             </div>
-            <span class="drawer-link-text">Complete History Log</span>
+            <span class="drawer-link-text">Settings</span>
+          </a>
+
+          <a href="admin_dashboard.php" class="drawer-nav-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </div>
+            <span class="drawer-link-text">Admin Dashboard</span>
           </a>
         </div>
       </div>
@@ -441,12 +454,12 @@ $reqCategory = 'halls';
           </a>
           <span class="active-category-indicator" id="activeCategoryBadge">
             <span class="indicator-dot"></span>
-            <span id="activeCategoryName">Halls &amp; Venues (4 Available)</span>
+            <span id="activeCategoryName">Halls &amp; Venues (6 Available)</span>
           </span>
         </div>
 
         <div class="filter-pills-list">
-          <button type="button" class="filter-pill active" id="btnFilterHalls" data-category-filter="halls">Halls &amp; Venues (4)</button>
+          <button type="button" class="filter-pill active" id="btnFilterHalls" data-category-filter="halls">Halls &amp; Venues (6)</button>
           <a href="dormitory_booking.php" class="filter-pill" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem;" title="Switch to Dormitory Lodging Booking Portal">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path><path d="M2 17h20"></path></svg>
             <span>Book Dormitory Lodging &rarr;</span>
@@ -460,31 +473,30 @@ $reqCategory = 'halls';
           <svg viewBox="0 0 24 24" fill="none">
             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
           </svg>
-          <span id="categorySectionHeading">AVAILABLE FACILITY VENUES &amp; HALLS (4):</span>
+          <span id="categorySectionHeading">AVAILABLE FACILITY VENUES &amp; HALLS (6):</span>
         </div>
         <p class="select-instruction-text">Select one facility card below to proceed with your venue reservation.</p>
       </div>
 
       <!-- Facility Cards Grid -->
       <div class="facility-selection-grid" id="facilitySelectionGrid">
-        <!-- =================== 1. HALLS CATEGORY (4 VENUES) =================== -->
-        <!-- Hall 1: Function Hall -->
-        <!-- Hall 1: Function Hall -->
-        <article class="facility-choice-card selected" data-id="function-hall" data-name="Function Hall"
+        <!-- =================== 1. HALLS CATEGORY (ALL 6 VENUES IN ORDER) =================== -->
+        <!-- Hall 1: Serrano Function Hall -->
+        <article class="facility-choice-card selected" data-id="function-hall" data-name="Serrano Function Hall"
           data-rate="₱5,000/day" data-capacity="150 - 200 PAX" data-facility-type="halls">
           <div class="facility-card-image">
-            <img src="assets/images/function_hall.jpg" alt="Function Hall" loading="lazy">
+            <img src="assets/images/function_hall.jpg" alt="Serrano Function Hall" loading="lazy">
             <span class="facility-cap-badge">150 - 200 PAX</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">LARGE EVENT VENUE &bull; HALLS</span>
-            <h3 class="facility-title">Function Hall</h3>
+            <span class="facility-category-tag">LARGE EVENT AUDITORIUM &bull; HALL 1</span>
+            <h3 class="facility-title">Serrano Function Hall</h3>
             <div class="facility-rate-tag">Standard Rate: ₱5,000/day</div>
             <div class="facility-amenities-tags">
               <span class="amenity-pill">Central Aircon</span>
               <span class="amenity-pill">PA Sound System</span>
-              <span class="amenity-pill">HD Projector</span>
-              <span class="amenity-pill">Stage Setup</span>
+              <span class="amenity-pill">Dual Laser Projectors</span>
+              <span class="amenity-pill">Stage Rostrum</span>
               <span class="amenity-pill">VIP Waiting Lounge</span>
             </div>
             <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
@@ -505,14 +517,15 @@ $reqCategory = 'halls';
             <span class="facility-cap-badge">50 - 80 PAX</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">INTERACTIVE TRAINING &bull; HALLS</span>
+            <span class="facility-category-tag">INTERACTIVE TRAINING &bull; HALL 2</span>
             <h3 class="facility-title">Training Hall A</h3>
             <div class="facility-rate-tag">Standard Rate: ₱3,000/day</div>
             <div class="facility-amenities-tags">
               <span class="amenity-pill">Modular Desks</span>
-              <span class="amenity-pill">Smart Display</span>
+              <span class="amenity-pill">75" 4K Smart Display</span>
               <span class="amenity-pill">High-Speed Wifi</span>
-              <span class="amenity-pill">Breakout Corners</span>
+              <span class="amenity-pill">Breakout Stations</span>
+              <span class="amenity-pill">Whiteboards</span>
             </div>
             <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
               <span class="d-room-text">✓ Modular Pods Selected (60 PAX)</span>
@@ -524,25 +537,26 @@ $reqCategory = 'halls';
           </div>
         </article>
 
-        <!-- Hall 3: Mess Hall & Dining Area -->
-        <article class="facility-choice-card" data-id="mess-hall" data-name="Mess Hall &amp; Dining Area"
-          data-rate="₱3,500/day" data-capacity="100 PAX DINING" data-facility-type="halls">
+        <!-- Hall 3: Training Hall B (Agri-Fisheries) -->
+        <article class="facility-choice-card" data-id="training-hall-b" data-name="Training Hall B (Agri-Fisheries)"
+          data-rate="₱3,000/day" data-capacity="50 - 80 PAX" data-facility-type="halls">
           <div class="facility-card-image">
-            <img src="assets/images/mess_hall.jpg" alt="Mess Hall &amp; Dining Area" loading="lazy">
-            <span class="facility-cap-badge">100 PAX DINING</span>
+            <img src="assets/images/training_hall.jpg" alt="Training Hall B (Agri-Fisheries)" loading="lazy">
+            <span class="facility-cap-badge">50 - 80 PAX</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">DINING &amp; CATERING &bull; HALLS</span>
-            <h3 class="facility-title">Mess Hall &amp; Dining Area</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱3,500/day</div>
+            <span class="facility-category-tag">TECHNICAL TRAINING &bull; HALL 3</span>
+            <h3 class="facility-title">Training Hall B (Agri-Fisheries)</h3>
+            <div class="facility-rate-tag">Standard Rate: ₱3,000/day</div>
             <div class="facility-amenities-tags">
-              <span class="amenity-pill">Buffet Counters</span>
-              <span class="amenity-pill">Kitchen Access</span>
-              <span class="amenity-pill">Washing Station</span>
-              <span class="amenity-pill">Outdoor Patio Deck</span>
+              <span class="amenity-pill">Workshop Benches</span>
+              <span class="amenity-pill">HD Projection System</span>
+              <span class="amenity-pill">Demonstration Corner</span>
+              <span class="amenity-pill">Airconditioned</span>
+              <span class="amenity-pill">Dedicated LAN Ports</span>
             </div>
             <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
-              <span class="d-room-text">✓ Full Buffet Selected (100 PAX)</span>
+              <span class="d-room-text">✓ Workshop Setup Selected (50 PAX)</span>
             </div>
             <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
@@ -551,7 +565,35 @@ $reqCategory = 'halls';
           </div>
         </article>
 
-        <!-- Hall 4: Executive Boardroom -->
+        <!-- Hall 4: 4-H Learning Center (Multi-Purpose Hall) -->
+        <article class="facility-choice-card" data-id="four-h-center" data-name="4-H Learning Center"
+          data-rate="₱3,000/day" data-capacity="60 - 80 PAX" data-facility-type="halls">
+          <div class="facility-card-image">
+            <img src="assets/images/training_hall.jpg" alt="4-H Learning Center" loading="lazy">
+            <span class="facility-cap-badge">60 - 80 PAX</span>
+          </div>
+          <div class="facility-card-content">
+            <span class="facility-category-tag">MULTI-PURPOSE CENTER &bull; HALL 4</span>
+            <h3 class="facility-title">4-H Learning Center</h3>
+            <div class="facility-rate-tag">Standard Rate: ₱3,000/day</div>
+            <div class="facility-amenities-tags">
+              <span class="amenity-pill">Moveable Modular Tables</span>
+              <span class="amenity-pill">75" Smart Interactive TV</span>
+              <span class="amenity-pill">Digital Agri Display</span>
+              <span class="amenity-pill">Public Address System</span>
+              <span class="amenity-pill">High-Speed Wi-Fi</span>
+            </div>
+            <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
+              <span class="d-room-text">✓ Multi-purpose Setup Selected (70 PAX)</span>
+            </div>
+            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              Select Setup &amp; View Floor Plan
+            </button>
+          </div>
+        </article>
+
+        <!-- Hall 5: Executive Boardroom -->
         <article class="facility-choice-card" data-id="executive-boardroom" data-name="Executive Boardroom"
           data-rate="₱2,500/day" data-capacity="20 - 30 PAX" data-facility-type="halls">
           <div class="facility-card-image">
@@ -559,17 +601,46 @@ $reqCategory = 'halls';
             <span class="facility-cap-badge">20 - 30 PAX</span>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">VIP CONFERENCE ROOM &bull; HALLS</span>
+            <span class="facility-category-tag">VIP CONFERENCE SUITE &bull; HALL 5</span>
             <h3 class="facility-title">Executive Boardroom</h3>
             <div class="facility-rate-tag">Standard Rate: ₱2,500/day</div>
             <div class="facility-amenities-tags">
               <span class="amenity-pill">Executive Leather Chairs</span>
-              <span class="amenity-pill">Video Conference Cam</span>
-              <span class="amenity-pill">Coffee Machine</span>
+              <span class="amenity-pill">Hybrid Teleconference Cam</span>
               <span class="amenity-pill">Acoustic Wall Paneling</span>
+              <span class="amenity-pill">Coffee Station</span>
+              <span class="amenity-pill">Private Restroom</span>
             </div>
             <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
               <span class="d-room-text">✓ Board Table Selected (25 PAX)</span>
+            </div>
+            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              Select Setup &amp; View Floor Plan
+            </button>
+          </div>
+        </article>
+
+        <!-- Hall 6: ATI Mess Hall & Dining Pavilion -->
+        <article class="facility-choice-card" data-id="mess-hall" data-name="ATI Mess Hall &amp; Dining Pavilion"
+          data-rate="₱3,500/day" data-capacity="100 - 150 PAX" data-facility-type="halls">
+          <div class="facility-card-image">
+            <img src="assets/images/mess_hall.jpg" alt="ATI Mess Hall & Dining Pavilion" loading="lazy">
+            <span class="facility-cap-badge">100 - 150 PAX</span>
+          </div>
+          <div class="facility-card-content">
+            <span class="facility-category-tag">DINING &amp; BANQUET COMPLEX &bull; HALL 6</span>
+            <h3 class="facility-title">ATI Mess Hall &amp; Dining Pavilion</h3>
+            <div class="facility-rate-tag">Standard Rate: ₱3,500/day</div>
+            <div class="facility-amenities-tags">
+              <span class="amenity-pill">Buffet Serving Counters</span>
+              <span class="amenity-pill">Commercial Kitchen Access</span>
+              <span class="amenity-pill">Washing Station</span>
+              <span class="amenity-pill">Outdoor Patio Deck</span>
+              <span class="amenity-pill">Filtered Water Stations</span>
+            </div>
+            <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
+              <span class="d-room-text">✓ Full Buffet Selected (100 PAX)</span>
             </div>
             <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
@@ -863,27 +934,27 @@ $reqCategory = 'halls';
         <p class="wizard-form-desc">Please verify your reservation particulars before final submission to the
           administrative approving authority.</p>
 
-        <!-- Step 5 Official Reservation Summary (Visible before final submission) -->
+        <!-- Step 5 Official Booking Summary (Visible before final submission) -->
         <div class="review-official-summary-card">
           <div class="summary-card-header">
             <div class="sch-left">
-              <span class="sch-badge" id="summaryOfficialBadge">OFFICIAL RESERVATION PARTICULARS</span>
-              <h4 class="sch-title" id="summaryVenueName">Function Hall</h4>
+              <span class="sch-badge" id="summaryOfficialBadge">OFFICIAL FACILITY BOOKING PARTICULARS</span>
+              <h4 class="sch-title" id="summaryVenueName">Serrano Function Hall</h4>
             </div>
             <span class="sch-rate-pill" id="summaryVenueRate">₱5,000 / day</span>
           </div>
 
           <div class="summary-card-body" style="margin-bottom: 1.25rem;">
-            <div class="scb-item" id="summaryRoomDetailWrap" style="display: none;">
-              <span class="scb-label" id="summaryRoomDetailLabel">Assigned Setup / Unit:</span>
-              <strong class="scb-val" id="summaryRoomDetail">Room 102 (1st Floor (Sampaguita))</strong>
+            <div class="scb-item" id="summaryRoomDetailWrap">
+              <span class="scb-label" id="summaryRoomDetailLabel">Assigned Venue Setup:</span>
+              <strong class="scb-val" id="summaryRoomDetail">Theater Setup (200 PAX)</strong>
             </div>
             <div class="scb-item">
-              <span class="scb-label">Accommodation / Venue Type:</span>
-              <strong class="scb-val" id="summaryFacilityType">Conference &amp; Training Venue</strong>
+              <span class="scb-label">Venue Location &amp; Type:</span>
+              <strong class="scb-val" id="summaryFacilityType">Main Administration Building &bull; Event Auditorium</strong>
             </div>
             <div class="scb-item">
-              <span class="scb-label">Capacity / Guests:</span>
+              <span class="scb-label">Capacity / Attendees:</span>
               <strong class="scb-val" id="summaryVenueCapacity">150 - 200 PAX</strong>
             </div>
             <div class="scb-item">
@@ -907,7 +978,7 @@ $reqCategory = 'halls';
           <svg viewBox="0 0 24 24" fill="none">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
-          <span>Submit Official Reservation Request</span>
+          <span>Submit Official Facility Booking Request</span>
         </button>
       </div>
     </div>
@@ -932,7 +1003,7 @@ $reqCategory = 'halls';
     </div>
   
   <!-- ==========================================================================
-       ROOM SELECTION MODAL POPUP
+       VENUE SETUP & FLOOR PLAN SELECTION MODAL POPUP
        ========================================================================== -->
   <div class="room-modal-overlay" id="roomSelectionModal" style="display: none;">
     <div class="room-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalDormTitle">
@@ -941,11 +1012,11 @@ $reqCategory = 'halls';
       <div class="room-modal-header">
         <div class="room-modal-header-info">
           <div class="modal-badge-row">
-            <span class="modal-dorm-pill-tag" id="modalCategoryPill">FLOOR PLAN SELECTION</span>
-            <span id="modalDormRate" class="modal-dorm-rate-pill">₱500 / night</span>
+            <span class="modal-dorm-pill-tag" id="modalCategoryPill">VENUE SETUP &amp; FLOOR PLAN SELECTION</span>
+            <span id="modalDormRate" class="modal-dorm-rate-pill">₱5,000 / day</span>
           </div>
-          <h3 id="modalDormTitle" class="modal-dorm-title">1st Floor: Sampaguita Dormitory</h3>
-          <p id="modalDormFloor" class="modal-dorm-desc">Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.</p>
+          <h3 id="modalDormTitle" class="modal-dorm-title">Serrano Function Hall</h3>
+          <p id="modalDormFloor" class="modal-dorm-desc">Main Administration Building • Ground Floor &bull; Flagship multi-purpose event auditorium.</p>
         </div>
         <button type="button" class="room-modal-close-btn" id="btnModalClose" aria-label="Close Selection">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -959,18 +1030,18 @@ $reqCategory = 'halls';
       <div class="room-modal-legend">
         <div class="legend-item">
           <span class="legend-color-dot available"></span>
-          <span id="modalLegendAvailText"><strong>Available:</strong> Click to assign for your booking</span>
+          <span id="modalLegendAvailText"><strong>Available:</strong> Click to assign layout setup</span>
         </div>
         <div class="legend-item">
           <span class="legend-color-dot reserved"></span>
-          <span id="modalLegendResText"><strong>Reserved:</strong> Occupied by scheduled delegates</span>
+          <span id="modalLegendResText"><strong>Reserved:</strong> Layout setup reserved for existing booking</span>
         </div>
       </div>
 
-      <!-- Modal Body: Interactive Room Grid -->
+      <!-- Modal Body: Interactive Layout Grid -->
       <div class="room-modal-body">
-        <div class="modal-rooms-grid" id="modalRoomsGrid">
-          <!-- Dynamically populated 12 room boxes -->
+        <div class="modal-rooms-grid hall-layout-mode" id="modalRoomsGrid">
+          <!-- Dynamically populated 6 hall layout setup cards -->
         </div>
 
         <!-- Feedback Bar inside modal -->
@@ -980,11 +1051,11 @@ $reqCategory = 'halls';
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
             </div>
             <div>
-              <div class="mf-title" id="modalFeedbackTitle">Room 402 Selected</div>
-              <div class="mf-sub" id="modalFeedbackSub">Standard Trainee Dormitory (₱500 / night)</div>
+              <div class="mf-title" id="modalFeedbackTitle">Theater Setup Selected ✓</div>
+              <div class="mf-sub" id="modalFeedbackSub">Serrano Function Hall (₱5,000 / day) &bull; Layout Confirmed</div>
             </div>
           </div>
-          <span class="badge-assigned-ok">✓ Ready to Reserve</span>
+          <span class="badge-assigned-ok">✓ Setup Confirmed</span>
         </div>
       </div>
     </div>

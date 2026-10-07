@@ -53,7 +53,7 @@ function syncGlobalProfileHeader() {
       if (p.fullName) {
         document.querySelectorAll('.user-name, .dropdown-user-name, .drawer-profile-info h5').forEach(el => el.textContent = p.fullName);
       }
-    } catch(e) {}
+    } catch (e) { }
   }
 }
 
@@ -94,21 +94,34 @@ function initCategorySwitcher() {
       }
     });
 
-    // Dynamic Heading & Meta
+    // Dynamic Heading, Action Button & Meta
+    const actionBtn = document.querySelector('.btn-new-res-action span');
+    const actionBtnLink = document.querySelector('.btn-new-res-action');
+    const kpiTotalLabel = document.querySelector('.my-res-stat-card[data-filter="all"] .stat-label');
+
     if (cat === 'facility') {
-      if (pageHeading) pageHeading.textContent = 'Facility Reservation History';
-      if (pageSubtext) pageSubtext.textContent = 'Monitor your official facility reservation requests for function halls, training rooms, and boardrooms, follow live administrative routing clearances, download official slips, and access gate passes.';
-      if (pageBadge) pageBadge.textContent = 'Official Facility Reservations & Halls';
-      document.title = 'Facility Reservation History | ATI Reservation Portal';
+      if (pageHeading) pageHeading.textContent = 'Your Bookings';
+      if (pageSubtext) pageSubtext.textContent = 'View and manage all the facility spaces you have booked (function halls, training rooms, and boardrooms), track routing approvals, and access gate passes.';
+      if (pageBadge) pageBadge.textContent = 'Your Bookings \u2022 Facilities & Venues';
+      if (actionBtn) actionBtn.textContent = 'Book Facility';
+      if (actionBtnLink) actionBtnLink.href = 'booking.php';
+      if (kpiTotalLabel) kpiTotalLabel.textContent = 'Total Bookings';
+      document.title = 'Your Bookings | ATI Facility Reservation Portal';
     } else if (cat === 'dormitory') {
-      if (pageHeading) pageHeading.textContent = 'Dormitory Booking History';
-      if (pageSubtext) pageSubtext.textContent = 'Monitor your official dormitory lodging bookings, track room & bed assignments with dormitory custodians, download lodging slips, and view room access security gate passes.';
-      if (pageBadge) pageBadge.textContent = 'Official Dormitory Lodging & Room Bookings';
-      document.title = 'Dormitory Booking History | ATI Reservation Portal';
+      if (pageHeading) pageHeading.textContent = 'Your Reservations';
+      if (pageSubtext) pageSubtext.textContent = 'Monitor your official dormitory reservations, track room & bed assignments with dormitory custodians, download lodging slips, and view room access security gate passes.';
+      if (pageBadge) pageBadge.textContent = 'Your Reservations \u2022 Dormitories & Lodging';
+      if (actionBtn) actionBtn.textContent = 'Reserve Dormitory';
+      if (actionBtnLink) actionBtnLink.href = 'dormitory_booking.php';
+      if (kpiTotalLabel) kpiTotalLabel.textContent = 'Total Reservations';
+      document.title = 'Your Reservations | ATI Dormitory Reservation Portal';
     } else {
       if (pageHeading) pageHeading.textContent = 'Complete History Log';
       if (pageSubtext) pageSubtext.textContent = 'Monitor your active and historical facility reservations and dormitory room bookings, follow live routing clearances through approving units, and download official documents.';
       if (pageBadge) pageBadge.textContent = 'Official Records & Activity Log';
+      if (actionBtn) actionBtn.textContent = 'Book Facility';
+      if (actionBtnLink) actionBtnLink.href = 'booking.php';
+      if (kpiTotalLabel) kpiTotalLabel.textContent = 'Total Records';
       document.title = 'Activity & History Records | ATI Reservation Portal';
     }
 
@@ -131,15 +144,15 @@ function initCategorySwitcher() {
     });
   });
 
-  // Read URL query parameter on initialization
+  // Read URL query parameter or default based on the active screen
   const urlParams = new URLSearchParams(window.location.search);
   const typeParam = (urlParams.get('type') || '').toLowerCase();
-  if (['dorm', 'dormitory', 'dorms', 'booking', 'bookings'].includes(typeParam)) {
+  const isBookingHistory = window.location.pathname.includes('booking_history');
+
+  if (['dorm', 'dormitory', 'dorms'].includes(typeParam) || isBookingHistory) {
     setCategory('dormitory', false);
-  } else if (['facility', 'facilities', 'halls', 'reservation', 'reservations'].includes(typeParam)) {
-    setCategory('facility', false);
   } else {
-    setCategory('all', false);
+    setCategory('facility', false);
   }
 }
 
@@ -257,6 +270,18 @@ function updateKpiCounts() {
     }
   });
 
+  // Read stored reservations from localStorage if any
+  let storedFacilityCount = 4;
+  let storedDormCount = 2;
+  try {
+    const fStored = JSON.parse(localStorage.getItem('ati_facility_bookings') || '[]');
+    storedFacilityCount = Math.max(4, 4 + fStored.length);
+  } catch (e) { }
+  try {
+    const dStored = JSON.parse(localStorage.getItem('ati_dormitory_reservations') || '[]');
+    storedDormCount = Math.max(2, 2 + dStored.length);
+  } catch (e) { }
+
   const kpiTotal = document.getElementById('kpiTotal');
   const kpiPending = document.getElementById('kpiPending');
   const kpiApproved = document.getElementById('kpiApproved');
@@ -272,12 +297,18 @@ function updateKpiCounts() {
   if (kpiApproved) kpiApproved.textContent = approved;
   if (kpiCompleted) kpiCompleted.textContent = completed;
 
-  if (catCountAll) catCountAll.textContent = totalAll;
-  if (catCountFacility) catCountFacility.textContent = totalFacility;
-  if (catCountDormitory) catCountDormitory.textContent = totalDorm;
+  if (catCountAll) catCountAll.textContent = storedFacilityCount + storedDormCount;
+  if (catCountFacility) catCountFacility.textContent = Math.max(totalFacility, storedFacilityCount);
+  if (catCountDormitory) catCountDormitory.textContent = Math.max(totalDorm, storedDormCount);
 
-  if (navBadgeFacilityCount) navBadgeFacilityCount.textContent = totalFacility;
-  if (navBadgeDormCount) navBadgeDormCount.textContent = totalDorm;
+  if (navBadgeFacilityCount) navBadgeFacilityCount.textContent = Math.max(totalFacility, storedFacilityCount);
+  if (navBadgeDormCount) navBadgeDormCount.textContent = Math.max(totalDorm, storedDormCount);
+
+  // Sync segmented switcher badge counts
+  const segFacilityBadge = document.querySelector('.category-segment-btn[href*="my_reservations"] .seg-count-badge');
+  const segDormBadge = document.querySelector('.category-segment-btn[href*="booking_history"] .seg-count-badge');
+  if (segFacilityBadge) segFacilityBadge.textContent = Math.max(totalFacility, storedFacilityCount);
+  if (segDormBadge) segDormBadge.textContent = Math.max(totalDorm, storedDormCount);
 }
 
 function initKpiFilters() {
@@ -555,7 +586,7 @@ function initCardModals() {
 /* ==========================================================================
    5. Gate Pass & QR Modal
    ========================================================================== */
-window.showGatePassModal = function(ref, title, venue, dates) {
+window.showGatePassModal = function (ref, title, venue, dates) {
   const modal = document.getElementById('gatePassModal');
   if (!modal) return;
 

@@ -49,13 +49,13 @@
           <span>Home</span>
         </a>
 
-        <!-- New Reservation -->
-        <a href="booking.php" class="booking-nav-item">
+        <!-- Reserve Dormitory Action -->
+        <a href="dormitory_booking.php" class="booking-nav-item" title="Reserve Dormitory (Rooms & Lodging)">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M12 5v14"></path>
             <path d="M5 12h14"></path>
           </svg>
-          <span>New Reservation</span>
+          <span>+ Reserve Dormitory</span>
         </a>
 
         <!-- Facility Bookings (Halls) -->
@@ -196,6 +196,28 @@
           </div>
         </div>
 
+        <!-- Quick Reservation & Booking Action Section in Drawer -->
+        <div class="drawer-nav-section">
+          <div class="drawer-section-label">QUICK ACTIONS</div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <a href="booking.php" class="drawer-nav-link" style="background: linear-gradient(135deg, #174d2f 0%, #226b42 100%); color: #ffffff; font-weight: 800; border-radius: 10px; padding: 0.75rem 0.95rem; box-shadow: 0 4px 12px rgba(23,77,47,0.25);">
+              <div class="drawer-link-icon" style="color: #ffffff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              </div>
+              <span class="drawer-link-text">+ Book Facility</span>
+              <span style="font-size: 0.68rem; background: rgba(255,255,255,0.22); padding: 0.15rem 0.45rem; border-radius: 999px;">Halls</span>
+            </a>
+
+            <a href="dormitory_booking.php" class="drawer-nav-link" style="background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%); color: #ffffff; font-weight: 800; border-radius: 10px; padding: 0.75rem 0.95rem; box-shadow: 0 4px 12px rgba(2,132,199,0.25);">
+              <div class="drawer-link-icon" style="color: #ffffff;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+              </div>
+              <span class="drawer-link-text">+ Reserve Dormitory</span>
+              <span style="font-size: 0.68rem; background: rgba(255,255,255,0.22); padding: 0.15rem 0.45rem; border-radius: 999px;">Rooms</span>
+            </a>
+          </div>
+        </div>
+
         <!-- Main Navigation Section -->
         <div class="drawer-nav-section">
           <div class="drawer-section-label">PORTAL NAVIGATION</div>
@@ -208,14 +230,6 @@
               </svg>
             </div>
             <span class="drawer-link-text">Home</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </a>
-
-          <a href="booking.php" class="drawer-nav-link">
-            <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
-            </div>
-            <span class="drawer-link-text">New Reservation</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
 
@@ -262,6 +276,13 @@
             </div>
             <span class="drawer-link-text">My Profile</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+
+          <a href="javascript:void(0)" onclick="toggleMobileDrawer(false); openUserSettingsModal();" class="drawer-nav-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
+            <span class="drawer-link-text">Settings</span>
           </a>
 
           <a href="admin_dashboard.php" class="drawer-nav-link">
@@ -345,12 +366,12 @@
         <p id="pageHeadingSubtext">Monitor your official dormitory reservations, track room &amp; bed assignments with dormitory custodians, download lodging slips, and view room access security gate passes.</p>
       </div>
 
-      <a href="dormitory_booking.php" class="btn-new-res-action">
+      <a href="dormitory_booking.php" class="btn-new-res-action" title="Reserve Dormitory">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        <span>Book Lodging</span>
+        <span>+ Reserve Dormitory</span>
       </a>
     </section>
 
@@ -368,7 +389,7 @@
         </div>
         <div class="stat-content">
           <span class="stat-value" id="kpiTotal">2</span>
-          <span class="stat-label">Total Bookings</span>
+          <span class="stat-label">Total Reservations</span>
         </div>
       </div>
 

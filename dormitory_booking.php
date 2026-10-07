@@ -50,15 +50,15 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
           <span>Home</span>
         </a>
 
-        <!-- New Reservation / New Booking -->
-        <a href="dormitory_booking.php" class="booking-nav-item active">
+        <!-- Dormitory Reservation Action -->
+        <a href="dormitory_booking.php" class="booking-nav-item active" title="Reserve Dormitory (Rooms & Lodging)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 4v16"></path>
             <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
             <path d="M2 17h20"></path>
             <path d="M6 8v9"></path>
           </svg>
-          <span>Book Lodging</span>
+          <span>Reserve Dormitory</span>
         </a>
 
         <!-- Facility Bookings (Halls) -->
@@ -216,9 +216,9 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
 
           <a href="booking.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
             </div>
-            <span class="drawer-link-text">New Facility Reservation</span>
+            <span class="drawer-link-text">+ Book Facility</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
 
@@ -228,7 +228,7 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
                 <path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path><path d="M2 17h20"></path>
               </svg>
             </div>
-            <span class="drawer-link-text">Book Dormitory Lodging</span>
+            <span class="drawer-link-text">+ Reserve Dormitory</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
 
@@ -733,7 +733,7 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
 
         <button type="button" id="btnSubmitDormitoryBooking" style="width: 100%; background: linear-gradient(135deg, #174d2f 0%, #226b42 100%); color: #ffffff; border: none; padding: 1.1rem; border-radius: 12px; font-weight: 800; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 6px 18px rgba(23, 77, 47, 0.3);">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          <span>Submit Official Dormitory Booking Request</span>
+          <span>Submit Official Dormitory Reservation Request</span>
         </button>
       </div>
     </div>
@@ -784,79 +784,7 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
 
   </main>
 
-  <script src="js/booking.js?v=<?php echo time(); ?>"></script>
-  <script>
-    // Dormitory Stepper Logic
-    let currentDormStep = 1;
-    const totalDormSteps = 5;
-
-    function setDormStep(step) {
-      if (step < 1 || step > totalDormSteps) return;
-      currentDormStep = step;
-
-      document.querySelectorAll('.wizard-step-view').forEach(view => {
-        view.classList.toggle('active', parseInt(view.dataset.step) === step);
-      });
-
-      document.querySelectorAll('.step-tab-btn').forEach(tab => {
-        tab.classList.toggle('active', parseInt(tab.dataset.step) === step);
-      });
-
-      document.querySelectorAll('.mobile-dot').forEach(dot => {
-        dot.classList.toggle('active', parseInt(dot.dataset.step) === step);
-      });
-
-      const badge = document.getElementById('mobileStepBadge');
-      const stepName = document.getElementById('mobileStepName');
-      const percent = document.getElementById('mobileStepPercent');
-      const fill = document.getElementById('mobileProgressFill');
-      const btnBack = document.getElementById('btnStepBack');
-      const btnProceed = document.getElementById('btnProceedStep');
-
-      const names = ['Dormitory Floor', 'Stay Dates', 'Lodging Details', 'Roster Documents', 'Review & Submit'];
-      if (badge) badge.textContent = `Step ${step} of 5`;
-      if (stepName) stepName.textContent = names[step - 1];
-      const pct = (step / 5) * 100;
-      if (percent) percent.textContent = `${pct}%`;
-      if (fill) fill.style.width = `${pct}%`;
-
-      if (btnBack) btnBack.style.display = step > 1 ? 'inline-flex' : 'none';
-      if (btnProceed) {
-        if (step === 5) {
-          btnProceed.style.display = 'none';
-        } else {
-          btnProceed.style.display = 'inline-flex';
-          const nextNames = ['Stay Dates', 'Lodging Details', 'Roster Documents', 'Review Summary'];
-          btnProceed.querySelector('span').textContent = `Proceed to ${nextNames[step - 1]}`;
-        }
-      }
-
-      window.scrollTo({ top: 120, behavior: 'smooth' });
-    }
-
-    document.getElementById('btnProceedStep')?.addEventListener('click', () => {
-      setDormStep(currentDormStep + 1);
-    });
-
-    document.getElementById('btnStepBack')?.addEventListener('click', () => {
-      setDormStep(currentDormStep - 1);
-    });
-
-    document.querySelectorAll('.step-tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        setDormStep(parseInt(btn.dataset.step));
-      });
-    });
-
-    document.getElementById('btnSubmitDormitoryBooking')?.addEventListener('click', () => {
-      alert('Official Dormitory Booking Request Submitted Successfully!\nYour request has been routed to the Dormitory Custodian for Bed Assignment.');
-      window.location.href = 'booking_history.php';
-    });
-
-    function closeRoomModal() {
-      document.getElementById('roomSelectionModal').style.display = 'none';
-    }
-  </script>
+  <script src="js/dormitory_booking.js?v=<?php echo time(); ?>"></script>
   <script src="js/user_settings.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
