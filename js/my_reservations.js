@@ -1,12 +1,13 @@
 /**
  * ATI Reservation System - My Reservations Dashboard Controller
- * Handles filtering, search, routing modal views, gatepass generation, and cancellation
+ * Handles filtering, category separation (Facility Reservations vs Dormitory Bookings),
+ * search, routing modal views, gatepass generation, and cancellation
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   initProfileDropdown();
   initMobileDrawer();
-  initReservationTabs();
+  initCategorySwitcher();
   initKpiFilters();
   initCustomFacilityDropdown();
   initSearch();
@@ -57,104 +58,90 @@ function syncGlobalProfileHeader() {
 }
 
 /* ==========================================================================
-   2. Segmented Tabs Controller: Active Reservations vs Booking History
+   2. Category Segregation (Facility Reservations vs Dormitory Bookings)
    ========================================================================== */
-let currentActiveTab = 'active'; // 'active' | 'history'
-
-function initReservationTabs() {
-  const tabActive = document.getElementById('tabActiveReservations');
-  const tabHistory = document.getElementById('tabBookingHistory');
-
-  if (tabActive) {
-    tabActive.addEventListener('click', () => switchReservationTab('active'));
-  }
-  if (tabHistory) {
-    tabHistory.addEventListener('click', () => switchReservationTab('history'));
-  }
-
-  // Check URL query param: ?tab=history or #history
-  const urlParams = new URLSearchParams(window.location.search);
-  const tabParam = urlParams.get('tab');
-  const hashParam = window.location.hash.replace('#', '');
-
-  if (tabParam === 'history' || hashParam === 'history') {
-    switchReservationTab('history', false);
-  } else {
-    switchReservationTab('active', false);
-  }
-}
-
-function switchReservationTab(tab, updateUrl = true) {
-  currentActiveTab = tab === 'history' ? 'history' : 'active';
-
-  const tabActive = document.getElementById('tabActiveReservations');
-  const tabHistory = document.getElementById('tabBookingHistory');
-  const tabsContainer = document.querySelector('.res-tabs-container');
-  const metaText = document.getElementById('tabMetaText');
-  const emptyStateH3 = document.querySelector('#emptyResState h3');
-  const emptyStateP = document.querySelector('#emptyResState p');
-
-  if (currentActiveTab === 'active') {
-    if (tabActive) {
-      tabActive.classList.add('active');
-      tabActive.setAttribute('aria-selected', 'true');
-    }
-    if (tabHistory) {
-      tabHistory.classList.remove('active');
-      tabHistory.setAttribute('aria-selected', 'false');
-    }
-    if (tabsContainer) tabsContainer.classList.remove('is-history');
-    if (metaText) {
-      metaText.textContent = 'Showing ongoing and upcoming reservations undergoing administrative review & clearance.';
-    }
-    if (emptyStateH3) emptyStateH3.textContent = 'No Active Reservations Found';
-    if (emptyStateP) emptyStateP.textContent = 'There are no active or pending reservations matching your filter. Switch to Booking History to view past records.';
-  } else {
-    if (tabHistory) {
-      tabHistory.classList.add('active');
-      tabHistory.setAttribute('aria-selected', 'true');
-    }
-    if (tabActive) {
-      tabActive.classList.remove('active');
-      tabActive.setAttribute('aria-selected', 'false');
-    }
-    if (tabsContainer) tabsContainer.classList.add('is-history');
-    if (metaText) {
-      metaText.textContent = 'Showing completed, concluded, and archived booking records for historical audit & reporting.';
-    }
-    if (emptyStateH3) emptyStateH3.textContent = 'No Historical Bookings Found';
-    if (emptyStateP) emptyStateP.textContent = 'There are no past or completed reservations matching your criteria in the booking history archive.';
-  }
-
-  // Reset status filter for the tab
-  activeStatusFilter = 'all';
-  document.querySelectorAll('.my-res-stat-card').forEach(c => {
-    if (c.dataset.filter === 'all') c.classList.add('active-filter');
-    else c.classList.remove('active-filter');
-  });
-
-  if (updateUrl && history.pushState) {
-    const newUrl = new URL(window.location);
-    if (currentActiveTab === 'history') {
-      newUrl.searchParams.set('tab', 'history');
-    } else {
-      newUrl.searchParams.delete('tab');
-    }
-    history.pushState({}, '', newUrl);
-  }
-
-  updateKpiCounts();
-  applyAllFilters();
-}
-window.switchReservationTab = switchReservationTab;
-
-/* ==========================================================================
-   3. KPI Stat Card Filters & Filtering Controller
-   ========================================================================== */
+let activeCategoryType = 'all'; // 'all' | 'facility' | 'dormitory'
 let activeStatusFilter = 'all';
 let activeVenueFilter = 'all';
 let activeSearchQuery = '';
 let currentViewMode = 'cards';
+
+function initCategorySwitcher() {
+  const segmentBtns = document.querySelectorAll('.category-segment-btn');
+  const pageHeading = document.getElementById('pageHeadingTitle');
+  const pageSubtext = document.getElementById('pageHeadingSubtext');
+  const pageBadge = document.getElementById('pageTopBadgeText');
+
+  function setCategory(cat, updateUrl = true) {
+    activeCategoryType = cat;
+
+    segmentBtns.forEach(btn => {
+      if (btn.dataset.categoryType === cat) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-pressed', 'true');
+      } else {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-pressed', 'false');
+      }
+    });
+
+    // Update navigation active styles
+    document.querySelectorAll('.booking-nav-item[data-cat-nav]').forEach(item => {
+      if (item.dataset.catNav === cat) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+
+    // Dynamic Heading & Meta
+    if (cat === 'facility') {
+      if (pageHeading) pageHeading.textContent = 'Facility Reservation History';
+      if (pageSubtext) pageSubtext.textContent = 'Monitor your official facility reservation requests for function halls, training rooms, and boardrooms, follow live administrative routing clearances, download official slips, and access gate passes.';
+      if (pageBadge) pageBadge.textContent = 'Official Facility Reservations & Halls';
+      document.title = 'Facility Reservation History | ATI Reservation Portal';
+    } else if (cat === 'dormitory') {
+      if (pageHeading) pageHeading.textContent = 'Dormitory Booking History';
+      if (pageSubtext) pageSubtext.textContent = 'Monitor your official dormitory lodging bookings, track room & bed assignments with dormitory custodians, download lodging slips, and view room access security gate passes.';
+      if (pageBadge) pageBadge.textContent = 'Official Dormitory Lodging & Room Bookings';
+      document.title = 'Dormitory Booking History | ATI Reservation Portal';
+    } else {
+      if (pageHeading) pageHeading.textContent = 'Complete History Log';
+      if (pageSubtext) pageSubtext.textContent = 'Monitor your active and historical facility reservations and dormitory room bookings, follow live routing clearances through approving units, and download official documents.';
+      if (pageBadge) pageBadge.textContent = 'Official Records & Activity Log';
+      document.title = 'Activity & History Records | ATI Reservation Portal';
+    }
+
+    if (updateUrl) {
+      const url = new URL(window.location.href);
+      if (cat === 'all') {
+        url.searchParams.delete('type');
+      } else {
+        url.searchParams.set('type', cat);
+      }
+      window.history.replaceState({}, '', url.toString());
+    }
+
+    applyAllFilters();
+  }
+
+  segmentBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      setCategory(btn.dataset.categoryType);
+    });
+  });
+
+  // Read URL query parameter on initialization
+  const urlParams = new URLSearchParams(window.location.search);
+  const typeParam = (urlParams.get('type') || '').toLowerCase();
+  if (['dorm', 'dormitory', 'dorms', 'booking', 'bookings'].includes(typeParam)) {
+    setCategory('dormitory', false);
+  } else if (['facility', 'facilities', 'halls', 'reservation', 'reservations'].includes(typeParam)) {
+    setCategory('facility', false);
+  } else {
+    setCategory('all', false);
+  }
+}
 
 function applyAllFilters() {
   const cards = document.querySelectorAll('.res-card');
@@ -165,20 +152,17 @@ function applyAllFilters() {
 
   cards.forEach(card => {
     const cardStatus = card.dataset.status;
+    const cardCat = card.dataset.category || (card.dataset.venue === 'dormitory' ? 'dormitory' : 'facility');
     const cardVenue = card.dataset.venue;
     const cardText = card.textContent.toLowerCase();
 
-    // Check if card belongs to active tab
-    const matchesTab = (currentActiveTab === 'active')
-      ? (cardStatus === 'pending' || cardStatus === 'approved')
-      : (cardStatus === 'completed' || cardStatus === 'cancelled');
-
+    const matchesCategory = (activeCategoryType === 'all') || (cardCat === activeCategoryType);
     const matchesStatus = (activeStatusFilter === 'all') || (cardStatus === activeStatusFilter);
     const matchesVenue = (activeVenueFilter === 'all') || (cardVenue === activeVenueFilter);
     const matchesSearch = !activeSearchQuery || cardText.includes(activeSearchQuery);
 
     if (currentViewMode === 'cards') {
-      if (matchesTab && matchesStatus && matchesVenue && matchesSearch) {
+      if (matchesCategory && matchesStatus && matchesVenue && matchesSearch) {
         card.style.display = '';
         visibleCount++;
       } else {
@@ -191,18 +175,16 @@ function applyAllFilters() {
 
   tableRows.forEach(row => {
     const rowStatus = row.dataset.status;
+    const rowCat = row.dataset.category || (row.dataset.venue === 'dormitory' ? 'dormitory' : 'facility');
     const rowVenue = row.dataset.venue;
     const rowText = row.textContent.toLowerCase();
 
-    const matchesTab = (currentActiveTab === 'active')
-      ? (rowStatus === 'pending' || rowStatus === 'approved')
-      : (rowStatus === 'completed' || rowStatus === 'cancelled');
-
+    const matchesCategory = (activeCategoryType === 'all') || (rowCat === activeCategoryType);
     const matchesStatus = (activeStatusFilter === 'all') || (rowStatus === activeStatusFilter);
     const matchesVenue = (activeVenueFilter === 'all') || (rowVenue === activeVenueFilter);
     const matchesSearch = !activeSearchQuery || rowText.includes(activeSearchQuery);
 
-    if (matchesTab && matchesStatus && matchesVenue && matchesSearch) {
+    if (matchesCategory && matchesStatus && matchesVenue && matchesSearch) {
       row.style.display = '';
       if (currentViewMode === 'table') visibleCount++;
     } else {
@@ -217,6 +199,8 @@ function applyAllFilters() {
   if (emptyState) {
     emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
   }
+
+  updateKpiCounts();
 }
 
 function initViewModeToggle() {
@@ -246,66 +230,54 @@ function initViewModeToggle() {
 
 function updateKpiCounts() {
   const cards = document.querySelectorAll('.res-card');
-  let activeTotal = 0;
-  let pendingCount = 0;
-  let approvedCount = 0;
-  let historyTotal = 0;
-  let completedCount = 0;
-  let cancelledCount = 0;
+  let total = 0;
+  let pending = 0;
+  let approved = 0;
+  let completed = 0;
+
+  let totalAll = 0;
+  let totalFacility = 0;
+  let totalDorm = 0;
 
   cards.forEach(card => {
     const status = card.dataset.status;
-    if (status === 'pending') {
-      pendingCount++;
-      activeTotal++;
-    } else if (status === 'approved') {
-      approvedCount++;
-      activeTotal++;
-    } else if (status === 'completed') {
-      completedCount++;
-      historyTotal++;
-    } else if (status === 'cancelled') {
-      cancelledCount++;
-      historyTotal++;
+    const cat = card.dataset.category || (card.dataset.venue === 'dormitory' ? 'dormitory' : 'facility');
+
+    if (status !== 'cancelled') {
+      totalAll++;
+      if (cat === 'facility') totalFacility++;
+      if (cat === 'dormitory') totalDorm++;
+    }
+
+    if (activeCategoryType === 'all' || cat === activeCategoryType) {
+      if (status !== 'cancelled') total++;
+      if (status === 'pending') pending++;
+      if (status === 'approved') approved++;
+      if (status === 'completed') completed++;
     }
   });
 
-  const badgeActive = document.getElementById('badgeActiveCount');
-  const badgeHistory = document.getElementById('badgeHistoryCount');
-  const navBadgeCount = document.getElementById('navBadgeCount');
-
-  if (badgeActive) badgeActive.textContent = activeTotal;
-  if (badgeHistory) badgeHistory.textContent = historyTotal;
-  if (navBadgeCount) navBadgeCount.textContent = activeTotal;
-
   const kpiTotal = document.getElementById('kpiTotal');
-  const lblKpiTotal = document.getElementById('lblKpiTotal');
   const kpiPending = document.getElementById('kpiPending');
-  const lblKpiPending = document.getElementById('lblKpiPending');
   const kpiApproved = document.getElementById('kpiApproved');
-  const lblKpiApproved = document.getElementById('lblKpiApproved');
-  const kpiCard4Val = document.getElementById('kpiCompleted');
-  const lblKpiCard4 = document.getElementById('lblKpiCompleted');
+  const kpiCompleted = document.getElementById('kpiCompleted');
+  const catCountAll = document.getElementById('catCountAll');
+  const catCountFacility = document.getElementById('catCountFacility');
+  const catCountDormitory = document.getElementById('catCountDormitory');
+  const navBadgeFacilityCount = document.getElementById('navBadgeFacilityCount');
+  const navBadgeDormCount = document.getElementById('navBadgeDormCount');
 
-  if (currentActiveTab === 'active') {
-    if (kpiTotal) kpiTotal.textContent = activeTotal;
-    if (lblKpiTotal) lblKpiTotal.textContent = 'Active Bookings';
-    if (kpiPending) kpiPending.textContent = pendingCount;
-    if (lblKpiPending) lblKpiPending.textContent = 'Pending Review';
-    if (kpiApproved) kpiApproved.textContent = approvedCount;
-    if (lblKpiApproved) lblKpiApproved.textContent = 'Approved & Confirmed';
-    if (kpiCard4Val) kpiCard4Val.textContent = historyTotal;
-    if (lblKpiCard4) lblKpiCard4.textContent = 'Booking History Archive';
-  } else {
-    if (kpiTotal) kpiTotal.textContent = historyTotal;
-    if (lblKpiTotal) lblKpiTotal.textContent = 'Historical Records';
-    if (kpiPending) kpiPending.textContent = completedCount;
-    if (lblKpiPending) lblKpiPending.textContent = 'Completed & Cleared';
-    if (kpiApproved) kpiApproved.textContent = cancelledCount;
-    if (lblKpiApproved) lblKpiApproved.textContent = 'Cancelled / Released';
-    if (kpiCard4Val) kpiCard4Val.textContent = activeTotal;
-    if (lblKpiCard4) lblKpiCard4.textContent = 'Active Reservations';
-  }
+  if (kpiTotal) kpiTotal.textContent = total;
+  if (kpiPending) kpiPending.textContent = pending;
+  if (kpiApproved) kpiApproved.textContent = approved;
+  if (kpiCompleted) kpiCompleted.textContent = completed;
+
+  if (catCountAll) catCountAll.textContent = totalAll;
+  if (catCountFacility) catCountFacility.textContent = totalFacility;
+  if (catCountDormitory) catCountDormitory.textContent = totalDorm;
+
+  if (navBadgeFacilityCount) navBadgeFacilityCount.textContent = totalFacility;
+  if (navBadgeDormCount) navBadgeDormCount.textContent = totalDorm;
 }
 
 function initKpiFilters() {
@@ -315,17 +287,6 @@ function initKpiFilters() {
     card.addEventListener('click', () => {
       const filter = card.dataset.filter || 'all';
 
-      // Card 4 acts as quick switcher to other tab
-      if (filter === 'completed') {
-        if (currentActiveTab === 'active') {
-          switchReservationTab('history');
-          return;
-        } else {
-          switchReservationTab('active');
-          return;
-        }
-      }
-
       statCards.forEach(c => c.classList.remove('active-filter'));
       card.classList.add('active-filter');
 
@@ -334,17 +295,12 @@ function initKpiFilters() {
     });
   });
 
-  // Support direct navigation via URL query
+  // Support direct navigation from profile stat cards via URL query
   const urlFilter = new URLSearchParams(window.location.search).get('filter');
   if (urlFilter) {
-    if (urlFilter === 'completed') {
-      switchReservationTab('history', false);
-    } else {
-      switchReservationTab('active', false);
-      const targetCard = document.querySelector(`.my-res-stat-card[data-filter="${urlFilter}"]`);
-      if (targetCard) {
-        targetCard.click();
-      }
+    const targetCard = document.querySelector(`.my-res-stat-card[data-filter="${urlFilter}"]`);
+    if (targetCard) {
+      targetCard.click();
     }
   }
 }

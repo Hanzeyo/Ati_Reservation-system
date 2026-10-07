@@ -348,7 +348,7 @@ const adminFilterState = {
   query: ''
 };
 
-function applyTabFilter(filter) {
+function applyTabFilter(filter, shouldScroll = false) {
   adminFilterState.tab = filter;
 
   // Update tab buttons
@@ -360,7 +360,24 @@ function applyTabFilter(filter) {
     }
   });
 
+  // Synchronize active indicator bar on KPI stat cards
+  document.querySelectorAll('.admin-kpi-grid .my-res-stat-card').forEach(card => {
+    const kpi = card.getAttribute('data-kpi');
+    if ((filter === 'all' && kpi === 'total') || (filter === 'pending' && kpi === 'pending')) {
+      card.classList.add('active-filter');
+    } else {
+      card.classList.remove('active-filter');
+    }
+  });
+
   applyCombinedAdminFilters();
+
+  if (shouldScroll) {
+    const tableSection = document.getElementById('reservationsSection');
+    if (tableSection) {
+      tableSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 }
 
 function handleAdminSearch(query) {
@@ -847,4 +864,64 @@ function handleAddNewUser(e) {
   showAdminToast(`Account successfully registered for ${name}.`, 'success');
   closeAddUserModal();
 }
+
+/* ==========================================================================
+   OCCUPANCY ANALYTICS MODAL CONTROLLER
+   ========================================================================== */
+function openOccupancyModal() {
+  const modal = document.getElementById('occupancyModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeOccupancyModal() {
+  const modal = document.getElementById('occupancyModal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+
+function switchOccupancyGraph(type) {
+  const barView = document.getElementById('occupancyBarGraphView');
+  const lineView = document.getElementById('occupancyLineGraphView');
+  const btnBar = document.getElementById('btnToggleBarGraph');
+  const btnLine = document.getElementById('btnToggleLineGraph');
+
+  if (type === 'bar') {
+    if (barView) barView.style.display = 'block';
+    if (lineView) lineView.style.display = 'none';
+    if (btnBar) btnBar.classList.add('active');
+    if (btnLine) btnLine.classList.remove('active');
+  } else if (type === 'line') {
+    if (barView) barView.style.display = 'none';
+    if (lineView) lineView.style.display = 'block';
+    if (btnBar) btnBar.classList.remove('active');
+    if (btnLine) btnLine.classList.add('active');
+  }
+}
+
+function updateOccupancyTimeRange(range) {
+  const toastMsg = range === 'week' ? 'Loaded Weekly Occupancy (Oct 5 – 11, 2026)'
+                 : range === 'month' ? 'Loaded Full Monthly Utilization (October 2026)'
+                 : 'Loaded Q4 2026 Institutional Capacity Projection';
+  showAdminToast(toastMsg, 'info');
+}
+
+function exportOccupancyReport() {
+  showAdminToast('Generating Official Occupancy Analytics Report (PDF)...', 'success');
+  setTimeout(() => {
+    window.print();
+  }, 600);
+}
+
+// ESC key listener to close modal
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    closeOccupancyModal();
+  }
+});
+
 

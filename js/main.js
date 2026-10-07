@@ -352,23 +352,68 @@ function initModals() {
 }
 
 /* ==========================================================================
-   4. Mobile Menu Toggle
+   4. Mobile Navigation Drawer (Upper Left Hamburger & Off-Canvas)
    ========================================================================== */
 function initMobileMenu() {
   const toggleBtn = document.getElementById('mobileMenuToggle');
-  const navMenu = document.getElementById('navMenu');
+  const overlay = document.getElementById('mobileDrawerOverlay');
+  const closeBtn = document.getElementById('mobileDrawerClose');
+  const drawerLinks = document.querySelectorAll('.js-drawer-link');
 
-  if (!toggleBtn || !navMenu) return;
+  if (!toggleBtn || !overlay) return;
 
-  toggleBtn.addEventListener('click', () => {
-    navMenu.classList.toggle('open');
+  function toggleDrawer(open) {
+    if (open) {
+      overlay.style.display = 'block';
+      void overlay.offsetHeight; // force reflow for smooth slide-in
+      overlay.classList.add('show');
+      toggleBtn.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    } else {
+      overlay.classList.remove('show');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        if (!overlay.classList.contains('show')) {
+          overlay.style.display = 'none';
+        }
+      }, 280);
+    }
+  }
+
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleDrawer(true);
   });
 
-  // Close when clicking nav links
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', () => {
-      navMenu.classList.remove('open');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      toggleDrawer(false);
     });
+  }
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      toggleDrawer(false);
+    }
+  });
+
+  drawerLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      toggleDrawer(false);
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay.classList.contains('show')) {
+      toggleDrawer(false);
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 991 && overlay.classList.contains('show')) {
+      toggleDrawer(false);
+    }
   });
 }
 
@@ -392,7 +437,7 @@ function initNavigationScrollSpy() {
 
   // 1. Click Listener: instantly shift underline when clicked
   navLinks.forEach(link => {
-    link.addEventListener('click', function(e) {
+    link.addEventListener('click', function (e) {
       const targetId = this.getAttribute('href');
       if (targetId && targetId.startsWith('#')) {
         navLinks.forEach(l => l.classList.remove('active'));
@@ -409,7 +454,7 @@ function initNavigationScrollSpy() {
 
     setTimeout(() => {
       isThrottled = false;
-      const scrollPos = window.scrollY + 120; // offset for sticky navbar
+      const scrollPos = window.scrollY + 85; // offset for sticky navbar
 
       // Check if at the bottom of the page
       if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {

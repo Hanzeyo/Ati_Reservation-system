@@ -55,18 +55,26 @@
           <span>New Reservation</span>
         </a>
 
-        <!-- My Reservations with count badge -->
-        <a href="my_reservations.php" class="booking-nav-item">
-          <svg viewBox="0 0 24 24" fill="none">
-            <line x1="8" y1="6" x2="21" y2="6"></line>
-            <line x1="8" y1="12" x2="21" y2="12"></line>
-            <line x1="8" y1="18" x2="21" y2="18"></line>
-            <line x1="3" y1="6" x2="3.01" y2="6"></line>
-            <line x1="3" y1="12" x2="3.01" y2="12"></line>
-            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        <!-- Facility Reservations (Halls) -->
+        <a href="my_reservations.php" class="booking-nav-item" title="Facility Reservations (Halls & Venues)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
-          <span>My Reservations</span>
-          <span class="nav-badge-count" id="navBadgeCount">4</span>
+          <span>Reservation History</span>
+          <span class="nav-badge-count">4</span>
+        </a>
+
+        <!-- Dormitory Bookings (Lodging) -->
+        <a href="booking_history.php" class="booking-nav-item" title="Booking History (Dormitories & Rooms)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 4v16"></path>
+            <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+            <path d="M2 17h20"></path>
+            <path d="M6 8v9"></path>
+          </svg>
+          <span>Booking History</span>
+          <span class="nav-badge-count blue">2</span>
         </a>
 
         <!-- Master Schedule -->
@@ -105,21 +113,17 @@
             </a>
             <a href="my_reservations.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="8" y1="6" x2="21" y2="6"></line>
-                <line x1="8" y1="12" x2="21" y2="12"></line>
-                <line x1="8" y1="18" x2="21" y2="18"></line>
-                <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
               </svg>
-              <span>My Reservations</span>
+              <span>Facility Reservations</span>
             </a>
-            <a href="my_reservations.php?tab=history" class="dropdown-item">
+            <a href="booking_history.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
+                <path d="M2 4v16"></path>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                <path d="M2 17h20"></path>
               </svg>
-              <span>Booking History</span>
+              <span>Dormitory Bookings</span>
             </a>
             <div style="height: 1px; background: #e5ede7; margin: 0.35rem 0;"></div>
             <a href="index.php" class="dropdown-item danger">
@@ -135,8 +139,7 @@
       </nav>
 
       <!-- Mobile Hamburger Menu Button -->
-      <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileDrawer(true)"
-        aria-label="Open Navigation Menu" aria-expanded="false">
+      <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" onclick="toggleMobileDrawer(true)" aria-label="Open Navigation Menu" aria-expanded="false">
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
         <span class="hamburger-line"></span>
@@ -157,7 +160,12 @@
             <p>Central Office</p>
           </div>
         </div>
-        <button type="button" class="drawer-close-btn" id="mobileDrawerClose" onclick="toggleMobileDrawer(false)" aria-label="Close Navigation Menu">&times;</button>
+        <button type="button" class="drawer-close-btn" id="mobileDrawerClose" onclick="toggleMobileDrawer(false)" aria-label="Close Navigation Menu">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="drawer-body">
@@ -188,10 +196,24 @@
           </a>
           <a href="my_reservations.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              </svg>
             </div>
-            <span class="drawer-link-text">My Reservations</span>
+            <span class="drawer-link-text">Facility Reservations</span>
             <span class="drawer-badge-count">4</span>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+          <a href="booking_history.php" class="drawer-nav-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M2 4v16"></path>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                <path d="M2 17h20"></path>
+              </svg>
+            </div>
+            <span class="drawer-link-text">Booking History (Dormitory)</span>
+            <span class="drawer-badge-count blue">2</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
           <a href="schedule.php" class="drawer-nav-link">
@@ -212,11 +234,11 @@
             <span class="drawer-link-text">My Profile</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
-          <a href="my_reservations.php?tab=history" class="drawer-nav-link">
+          <a href="admin_dashboard.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             </div>
-            <span class="drawer-link-text">Booking History</span>
+            <span class="drawer-link-text">Admin Dashboard</span>
           </a>
         </div>
       </div>
@@ -396,7 +418,7 @@
         <div class="profile-stat-info">
           <span class="profile-stat-val">5</span>
           <span class="profile-stat-lbl">Total Reservations Filed</span>
-          <a href="my_reservations.php" class="stat-click-hint" onclick="event.stopPropagation();" title="View all bookings in My Reservations">View all bookings &rarr;</a>
+          <a href="my_reservations.php" class="stat-click-hint" onclick="event.stopPropagation();" title="View all 5 bookings in Booking History">View all 5 bookings &rarr;</a>
         </div>
       </div>
 
@@ -411,7 +433,7 @@
         <div class="profile-stat-info">
           <span class="profile-stat-val">2</span>
           <span class="profile-stat-lbl">Confirmed &amp; Approved</span>
-          <a href="my_reservations.php?filter=approved" class="stat-click-hint" onclick="event.stopPropagation();" title="View approved bookings in My Reservations">View 2 approved &rarr;</a>
+          <a href="my_reservations.php?filter=approved" class="stat-click-hint" onclick="event.stopPropagation();" title="View approved bookings in Booking History">View 2 approved &rarr;</a>
         </div>
       </div>
 
@@ -426,7 +448,7 @@
         <div class="profile-stat-info">
           <span class="profile-stat-val">2</span>
           <span class="profile-stat-lbl">Under Admin Review</span>
-          <a href="my_reservations.php?filter=pending" class="stat-click-hint" onclick="event.stopPropagation();" title="View pending reviews in My Reservations">View 2 pending &rarr;</a>
+          <a href="my_reservations.php?filter=pending" class="stat-click-hint" onclick="event.stopPropagation();" title="View pending bookings in Booking History">View 2 pending &rarr;</a>
         </div>
       </div>
 
@@ -834,7 +856,7 @@
       <div class="profile-modal-footer">
         <button type="button" class="btn-profile-secondary" id="btnCloseStatModalFooter">Close</button>
         <a href="my_reservations.php" class="btn-profile-primary" id="btnModalGoToBookings">
-          <span>Go to My Reservations &rarr;</span>
+          <span>Go to Booking History &rarr;</span>
         </a>
       </div>
     </div>
