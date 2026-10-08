@@ -229,61 +229,99 @@ const hallLayoutData = {
 let currentModalFacilityId = null;
 let modalTempSelectedItem = null;
 
+function selectFacilityCard(card, openModal = true) {
+  if (!card) return;
+  const cards = document.querySelectorAll('.facility-choice-card');
+  const isDorm = card.dataset.facilityType === 'dormitories' || (card.dataset.id && card.dataset.id.startsWith('dorm-floor-'));
+
+  cards.forEach(c => {
+    c.classList.remove('selected');
+    const btn = c.querySelector('.btn-select-facility');
+    if (btn) {
+      const isCDorm = c.dataset.facilityType === 'dormitories' || (c.dataset.id && c.dataset.id.startsWith('dorm-floor-'));
+      if (isCDorm) {
+        btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Room &amp; View Floor Plan`;
+      } else {
+        btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Setup &amp; View Floor Plan`;
+      }
+    }
+  });
+
+  card.classList.add('selected');
+
+  let setupName = null;
+  let setupCap = null;
+  let setupId = null;
+  let setupRate = null;
+  let location = null;
+
+  if (!isDorm) {
+    location = hallLayoutData[card.dataset.id]?.location || null;
+    setupRate = card.dataset.rate || null;
+    if (bookingState.selectedFacility?.id === card.dataset.id && bookingState.selectedFacility?.setupName) {
+      setupName = bookingState.selectedFacility.setupName;
+      setupCap = bookingState.selectedFacility.setupCap;
+      setupId = bookingState.selectedFacility.setupId;
+    } else if (hallLayoutData[card.dataset.id]?.layouts?.[0]) {
+      const defLayout = hallLayoutData[card.dataset.id].layouts[0];
+      setupId = defLayout.id;
+      setupName = defLayout.name;
+      setupCap = defLayout.cap;
+    }
+  }
+
+  bookingState.selectedFacility = {
+    id: card.dataset.id,
+    name: card.dataset.name,
+    rate: card.dataset.rate,
+    capacity: card.dataset.capacity,
+    type: card.dataset.facilityType,
+    roomNumber: isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.roomNumber || null) : null) : null,
+    floor: isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.floor || null) : null) : null,
+    roomRate: isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.roomRate || null) : null) : null,
+    setupId: setupId,
+    setupName: setupName,
+    setupCap: setupCap,
+    location: location,
+    setupRate: setupRate,
+    occupiedOnDefaultDate: bookingState.selectedFacility?.id === card.dataset.id ? Boolean(bookingState.selectedFacility?.occupiedOnDefaultDate) : false
+  };
+
+  if (!isDorm && setupName) {
+    const badge = card.querySelector('.hall-selected-setup-badge');
+    const badgeText = card.querySelector('.d-room-text');
+    if (badge && badgeText) {
+      badgeText.textContent = `✓ ${setupName} Selected (${setupCap || ''})`;
+      badge.style.display = 'flex';
+    }
+    const btn = card.querySelector('.btn-select-facility');
+    if (btn) {
+      btn.innerHTML = `✓ ${setupName} Selected (Click to change)`;
+    }
+  }
+
+  if (openModal) {
+    openFacilityModal(card.dataset.id);
+  } else {
+    updateReviewSummary();
+  }
+}
+
 function initFacilitySelection() {
   const cards = document.querySelectorAll('.facility-choice-card');
 
   cards.forEach(card => {
     const selectBtn = card.querySelector('.btn-select-facility');
-    const isDorm = card.dataset.facilityType === 'dormitories' || card.dataset.id.startsWith('dorm-floor-');
-
-    function selectCard(openModal = true) {
-      cards.forEach(c => {
-        c.classList.remove('selected');
-        const btn = c.querySelector('.btn-select-facility');
-        if (btn) {
-          const isCDorm = c.dataset.facilityType === 'dormitories' || c.dataset.id.startsWith('dorm-floor-');
-          if (isCDorm) {
-            btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Room &amp; View Floor Plan`;
-          } else {
-            btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Setup &amp; View Floor Plan`;
-          }
-        }
-      });
-
-      card.classList.add('selected');
-
-      bookingState.selectedFacility = {
-        id: card.dataset.id,
-        name: card.dataset.name,
-        rate: card.dataset.rate,
-        capacity: card.dataset.capacity,
-        type: card.dataset.facilityType,
-        roomNumber: isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.roomNumber || null) : null) : null,
-        floor: isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.floor || null) : null) : null,
-        roomRate: isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.roomRate || null) : null) : null,
-        setupName: !isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.setupName || null) : null) : null,
-        setupCap: !isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.setupCap || null) : null) : null,
-        location: !isDorm ? (hallLayoutData[card.dataset.id]?.location || null) : null,
-        setupRate: !isDorm ? (card.dataset.rate || null) : null,
-        occupiedOnDefaultDate: bookingState.selectedFacility?.id === card.dataset.id ? Boolean(bookingState.selectedFacility?.occupiedOnDefaultDate) : false
-      };
-
-      if (openModal) {
-        openFacilityModal(card.dataset.id);
-      } else {
-        updateReviewSummary();
-      }
-    }
 
     if (selectBtn) {
       selectBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        selectCard(true);
+        selectFacilityCard(card, true);
       });
     }
 
     card.addEventListener('click', () => {
-      selectCard(true);
+      selectFacilityCard(card, true);
     });
   });
 
@@ -755,9 +793,9 @@ function initFacilityFilters() {
       }
     });
 
-    // If current selected card is now hidden, select the first visible card!
+    // If current selected card is now hidden, select the first visible card quietly without opening the modal!
     if (!currentSelectedVisible && firstVisibleCard) {
-      firstVisibleCard.click();
+      selectFacilityCard(firstVisibleCard, false);
     }
 
     // Smooth scroll down to facilities list if requested
