@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPasswordToggles();
   initPasswordStrengthAndMatch();
   initAuthModals();
+  initCustomSelect();
 });
 
 /* ==========================================================================
@@ -79,21 +80,97 @@ function initCategorySelector() {
   const categoryConfigs = {
     ati: {
       label: 'Office / Division / Regional Center',
-      placeholder: 'e.g. Information Services Division (ISD) / RTC IV-A',
+      placeholder: 'Select your Division',
       emailPlaceholder: 'juan.delacruz@ati.da.gov.ph',
-      hint: 'For ATI Central Office & Regional Training Centers (RTC) staff members.'
+      hint: 'For ATI Central Office & Regional Training Centers (RTC) staff members.',
+      options: [
+        "OD – Office of the Director",
+        "OAD – Office of the Assistant Director",
+        "AFU / AFD – Administrative and Finance Division (or Unit)",
+        "CDMD – Career Development and Management Division",
+        "ISD – Information Services Division",
+        "PAD – Partnerships and Accreditation Division",
+        "PPD – Policy and Planning Division",
+        "ATI-RTC CAR – Cordillera Administrative Region",
+        "ATI-RTC I – Ilocos Region",
+        "ATI-RTC II – Cagayan Valley",
+        "ATI-RTC III – Central Luzon",
+        "ATI-RTC IV-A – CALABARZON",
+        "ATI-RTC IV-B – MIMAROPA",
+        "ATI-RTC V – Bicol Region",
+        "ATI-RTC VI – Western Visayas",
+        "ATI-RTC VII – Central Visayas",
+        "ATI-RTC VIII – Eastern Visayas",
+        "ATI-RTC IX – Zamboanga Peninsula",
+        "ATI-RTC X – Northern Mindanao",
+        "ATI-RTC XI – Davao Region",
+        "ATI-RTC XII – SOCCSKSARGEN",
+        "ATI-RTC XIII – Caraga Region",
+        "ATI-ITCPH – International Training Center on Pig Husbandry",
+        "AFU – Administrative and Finance Unit",
+        "CDMS – Career Development and Management Section",
+        "ISS – Information Services Section",
+        "PAS – Partnerships and Accreditation Section",
+        "PMEU – Planning, Monitoring and Evaluation Unit"
+      ]
     },
     gov: {
       label: 'Government Agency / Bureau Name',
-      placeholder: 'e.g. Department of Agriculture - Central / BSWM / BPI',
+      placeholder: 'Select your Agency / Office',
       emailPlaceholder: 'juan.delacruz@agency.gov.ph',
-      hint: 'For other Department of Agriculture attached agencies and national government offices.'
+      hint: 'For other Department of Agriculture attached agencies and national government offices.',
+      options: [
+        "BAI – Bureau of Animal Industry",
+        "BAR – Bureau of Agricultural Research",
+        "BAFS – Bureau of Agriculture and Fisheries Standards",
+        "BFAR – Bureau of Fisheries and Aquatic Resources",
+        "BPI – Bureau of Plant Industry",
+        "BSWM – Bureau of Soils and Water Management",
+        "ACPC – Agricultural Credit Policy Council",
+        "FPA – Fertilizer and Pesticide Authority",
+        "NMIS – National Meat Inspection Service",
+        "PCAF – Philippine Council for Agriculture and Fisheries",
+        "PCC – Philippine Carabao Center",
+        "PhilMech – Philippine Center for Postharvest Development and Mechanization",
+        "NDA – National Dairy Authority",
+        "NFA – National Food Authority",
+        "NIA – National Irrigation Administration",
+        "PCA – Philippine Coconut Authority",
+        "PCIC – Philippine Crop Insurance Corporation",
+        "PhilFIDA – Philippine Fiber Industry Development Authority",
+        "PhilRice – Philippine Rice Research Institute",
+        "SRA – Sugar Regulatory Administration",
+        "CHED – Commission on Higher Education",
+        "DAR – Department of Agrarian Reform",
+        "DENR – Department of Environment and Natural Resources",
+        "DepEd – Department of Education",
+        "DILG – Department of the Interior and Local Government",
+        "DOST – Department of Science and Technology",
+        "DOST-PCAARRD – Philippine Council for Agriculture, Aquatic and Natural Resources Research and Development",
+        "DTI – Department of Trade and Industry",
+        "TESDA – Technical Education and Skills Development Authority",
+        "CAO – City Agriculture Office",
+        "CVO – City Veterinary Office",
+        "MAO – Municipal Agriculture Office",
+        "MVO – Municipal Veterinary Office",
+        "PAO – Provincial Agriculture Office",
+        "PVO – Provincial Veterinary Office",
+        "BLGU – Barangay Local Government Unit",
+        "BSU – Benguet State University",
+        "CLSU – Central Luzon State University",
+        "CMU – Central Mindanao University",
+        "MMSU – Mariano Marcos State University",
+        "UPLB – University of the Philippines Los Baños",
+        "USM – University of Southern Mindanao",
+        "VSU – Visayas State University"
+      ]
     },
     private: {
       label: 'Organization / Company / Cooperative',
       placeholder: 'e.g. Agri-Enterprises Corp. / Farmer Cooperative',
       emailPlaceholder: 'juan.delacruz@gmail.com',
-      hint: 'For private organizations, civil society, agricultural cooperatives, and guest partners.'
+      hint: 'For private organizations, civil society, agricultural cooperatives, and guest partners.',
+      options: null
     }
   };
 
@@ -110,9 +187,52 @@ function initCategorySelector() {
         if (officeInput) officeInput.placeholder = config.placeholder;
         if (emailInput) emailInput.placeholder = config.emailPlaceholder;
         if (hintText) hintText.textContent = config.hint;
+
+        // Handle Custom Select Mode vs Text Input Mode
+        const selectContainer = document.getElementById('officeSelectContainer');
+        const optionsPanel = document.getElementById('officeOptionsPanel');
+        if (officeInput && selectContainer && optionsPanel) {
+          const arrow = selectContainer.querySelector('.custom-select-arrow');
+          
+          if (config.options && config.options.length > 0) {
+            // It's a dropdown (ATI or Gov)
+            officeInput.readOnly = true;
+            officeInput.classList.add('custom-select-input');
+            officeInput.style.cursor = 'pointer';
+            selectContainer.classList.remove('disabled-select');
+            if (arrow) arrow.style.display = 'block';
+            
+            // Populate the dropdown options
+            optionsPanel.innerHTML = '';
+            config.options.forEach(optVal => {
+              const optDiv = document.createElement('div');
+              optDiv.className = 'custom-option';
+              optDiv.dataset.value = optVal;
+              optDiv.textContent = optVal;
+              optionsPanel.appendChild(optDiv);
+            });
+            // Clear current value
+            officeInput.value = '';
+          } else {
+            // It's a free text input (Private)
+            officeInput.readOnly = false;
+            officeInput.classList.remove('custom-select-input');
+            officeInput.style.cursor = 'text';
+            selectContainer.classList.add('disabled-select');
+            if (arrow) arrow.style.display = 'none';
+            optionsPanel.innerHTML = ''; // Empty panel
+            officeInput.value = '';
+          }
+        }
       }
     });
   });
+
+  // Trigger click on initially active category to build the dropdown on load
+  const activeCard = document.querySelector('.category-card.active');
+  if (activeCard) {
+    activeCard.click();
+  }
 }
 
 /* ==========================================================================
@@ -404,3 +524,49 @@ function handleLoginSubmit(event) {
   });
 });
 
+/* ==========================================================================
+   6. Custom Select Dropdown UI Initialization
+   ========================================================================== */
+function initCustomSelect() {
+  const selectContainer = document.getElementById('officeSelectContainer');
+  const selectInput = document.getElementById('regOffice');
+  const optionsPanel = document.getElementById('officeOptionsPanel');
+
+  if (!selectContainer || !selectInput || !optionsPanel) return;
+
+  // Toggle dropdown
+  selectInput.addEventListener('click', (e) => {
+    if (selectContainer.classList.contains('disabled-select')) return;
+    e.preventDefault();
+    selectContainer.classList.toggle('open');
+  });
+
+  // Select an option using event delegation (so it works with dynamic options)
+  optionsPanel.addEventListener('click', (e) => {
+    const option = e.target.closest('.custom-option');
+    if (!option) return;
+    
+    // Remove selected class from all
+    const allOptions = optionsPanel.querySelectorAll('.custom-option');
+    allOptions.forEach(opt => opt.classList.remove('selected'));
+    
+    // Add selected class to current
+    option.classList.add('selected');
+    
+    // Update input value
+    selectInput.value = option.dataset.value;
+    
+    // Close dropdown
+    selectContainer.classList.remove('open');
+    
+    // Trigger change event to clear errors if needed
+    selectInput.dispatchEvent(new Event('input'));
+  });
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!selectContainer.contains(e.target)) {
+      selectContainer.classList.remove('open');
+    }
+  });
+}
