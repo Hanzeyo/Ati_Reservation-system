@@ -121,12 +121,6 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
               </svg>
               <span>My Profile</span>
             </a>
-            <a href="my_reservations.php" class="dropdown-item active">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>Facility Reservations</span>
-            </a>
             <a href="booking_history.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M2 4v16"></path>
