@@ -50,17 +50,6 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
           <span>Home</span>
         </a>
 
-        <!-- Dormitory Reservation Action -->
-        <a href="dormitory_booking.php" class="booking-nav-item active" title="Reserve Dormitory (Rooms & Lodging)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M2 4v16"></path>
-            <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
-            <path d="M2 17h20"></path>
-            <path d="M6 8v9"></path>
-          </svg>
-          <span>Reserve Dormitory</span>
-        </a>
-
         <!-- Facility Bookings (Halls) -->
         <a href="my_reservations.php" class="booking-nav-item" title="Your Bookings (Facilities & Venues)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -211,24 +200,6 @@ if (isset($_GET['category']) && in_array(strtolower(trim($_GET['category'])), ['
               </svg>
             </div>
             <span class="drawer-link-text">Home</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </a>
-
-          <a href="booking.php" class="drawer-nav-link">
-            <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
-            </div>
-            <span class="drawer-link-text">+ Book Facility</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </a>
-
-          <a href="dormitory_booking.php" class="drawer-nav-link active">
-            <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M2 4v16"></path><path d="M2 8h18a2 2 0 0 1 2 2v10"></path><path d="M2 17h20"></path>
-              </svg>
-            </div>
-            <span class="drawer-link-text">+ Reserve Dormitory</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
 
