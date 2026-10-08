@@ -23,4 +23,11 @@ if (!function_exists('getUserInitials')) {
         return substr($initials, 0, 2);
     }
 }
+
+// Helper to check if current logged-in user is an admin
+if (!function_exists('isAdmin')) {
+    function isAdmin() {
+        return isset($_SESSION['role']) && in_array(strtolower($_SESSION['role']), ['admin', 'super_admin']);
+    }
+}
 ?>

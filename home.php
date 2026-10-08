@@ -492,6 +492,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
               </svg>
               <span>Booking History</span>
             </a>
+            <?php if (isAdmin()): ?>
             <a href="admin_dashboard.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="7" height="7"></rect>
@@ -501,6 +502,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
               </svg>
               <span>Admin Dashboard</span>
             </a>
+            <?php endif; ?>
             <div style="height: 1px; background: #e5ede7; margin: 0.35rem 0;"></div>
             <a href="index.php" class="dropdown-item danger">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -636,6 +638,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
             <span class="drawer-link-text">My Profile</span>
           </a>
 
+          <?php if (isAdmin()): ?>
           <a href="admin_dashboard.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none">
@@ -647,6 +650,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
             </div>
             <span class="drawer-link-text">Admin Dashboard</span>
           </a>
+          <?php endif; ?>
         </div>
       </div>
 
