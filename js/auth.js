@@ -251,40 +251,156 @@ function initAuthModals() {
   });
 }
 
-/* ==========================================================================
-   6. Form Handlers (Frontend Simulation / Backend Ready)
-   ========================================================================== */
 function handleRegistrationSubmit(event) {
   event.preventDefault();
+  const alertBox = document.getElementById('registerAlert');
+  const alertText = document.getElementById('registerAlertText');
+  if (alertBox) alertBox.style.display = 'none';
+
   const pwd = document.getElementById('regPassword')?.value;
   const confirmPwd = document.getElementById('regConfirmPassword')?.value;
 
   if (pwd !== confirmPwd) {
-    alert('Please ensure your passwords match before submitting.');
+    if (alertBox && alertText) {
+      alertText.textContent = 'Please ensure your passwords match before submitting.';
+      alertBox.className = 'auth-alert-banner auth-alert-error auth-alert-shake';
+      alertBox.style.display = 'flex';
+    } else {
+      alert('Please ensure your passwords match before submitting.');
+    }
     return;
   }
 
   const activeCategory = document.querySelector('.category-card.active .category-card-name')?.textContent;
   const name = document.getElementById('regFullName')?.value;
+  const office = document.getElementById('regOffice')?.value;
+  const email = document.getElementById('regEmail')?.value;
+  
+  const submitBtn = document.getElementById('btnRegisterSubmit');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span>Registering...</span>';
 
-  alert(`Account Registration Successful!\n\nName: ${name}\nCategory: ${activeCategory}\n\nYour account has been submitted for official authorization. You can now sign in.`);
+  const formData = new FormData();
+  formData.append('action', 'register');
+  formData.append('full_name', name);
+  formData.append('email', email);
+  formData.append('password', pwd);
+  formData.append('office_agency', office);
+  formData.append('category', activeCategory);
 
-  // Switch to sign in tab
-  const tabSignIn = document.getElementById('tabBtnSignIn');
-  if (tabSignIn) tabSignIn.click();
+  fetch('ajax/auth_action.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg><span>Register Account</span>`;
+    
+    if (data.status === 'success') {
+      document.getElementById('registrationForm').reset();
+      const tabSignIn = document.getElementById('tabBtnSignIn');
+      if (tabSignIn) tabSignIn.click();
+
+      // Show success message on the login card
+      const loginAlertBox = document.getElementById('loginAlert');
+      const loginAlertText = document.getElementById('loginAlertText');
+      if (loginAlertBox && loginAlertText) {
+        loginAlertText.textContent = data.message + ' You may now sign in.';
+        loginAlertBox.className = 'auth-alert-banner auth-alert-success';
+        loginAlertBox.style.display = 'flex';
+      }
+    } else {
+      if (alertBox && alertText) {
+        alertText.textContent = data.message || 'Registration failed. Please check your inputs.';
+        alertBox.className = 'auth-alert-banner auth-alert-error auth-alert-shake';
+        alertBox.style.display = 'flex';
+      } else {
+        alert(data.message);
+      }
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg><span>Register Account</span>`;
+    if (alertBox && alertText) {
+      alertText.textContent = 'An error occurred during registration. Please try again.';
+      alertBox.className = 'auth-alert-banner auth-alert-error auth-alert-shake';
+      alertBox.style.display = 'flex';
+    } else {
+      alert('An error occurred. Please try again.');
+    }
+  });
 }
 
 function handleLoginSubmit(event) {
   event.preventDefault();
-  const email = (document.getElementById('loginEmailInput')?.value || '').trim();
-
-  // Role-based routing: if email contains 'admin' redirect to Super Admin Dashboard
-  if (email.toLowerCase().includes('admin')) {
-    alert(`Super Administrator authorized: ${email}\nRedirecting to Executive Admin Dashboard...`);
-    window.location.href = 'admin_dashboard.php';
-    return;
+  const alertBox = document.getElementById('loginAlert');
+  const alertText = document.getElementById('loginAlertText');
+  if (alertBox) {
+    alertBox.style.display = 'none';
+    alertBox.classList.remove('auth-alert-shake');
   }
 
-  alert(`Sign in simulation successful for: ${email}\nRedirecting to reservation portal...`);
-  window.location.href = 'home.php';
+  const email = document.getElementById('loginEmailInput')?.value.trim();
+  const password = document.getElementById('loginPwdInput')?.value;
+  
+  const submitBtn = event.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span>Signing In...</span>';
+
+  const formData = new FormData();
+  formData.append('action', 'login');
+  formData.append('email', email);
+  formData.append('password', password);
+
+  fetch('ajax/auth_action.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg><span>Sign In to Account</span>`;
+
+    if (data.status === 'success') {
+      localStorage.setItem('ati_user_profile', JSON.stringify({
+        fullName: data.user.full_name,
+        role: data.user.role
+      }));
+      window.location.href = data.redirect;
+    } else {
+      if (alertBox && alertText) {
+        alertText.textContent = data.message || 'Invalid email or password.';
+        alertBox.className = 'auth-alert-banner auth-alert-error auth-alert-shake';
+        alertBox.style.display = 'flex';
+      } else {
+        alert(data.message);
+      }
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg><span>Sign In to Account</span>`;
+    if (alertBox && alertText) {
+      alertText.textContent = 'A connection error occurred. Please try again.';
+      alertBox.className = 'auth-alert-banner auth-alert-error auth-alert-shake';
+      alertBox.style.display = 'flex';
+    } else {
+      alert('An error occurred during login. Please try again.');
+    }
+  });
 }
+
+// Clear error banner on user input
+['loginEmailInput', 'loginPwdInput'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    const alertBox = document.getElementById('loginAlert');
+    if (alertBox && alertBox.style.display !== 'none') {
+      alertBox.style.display = 'none';
+    }
+  });
+});
+

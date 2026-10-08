@@ -7,6 +7,7 @@ class User extends BaseModel {
     public $email;
     public $password;
     public $contact_number;
+    public $office_agency;
     public $category;
     public $role;
     public $status;
@@ -31,13 +32,14 @@ class User extends BaseModel {
     }
 
     public function register() {
-        $query = "INSERT INTO " . $this->table_name . " (full_name, email, password_hash, contact_number, category, role, status) VALUES (:full_name, :email, :password_hash, :contact_number, :category, :role, :status)";
+        $query = "INSERT INTO " . $this->table_name . " (full_name, email, password_hash, contact_number, office_agency, category, role, status) VALUES (:full_name, :email, :password_hash, :contact_number, :office_agency, :category, :role, :status)";
         
         $stmt = $this->conn->prepare($query);
 
         $this->full_name = htmlspecialchars(strip_tags($this->full_name));
         $this->email = htmlspecialchars(strip_tags($this->email));
         $this->contact_number = htmlspecialchars(strip_tags($this->contact_number));
+        $this->office_agency = htmlspecialchars(strip_tags($this->office_agency));
         $this->category = htmlspecialchars(strip_tags($this->category));
         
         $this->role = empty($this->role) ? 'user' : $this->role;
@@ -49,6 +51,7 @@ class User extends BaseModel {
         $stmt->bindParam(':email', $this->email);
         $stmt->bindParam(':password_hash', $password_hash);
         $stmt->bindParam(':contact_number', $this->contact_number);
+        $stmt->bindParam(':office_agency', $this->office_agency);
         $stmt->bindParam(':category', $this->category);
         $stmt->bindParam(':role', $this->role);
         $stmt->bindParam(':status', $this->status);

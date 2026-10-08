@@ -2281,6 +2281,72 @@ button {
   color: #0a2d18;
 }
 
+/* Inline Auth Alert Box */
+.auth-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.15rem;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin-bottom: 1.25rem;
+  animation: authAlertFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transition: all 0.25s ease;
+}
+
+@keyframes authAlertFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.auth-alert-shake {
+  animation: authAlertShake 0.4s ease-in-out;
+}
+
+@keyframes authAlertShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.auth-alert-banner.auth-alert-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.auth-alert-banner.auth-alert-success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.auth-alert-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.auth-alert-banner.auth-alert-error .auth-alert-icon {
+  stroke: #dc2626;
+}
+
+.auth-alert-banner.auth-alert-success .auth-alert-icon {
+  stroke: #16a34a;
+}
+
+.auth-alert-text {
+  flex: 1;
+  line-height: 1.45;
+}
+
 /* Modal sizing for Tabbed Auth Card inside modal */
 .modal-card.modal-auth {
   max-width: 580px;

@@ -7,6 +7,7 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     contact_number VARCHAR(20),
+    office_agency VARCHAR(150),
     category ENUM('ATI Personnel', 'Gov Agency', 'Private / Guest') NOT NULL,
     role ENUM('user', 'admin', 'super_admin') DEFAULT 'user',
     status ENUM('pending', 'active', 'inactive') DEFAULT 'active',

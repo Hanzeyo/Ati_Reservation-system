@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
+require_once __DIR__ . '/includes/auth_guard.php';
 
 /**
  * Agriculture Training Institute - Facility and Dormitory Reservation System
@@ -464,17 +465,17 @@ require_once __DIR__ . '/includes/init.php';
         <!-- User Profile Badge & Dropdown -->
         <div class="user-profile-menu">
           <div class="user-profile-badge" id="userProfileBadge" role="button" aria-haspopup="true">
-            <div class="user-avatar-circle">JD</div>
+            <div class="user-avatar-circle"><?= getUserInitials($_SESSION['full_name']) ?></div>
             <div class="user-details">
-              <div class="user-name">Juan Dela Cruz</div>
-              <div class="user-role">ATI Staff (CDD)</div>
+              <div class="user-name"><?= htmlspecialchars($_SESSION['full_name']) ?></div>
+              <div class="user-role"><?= htmlspecialchars(ucfirst(str_replace('_', ' ', $_SESSION['role']))) ?></div>
             </div>
           </div>
 
           <div class="profile-dropdown" id="profileDropdown">
             <div class="dropdown-header-info">
-              <div class="dropdown-user-name">Juan Dela Cruz</div>
-              <div class="dropdown-user-email"><span class="user-verified-dot"></span> ATI Personnel &bull; CDD</div>
+              <div class="dropdown-user-name"><?= htmlspecialchars($_SESSION['full_name']) ?></div>
+              <div class="dropdown-user-email"><span class="user-verified-dot"></span> <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $_SESSION['role']))) ?></div>
             </div>
             <a href="profile.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

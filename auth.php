@@ -79,6 +79,16 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
         <p class="auth-subheading">Register for official facility reservation authorization.</p>
 
         <form id="registrationForm" onsubmit="handleRegistrationSubmit(event)">
+          <!-- Inline Alert Feedback -->
+          <div class="auth-alert-banner auth-alert-error" id="registerAlert" role="alert" style="display: none;">
+            <svg class="auth-alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span class="auth-alert-text" id="registerAlertText"></span>
+          </div>
+
           <!-- Account Category Selector -->
           <div class="category-group">
             <label class="category-group-label">Account Category</label>
@@ -254,6 +264,16 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
         <p class="auth-subheading">Sign in to access your reservation requests and facility bookings.</p>
 
         <form id="signInForm" onsubmit="handleLoginSubmit(event)">
+          <!-- Inline Alert / Error Feedback -->
+          <div class="auth-alert-banner auth-alert-error" id="loginAlert" role="alert" style="display: none;">
+            <svg class="auth-alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span class="auth-alert-text" id="loginAlertText"></span>
+          </div>
+
           <!-- Email / Username -->
           <div class="auth-field-group">
             <label class="auth-field-label" for="loginEmailInput">Email or Authorized Username</label>
