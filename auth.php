@@ -75,8 +75,10 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
            TAB PANEL 1: CREATE ACCOUNT (REGISTRATION)
            ========================================== -->
       <div class="auth-tab-panel <?= $initialTab === 'register' ? 'active' : '' ?>" id="panelRegister" role="tabpanel">
-        <h2 class="auth-heading">Create New Account</h2>
-        <p class="auth-subheading">Register for official facility reservation authorization.</p>
+        <div class="auth-panel-header">
+          <h2 class="auth-heading">Create New Account</h2>
+          <p class="auth-subheading">Register for official facility reservation authorization.</p>
+        </div>
 
         <form id="registrationForm" onsubmit="handleRegistrationSubmit(event)">
           <!-- Inline Alert Feedback -->
@@ -266,8 +268,10 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
            TAB PANEL 2: SIGN IN (LOGIN)
            ========================================== -->
       <div class="auth-tab-panel <?= $initialTab === 'login' ? 'active' : '' ?>" id="panelSignIn" role="tabpanel">
-        <h2 class="auth-heading">Welcome Back</h2>
-        <p class="auth-subheading">Sign in to access your reservation requests and facility bookings.</p>
+        <div class="auth-panel-header">
+          <h2 class="auth-heading">Welcome Back</h2>
+          <p class="auth-subheading">Sign in to access your reservation requests and facility bookings.</p>
+        </div>
 
         <form id="signInForm" onsubmit="handleLoginSubmit(event)">
           <!-- Inline Alert / Error Feedback -->
