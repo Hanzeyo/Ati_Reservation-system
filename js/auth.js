@@ -80,21 +80,86 @@ function initCategorySelector() {
   const categoryConfigs = {
     ati: {
       label: 'Office / Division / Regional Center',
-      placeholder: 'e.g. Information Services Division (ISD) / RTC IV-A',
+      placeholder: 'Select your Division',
       emailPlaceholder: 'juan.delacruz@ati.da.gov.ph',
-      hint: 'For ATI Central Office & Regional Training Centers (RTC) staff members.'
+      hint: 'For ATI Central Office & Regional Training Centers (RTC) staff members.',
+      options: [
+        "Office of the Director",
+        "Office of the Assistant Director",
+        "Internal Audit Unit (IAU)",
+        "Bids and Awards Committee (BAC) Secretariat",
+        "Policy and Planning Division (PPD)",
+        "Career Development and Management Division (CDMD)",
+        "Information Services Division (ISD)",
+        "Partnerships and Accreditation Division (PAD)",
+        "Administrative and Finance Unit (AFU)",
+        "Human Resource Management Section (HRMS)",
+        "Finance Section",
+        "General Services Section (GSS)",
+        "Property and Supply Section",
+        "Rural Development Education Center (RDEC)",
+        "RDEC Dormitory and Lodging Unit",
+        "Farmers' Contact Center (FCC) Hub",
+        "Serrano Hall & Enterprise Laboratory"
+      ]
     },
     gov: {
       label: 'Government Agency / Bureau Name',
-      placeholder: 'e.g. Department of Agriculture - Central / BSWM / BPI',
+      placeholder: 'Select your Agency / Office',
       emailPlaceholder: 'juan.delacruz@agency.gov.ph',
-      hint: 'For other Department of Agriculture attached agencies and national government offices.'
+      hint: 'For other Department of Agriculture attached agencies and national government offices.',
+      options: [
+        "BAI – Bureau of Animal Industry",
+        "BAR – Bureau of Agricultural Research",
+        "BAFS – Bureau of Agriculture and Fisheries Standards",
+        "BFAR – Bureau of Fisheries and Aquatic Resources",
+        "BPI – Bureau of Plant Industry",
+        "BSWM – Bureau of Soils and Water Management",
+        "ACPC – Agricultural Credit Policy Council",
+        "FPA – Fertilizer and Pesticide Authority",
+        "NMIS – National Meat Inspection Service",
+        "PCAF – Philippine Council for Agriculture and Fisheries",
+        "PCC – Philippine Carabao Center",
+        "PhilMech – Philippine Center for Postharvest Development and Mechanization",
+        "NDA – National Dairy Authority",
+        "NFA – National Food Authority",
+        "NIA – National Irrigation Administration",
+        "PCA – Philippine Coconut Authority",
+        "PCIC – Philippine Crop Insurance Corporation",
+        "PhilFIDA – Philippine Fiber Industry Development Authority",
+        "PhilRice – Philippine Rice Research Institute",
+        "SRA – Sugar Regulatory Administration",
+        "CHED – Commission on Higher Education",
+        "DAR – Department of Agrarian Reform",
+        "DENR – Department of Environment and Natural Resources",
+        "DepEd – Department of Education",
+        "DILG – Department of the Interior and Local Government",
+        "DOST – Department of Science and Technology",
+        "DOST-PCAARRD – Philippine Council for Agriculture, Aquatic and Natural Resources Research and Development",
+        "DTI – Department of Trade and Industry",
+        "TESDA – Technical Education and Skills Development Authority",
+        "CAO – City Agriculture Office",
+        "CVO – City Veterinary Office",
+        "MAO – Municipal Agriculture Office",
+        "MVO – Municipal Veterinary Office",
+        "PAO – Provincial Agriculture Office",
+        "PVO – Provincial Veterinary Office",
+        "BLGU – Barangay Local Government Unit",
+        "BSU – Benguet State University",
+        "CLSU – Central Luzon State University",
+        "CMU – Central Mindanao University",
+        "MMSU – Mariano Marcos State University",
+        "UPLB – University of the Philippines Los Baños",
+        "USM – University of Southern Mindanao",
+        "VSU – Visayas State University"
+      ]
     },
     private: {
       label: 'Organization / Company / Cooperative',
       placeholder: 'e.g. Agri-Enterprises Corp. / Farmer Cooperative',
       emailPlaceholder: 'juan.delacruz@gmail.com',
-      hint: 'For private organizations, civil society, agricultural cooperatives, and guest partners.'
+      hint: 'For private organizations, civil society, agricultural cooperatives, and guest partners.',
+      options: null
     }
   };
 
@@ -114,21 +179,37 @@ function initCategorySelector() {
 
         // Handle Custom Select Mode vs Text Input Mode
         const selectContainer = document.getElementById('officeSelectContainer');
-        if (officeInput && selectContainer) {
+        const optionsPanel = document.getElementById('officeOptionsPanel');
+        if (officeInput && selectContainer && optionsPanel) {
           const arrow = selectContainer.querySelector('.custom-select-arrow');
-          if (catKey === 'ati') {
+          
+          if (config.options && config.options.length > 0) {
+            // It's a dropdown (ATI or Gov)
             officeInput.readOnly = true;
             officeInput.classList.add('custom-select-input');
             officeInput.style.cursor = 'pointer';
             selectContainer.classList.remove('disabled-select');
             if (arrow) arrow.style.display = 'block';
+            
+            // Populate the dropdown options
+            optionsPanel.innerHTML = '';
+            config.options.forEach(optVal => {
+              const optDiv = document.createElement('div');
+              optDiv.className = 'custom-option';
+              optDiv.dataset.value = optVal;
+              optDiv.textContent = optVal;
+              optionsPanel.appendChild(optDiv);
+            });
+            // Clear current value
+            officeInput.value = '';
           } else {
+            // It's a free text input (Private)
             officeInput.readOnly = false;
             officeInput.classList.remove('custom-select-input');
             officeInput.style.cursor = 'text';
             selectContainer.classList.add('disabled-select');
             if (arrow) arrow.style.display = 'none';
-            // Clear value so user can type freely
+            optionsPanel.innerHTML = ''; // Empty panel
             officeInput.value = '';
           }
         }
@@ -436,8 +517,6 @@ function initCustomSelect() {
 
   if (!selectContainer || !selectInput || !optionsPanel) return;
 
-  const options = optionsPanel.querySelectorAll('.custom-option');
-
   // Toggle dropdown
   selectInput.addEventListener('click', (e) => {
     if (selectContainer.classList.contains('disabled-select')) return;
@@ -445,23 +524,26 @@ function initCustomSelect() {
     selectContainer.classList.toggle('open');
   });
 
-  // Select an option
-  options.forEach(option => {
-    option.addEventListener('click', () => {
-      // Remove selected class from all
-      options.forEach(opt => opt.classList.remove('selected'));
-      // Add selected class to current
-      option.classList.add('selected');
-      
-      // Update input value
-      selectInput.value = option.dataset.value;
-      
-      // Close dropdown
-      selectContainer.classList.remove('open');
-      
-      // Trigger change event to clear errors if needed
-      selectInput.dispatchEvent(new Event('input'));
-    });
+  // Select an option using event delegation (so it works with dynamic options)
+  optionsPanel.addEventListener('click', (e) => {
+    const option = e.target.closest('.custom-option');
+    if (!option) return;
+    
+    // Remove selected class from all
+    const allOptions = optionsPanel.querySelectorAll('.custom-option');
+    allOptions.forEach(opt => opt.classList.remove('selected'));
+    
+    // Add selected class to current
+    option.classList.add('selected');
+    
+    // Update input value
+    selectInput.value = option.dataset.value;
+    
+    // Close dropdown
+    selectContainer.classList.remove('open');
+    
+    // Trigger change event to clear errors if needed
+    selectInput.dispatchEvent(new Event('input'));
   });
 
   // Close when clicking outside
