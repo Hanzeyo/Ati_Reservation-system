@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/includes/init.php';
+
 /**
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Step-by-Step Facility Booking Portal

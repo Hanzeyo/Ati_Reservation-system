@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/init.php';
 /**
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Super Administrator: Institutional Audit Trail & Security Logs Portal

@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/includes/init.php';
+
 /**
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Authenticated Portal Home: Facility & Dormitory Category Selection

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/includes/init.php';
 /**
  * ATI Facility & Dormitory Reservation Portal
  * User Dashboard: My Reservations (Venues & Dormitories)
