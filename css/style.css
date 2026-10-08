@@ -2206,10 +2206,22 @@ button {
   grid-template-columns: 1fr 1fr;
   gap: 0.65rem;
   margin-bottom: 0.65rem;
+  align-items: start;
 }
 
 .auth-form-row .auth-field-group {
   margin-bottom: 0;
+}
+
+.auth-form-row .auth-field-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  height: 1.25rem;
+  line-height: 1.25rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.35rem;
 }
 
 /* Password Match Indicator */

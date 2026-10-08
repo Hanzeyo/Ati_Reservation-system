@@ -79,7 +79,7 @@ function initCategorySelector() {
 
   const categoryConfigs = {
     ati: {
-      label: 'Office / Division / Regional Center',
+      label: 'Office / Division Name',
       placeholder: 'Select your Division',
       emailPlaceholder: 'juan.delacruz@ati.da.gov.ph',
       hint: 'For ATI Central Office & Regional Training Centers (RTC) staff members.',
@@ -115,7 +115,7 @@ function initCategorySelector() {
       ]
     },
     gov: {
-      label: 'Government Agency / Bureau Name',
+      label: 'Agency / Bureau Name',
       placeholder: 'Select your Agency / Office',
       emailPlaceholder: 'juan.delacruz@agency.gov.ph',
       hint: 'For other Department of Agriculture attached agencies and national government offices.',
@@ -166,7 +166,7 @@ function initCategorySelector() {
       ]
     },
     private: {
-      label: 'Organization / Company / Cooperative',
+      label: 'Company / Organization',
       placeholder: 'e.g. Agri-Enterprises Corp. / Farmer Cooperative',
       emailPlaceholder: 'juan.delacruz@gmail.com',
       hint: 'For private organizations, civil society, agricultural cooperatives, and guest partners.',
