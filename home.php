@@ -40,9 +40,9 @@
     }
 
     .portal-category-wrapper {
-      max-width: 1060px;
-      margin: 2.75rem auto 4.5rem;
-      padding: 0 1.5rem;
+      max-width: 940px;
+      margin: 1.15rem auto 1.5rem;
+      padding: 0 1.25rem;
       position: relative;
       z-index: 2;
     }
@@ -55,12 +55,12 @@
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1.5px solid rgba(162, 215, 180, 0.85);
-      border-top: 5px solid #174d2f;
-      border-radius: 22px;
-      padding: 3.25rem 2.25rem 2.75rem;
+      border-top: 4px solid #174d2f;
+      border-radius: 18px;
+      padding: 1.35rem 1.75rem 1.25rem;
       text-align: center;
-      margin-bottom: 2.25rem;
-      box-shadow: 0 18px 45px rgba(5, 20, 11, 0.22), 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 1.15rem;
+      box-shadow: 0 12px 30px rgba(5, 20, 11, 0.16), 0 2px 6px rgba(0, 0, 0, 0.04);
       position: relative;
       overflow: hidden;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -78,52 +78,53 @@
     }
 
     .portal-category-intro-card:hover {
-      box-shadow: 0 22px 55px rgba(5, 20, 11, 0.28), 0 3px 10px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 16px 40px rgba(5, 20, 11, 0.22), 0 3px 8px rgba(0, 0, 0, 0.06);
     }
 
     .portal-category-logo-wrap {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 1.25rem;
+      margin-bottom: 0.5rem;
     }
 
     .portal-category-logo {
-      width: 80px;
-      height: 80px;
+      width: 52px;
+      height: 52px;
       object-fit: contain;
-      filter: drop-shadow(0 6px 16px rgba(23, 77, 47, 0.2));
+      filter: drop-shadow(0 4px 10px rgba(23, 77, 47, 0.18));
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .portal-category-logo:hover {
-      transform: scale(1.08);
+      transform: scale(1.06);
     }
 
     .cat-sec-title {
       font-family: var(--font-serif);
-      font-size: 2.35rem;
+      font-size: 1.85rem;
       font-weight: 900;
       letter-spacing: 0.03em;
       color: #0c331d;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.35rem;
       text-transform: uppercase;
+      line-height: 1.15;
     }
 
     .cat-sec-subtitle {
-      font-size: 0.98rem;
+      font-size: 0.88rem;
       color: #3e5948;
-      max-width: 680px;
+      max-width: 620px;
       margin: 0 auto;
-      line-height: 1.65;
+      line-height: 1.45;
     }
 
     .cat-sec-divider {
-      width: 72px;
-      height: 4px;
+      width: 56px;
+      height: 3.5px;
       background: linear-gradient(90deg, #174d2f 0%, #eab308 50%, #174d2f 100%);
       border-radius: 4px;
-      margin: 1.4rem auto 0;
+      margin: 0.75rem auto 0;
       box-shadow: 0 2px 6px rgba(234, 179, 8, 0.35);
     }
 
@@ -133,13 +134,13 @@
     .portal-category-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
-      margin-bottom: 2.5rem;
+      gap: 1.25rem;
+      margin-bottom: 1rem;
     }
 
     .portal-cat-card {
-      border-radius: 22px;
-      padding: 2.5rem 2.25rem;
+      border-radius: 18px;
+      padding: 1.35rem 1.5rem 1.4rem;
       display: flex;
       flex-direction: column;
       text-decoration: none;
@@ -154,16 +155,16 @@
     /* ---------------- 1. HALLS CARD (FOREST EMERALD THEME) ---------------- */
     #cardCatHalls {
       background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 250, 244, 0.97) 50%, rgba(230, 247, 236, 0.96) 100%);
-      border: 2px solid rgba(152, 212, 174, 0.9);
-      border-top: 5px solid #174d2f;
-      box-shadow: 0 16px 40px rgba(7, 35, 18, 0.2), 0 2px 6px rgba(0, 0, 0, 0.05);
+      border: 1.5px solid rgba(152, 212, 174, 0.9);
+      border-top: 4px solid #174d2f;
+      box-shadow: 0 12px 30px rgba(7, 35, 18, 0.16), 0 2px 6px rgba(0, 0, 0, 0.04);
     }
 
     #cardCatHalls:hover {
       border-color: #174d2f;
       background: linear-gradient(165deg, #ffffff 0%, #ecf8f0 100%);
-      transform: translateY(-8px);
-      box-shadow: 0 24px 55px rgba(23, 77, 47, 0.32), 0 0 0 2px rgba(23, 77, 47, 0.4);
+      transform: translateY(-5px);
+      box-shadow: 0 18px 45px rgba(23, 77, 47, 0.28), 0 0 0 2px rgba(23, 77, 47, 0.3);
     }
 
     #cardCatHalls .cat-count-badge {
@@ -171,92 +172,63 @@
       align-items: center;
       background: linear-gradient(135deg, #174d2f 0%, #206740 100%);
       color: #ffffff;
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       font-weight: 700;
-      padding: 0.35rem 0.95rem;
+      padding: 0.25rem 0.8rem;
       border-radius: 9999px;
-      box-shadow: 0 4px 12px rgba(23, 77, 47, 0.28);
+      box-shadow: 0 3px 10px rgba(23, 77, 47, 0.22);
       letter-spacing: 0.02em;
     }
 
     #cardCatHalls .cat-icon-container {
       background: linear-gradient(135deg, #e4f5ea 0%, #ccecd7 100%);
-      border-radius: 18px;
-      padding: 1.75rem;
+      border-radius: 15px;
+      padding: 0.95rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.85rem;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       border: 1.5px solid #a4dcba;
-      box-shadow: 0 8px 22px rgba(23, 77, 47, 0.1);
+      box-shadow: 0 6px 16px rgba(23, 77, 47, 0.08);
     }
 
     #cardCatHalls:hover .cat-icon-container {
       background: linear-gradient(135deg, #d8f2e1 0%, #bee7cb 100%);
       transform: scale(1.03);
       border-color: #174d2f;
-      box-shadow: 0 10px 26px rgba(23, 77, 47, 0.18);
+      box-shadow: 0 8px 20px rgba(23, 77, 47, 0.15);
     }
 
     #cardCatHalls .cat-card-title {
       font-family: var(--font-serif);
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       font-weight: 800;
       color: #0c331d;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.35rem;
     }
 
     #cardCatHalls .cat-card-desc {
-      font-size: 0.92rem;
+      font-size: 0.82rem;
       color: #3b5745;
-      line-height: 1.55;
-      margin-bottom: 1.75rem;
+      line-height: 1.45;
+      margin-bottom: 0.35rem;
       flex-grow: 1;
-    }
-
-    #cardCatHalls .btn-explore-category {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(135deg, #174d2f 0%, #20633d 100%);
-      color: #ffffff;
-      font-size: 0.92rem;
-      font-weight: 700;
-      padding: 0.9rem 1.4rem;
-      border-radius: 12px;
-      text-decoration: none;
-      transition: all 0.25s ease;
-      box-shadow: 0 6px 18px rgba(23, 77, 47, 0.28);
-      border: 1px solid #174d2f;
-    }
-
-    #cardCatHalls:hover .btn-explore-category {
-      background: linear-gradient(135deg, #0e3520 0%, #174d2f 100%);
-      box-shadow: 0 10px 24px rgba(23, 77, 47, 0.4);
-    }
-
-    #cardCatHalls .btn-explore-category svg {
-      transition: transform 0.22s ease;
-    }
-
-    #cardCatHalls:hover .btn-explore-category svg {
-      transform: translateX(5px);
     }
 
     /* ---------------- 2. DORMITORIES CARD (HARVEST GOLD THEME) ---------------- */
     #cardCatDormitories {
       background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 250, 241, 0.97) 50%, rgba(254, 245, 230, 0.96) 100%);
-      border: 2px solid rgba(245, 215, 150, 0.9);
-      border-top: 5px solid #d97706;
-      box-shadow: 0 16px 40px rgba(50, 25, 5, 0.18), 0 2px 6px rgba(0, 0, 0, 0.05);
+      border: 1.5px solid rgba(245, 215, 150, 0.9);
+      border-top: 4px solid #d97706;
+      box-shadow: 0 12px 30px rgba(50, 25, 5, 0.14), 0 2px 6px rgba(0, 0, 0, 0.04);
     }
 
     #cardCatDormitories:hover {
       border-color: #d97706;
       background: linear-gradient(165deg, #ffffff 0%, #fef7ec 100%);
-      transform: translateY(-8px);
-      box-shadow: 0 24px 55px rgba(217, 119, 6, 0.3), 0 0 0 2px rgba(217, 119, 6, 0.4);
+      transform: translateY(-5px);
+      box-shadow: 0 18px 45px rgba(217, 119, 6, 0.25), 0 0 0 2px rgba(217, 119, 6, 0.3);
     }
 
     #cardCatDormitories .cat-count-badge {
@@ -264,83 +236,54 @@
       align-items: center;
       background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
       color: #ffffff;
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       font-weight: 700;
-      padding: 0.35rem 0.95rem;
+      padding: 0.25rem 0.8rem;
       border-radius: 9999px;
-      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.28);
+      box-shadow: 0 3px 10px rgba(217, 119, 6, 0.22);
       letter-spacing: 0.02em;
     }
 
     #cardCatDormitories .cat-icon-container {
       background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-      border-radius: 18px;
-      padding: 1.75rem;
+      border-radius: 15px;
+      padding: 0.95rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.85rem;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       border: 1.5px solid #fcd34d;
-      box-shadow: 0 8px 22px rgba(217, 119, 6, 0.12);
+      box-shadow: 0 6px 16px rgba(217, 119, 6, 0.1);
     }
 
     #cardCatDormitories:hover .cat-icon-container {
       background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
       transform: scale(1.03);
       border-color: #d97706;
-      box-shadow: 0 10px 26px rgba(217, 119, 6, 0.2);
+      box-shadow: 0 8px 20px rgba(217, 119, 6, 0.16);
     }
 
     #cardCatDormitories .cat-card-title {
       font-family: var(--font-serif);
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       font-weight: 800;
       color: #451a03;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.35rem;
     }
 
     #cardCatDormitories .cat-card-desc {
-      font-size: 0.92rem;
+      font-size: 0.82rem;
       color: #5c442a;
-      line-height: 1.55;
-      margin-bottom: 1.75rem;
+      line-height: 1.45;
+      margin-bottom: 0.35rem;
       flex-grow: 1;
-    }
-
-    #cardCatDormitories .btn-explore-category {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-      color: #ffffff;
-      font-size: 0.92rem;
-      font-weight: 700;
-      padding: 0.9rem 1.4rem;
-      border-radius: 12px;
-      text-decoration: none;
-      transition: all 0.25s ease;
-      box-shadow: 0 6px 18px rgba(217, 119, 6, 0.28);
-      border: 1px solid #d97706;
-    }
-
-    #cardCatDormitories:hover .btn-explore-category {
-      background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
-      box-shadow: 0 10px 24px rgba(217, 119, 6, 0.4);
-    }
-
-    #cardCatDormitories .btn-explore-category svg {
-      transition: transform 0.22s ease;
-    }
-
-    #cardCatDormitories:hover .btn-explore-category svg {
-      transform: translateX(5px);
     }
 
     .portal-cat-card .cat-card-header {
       display: flex;
       justify-content: flex-end;
-      margin-bottom: 1rem;
+      margin-bottom: 0.35rem;
     }
 
     /* ==========================================================================
@@ -481,14 +424,6 @@
           <span>Home</span>
         </a>
 
-        <!-- New Reservation -->
-        <a href="booking.php" class="booking-nav-item">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-          </svg>
-          <span>New Reservation</span>
-        </a>
 
         <!-- My Reservations with count badge -->
         <a href="my_reservations.php" class="booking-nav-item">
@@ -734,7 +669,7 @@
           <span class="cat-count-badge">4 Venues Available</span>
         </div>
         <div class="cat-icon-container">
-          <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#174d2f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="54" height="54" viewBox="0 0 64 64" fill="none" stroke="#174d2f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <!-- Classical Hall Building with Pediment & Columns -->
             <path d="M6 22L32 7L58 22H6Z" fill="#d7f0df"/>
             <path d="M10 22V26H54V22"/>
@@ -746,13 +681,7 @@
           </svg>
         </div>
         <h2 class="cat-card-title">Halls</h2>
-        <p class="cat-card-desc">Function auditoriums, audio-visual training rooms, executive boardrooms & mess dining facilities.</p>
-        <div class="btn-explore-category">
-          <span>Explore Halls</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </div>
+        <p class="cat-card-desc">Function auditoriums, audio-visual training rooms, executive boardrooms &amp; mess dining facilities.</p>
       </a>
 
       <!-- 2. Dormitories Category Card -->
@@ -761,7 +690,7 @@
           <span class="cat-count-badge">4 Room Types</span>
         </div>
         <div class="cat-icon-container">
-          <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#b45309" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="54" height="54" viewBox="0 0 64 64" fill="none" stroke="#b45309" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <!-- Multi-story Dormitory Accommodation Building -->
             <rect x="23" y="10" width="18" height="46" rx="2" fill="#fef3c7"/>
             <rect x="9" y="22" width="14" height="34" rx="2" fill="#fef3c7"/>
@@ -777,39 +706,9 @@
           </svg>
         </div>
         <h2 class="cat-card-title">Dormitories</h2>
-        <p class="cat-card-desc">Executive VIP suites, shared trainee quarters, guest lecturer rooms & twin accommodations.</p>
-        <div class="btn-explore-category">
-          <span>Explore Dormitories</span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </div>
+        <p class="cat-card-desc">Executive VIP suites, shared trainee quarters, guest lecturer rooms &amp; twin accommodations.</p>
       </a>
 
-    </div>
-
-    <!-- ==========================================================================
-         USER RESERVATION QUICK STATUS
-         ========================================================================== -->
-    <div class="portal-quick-status-card">
-      <div class="status-left">
-        <div class="status-icon-bubble">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-        </div>
-        <div class="status-text">
-          <h4>Looking for your active bookings?</h4>
-          <p>You currently have 2 upcoming reservations on file. You can monitor verification and approval status anytime.</p>
-        </div>
-      </div>
-      <a href="my_reservations.php" class="btn-view-bookings">
-        <span>Go to My Reservations</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </a>
     </div>
 
   </main>

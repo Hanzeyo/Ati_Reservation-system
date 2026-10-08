@@ -52,15 +52,6 @@ $reqCategory = 'halls';
           <span>Home</span>
         </a>
 
-        <!-- Book Facility Action (Active) -->
-        <a href="booking.php" class="booking-nav-item active" title="Book Facility (Halls & Venues)">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 5v14"></path>
-            <path d="M5 12h14"></path>
-          </svg>
-          <span>+ Book Facility</span>
-        </a>
-
         <!-- Facility Bookings (Halls) -->
         <a href="my_reservations.php" class="booking-nav-item" title="Your Bookings (Facilities & Venues)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -203,27 +194,6 @@ $reqCategory = 'halls';
           </div>
         </div>
 
-        <!-- Quick Reservation & Booking Action Section in Drawer -->
-        <div class="drawer-nav-section">
-          <div class="drawer-section-label">QUICK ACTIONS</div>
-          <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
-            <a href="booking.php" class="drawer-nav-link active" style="background: linear-gradient(135deg, #174d2f 0%, #226b42 100%); color: #ffffff; font-weight: 800; border-radius: 10px; padding: 0.75rem 0.95rem; box-shadow: 0 4px 12px rgba(23,77,47,0.25);">
-              <div class="drawer-link-icon" style="color: #ffffff;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
-              </div>
-              <span class="drawer-link-text">+ Book Facility</span>
-              <span style="font-size: 0.68rem; background: rgba(255,255,255,0.22); padding: 0.15rem 0.45rem; border-radius: 999px;">Halls</span>
-            </a>
-
-            <a href="dormitory_booking.php" class="drawer-nav-link" style="background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%); color: #ffffff; font-weight: 800; border-radius: 10px; padding: 0.75rem 0.95rem; box-shadow: 0 4px 12px rgba(2,132,199,0.25);">
-              <div class="drawer-link-icon" style="color: #ffffff;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
-              </div>
-              <span class="drawer-link-text">+ Reserve Dormitory</span>
-              <span style="font-size: 0.68rem; background: rgba(255,255,255,0.22); padding: 0.15rem 0.45rem; border-radius: 999px;">Rooms</span>
-            </a>
-          </div>
-        </div>
 
         <!-- Main Navigation Section -->
         <div class="drawer-nav-section">
