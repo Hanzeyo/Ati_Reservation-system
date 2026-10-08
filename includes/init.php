@@ -1,5 +1,10 @@
 <?php
-session_start();
+// Ensure system timezone is set to Philippine Standard Time (PST / Asia/Manila, UTC+8)
+date_default_timezone_set('Asia/Manila');
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 require_once __DIR__ . '/../config/Database.php';
 require_once __DIR__ . '/../classes/BaseModel.php';

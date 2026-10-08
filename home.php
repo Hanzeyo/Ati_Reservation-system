@@ -43,11 +43,15 @@ require_once __DIR__ . '/includes/auth_guard.php';
     }
 
     .portal-category-wrapper {
-      max-width: 1060px;
-      margin: 2.75rem auto 4.5rem;
-      padding: 0 1.5rem;
+      max-width: 960px;
+      margin: 1.15rem auto 1.25rem;
+      padding: 0 1.25rem;
       position: relative;
       z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      flex: 1;
     }
 
     /* ==========================================================================
@@ -58,12 +62,12 @@ require_once __DIR__ . '/includes/auth_guard.php';
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1.5px solid rgba(162, 215, 180, 0.85);
-      border-top: 5px solid #174d2f;
-      border-radius: 22px;
-      padding: 3.25rem 2.25rem 2.75rem;
+      border-top: 4px solid #174d2f;
+      border-radius: 18px;
+      padding: 1.2rem 2rem 1.1rem;
       text-align: center;
-      margin-bottom: 2.25rem;
-      box-shadow: 0 18px 45px rgba(5, 20, 11, 0.22), 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 1.15rem;
+      box-shadow: 0 12px 32px rgba(5, 20, 11, 0.18), 0 2px 6px rgba(0, 0, 0, 0.05);
       position: relative;
       overflow: hidden;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -81,21 +85,21 @@ require_once __DIR__ . '/includes/auth_guard.php';
     }
 
     .portal-category-intro-card:hover {
-      box-shadow: 0 22px 55px rgba(5, 20, 11, 0.28), 0 3px 10px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 16px 40px rgba(5, 20, 11, 0.22), 0 3px 8px rgba(0, 0, 0, 0.06);
     }
 
     .portal-category-logo-wrap {
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 1.25rem;
+      margin-bottom: 0.45rem;
     }
 
     .portal-category-logo {
-      width: 80px;
-      height: 80px;
+      width: 48px;
+      height: 48px;
       object-fit: contain;
-      filter: drop-shadow(0 6px 16px rgba(23, 77, 47, 0.2));
+      filter: drop-shadow(0 4px 12px rgba(23, 77, 47, 0.18));
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -105,28 +109,28 @@ require_once __DIR__ . '/includes/auth_guard.php';
 
     .cat-sec-title {
       font-family: var(--font-serif);
-      font-size: 2.35rem;
+      font-size: 1.6rem;
       font-weight: 900;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.025em;
       color: #0c331d;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.3rem;
       text-transform: uppercase;
     }
 
     .cat-sec-subtitle {
-      font-size: 0.98rem;
+      font-size: 0.88rem;
       color: #3e5948;
-      max-width: 680px;
+      max-width: 620px;
       margin: 0 auto;
-      line-height: 1.65;
+      line-height: 1.45;
     }
 
     .cat-sec-divider {
-      width: 72px;
-      height: 4px;
+      width: 52px;
+      height: 3px;
       background: linear-gradient(90deg, #174d2f 0%, #eab308 50%, #174d2f 100%);
-      border-radius: 4px;
-      margin: 1.4rem auto 0;
+      border-radius: 3px;
+      margin: 0.65rem auto 0;
       box-shadow: 0 2px 6px rgba(234, 179, 8, 0.35);
     }
 
@@ -136,37 +140,58 @@ require_once __DIR__ . '/includes/auth_guard.php';
     .portal-category-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
-      margin-bottom: 2.5rem;
+      gap: 1.25rem;
+      margin-bottom: 0;
     }
 
     .portal-cat-card {
-      border-radius: 22px;
-      padding: 2.5rem 2.25rem;
+      border-radius: 18px;
+      padding: 1.2rem 1.6rem 1.3rem;
       display: flex;
       flex-direction: column;
       text-decoration: none;
       color: inherit;
-      transition: all 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       cursor: pointer;
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
     }
 
+    .portal-cat-card .cat-card-header {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 0.45rem;
+    }
+
+    .cat-icon-container {
+      border-radius: 14px;
+      padding: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .cat-icon-container svg {
+      width: 48px;
+      height: 48px;
+    }
+
     /* ---------------- 1. HALLS CARD (FOREST EMERALD THEME) ---------------- */
     #cardCatHalls {
       background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 250, 244, 0.97) 50%, rgba(230, 247, 236, 0.96) 100%);
       border: 2px solid rgba(152, 212, 174, 0.9);
-      border-top: 5px solid #174d2f;
-      box-shadow: 0 16px 40px rgba(7, 35, 18, 0.2), 0 2px 6px rgba(0, 0, 0, 0.05);
+      border-top: 4px solid #174d2f;
+      box-shadow: 0 12px 30px rgba(7, 35, 18, 0.16), 0 2px 6px rgba(0, 0, 0, 0.05);
     }
 
     #cardCatHalls:hover {
       border-color: #174d2f;
       background: linear-gradient(165deg, #ffffff 0%, #ecf8f0 100%);
-      transform: translateY(-8px);
-      box-shadow: 0 24px 55px rgba(23, 77, 47, 0.32), 0 0 0 2px rgba(23, 77, 47, 0.4);
+      transform: translateY(-5px);
+      box-shadow: 0 18px 45px rgba(23, 77, 47, 0.28), 0 0 0 2px rgba(23, 77, 47, 0.3);
     }
 
     #cardCatHalls .cat-count-badge {
@@ -174,46 +199,39 @@ require_once __DIR__ . '/includes/auth_guard.php';
       align-items: center;
       background: linear-gradient(135deg, #174d2f 0%, #206740 100%);
       color: #ffffff;
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       font-weight: 700;
-      padding: 0.35rem 0.95rem;
+      padding: 0.28rem 0.85rem;
       border-radius: 9999px;
-      box-shadow: 0 4px 12px rgba(23, 77, 47, 0.28);
+      box-shadow: 0 3px 10px rgba(23, 77, 47, 0.24);
       letter-spacing: 0.02em;
     }
 
     #cardCatHalls .cat-icon-container {
       background: linear-gradient(135deg, #e4f5ea 0%, #ccecd7 100%);
-      border-radius: 18px;
-      padding: 1.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1.5rem;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       border: 1.5px solid #a4dcba;
-      box-shadow: 0 8px 22px rgba(23, 77, 47, 0.1);
+      box-shadow: 0 6px 18px rgba(23, 77, 47, 0.08);
     }
 
     #cardCatHalls:hover .cat-icon-container {
       background: linear-gradient(135deg, #d8f2e1 0%, #bee7cb 100%);
       transform: scale(1.03);
       border-color: #174d2f;
-      box-shadow: 0 10px 26px rgba(23, 77, 47, 0.18);
+      box-shadow: 0 8px 22px rgba(23, 77, 47, 0.15);
     }
 
     #cardCatHalls .cat-card-title {
       font-family: var(--font-serif);
-      font-size: 1.8rem;
+      font-size: 1.4rem;
       font-weight: 800;
       color: #0c331d;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.3rem;
     }
 
     #cardCatHalls .cat-card-desc {
-      font-size: 0.95rem;
+      font-size: 0.84rem;
       color: #3b5745;
-      line-height: 1.6;
+      line-height: 1.45;
       margin-bottom: 0;
       flex-grow: 1;
     }
@@ -222,15 +240,15 @@ require_once __DIR__ . '/includes/auth_guard.php';
     #cardCatDormitories {
       background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 250, 241, 0.97) 50%, rgba(254, 245, 230, 0.96) 100%);
       border: 2px solid rgba(245, 215, 150, 0.9);
-      border-top: 5px solid #d97706;
-      box-shadow: 0 16px 40px rgba(50, 25, 5, 0.18), 0 2px 6px rgba(0, 0, 0, 0.05);
+      border-top: 4px solid #d97706;
+      box-shadow: 0 12px 30px rgba(50, 25, 5, 0.15), 0 2px 6px rgba(0, 0, 0, 0.05);
     }
 
     #cardCatDormitories:hover {
       border-color: #d97706;
       background: linear-gradient(165deg, #ffffff 0%, #fef7ec 100%);
-      transform: translateY(-8px);
-      box-shadow: 0 24px 55px rgba(217, 119, 6, 0.3), 0 0 0 2px rgba(217, 119, 6, 0.4);
+      transform: translateY(-5px);
+      box-shadow: 0 18px 45px rgba(217, 119, 6, 0.25), 0 0 0 2px rgba(217, 119, 6, 0.3);
     }
 
     #cardCatDormitories .cat-count-badge {
@@ -238,46 +256,39 @@ require_once __DIR__ . '/includes/auth_guard.php';
       align-items: center;
       background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
       color: #ffffff;
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       font-weight: 700;
-      padding: 0.35rem 0.95rem;
+      padding: 0.28rem 0.85rem;
       border-radius: 9999px;
-      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.28);
+      box-shadow: 0 3px 10px rgba(217, 119, 6, 0.24);
       letter-spacing: 0.02em;
     }
 
     #cardCatDormitories .cat-icon-container {
       background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-      border-radius: 18px;
-      padding: 1.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1.5rem;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       border: 1.5px solid #fcd34d;
-      box-shadow: 0 8px 22px rgba(217, 119, 6, 0.12);
+      box-shadow: 0 6px 18px rgba(217, 119, 6, 0.1);
     }
 
     #cardCatDormitories:hover .cat-icon-container {
       background: linear-gradient(135deg, #fde68a 0%, #fcd34d 100%);
       transform: scale(1.03);
       border-color: #d97706;
-      box-shadow: 0 10px 26px rgba(217, 119, 6, 0.2);
+      box-shadow: 0 8px 22px rgba(217, 119, 6, 0.16);
     }
 
     #cardCatDormitories .cat-card-title {
       font-family: var(--font-serif);
-      font-size: 1.8rem;
+      font-size: 1.4rem;
       font-weight: 800;
       color: #451a03;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.3rem;
     }
 
     #cardCatDormitories .cat-card-desc {
-      font-size: 0.95rem;
+      font-size: 0.84rem;
       color: #5c442a;
-      line-height: 1.6;
+      line-height: 1.45;
       margin-bottom: 0;
       flex-grow: 1;
     }
@@ -370,25 +381,25 @@ require_once __DIR__ . '/includes/auth_guard.php';
     @media (max-width: 860px) {
       .portal-category-grid {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: 1rem;
       }
 
       .portal-category-wrapper {
-        margin: 1.5rem auto 3rem;
+        margin: 1rem auto 1.5rem;
       }
 
       .portal-category-intro-card {
-        padding: 2.25rem 1.35rem 2rem;
-        border-radius: 18px;
+        padding: 1.1rem 1.15rem 1rem;
+        border-radius: 16px;
       }
 
       .cat-sec-title {
-        font-size: 1.85rem;
+        font-size: 1.4rem;
       }
 
       .portal-cat-card {
-        padding: 1.75rem 1.5rem;
-        border-radius: 18px;
+        padding: 1.1rem 1.25rem;
+        border-radius: 16px;
       }
 
       .portal-quick-status-card {
@@ -695,7 +706,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
           <span class="cat-count-badge">4 Venues Available</span>
         </div>
         <div class="cat-icon-container">
-          <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#174d2f" stroke-width="2.4"
+          <svg width="48" height="48" viewBox="0 0 64 64" fill="none" stroke="#174d2f" stroke-width="2.4"
             stroke-linecap="round" stroke-linejoin="round">
             <!-- Classical Hall Building with Pediment & Columns -->
             <path d="M6 22L32 7L58 22H6Z" fill="#d7f0df" />
@@ -718,7 +729,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
           <span class="cat-count-badge">4 Room Types</span>
         </div>
         <div class="cat-icon-container">
-          <svg width="72" height="72" viewBox="0 0 64 64" fill="none" stroke="#b45309" stroke-width="2.4"
+          <svg width="48" height="48" viewBox="0 0 64 64" fill="none" stroke="#b45309" stroke-width="2.4"
             stroke-linecap="round" stroke-linejoin="round">
             <!-- Multi-story Dormitory Accommodation Building -->
             <rect x="23" y="10" width="18" height="46" rx="2" fill="#fef3c7" />

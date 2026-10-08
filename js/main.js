@@ -91,9 +91,10 @@ function initCalendar() {
   const activeDateDay = document.getElementById('previewDateDay');
   const slotList = document.getElementById('previewSlotList');
 
-  // Base state defaults to October 2026 (matching design reference)
-  let currentDate = new Date(2026, 9, 1); // 9 = October (0-indexed)
-  let selectedDate = 15; // default selected on Oct 15
+  // Base state defaults to current date
+  const _today = new Date();
+  let currentDate = new Date(_today.getFullYear(), _today.getMonth(), 1);
+  let selectedDate = _today.getDate();
 
   // Mock reservation schedules for display
   const mockSchedules = {

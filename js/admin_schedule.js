@@ -140,8 +140,9 @@ let calendarEvents = [
   }
 ];
 
-let currentYear = 2026;
-let currentMonth = 9; // 0-indexed: 9 = October
+const _adminNow = new Date();
+let currentYear = _adminNow.getFullYear();
+let currentMonth = _adminNow.getMonth(); // 0-indexed
 let activeFacilityFilter = 'all';
 
 document.addEventListener('DOMContentLoaded', function () {

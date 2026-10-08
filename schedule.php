@@ -457,7 +457,7 @@ if ($isAdmin || isset($_GET['admin'])) {
         <button type="button" class="nav-arrow-btn" id="btnPrevMonth" aria-label="Previous Month">
           &lsaquo;
         </button>
-        <span class="current-month-display" id="currentMonthDisplay">October 2026</span>
+        <span class="current-month-display" id="currentMonthDisplay"><?= date('F Y') ?></span>
         <button type="button" class="nav-arrow-btn" id="btnNextMonth" aria-label="Next Month">
           &rsaquo;
         </button>
@@ -571,7 +571,7 @@ if ($isAdmin || isset($_GET['admin'])) {
             style="font-size: 0.78rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; opacity: 0.9; color: #ffffff;">SYSTEM
             ACTIVITY BREAKDOWN</span>
           <h3 id="monthlyEventsModalTitle" style="font-size: 1.45rem; margin-top: 0.35rem; color: #ffffff;">Scheduled
-            Events for October 2026</h3>
+            Events for <?= date('F Y') ?></h3>
         </div>
 
         <div class="schedule-modal-content" style="padding: 1.5rem 1.75rem;">

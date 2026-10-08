@@ -150,8 +150,9 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-let currentYear = 2026;
-let currentMonth = 9; // 9 = October (0-indexed)
+const _initNow = new Date();
+let currentYear = _initNow.getFullYear();
+let currentMonth = _initNow.getMonth(); // 0-indexed
 let activeFilter = 'all';
 
 // Interactive Modes driven by Stat Cards
@@ -325,7 +326,12 @@ function initMasterCalendar() {
         return matchesDate && matchesFilter;
       });
 
-      const isToday = (day === 15 && currentMonth === 9 && currentYear === 2026);
+      const _now = new Date();
+      const isToday = (
+        day === _now.getDate() &&
+        currentMonth === _now.getMonth() &&
+        currentYear === _now.getFullYear()
+      );
       const isFull = dayEvents.length >= 2;
       const isOpen = dayEvents.length < 2;
 
@@ -424,8 +430,9 @@ function initMasterCalendar() {
 
   if (todayBtn) {
     todayBtn.addEventListener('click', () => {
-      currentYear = 2026;
-      currentMonth = 9;
+      const _now = new Date();
+      currentYear = _now.getFullYear();
+      currentMonth = _now.getMonth();
       renderCalendar();
       if (activeStatMode && typeof populateStatPanelGlobal === 'function') {
         populateStatPanelGlobal(activeStatMode);

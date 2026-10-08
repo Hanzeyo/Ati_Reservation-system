@@ -1,4 +1,7 @@
 <?php
+// Ensure system timezone is set to Philippine Standard Time (PST / Asia/Manila, UTC+8)
+date_default_timezone_set('Asia/Manila');
+
 class Database {
     private $host = "localhost";
     private $db_name = "ati_reservation";
@@ -12,6 +15,7 @@ class Database {
         try {
             $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
             $this->conn->exec("set names utf8mb4");
+            $this->conn->exec("SET time_zone = '+08:00'");
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch(PDOException $exception) {
             // Auto-initialize if database does not exist (SQLSTATE 1049)
@@ -25,6 +29,7 @@ class Database {
                         $pdo->exec($sql);
                         $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
                         $this->conn->exec("set names utf8mb4");
+                        $this->conn->exec("SET time_zone = '+08:00'");
                         $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
                         return $this->conn;
                     }
