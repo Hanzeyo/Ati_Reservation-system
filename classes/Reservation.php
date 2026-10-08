@@ -15,12 +15,13 @@ class Reservation extends BaseModel {
     public $special_notes;
     public $status;
     public $admin_remarks;
+    public $document_path;
 
     public function create() {
         $query = "INSERT INTO " . $this->table_name . " 
-                (reference_no, user_id, facility_id, room_id, event_title, pax_count, start_date, end_date, time_slot, special_notes, status) 
+                (reference_no, user_id, facility_id, room_id, event_title, pax_count, start_date, end_date, time_slot, special_notes, status, document_path) 
                 VALUES 
-                (:reference_no, :user_id, :facility_id, :room_id, :event_title, :pax_count, :start_date, :end_date, :time_slot, :special_notes, :status)";
+                (:reference_no, :user_id, :facility_id, :room_id, :event_title, :pax_count, :start_date, :end_date, :time_slot, :special_notes, :status, :document_path)";
         
         $stmt = $this->conn->prepare($query);
 
@@ -35,6 +36,7 @@ class Reservation extends BaseModel {
         $stmt->bindParam(':time_slot', $this->time_slot);
         $stmt->bindParam(':special_notes', $this->special_notes);
         $stmt->bindParam(':status', $this->status);
+        $stmt->bindParam(':document_path', $this->document_path);
 
         if($stmt->execute()) {
             return true;

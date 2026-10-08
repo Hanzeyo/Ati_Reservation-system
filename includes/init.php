@@ -15,4 +15,11 @@ $user = new User($db);
 $facility = new Facility($db);
 $reservation = new Reservation($db);
 $auditLog = new AuditLog($db);
+
+// Helper to check if current logged-in user is an admin
+if (!function_exists('isAdmin')) {
+    function isAdmin() {
+        return isset($_SESSION['role']) && in_array(strtolower($_SESSION['role']), ['admin', 'super_admin']);
+    }
+}
 ?>

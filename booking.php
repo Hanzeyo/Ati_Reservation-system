@@ -113,6 +113,17 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
               </svg>
               <span>Booking History</span>
             </a>
+            <?php if (isAdmin()): ?>
+            <a href="admin_dashboard.php" class="dropdown-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span>Admin Dashboard</span>
+            </a>
+            <?php endif; ?>
             <div style="height: 1px; background: #e5ede7; margin: 0.35rem 0;"></div>
             <a href="index.php" class="dropdown-item danger">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -248,6 +259,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             <span class="drawer-link-text">My Profile</span>
           </a>
 
+          <?php if (isAdmin()): ?>
           <a href="admin_dashboard.php" class="drawer-nav-link">
             <div class="drawer-link-icon">
               <svg viewBox="0 0 24 24" fill="none">
@@ -259,6 +271,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             </div>
             <span class="drawer-link-text">Admin Dashboard</span>
           </a>
+          <?php endif; ?>
         </div>
       </div>
 
@@ -821,7 +834,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
                     <polyline points="15 18 9 12 15 6"></polyline>
                   </svg>
                 </button>
-                <span class="slot-month-pill" id="slotMonthDisplay">October 2026</span>
+                <span class="slot-month-pill" id="slotMonthDisplay"><?= date('F Y') ?></span>
                 <button type="button" class="slot-month-nav-btn" id="btnNextMonth" title="Next Month"
                   aria-label="Next Month">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -857,8 +870,8 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
 
                 <button type="button" class="slot-day-btn past-date" data-day="4" title="Unavailable"
                   disabled>4</button>
-                <button type="button" class="slot-day-btn selected today" data-day="5"
-                  title="Today: October 5, 2026 (Selected)">5</button>
+                <button type="button" class="slot-day-btn selected today" data-day="<?= date('j') ?>"
+                  title="Today: <?= date('F j, Y') ?> (Selected)"><?= date('j') ?></button>
                 <button type="button" class="slot-day-btn available" data-day="6">6</button>
                 <button type="button" class="slot-day-btn available" data-day="7">7</button>
                 <button type="button" class="slot-day-btn available" data-day="8">8</button>
@@ -919,7 +932,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             <div class="dt-field-group">
               <label class="dt-field-label" for="startDateInput">START DATE</label>
               <div class="dt-input-icon-wrap">
-                <input type="text" id="startDateInput" value="10/05/2026">
+                <input type="text" id="startDateInput" value="<?= date('m/d/Y') ?>">
                 <svg class="dt-calendar-svg" viewBox="0 0 24 24" fill="none">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -933,7 +946,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             <div class="dt-field-group">
               <label class="dt-field-label" for="endDateInput">END DATE</label>
               <div class="dt-input-icon-wrap" id="endDateWrap">
-                <input type="text" id="endDateInput" value="10/05/2026">
+                <input type="text" id="endDateInput" value="<?= date('m/d/Y') ?>">
                 <svg class="dt-calendar-svg" viewBox="0 0 24 24" fill="none">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -1040,16 +1053,17 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
         <p class="wizard-form-desc">Attach approved Special Order, Activity Design, or official request endorsement
           memo.</p>
 
-        <div
+        <div id="documentUploadZone"
           style="border: 2px dashed #b8ccbe; border-radius: 12px; padding: 3rem 2rem; text-align: center; background: #fbfdfc; cursor: pointer;">
+          <input type="file" id="documentUploadInput" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display: none;">
           <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="1.8"
             style="margin-bottom: 0.75rem;">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="17 8 12 3 7 8"></polyline>
             <line x1="12" y1="3" x2="12" y2="15"></line>
           </svg>
-          <h4 style="font-size: 1.1rem; color: #174d2f; margin-bottom: 0.35rem;">Click or Drag & Drop File Here</h4>
-          <p style="font-size: 0.85rem; color: #627b6c;">PDF, DOCX, or PNG formats up to 15MB</p>
+          <h4 id="documentUploadLabel" style="font-size: 1.1rem; color: #174d2f; margin-bottom: 0.35rem;">Click or Drag & Drop File Here</h4>
+          <p id="documentUploadDesc" style="font-size: 0.85rem; color: #627b6c;">PDF, DOCX, or PNG formats up to 15MB</p>
         </div>
       </div>
     </div>
@@ -1088,7 +1102,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             </div>
             <div class="scb-item">
               <span class="scb-label">Reserved Schedule:</span>
-              <strong class="scb-val" id="summaryReservationDate">10/05/2026</strong>
+              <strong class="scb-val" id="summaryReservationDate"><?= date('m/d/Y') ?></strong>
             </div>
             <div class="scb-item">
               <span class="scb-label">Time Window:</span>

@@ -10,10 +10,76 @@ document.addEventListener('DOMContentLoaded', () => {
   initProfileDropdown();
   initMobileDrawer();
   initDormRoomSelection();
+  initDocumentUpload();
 });
+
+function initDocumentUpload() {
+  const dropZone = document.getElementById('documentUploadZone');
+  const fileInput = document.getElementById('documentUploadInput');
+  const fileLabel = document.getElementById('documentUploadLabel');
+  const fileDesc = document.getElementById('documentUploadDesc');
+  
+  if (!dropZone || !fileInput) return;
+  
+  dropZone.addEventListener('click', () => fileInput.click());
+  
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.style.background = '#eaf2ec';
+    dropZone.style.borderColor = '#2e7d32';
+  });
+  
+  dropZone.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    dropZone.style.background = '#fbfdfc';
+    dropZone.style.borderColor = '#b8ccbe';
+  });
+  
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.style.background = '#fbfdfc';
+    dropZone.style.borderColor = '#b8ccbe';
+    
+    if (e.dataTransfer.files.length) {
+      fileInput.files = e.dataTransfer.files;
+      handleFileSelection();
+    }
+  });
+  
+  fileInput.addEventListener('change', handleFileSelection);
+  
+  function handleFileSelection() {
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const maxSize = 15 * 1024 * 1024; // 15MB
+      
+      if (file.size > maxSize) {
+        alert('File size exceeds the 15MB limit. Please upload a smaller file.');
+        fileInput.value = '';
+        fileLabel.textContent = 'Click or Drag & Drop File Here';
+        fileDesc.textContent = 'PDF, DOCX, or PNG formats up to 15MB';
+        return;
+      }
+      
+      fileLabel.textContent = file.name;
+      fileDesc.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+      
+      // Keep reference globally
+      bookingState.documentFile = file;
+    }
+  }
+}
 
 // Global navigation handle
 let goToStep = null;
+
+// Dynamic Today Date Helper
+const _todayDate = new Date();
+const _initYear = _todayDate.getFullYear();
+const _initMonth = _todayDate.getMonth();
+const _initDay = _todayDate.getDate();
+const _padZero = (n) => String(n).padStart(2, '0');
+const _formattedTodayDate = `${_padZero(_initMonth + 1)}/${_padZero(_initDay)}/${_initYear}`;
 
 // Global state
 const bookingState = {
@@ -28,11 +94,11 @@ const bookingState = {
     setupCap: '200 PAX',
     location: 'Main Administration Building • Ground Floor'
   },
-  selectedStartDate: { year: 2026, month: 9, day: 5 },
-  selectedEndDate: { year: 2026, month: 9, day: 5 },
-  selectedStartDay: 5,
-  selectedEndDay: 5,
-  date: '10/05/2026',
+  selectedStartDate: { year: _initYear, month: _initMonth, day: _initDay },
+  selectedEndDate: { year: _initYear, month: _initMonth, day: _initDay },
+  selectedStartDay: _initDay,
+  selectedEndDay: _initDay,
+  date: _formattedTodayDate,
   timeSlot: 'Whole Day (8:00 AM - 5:00 PM)',
   eventTitle: '',
   participants: '',
@@ -451,7 +517,7 @@ function openFacilityModal(facilityId) {
           <div class="dorm-bed-icon">${bedIconSvg}</div>
           <div class="dorm-room-num">${r.num}</div>
           <div class="dorm-room-status">${r.available ? 'AVAILABLE' : 'RESERVED'}</div>
-          <div class="dorm-room-hint ${r.available ? 'ready' : 'alt-date'}">${r.available ? 'Ready Oct 5' : 'Book other date'}</div>
+          <div class="dorm-room-hint ${r.available ? 'ready' : 'alt-date'}">${r.available ? 'Ready Today' : 'Book other date'}</div>
         `;
 
         if (bookingState.selectedFacility?.id === facilityId && String(bookingState.selectedFacility?.roomNumber) === String(r.num)) {
@@ -474,7 +540,7 @@ function openFacilityModal(facilityId) {
             const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
 
             if (isOcc) {
-              if (fTitle) fTitle.textContent = `Room ${r.num} Selected (Occupied on Oct 5)`;
+              if (fTitle) fTitle.textContent = `Room ${r.num} Selected (Occupied Today)`;
               if (fSub) fSub.textContent = `${data.floor} • Proceed to Step 2 to choose an available alternate date for this room.`;
               if (badgeOk) badgeOk.textContent = '📅 Pick Alternate Date';
             } else {
@@ -546,7 +612,7 @@ function openFacilityModal(facilityId) {
           <div class="dorm-room-num" style="font-size: 1.05rem;">${l.name}</div>
           <span class="layout-cap-badge">${l.cap}</span>
           <div class="dorm-room-status">${l.available ? 'AVAILABLE' : 'RESERVED'}</div>
-          <div class="dorm-room-hint ${l.available ? 'ready' : 'alt-date'}">${l.available ? 'Ready Oct 5' : 'Book other date'}</div>
+          <div class="dorm-room-hint ${l.available ? 'ready' : 'alt-date'}">${l.available ? 'Ready Today' : 'Book other date'}</div>
           <div class="layout-desc-text">${l.desc}</div>
         `;
 
@@ -570,7 +636,7 @@ function openFacilityModal(facilityId) {
             const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
 
             if (isOcc) {
-              if (fTitle) fTitle.textContent = `${l.name} Selected (Reserved on Oct 5)`;
+              if (fTitle) fTitle.textContent = `${l.name} Selected (Reserved Today)`;
               if (fSub) fSub.textContent = `${data.title} • Proceed to Step 2 to choose an available alternate date for this setup.`;
               if (badgeOk) badgeOk.textContent = '📅 Pick Alternate Date';
             } else {
@@ -637,7 +703,7 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
       const badgeText = badge?.querySelector('.d-room-text');
       if (badge && badgeText) {
         if (isOccupiedOnDefaultDate) {
-          badgeText.textContent = `✓ Room ${modalTempSelectedItem} Selected (Occupied Oct 5 • Pick other date)`;
+          badgeText.textContent = `✓ Room ${modalTempSelectedItem} Selected (Occupied Today • Pick other date)`;
         } else {
           badgeText.textContent = `✓ Room ${modalTempSelectedItem} Assigned (${data.floor})`;
         }
@@ -688,7 +754,7 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
       const badgeText = badge?.querySelector('.d-room-text');
       if (badge && badgeText) {
         if (isOccupiedOnDefaultDate) {
-          badgeText.textContent = `✓ ${layout.name} Selected (Reserved Oct 5 • Pick other date)`;
+          badgeText.textContent = `✓ ${layout.name} Selected (Reserved Today • Pick other date)`;
         } else {
           badgeText.textContent = `✓ ${layout.name} Selected (${layout.cap})`;
         }
@@ -1137,42 +1203,72 @@ function initStepperNavigation() {
   const finalSubmitBtn = document.getElementById('btnSubmitFinalReservation');
   if (finalSubmitBtn) {
     finalSubmitBtn.addEventListener('click', () => {
-      const refNum = `ATI-RES-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      const refNum = `ATI-RES-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
       const isDorm = isDormitorySelected();
 
-      // Persist to localStorage for live sync with Master Schedule & My Reservations
-      try {
-        const stored = JSON.parse(localStorage.getItem('ati_system_reservations') || '[]');
-        const targetFacilityKey = isDorm ? 'dormitory' : (bookingState.selectedFacility?.id || 'function-hall');
-        const newRes = {
-          id: Date.now(),
-          ref: refNum,
-          title: bookingState.eventTitle || (isDorm ? `Dorm Stay: ${bookingState.selectedFacility?.name || 'Dormitory'}` : `${bookingState.selectedFacility?.name || 'Facility'} Reservation`),
-          facility: bookingState.selectedFacility?.name || 'Facility',
-          facilityKey: targetFacilityKey,
-          date: bookingState.dateRaw || '2026-10-20',
-          time: bookingState.time || '08:00 AM - 05:00 PM',
-          division: 'Online Reservation',
-          attendees: bookingState.participants ? `${bookingState.participants} Guests` : '15 Participants',
-          status: 'Approved & Confirmed',
-          roomNumber: bookingState.selectedFacility?.roomNumber || null
-        };
-        stored.push(newRes);
-        localStorage.setItem('ati_system_reservations', JSON.stringify(stored));
-      } catch (err) {
-        console.warn('Could not save to localStorage:', err);
+      const formData = new FormData();
+      formData.append('reference_no', refNum);
+      formData.append('facility_name', bookingState.selectedFacility?.name || 'Function Hall');
+      formData.append('facility_type', isDorm ? 'dormitories' : 'halls');
+      formData.append('rate', bookingState.selectedFacility?.rate || 'N/A');
+      formData.append('capacity', bookingState.selectedFacility?.capacity || 'N/A');
+      if (bookingState.selectedFacility?.roomNumber) {
+        formData.append('room_number', bookingState.selectedFacility.roomNumber);
+      }
+      formData.append('event_title', bookingState.eventTitle || '');
+      formData.append('pax_count', bookingState.participants || '0');
+      
+      const sDate = bookingState.selectedStartDate;
+      const eDate = bookingState.selectedEndDate;
+      formData.append('start_date', `${sDate.year}-${String(sDate.month+1).padStart(2,'0')}-${String(sDate.day).padStart(2,'0')}`);
+      formData.append('end_date', `${eDate.year}-${String(eDate.month+1).padStart(2,'0')}-${String(eDate.day).padStart(2,'0')}`);
+      
+      const timeSelect = document.getElementById('startTimeSelect');
+      const endTimeSelect = document.getElementById('endTimeSelect');
+      const timeSlot = (timeSelect ? timeSelect.value : '') + ' - ' + (endTimeSelect ? endTimeSelect.value : '');
+      formData.append('time_slot', timeSlot);
+      
+      const specialNotes = document.getElementById('specialNotes') ? document.getElementById('specialNotes').value : '';
+      formData.append('special_notes', specialNotes);
+      
+      if (bookingState.documentFile) {
+        formData.append('document', bookingState.documentFile);
       }
 
-      let summaryMsg = `Reservation Request Submitted Successfully!\n\nReference: ${refNum}\nFacility: ${bookingState.selectedFacility.name}`;
-      if (bookingState.selectedFacility.roomNumber) {
-        summaryMsg += `\nAssigned Room: Room ${bookingState.selectedFacility.roomNumber} (${bookingState.selectedFacility.floor || ''})`;
-      }
-      if (bookingState.eventTitle) {
-        summaryMsg += `\nEvent / Purpose: ${bookingState.eventTitle}`;
-      }
-      summaryMsg += `\nSchedule: ${bookingState.date}\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`;
-      alert(summaryMsg);
-      window.location.href = 'my_reservations.php';
+      // Disable button UI state
+      const origText = finalSubmitBtn.innerHTML;
+      finalSubmitBtn.innerHTML = '<span>Submitting Please Wait...</span>';
+      finalSubmitBtn.disabled = true;
+
+      fetch('ajax/submit_booking.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if(data.success) {
+          let summaryMsg = `Reservation Request Submitted Successfully!\n\nReference: ${refNum}\nFacility: ${bookingState.selectedFacility.name}`;
+          if (bookingState.selectedFacility.roomNumber) {
+            summaryMsg += `\nAssigned Room: Room ${bookingState.selectedFacility.roomNumber}`;
+          }
+          if (bookingState.eventTitle) {
+            summaryMsg += `\nEvent / Purpose: ${bookingState.eventTitle}`;
+          }
+          summaryMsg += `\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`;
+          alert(summaryMsg);
+          window.location.href = 'my_reservations.php';
+        } else {
+          alert('Error: ' + data.message);
+          finalSubmitBtn.innerHTML = origText;
+          finalSubmitBtn.disabled = false;
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert('An unexpected error occurred while submitting.');
+        finalSubmitBtn.innerHTML = origText;
+        finalSubmitBtn.disabled = false;
+      });
     });
   }
 
@@ -1214,7 +1310,7 @@ function updateReviewSummary() {
       prevRoomWrap.style.display = 'flex';
       const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
       if (isOcc) {
-        prevRoom.innerHTML = `Room ${roomNum} (${floorName}) <span style="display:inline-block; margin-left:6px; font-size:0.75rem; color:#dc2626; font-weight:700;">(Occupied Oct 5 • Pick alternate date in Step 2)</span>`;
+        prevRoom.innerHTML = `Room ${roomNum} (${floorName}) <span style="display:inline-block; margin-left:6px; font-size:0.75rem; color:#dc2626; font-weight:700;">(Occupied Today • Pick alternate date in Step 2)</span>`;
       } else {
         prevRoom.textContent = `Room ${roomNum} (${floorName})`;
       }
@@ -1223,7 +1319,7 @@ function updateReviewSummary() {
       prevRoomWrap.style.display = 'flex';
       const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
       if (isOcc) {
-        prevRoom.innerHTML = `${hallSetup} (${hallCap}) <span style="display:inline-block; margin-left:6px; font-size:0.75rem; color:#dc2626; font-weight:700;">(Reserved Oct 5 • Pick alternate date in Step 2)</span>`;
+        prevRoom.innerHTML = `${hallSetup} (${hallCap}) <span style="display:inline-block; margin-left:6px; font-size:0.75rem; color:#dc2626; font-weight:700;">(Reserved Today • Pick alternate date in Step 2)</span>`;
       } else {
         prevRoom.textContent = `${hallSetup} (${hallCap})`;
       }
@@ -1250,7 +1346,7 @@ function updateReviewSummary() {
   if (sumRate) sumRate.textContent = rateText;
   if (sumFacType) sumFacType.textContent = isDorm ? 'Trainee Dormitory Lodging' : 'Conference & Training Venue';
   if (sumCap) sumCap.textContent = capText;
-  if (sumDate) sumDate.textContent = bookingState.date || '10/05/2026';
+  if (sumDate) sumDate.textContent = bookingState.date || _formattedTodayDate;
   if (sumTime) sumTime.textContent = isDorm ? 'Overnight Lodging Stay' : (bookingState.timeSlot || 'Whole Day (8:00 AM - 5:00 PM)');
 
   if (sumRoomWrap && sumRoom) {
@@ -1299,12 +1395,17 @@ function initDateSlotInteractions() {
   const monthDisplay = document.getElementById('slotMonthDisplay');
   const grid = document.getElementById('slotDaysGrid');
 
-  const TODAY = { year: 2026, month: 9, day: 5 }; // October 5, 2026 (0-indexed month)
-  let viewYear = 2026;
-  let viewMonth = 9; // October
+  const curDate = new Date();
+  const TODAY = { 
+    year: curDate.getFullYear(), 
+    month: curDate.getMonth(), 
+    day: curDate.getDate() 
+  };
+  let viewYear = TODAY.year;
+  let viewMonth = TODAY.month;
 
-  let selectedStart = { year: 2026, month: 9, day: 5 };
-  let selectedEnd = { year: 2026, month: 9, day: 5 };
+  let selectedStart = { ...TODAY };
+  let selectedEnd = { ...TODAY };
   let mode = 'single'; // 'single' or 'range'
   let rangeWaitingForEnd = false;
 
@@ -1312,6 +1413,15 @@ function initDateSlotInteractions() {
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
+
+  // Helper to determine if date is occupied for selected room (today & tomorrow)
+  function isOccupiedRoomDate(d) {
+    if (!bookingState.selectedFacility?.occupiedOnDefaultDate) return false;
+    const target = new Date(d.year, d.month, d.day).getTime();
+    const todayMs = new Date(TODAY.year, TODAY.month, TODAY.day).getTime();
+    const dayDiff = Math.round((target - todayMs) / (1000 * 60 * 60 * 24));
+    return dayDiff === 0 || dayDiff === 1;
+  }
 
   // Reserved & maintenance dates database for realistic simulation
   const RESERVED_DATES = new Set([
@@ -1326,6 +1436,10 @@ function initDateSlotInteractions() {
   function dateToKey(y, m, d) {
     return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   }
+
+  // Ensure current date is never accidentally marked as reserved or suspended
+  RESERVED_DATES.delete(dateToKey(TODAY.year, TODAY.month, TODAY.day));
+  SUSPENDED_DATES.delete(dateToKey(TODAY.year, TODAY.month, TODAY.day));
 
   function compareDates(d1, d2) {
     if (d1.year !== d2.year) return d1.year - d2.year;
@@ -1394,7 +1508,7 @@ function initDateSlotInteractions() {
       const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
       if (isOcc && roomNum) {
         if (durationDays === 1) {
-          statusDesc.textContent = `Room ${roomNum} is confirmed available on ${formatDisplayDate(selectedStart)} (currently occupied on Oct 5–6).`;
+          statusDesc.textContent = `Room ${roomNum} is confirmed available on ${formatDisplayDate(selectedStart)} (occupied today and tomorrow).`;
         } else {
           statusDesc.textContent = `Room ${roomNum} is confirmed available for ${durationDays} days duration (${formatDisplayDate(selectedStart)} – ${formatDisplayDate(selectedEnd)}).`;
         }
@@ -1441,11 +1555,11 @@ function initDateSlotInteractions() {
       return;
     }
 
-    const isRoomOccupiedThisDate = Boolean(bookingState.selectedFacility?.occupiedOnDefaultDate) && (key === '2026-10-05' || key === '2026-10-06');
+    const isRoomOccupiedThisDate = isOccupiedRoomDate(dateObj);
     if (btn.classList.contains('reserved') || RESERVED_DATES.has(key) || isRoomOccupiedThisDate) {
       if (isRoomOccupiedThisDate) {
         const roomNum = bookingState.selectedFacility?.roomNumber;
-        alert(`Room ${roomNum} is occupied on ${formatDisplayDate(dateObj)}.\n\nPlease select an available green slot (such as Wednesday, October 7 onwards) to book this room.`);
+        alert(`Room ${roomNum} is occupied on ${formatDisplayDate(dateObj)}.\n\nPlease select an available green slot to book this room.`);
       } else {
         alert(`${formatDisplayDate(dateObj)} is already reserved for another official event. Please select an available green slot.`);
       }
@@ -1509,7 +1623,7 @@ function initDateSlotInteractions() {
             conflict = `${formatDisplayDate({ year: cY, month: cM, day: cD })} has already passed`;
             break;
           }
-          const isRoomOccupiedRangeDate = Boolean(bookingState.selectedFacility?.occupiedOnDefaultDate) && (cKey === '2026-10-05' || cKey === '2026-10-06');
+          const isRoomOccupiedRangeDate = isOccupiedRoomDate({ year: cY, month: cM, day: cD });
           if (RESERVED_DATES.has(cKey) || isRoomOccupiedRangeDate) {
             conflict = isRoomOccupiedRangeDate
               ? `Room ${bookingState.selectedFacility?.roomNumber || ''} is occupied on ${formatDisplayDate({ year: cY, month: cM, day: cD })}`
@@ -1570,7 +1684,7 @@ function initDateSlotInteractions() {
       const isPast = isPastDate(viewYear, viewMonth, day);
       const isToday = isTodayDate(viewYear, viewMonth, day);
       const isSuspended = SUSPENDED_DATES.has(key);
-      const isRoomOccupiedThisDate = Boolean(bookingState.selectedFacility?.occupiedOnDefaultDate) && (key === '2026-10-05' || key === '2026-10-06');
+      const isRoomOccupiedThisDate = isOccupiedRoomDate(dateObj);
       const isReserved = RESERVED_DATES.has(key) || isRoomOccupiedThisDate;
       const isSelected = isDateInRange(dateObj, selectedStart, selectedEnd);
 
@@ -1634,12 +1748,17 @@ function initDateSlotInteractions() {
     });
   }
 
-  // Explicit helper to select current date (October 5, 2026)
+  // Explicit helper to select current date (Today)
   window.selectCurrentDate = function () {
-    viewYear = 2026;
-    viewMonth = 9;
-    selectedStart = { year: 2026, month: 9, day: 5 };
-    selectedEnd = { year: 2026, month: 9, day: 5 };
+    const freshNow = new Date();
+    TODAY.year = freshNow.getFullYear();
+    TODAY.month = freshNow.getMonth();
+    TODAY.day = freshNow.getDate();
+
+    viewYear = TODAY.year;
+    viewMonth = TODAY.month;
+    selectedStart = { ...TODAY };
+    selectedEnd = { ...TODAY };
     mode = 'single';
     rangeWaitingForEnd = false;
     if (btnModeSingle) btnModeSingle.classList.add('active');
@@ -1650,12 +1769,14 @@ function initDateSlotInteractions() {
     renderSelectionDetails();
   };
 
-  // Helper when user chose an occupied room: pre-select earliest open date (October 7, 2026)
+  // Helper when user chose an occupied room: pre-select earliest open date (Today + 2 days)
   window.selectAlternateAvailableDateForRoom = function (roomNumber) {
-    viewYear = 2026;
-    viewMonth = 9; // October 2026
-    selectedStart = { year: 2026, month: 9, day: 7 };
-    selectedEnd = { year: 2026, month: 9, day: 7 };
+    const cur = new Date();
+    const target = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + 2);
+    viewYear = target.getFullYear();
+    viewMonth = target.getMonth();
+    selectedStart = { year: viewYear, month: viewMonth, day: target.getDate() };
+    selectedEnd = { ...selectedStart };
     mode = 'single';
     rangeWaitingForEnd = false;
     if (btnModeSingle) btnModeSingle.classList.add('active');
@@ -1666,10 +1787,10 @@ function initDateSlotInteractions() {
     renderSelectionDetails();
 
     if (statusTitle) {
-      statusTitle.textContent = `Room ${roomNumber} Available (October 7, 2026)`;
+      statusTitle.textContent = `Room ${roomNumber} Available (${formatDisplayDate(selectedStart)})`;
     }
     if (statusDesc) {
-      statusDesc.textContent = `Room ${roomNumber} is occupied on Oct 5–6, 2026. Wednesday, October 7, 2026 has been automatically selected as the earliest open date. You can choose any upcoming green slot on the calendar.`;
+      statusDesc.textContent = `Room ${roomNumber} is occupied today and tomorrow. ${formatDisplayDate(selectedStart)} has been automatically selected as the earliest open date. You can choose any upcoming green slot on the calendar.`;
     }
   };
 
