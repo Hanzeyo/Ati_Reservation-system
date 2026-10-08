@@ -152,27 +152,11 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
             <!-- Dynamic Office / Division / Agency Field -->
             <div class="auth-field-group">
               <label class="auth-field-label" for="regOffice" id="labelOffice">Office / Division Name</label>
-              <div class="auth-input-wrapper">
-                <select id="regOffice" class="auth-input" required>
-                  <option value="" disabled selected>Select your Division</option>
-                  <option value="Office of the Director">Office of the Director</option>
-                  <option value="Office of the Assistant Director">Office of the Assistant Director</option>
-                  <option value="Internal Audit Unit (IAU)">Internal Audit Unit (IAU)</option>
-                  <option value="Bids and Awards Committee (BAC) Secretariat">Bids and Awards Committee (BAC) Secretariat</option>
-                  <option value="Policy and Planning Division (PPD)">Policy and Planning Division (PPD)</option>
-                  <option value="Career Development and Management Division (CDMD)">Career Development and Management Division (CDMD)</option>
-                  <option value="Information Services Division (ISD)">Information Services Division (ISD)</option>
-                  <option value="Partnerships and Accreditation Division (PAD)">Partnerships and Accreditation Division (PAD)</option>
-                  <option value="Administrative and Finance Unit (AFU)">Administrative and Finance Unit (AFU)</option>
-                  <option value="Human Resource Management Section (HRMS)">Human Resource Management Section (HRMS)</option>
-                  <option value="Finance Section">Finance Section</option>
-                  <option value="General Services Section (GSS)">General Services Section (GSS)</option>
-                  <option value="Property and Supply Section">Property and Supply Section</option>
-                  <option value="Rural Development Education Center (RDEC)">Rural Development Education Center (RDEC)</option>
-                  <option value="RDEC Dormitory and Lodging Unit">RDEC Dormitory and Lodging Unit</option>
-                  <option value="Farmers' Contact Center (FCC) Hub">Farmers' Contact Center (FCC) Hub</option>
-                  <option value="Serrano Hall & Enterprise Laboratory">Serrano Hall & Enterprise Laboratory</option>
-                </select>
+              <div class="auth-input-wrapper custom-select-container" id="officeSelectContainer">
+                <input type="text" id="regOffice" class="auth-input custom-select-input" placeholder="Select your Division" required readonly>
+                <svg class="custom-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
                 <!-- Organization / Branch Icon -->
                 <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none">
                   <rect x="3" y="3" width="7" height="7"></rect>
@@ -180,6 +164,26 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
                   <rect x="14" y="14" width="7" height="7"></rect>
                   <rect x="3" y="14" width="7" height="7"></rect>
                 </svg>
+                
+                <div class="custom-options-panel" id="officeOptionsPanel">
+                  <div class="custom-option" data-value="Office of the Director">Office of the Director</div>
+                  <div class="custom-option" data-value="Office of the Assistant Director">Office of the Assistant Director</div>
+                  <div class="custom-option" data-value="Internal Audit Unit (IAU)">Internal Audit Unit (IAU)</div>
+                  <div class="custom-option" data-value="Bids and Awards Committee (BAC) Secretariat">Bids and Awards Committee (BAC) Secretariat</div>
+                  <div class="custom-option" data-value="Policy and Planning Division (PPD)">Policy and Planning Division (PPD)</div>
+                  <div class="custom-option" data-value="Career Development and Management Division (CDMD)">Career Development and Management Division (CDMD)</div>
+                  <div class="custom-option" data-value="Information Services Division (ISD)">Information Services Division (ISD)</div>
+                  <div class="custom-option" data-value="Partnerships and Accreditation Division (PAD)">Partnerships and Accreditation Division (PAD)</div>
+                  <div class="custom-option" data-value="Administrative and Finance Unit (AFU)">Administrative and Finance Unit (AFU)</div>
+                  <div class="custom-option" data-value="Human Resource Management Section (HRMS)">Human Resource Management Section (HRMS)</div>
+                  <div class="custom-option" data-value="Finance Section">Finance Section</div>
+                  <div class="custom-option" data-value="General Services Section (GSS)">General Services Section (GSS)</div>
+                  <div class="custom-option" data-value="Property and Supply Section">Property and Supply Section</div>
+                  <div class="custom-option" data-value="Rural Development Education Center (RDEC)">Rural Development Education Center (RDEC)</div>
+                  <div class="custom-option" data-value="RDEC Dormitory and Lodging Unit">RDEC Dormitory and Lodging Unit</div>
+                  <div class="custom-option" data-value="Farmers' Contact Center (FCC) Hub">Farmers' Contact Center (FCC) Hub</div>
+                  <div class="custom-option" data-value="Serrano Hall & Enterprise Laboratory">Serrano Hall & Enterprise Laboratory</div>
+                </div>
               </div>
             </div>
           </div>

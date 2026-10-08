@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPasswordToggles();
   initPasswordStrengthAndMatch();
   initAuthModals();
+  initCustomSelect();
 });
 
 /* ==========================================================================
@@ -110,6 +111,27 @@ function initCategorySelector() {
         if (officeInput) officeInput.placeholder = config.placeholder;
         if (emailInput) emailInput.placeholder = config.emailPlaceholder;
         if (hintText) hintText.textContent = config.hint;
+
+        // Handle Custom Select Mode vs Text Input Mode
+        const selectContainer = document.getElementById('officeSelectContainer');
+        if (officeInput && selectContainer) {
+          const arrow = selectContainer.querySelector('.custom-select-arrow');
+          if (catKey === 'ati') {
+            officeInput.readOnly = true;
+            officeInput.classList.add('custom-select-input');
+            officeInput.style.cursor = 'pointer';
+            selectContainer.classList.remove('disabled-select');
+            if (arrow) arrow.style.display = 'block';
+          } else {
+            officeInput.readOnly = false;
+            officeInput.classList.remove('custom-select-input');
+            officeInput.style.cursor = 'text';
+            selectContainer.classList.add('disabled-select');
+            if (arrow) arrow.style.display = 'none';
+            // Clear value so user can type freely
+            officeInput.value = '';
+          }
+        }
       }
     });
   });
@@ -404,3 +426,48 @@ function handleLoginSubmit(event) {
   });
 });
 
+/* ==========================================================================
+   6. Custom Select Dropdown UI Initialization
+   ========================================================================== */
+function initCustomSelect() {
+  const selectContainer = document.getElementById('officeSelectContainer');
+  const selectInput = document.getElementById('regOffice');
+  const optionsPanel = document.getElementById('officeOptionsPanel');
+
+  if (!selectContainer || !selectInput || !optionsPanel) return;
+
+  const options = optionsPanel.querySelectorAll('.custom-option');
+
+  // Toggle dropdown
+  selectInput.addEventListener('click', (e) => {
+    if (selectContainer.classList.contains('disabled-select')) return;
+    e.preventDefault();
+    selectContainer.classList.toggle('open');
+  });
+
+  // Select an option
+  options.forEach(option => {
+    option.addEventListener('click', () => {
+      // Remove selected class from all
+      options.forEach(opt => opt.classList.remove('selected'));
+      // Add selected class to current
+      option.classList.add('selected');
+      
+      // Update input value
+      selectInput.value = option.dataset.value;
+      
+      // Close dropdown
+      selectContainer.classList.remove('open');
+      
+      // Trigger change event to clear errors if needed
+      selectInput.dispatchEvent(new Event('input'));
+    });
+  });
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!selectContainer.contains(e.target)) {
+      selectContainer.classList.remove('open');
+    }
+  });
+}
