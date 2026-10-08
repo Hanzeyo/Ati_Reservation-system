@@ -84,23 +84,34 @@ function initCategorySelector() {
       emailPlaceholder: 'juan.delacruz@ati.da.gov.ph',
       hint: 'For ATI Central Office & Regional Training Centers (RTC) staff members.',
       options: [
-        "Office of the Director",
-        "Office of the Assistant Director",
-        "Internal Audit Unit (IAU)",
-        "Bids and Awards Committee (BAC) Secretariat",
-        "Policy and Planning Division (PPD)",
-        "Career Development and Management Division (CDMD)",
-        "Information Services Division (ISD)",
-        "Partnerships and Accreditation Division (PAD)",
-        "Administrative and Finance Unit (AFU)",
-        "Human Resource Management Section (HRMS)",
-        "Finance Section",
-        "General Services Section (GSS)",
-        "Property and Supply Section",
-        "Rural Development Education Center (RDEC)",
-        "RDEC Dormitory and Lodging Unit",
-        "Farmers' Contact Center (FCC) Hub",
-        "Serrano Hall & Enterprise Laboratory"
+        "OD – Office of the Director",
+        "OAD – Office of the Assistant Director",
+        "AFU / AFD – Administrative and Finance Division (or Unit)",
+        "CDMD – Career Development and Management Division",
+        "ISD – Information Services Division",
+        "PAD – Partnerships and Accreditation Division",
+        "PPD – Policy and Planning Division",
+        "ATI-RTC CAR – Cordillera Administrative Region",
+        "ATI-RTC I – Ilocos Region",
+        "ATI-RTC II – Cagayan Valley",
+        "ATI-RTC III – Central Luzon",
+        "ATI-RTC IV-A – CALABARZON",
+        "ATI-RTC IV-B – MIMAROPA",
+        "ATI-RTC V – Bicol Region",
+        "ATI-RTC VI – Western Visayas",
+        "ATI-RTC VII – Central Visayas",
+        "ATI-RTC VIII – Eastern Visayas",
+        "ATI-RTC IX – Zamboanga Peninsula",
+        "ATI-RTC X – Northern Mindanao",
+        "ATI-RTC XI – Davao Region",
+        "ATI-RTC XII – SOCCSKSARGEN",
+        "ATI-RTC XIII – Caraga Region",
+        "ATI-ITCPH – International Training Center on Pig Husbandry",
+        "AFU – Administrative and Finance Unit",
+        "CDMS – Career Development and Management Section",
+        "ISS – Information Services Section",
+        "PAS – Partnerships and Accreditation Section",
+        "PMEU – Planning, Monitoring and Evaluation Unit"
       ]
     },
     gov: {
@@ -216,6 +227,12 @@ function initCategorySelector() {
       }
     });
   });
+
+  // Trigger click on initially active category to build the dropdown on load
+  const activeCard = document.querySelector('.category-card.active');
+  if (activeCard) {
+    activeCard.click();
+  }
 }
 
 /* ==========================================================================
