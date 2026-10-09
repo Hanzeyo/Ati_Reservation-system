@@ -96,7 +96,8 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
           <div class="profile-dropdown" id="profileDropdown">
             <div class="dropdown-header-info">
               <div class="dropdown-user-name"><?= htmlspecialchars($_SESSION['full_name']) ?></div>
-              <div class="dropdown-user-email"><span class="user-verified-dot"></span> <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $_SESSION['role']))) ?></div>
+              <div class="dropdown-user-email"><span class="user-verified-dot"></span>
+                <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $_SESSION['role']))) ?></div>
             </div>
             <a href="profile.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -114,15 +115,15 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
               <span>Booking History</span>
             </a>
             <?php if (isAdmin()): ?>
-            <a href="admin_dashboard.php" class="dropdown-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-              </svg>
-              <span>Admin Dashboard</span>
-            </a>
+              <a href="admin_dashboard.php" class="dropdown-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Admin Dashboard</span>
+              </a>
             <?php endif; ?>
             <div style="height: 1px; background: #e5ede7; margin: 0.35rem 0;"></div>
             <a href="index.php" class="dropdown-item danger">
@@ -260,17 +261,17 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
           </a>
 
           <?php if (isAdmin()): ?>
-          <a href="admin_dashboard.php" class="drawer-nav-link">
-            <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-              </svg>
-            </div>
-            <span class="drawer-link-text">Admin Dashboard</span>
-          </a>
+            <a href="admin_dashboard.php" class="drawer-nav-link">
+              <div class="drawer-link-icon">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+              </div>
+              <span class="drawer-link-text">Admin Dashboard</span>
+            </a>
           <?php endif; ?>
         </div>
       </div>
@@ -1062,8 +1063,10 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             <polyline points="17 8 12 3 7 8"></polyline>
             <line x1="12" y1="3" x2="12" y2="15"></line>
           </svg>
-          <h4 id="documentUploadLabel" style="font-size: 1.1rem; color: #174d2f; margin-bottom: 0.35rem;">Click or Drag & Drop File Here</h4>
-          <p id="documentUploadDesc" style="font-size: 0.85rem; color: #627b6c;">PDF, DOCX, or PNG formats up to 15MB</p>
+          <h4 id="documentUploadLabel" style="font-size: 1.1rem; color: #174d2f; margin-bottom: 0.35rem;">Click or Drag
+            & Drop File Here</h4>
+          <p id="documentUploadDesc" style="font-size: 0.85rem; color: #627b6c;">PDF, DOCX, or PNG formats up to 15MB
+          </p>
         </div>
       </div>
     </div>

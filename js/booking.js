@@ -18,41 +18,41 @@ function initDocumentUpload() {
   const fileInput = document.getElementById('documentUploadInput');
   const fileLabel = document.getElementById('documentUploadLabel');
   const fileDesc = document.getElementById('documentUploadDesc');
-  
+
   if (!dropZone || !fileInput) return;
-  
+
   dropZone.addEventListener('click', () => fileInput.click());
-  
+
   dropZone.addEventListener('dragover', (e) => {
     e.preventDefault();
     dropZone.style.background = '#eaf2ec';
     dropZone.style.borderColor = '#2e7d32';
   });
-  
+
   dropZone.addEventListener('dragleave', (e) => {
     e.preventDefault();
     dropZone.style.background = '#fbfdfc';
     dropZone.style.borderColor = '#b8ccbe';
   });
-  
+
   dropZone.addEventListener('drop', (e) => {
     e.preventDefault();
     dropZone.style.background = '#fbfdfc';
     dropZone.style.borderColor = '#b8ccbe';
-    
+
     if (e.dataTransfer.files.length) {
       fileInput.files = e.dataTransfer.files;
       handleFileSelection();
     }
   });
-  
+
   fileInput.addEventListener('change', handleFileSelection);
-  
+
   function handleFileSelection() {
     if (fileInput.files.length > 0) {
       const file = fileInput.files[0];
       const maxSize = 15 * 1024 * 1024; // 15MB
-      
+
       if (file.size > maxSize) {
         alert('File size exceeds the 15MB limit. Please upload a smaller file.');
         fileInput.value = '';
@@ -60,10 +60,10 @@ function initDocumentUpload() {
         fileDesc.textContent = 'PDF, DOCX, or PNG formats up to 15MB';
         return;
       }
-      
+
       fileLabel.textContent = file.name;
       fileDesc.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
-      
+
       // Keep reference globally
       bookingState.documentFile = file;
     }
@@ -1217,20 +1217,20 @@ function initStepperNavigation() {
       }
       formData.append('event_title', bookingState.eventTitle || '');
       formData.append('pax_count', bookingState.participants || '0');
-      
+
       const sDate = bookingState.selectedStartDate;
       const eDate = bookingState.selectedEndDate;
-      formData.append('start_date', `${sDate.year}-${String(sDate.month+1).padStart(2,'0')}-${String(sDate.day).padStart(2,'0')}`);
-      formData.append('end_date', `${eDate.year}-${String(eDate.month+1).padStart(2,'0')}-${String(eDate.day).padStart(2,'0')}`);
-      
+      formData.append('start_date', `${sDate.year}-${String(sDate.month + 1).padStart(2, '0')}-${String(sDate.day).padStart(2, '0')}`);
+      formData.append('end_date', `${eDate.year}-${String(eDate.month + 1).padStart(2, '0')}-${String(eDate.day).padStart(2, '0')}`);
+
       const timeSelect = document.getElementById('startTimeSelect');
       const endTimeSelect = document.getElementById('endTimeSelect');
       const timeSlot = (timeSelect ? timeSelect.value : '') + ' - ' + (endTimeSelect ? endTimeSelect.value : '');
       formData.append('time_slot', timeSlot);
-      
+
       const specialNotes = document.getElementById('specialNotes') ? document.getElementById('specialNotes').value : '';
       formData.append('special_notes', specialNotes);
-      
+
       if (bookingState.documentFile) {
         formData.append('document', bookingState.documentFile);
       }
@@ -1244,31 +1244,31 @@ function initStepperNavigation() {
         method: 'POST',
         body: formData
       })
-      .then(res => res.json())
-      .then(data => {
-        if(data.success) {
-          let summaryMsg = `Reservation Request Submitted Successfully!\n\nReference: ${refNum}\nFacility: ${bookingState.selectedFacility.name}`;
-          if (bookingState.selectedFacility.roomNumber) {
-            summaryMsg += `\nAssigned Room: Room ${bookingState.selectedFacility.roomNumber}`;
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            let summaryMsg = `Reservation Request Submitted Successfully!\n\nReference: ${refNum}\nFacility: ${bookingState.selectedFacility.name}`;
+            if (bookingState.selectedFacility.roomNumber) {
+              summaryMsg += `\nAssigned Room: Room ${bookingState.selectedFacility.roomNumber}`;
+            }
+            if (bookingState.eventTitle) {
+              summaryMsg += `\nEvent / Purpose: ${bookingState.eventTitle}`;
+            }
+            summaryMsg += `\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`;
+            alert(summaryMsg);
+            window.location.href = 'my_reservations.php';
+          } else {
+            alert('Error: ' + data.message);
+            finalSubmitBtn.innerHTML = origText;
+            finalSubmitBtn.disabled = false;
           }
-          if (bookingState.eventTitle) {
-            summaryMsg += `\nEvent / Purpose: ${bookingState.eventTitle}`;
-          }
-          summaryMsg += `\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`;
-          alert(summaryMsg);
-          window.location.href = 'my_reservations.php';
-        } else {
-          alert('Error: ' + data.message);
+        })
+        .catch(err => {
+          console.error(err);
+          alert('An unexpected error occurred while submitting.');
           finalSubmitBtn.innerHTML = origText;
           finalSubmitBtn.disabled = false;
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        alert('An unexpected error occurred while submitting.');
-        finalSubmitBtn.innerHTML = origText;
-        finalSubmitBtn.disabled = false;
-      });
+        });
     });
   }
 
@@ -1396,10 +1396,10 @@ function initDateSlotInteractions() {
   const grid = document.getElementById('slotDaysGrid');
 
   const curDate = new Date();
-  const TODAY = { 
-    year: curDate.getFullYear(), 
-    month: curDate.getMonth(), 
-    day: curDate.getDate() 
+  const TODAY = {
+    year: curDate.getFullYear(),
+    month: curDate.getMonth(),
+    day: curDate.getDate()
   };
   let viewYear = TODAY.year;
   let viewMonth = TODAY.month;
@@ -1926,7 +1926,7 @@ function syncGlobalProfileHeader() {
       if (p.fullName) {
         document.querySelectorAll('.user-name, .dropdown-user-name, .drawer-profile-info h5').forEach(el => el.textContent = p.fullName);
       }
-    } catch(e) {}
+    } catch (e) { }
   }
 }
 

@@ -199,10 +199,21 @@ body.schedule-body {
   transform: scale(1.06);
 }
 
-.schedule-stat-card.green:hover { border-color: #86efac; }
-.schedule-stat-card.blue:hover { border-color: #93c5fd; }
-.schedule-stat-card.amber:hover { border-color: #fde68a; }
-.schedule-stat-card.purple:hover { border-color: #d8b4fe; }
+.schedule-stat-card.green:hover {
+  border-color: #86efac;
+}
+
+.schedule-stat-card.blue:hover {
+  border-color: #93c5fd;
+}
+
+.schedule-stat-card.amber:hover {
+  border-color: #fde68a;
+}
+
+.schedule-stat-card.purple:hover {
+  border-color: #d8b4fe;
+}
 
 /* Active Selection on Click */
 .schedule-stat-card.active-mode {
@@ -244,10 +255,21 @@ body.schedule-body {
   gap: 1.25rem;
 }
 
-.stat-detail-panel.theme-green { border-left-color: #166534; }
-.stat-detail-panel.theme-blue { border-left-color: #2563eb; }
-.stat-detail-panel.theme-amber { border-left-color: #d97706; }
-.stat-detail-panel.theme-purple { border-left-color: #7c3aed; }
+.stat-detail-panel.theme-green {
+  border-left-color: #166534;
+}
+
+.stat-detail-panel.theme-blue {
+  border-left-color: #2563eb;
+}
+
+.stat-detail-panel.theme-amber {
+  border-left-color: #d97706;
+}
+
+.stat-detail-panel.theme-purple {
+  border-left-color: #7c3aed;
+}
 
 .stat-detail-main {
   display: flex;
@@ -268,10 +290,25 @@ body.schedule-body {
   font-size: 1.25rem;
 }
 
-.stat-detail-icon-wrap.green { background: #eaf4ed; color: #1e6b3b; }
-.stat-detail-icon-wrap.blue { background: #eef5ff; color: #1e5bb8; }
-.stat-detail-icon-wrap.amber { background: #fef3d6; color: #c47614; }
-.stat-detail-icon-wrap.purple { background: #f4ecfd; color: #7838b8; }
+.stat-detail-icon-wrap.green {
+  background: #eaf4ed;
+  color: #1e6b3b;
+}
+
+.stat-detail-icon-wrap.blue {
+  background: #eef5ff;
+  color: #1e5bb8;
+}
+
+.stat-detail-icon-wrap.amber {
+  background: #fef3d6;
+  color: #c47614;
+}
+
+.stat-detail-icon-wrap.purple {
+  background: #f4ecfd;
+  color: #7838b8;
+}
 
 .stat-detail-icon-wrap svg {
   width: 22px;
@@ -310,10 +347,25 @@ body.schedule-body {
   letter-spacing: 0.02em;
 }
 
-.stat-detail-badge.green { background: #dcfce7; color: #166534; }
-.stat-detail-badge.blue { background: #dbeafe; color: #1e40af; }
-.stat-detail-badge.amber { background: #fef3c7; color: #92400e; }
-.stat-detail-badge.purple { background: #f3e8ff; color: #6b21a8; }
+.stat-detail-badge.green {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.stat-detail-badge.blue {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.stat-detail-badge.amber {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.stat-detail-badge.purple {
+  background: #f3e8ff;
+  color: #6b21a8;
+}
 
 .stat-detail-desc {
   font-size: 0.85rem;
@@ -429,6 +481,7 @@ body.schedule-body {
     gap: 0.95rem;
     padding: 1rem 1.15rem;
   }
+
   .stat-detail-actions {
     justify-content: space-between;
   }
@@ -615,7 +668,7 @@ body.schedule-body {
 /* Day Names Header */
 .board-weekdays-row {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   background: #f8faf8;
   border-bottom: 1px solid #e5ece7;
   text-align: center;
@@ -629,6 +682,8 @@ body.schedule-body {
 .weekday-header-cell {
   padding: 0.85rem 0.5rem;
   border-right: 1px solid #e9f0eb;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .weekday-header-cell:last-child {
@@ -638,11 +693,13 @@ body.schedule-body {
 /* Board Days Grid */
 .board-days-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .board-day-box {
   min-height: 125px;
+  min-width: 0;
+  overflow: hidden;
   border-right: 1px solid #e9f0eb;
   border-bottom: 1px solid #e9f0eb;
   padding: 0.65rem;
@@ -671,6 +728,7 @@ body.schedule-body {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 0.45rem;
+  min-width: 0;
 }
 
 .day-num {
@@ -696,6 +754,7 @@ body.schedule-body {
   font-weight: 700;
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
+  white-space: nowrap;
 }
 
 .day-status-indicator.full {
@@ -714,6 +773,7 @@ body.schedule-body {
   flex-direction: column;
   gap: 0.35rem;
   overflow: hidden;
+  min-width: 0;
 }
 
 .event-chip {
@@ -731,6 +791,18 @@ body.schedule-body {
   overflow: hidden;
   transition: var(--transition);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.event-chip span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  flex: 1;
 }
 
 .event-chip:hover {

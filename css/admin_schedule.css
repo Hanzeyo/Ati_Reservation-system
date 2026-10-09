@@ -138,10 +138,21 @@
   border-radius: 50%;
 }
 
-.legend-dot.green { background: #16a34a; }
-.legend-dot.amber { background: #d97706; }
-.legend-dot.blue { background: #2563eb; }
-.legend-dot.red { background: #dc2626; }
+.legend-dot.green {
+  background: #16a34a;
+}
+
+.legend-dot.amber {
+  background: #d97706;
+}
+
+.legend-dot.blue {
+  background: #2563eb;
+}
+
+.legend-dot.red {
+  background: #dc2626;
+}
 
 /* Calendar Board Structure */
 .admin-calendar-board {
@@ -154,7 +165,7 @@
 
 .board-weekdays-row {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   background: #f5f9f6;
   border-bottom: 1.5px solid #dce8e0;
 }
@@ -167,11 +178,13 @@
   color: #19462b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .board-days-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   background: #e4eee7;
   gap: 1px;
 }
@@ -179,6 +192,8 @@
 .calendar-day-cell {
   background: #ffffff;
   min-height: 125px;
+  min-width: 0;
+  overflow: hidden;
   padding: 0.65rem 0.65rem 0.75rem;
   display: flex;
   flex-direction: column;
@@ -246,6 +261,8 @@
   flex-direction: column;
   gap: 0.35rem;
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .calendar-event-chip {
@@ -261,6 +278,9 @@
   gap: 1px;
   border-left: 3px solid transparent;
   text-align: left;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .calendar-event-chip:hover {

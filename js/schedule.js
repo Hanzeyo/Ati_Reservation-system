@@ -385,6 +385,16 @@ function initMasterCalendar() {
       daysContainer.appendChild(dayBox);
     }
 
+    // Next month padding days to complete 7-day grid row
+    const totalRendered = firstDayIndex + totalDays;
+    const remainingDays = (7 - (totalRendered % 7)) % 7;
+    for (let nextDay = 1; nextDay <= remainingDays; nextDay++) {
+      const box = document.createElement('div');
+      box.className = 'board-day-box outside-month';
+      box.innerHTML = `<div class="day-header-line"><span class="day-num">${nextDay}</span></div>`;
+      daysContainer.appendChild(box);
+    }
+
     // Attach click listeners to chips
     document.querySelectorAll('.event-chip').forEach(chip => {
       chip.addEventListener('click', (e) => {
@@ -942,7 +952,7 @@ function syncGlobalProfileHeader() {
       if (p.fullName) {
         document.querySelectorAll('.user-name, .dropdown-user-name, .drawer-profile-info h5').forEach(el => el.textContent = p.fullName);
       }
-    } catch(e) {}
+    } catch (e) { }
   }
 }
 
