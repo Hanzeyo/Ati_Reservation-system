@@ -1719,6 +1719,15 @@ function initDateSlotInteractions() {
 
       grid.appendChild(btn);
     }
+
+    // Trailing spacer slots
+    const totalRendered = firstDayOfWeek + totalDaysInMonth;
+    const remainingDays = (7 - (totalRendered % 7)) % 7;
+    for (let i = 0; i < remainingDays; i++) {
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'slot-day-btn empty';
+      grid.appendChild(emptyDiv);
+    }
   }
 
   // Month navigation button handlers

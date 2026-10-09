@@ -25,9 +25,9 @@ if ($isAdmin || isset($_GET['admin'])) {
   <title>Master Schedule - Agricultural Training Institute</title>
   <meta name="description"
     content="Official institution-wide master schedule and facility reservation calendar for ATI halls, meeting rooms, and dormitory suites.">
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/booking.css">
-  <link rel="stylesheet" href="css/schedule.css">
+  <link rel="stylesheet" href="css/style.css?v=2">
+  <link rel="stylesheet" href="css/booking.css?v=2">
+  <link rel="stylesheet" href="css/schedule.css?v=2">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=<?php echo time(); ?>">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>

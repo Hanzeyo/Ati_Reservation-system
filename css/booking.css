@@ -1233,7 +1233,7 @@ body.booking-body {
 
 .slot-weekdays-row {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   text-align: center;
   font-size: 0.82rem;
   font-weight: 700;
@@ -1243,7 +1243,7 @@ body.booking-body {
 
 .slot-days-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 6px;
 }
 
@@ -1258,6 +1258,7 @@ body.booking-body {
   cursor: pointer;
   transition: var(--transition);
   border: 1.5px solid transparent;
+  min-width: 0;
 }
 
 .slot-day-btn.empty {

@@ -165,6 +165,15 @@ function initCalendar() {
 
       daysGrid.appendChild(dayBtn);
     }
+
+    // Trailing spacer slots
+    const totalRendered = firstDayIndex + totalDays;
+    const remainingDays = (7 - (totalRendered % 7)) % 7;
+    for (let i = 0; i < remainingDays; i++) {
+      const emptyDiv = document.createElement('div');
+      emptyDiv.className = 'cal-day empty';
+      daysGrid.appendChild(emptyDiv);
+    }
   }
 
   function updateDetailsPanel(day, month, year, schedule) {

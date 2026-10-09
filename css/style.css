@@ -840,7 +840,7 @@ button {
 
 .calendar-weekdays {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   text-align: center;
   font-weight: 700;
   font-size: 0.78rem;
@@ -850,7 +850,7 @@ button {
 
 .calendar-days-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 3px;
 }
 
@@ -868,6 +868,7 @@ button {
   font-weight: 600;
   color: #2d3e34;
   cursor: pointer;
+  min-width: 0;
   position: relative;
   transition: var(--transition);
 }
