@@ -1022,7 +1022,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             placeholder="e.g. Regional Agricultural Extension Coordinators Training 2026" style="padding-left: 1rem;">
         </div>
 
-        <div style="display: grid; grid-template-columns: minmax(180px, 240px) 1fr; gap: 1.25rem; margin-bottom: 1.15rem; align-items: start;">
+        <div style="display: grid; grid-template-columns: minmax(160px, 200px) minmax(280px, 420px); gap: 1.25rem; margin-bottom: 1.15rem; align-items: start;">
           <div class="auth-field-group" style="margin-bottom: 0;">
             <label class="auth-field-label" for="eventPaxInput" id="eventPaxLabel">Estimated Number of Attendees</label>
             <input type="number" id="eventPaxInput" class="auth-input" placeholder="e.g. 120"

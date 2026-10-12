@@ -1091,25 +1091,26 @@ body.booking-body {
 
 .wizard-form-card {
   background: #ffffff;
-  border-radius: 16px;
+  border-radius: 14px;
   border: 1.5px solid #e1e9e3;
-  padding: 2.25rem;
-  margin-bottom: 2rem;
+  padding: 1.6rem 2rem 1.85rem;
+  margin: 0 auto 2rem;
+  max-width: 960px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 .wizard-form-title {
   font-family: var(--font-serif);
-  font-size: 1.45rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: #152c1e;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .wizard-form-desc {
-  font-size: 0.92rem;
+  font-size: 0.86rem;
   color: #556c5e;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.35rem;
 }
 
 /* ==========================================================================
@@ -2862,7 +2863,7 @@ body.booking-body {
 }
 
 .dept-search-box {
-  padding: 0.45rem 0.6rem;
+  padding: 0.35rem 0.55rem;
   background: #f8faf9;
   border-bottom: 1px solid #e1ece4;
   display: flex;
@@ -2871,8 +2872,8 @@ body.booking-body {
 }
 
 .dept-search-box svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   stroke: #668372;
 }
 
@@ -2880,36 +2881,36 @@ body.booking-body {
   width: 100%;
   border: none;
   background: transparent;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-family: inherit;
   color: #173b26;
   outline: none;
 }
 
 .dept-options-scroll {
-  max-height: 220px;
+  max-height: 175px;
   overflow-y: auto;
-  padding: 0.35rem 0.25rem;
+  padding: 0.25rem 0.2rem;
 }
 
 .dept-group-title {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #0d4626;
   background: #eff7f2;
-  padding: 0.3rem 0.65rem;
+  padding: 0.25rem 0.55rem;
   border-radius: 4px;
-  margin: 0.35rem 0.35rem 0.2rem 0.35rem;
+  margin: 0.25rem 0.25rem 0.15rem 0.25rem;
 }
 
 .dept-option-item {
-  padding: 0.42rem 0.65rem;
-  font-size: 0.81rem;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.78rem;
   color: #213d2c;
   font-weight: 500;
-  border-radius: 6px;
+  border-radius: 5px;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
   margin: 1px 0;

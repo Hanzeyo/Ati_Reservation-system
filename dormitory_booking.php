@@ -848,7 +848,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
               style="width: 100%; padding: 0.85rem; border: 1.5px solid #c9ded0; border-radius: 8px;">
           </div>
 
-          <div style="display: grid; grid-template-columns: minmax(180px, 240px) 1fr; gap: 1.25rem; margin-bottom: 1.15rem; align-items: start;">
+          <div style="display: grid; grid-template-columns: minmax(160px, 200px) minmax(280px, 420px); gap: 1.25rem; margin-bottom: 1.15rem; align-items: start;">
             <div>
               <label for="dormGuestCount" class="auth-field-label">Total Guests Staying *</label>
               <input type="number" id="dormGuestCount" class="step-text-input" value="16" min="1" max="48"
