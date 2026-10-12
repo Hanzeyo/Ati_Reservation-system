@@ -1690,6 +1690,139 @@ button {
   }
 }
 
+@media (max-width: 640px) {
+  .hero-section {
+    padding: 2.25rem 0 3rem;
+  }
+
+  .hero-title {
+    font-size: 1.85rem;
+    line-height: 1.22;
+  }
+
+  .hero-subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .btn-hero-primary,
+  .btn-hero-secondary {
+    width: 100%;
+    justify-content: center;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.92rem;
+  }
+
+  .hero-features-strip {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .hero-pill-badge {
+    bottom: -14px;
+    right: 50%;
+    transform: translateX(50%);
+    font-size: 0.78rem;
+    padding: 0.35rem 0.85rem;
+  }
+
+  .section {
+    padding: 3rem 0;
+  }
+
+  .section-title {
+    font-size: 1.65rem;
+  }
+
+  .calendar-card {
+    padding: 1rem 0.75rem;
+  }
+
+  .calendar-weekdays {
+    font-size: 0.75rem;
+    gap: 2px;
+  }
+
+  .calendar-days-grid {
+    gap: 3px;
+  }
+
+  .calendar-day-btn {
+    min-height: 38px;
+    font-size: 0.82rem;
+  }
+
+  .calendar-legend {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 0.75rem;
+    justify-items: center;
+    padding-top: 0.75rem;
+  }
+
+  .availability-preview-card {
+    padding: 1.25rem 1rem;
+  }
+
+  .modal-card {
+    width: 95% !important;
+    max-width: 95% !important;
+    margin: 1rem auto;
+    border-radius: 16px;
+    overflow-y: auto;
+    max-height: 90vh;
+  }
+
+  .modal-card.modal-lg {
+    width: 95% !important;
+  }
+
+  .modal-facility-img {
+    height: 180px;
+    object-fit: cover;
+  }
+
+  .modal-facility-content {
+    padding: 1.25rem 1rem;
+  }
+
+  .facility-amenities-list {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .site-header .brand-text h1 {
+    font-size: 0.92rem;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-topbar-signin span {
+    display: none;
+  }
+
+  .mobile-topbar-signin {
+    padding: 0.45rem 0.55rem;
+  }
+
+  .calendar-day-btn {
+    min-height: 34px;
+    font-size: 0.76rem;
+  }
+}
+
 .mobile-topbar-signin {
   display: none;
 }

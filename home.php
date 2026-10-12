@@ -413,6 +413,38 @@ require_once __DIR__ . '/includes/auth_guard.php';
         justify-content: center;
       }
     }
+
+    @media (max-width: 480px) {
+      .portal-category-wrapper {
+        padding: 0 0.85rem;
+      }
+
+      .portal-category-intro-card {
+        padding: 1rem 0.85rem;
+      }
+
+      .cat-sec-title {
+        font-size: 1.25rem;
+      }
+
+      .cat-sec-desc {
+        font-size: 0.82rem;
+      }
+
+      .portal-cat-card {
+        padding: 1rem;
+      }
+
+      .cat-card-title {
+        font-size: 1.25rem !important;
+      }
+
+      .status-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.65rem;
+      }
+    }
   </style>
 </head>
 
