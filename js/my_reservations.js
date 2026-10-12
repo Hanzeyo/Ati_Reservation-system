@@ -453,6 +453,9 @@ function initCardModals() {
       const division = card.dataset.division || 'Career Development Division (CDD)';
       const statusText = card.dataset.statusText || 'Pending Administrative Review';
       const statusClass = card.dataset.status || 'pending';
+      const docPath = card.dataset.docPath || '';
+      const notes = card.dataset.specialNotes || '';
+      const remarks = card.dataset.remarks || '';
 
       // Populate modal
       document.getElementById('modalResRef').textContent = ref;
@@ -467,6 +470,45 @@ function initCardModals() {
       if (modalBadge) {
         modalBadge.className = `res-status-badge ${statusClass}`;
         modalBadge.innerHTML = `<span class="status-dot-pulse"></span><span>${statusText}</span>`;
+      }
+
+      // Populate Document Attachment
+      const docLink = document.getElementById('modalDocLink');
+      const docFileName = document.getElementById('modalDocFileName');
+      if (docPath) {
+        const parts = docPath.split('/');
+        if (docFileName) docFileName.textContent = parts[parts.length - 1];
+        if (docLink) {
+          docLink.href = docPath;
+          docLink.style.display = 'inline-flex';
+        }
+      } else {
+        if (docFileName) docFileName.textContent = 'No document uploaded';
+        if (docLink) docLink.style.display = 'none';
+      }
+
+      // Populate Special Notes
+      const notesSection = document.getElementById('modalNotesSection');
+      const notesContent = document.getElementById('modalNotesContent');
+      if (notesSection && notesContent) {
+        if (notes && notes.trim() !== '') {
+          notesContent.textContent = notes;
+          notesSection.style.display = 'block';
+        } else {
+          notesSection.style.display = 'none';
+        }
+      }
+
+      // Populate Admin Remarks
+      const remarksSection = document.getElementById('modalRemarksSection');
+      const remarksContent = document.getElementById('modalRemarksContent');
+      if (remarksSection && remarksContent) {
+        if (remarks && remarks.trim() !== '') {
+          remarksContent.textContent = remarks;
+          remarksSection.style.display = 'block';
+        } else {
+          remarksSection.style.display = 'none';
+        }
       }
 
       // Configure routing steps display inside modal
@@ -695,40 +737,59 @@ function initCancellationWorkflow() {
     btnConfirmCancel.addEventListener('click', () => {
       if (!cardToCancel) return;
 
+      const ref = cardToCancel.dataset.ref;
       const reason = document.getElementById('cancelReasonSelect')?.value || 'Schedule conflict';
 
-      // Update card state
-      cardToCancel.dataset.status = 'cancelled';
-      const badge = cardToCancel.querySelector('.res-status-badge');
-      if (badge) {
-        badge.className = 'res-status-badge cancelled';
-        badge.innerHTML = `<span class="status-dot-pulse"></span><span>Cancelled by Requestor</span>`;
-      }
+      btnConfirmCancel.disabled = true;
+      btnConfirmCancel.textContent = 'Processing...';
 
-      // Update actions toolbar on card
-      const actionsRight = cardToCancel.querySelector('.res-actions-right');
-      if (actionsRight) {
-        actionsRight.innerHTML = `
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-            <span>View Cancellation Info</span>
-          </button>
-        `;
-      }
+      const formData = new FormData();
+      formData.append('reference_no', ref);
+      formData.append('reason', reason);
 
-      // Re-initialize details click for the mutated button
-      initCardModals();
+      fetch('ajax/cancel_reservation.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        btnConfirmCancel.disabled = false;
+        btnConfirmCancel.textContent = 'Confirm Cancellation';
 
-      // Close modal
-      cancelModal.classList.remove('show');
-      document.body.style.overflow = '';
+        if (data.success) {
+          // Update card state in DOM
+          cardToCancel.dataset.status = 'cancelled';
+          cardToCancel.dataset.statusText = 'Cancelled by Requestor';
+          const badge = cardToCancel.querySelector('.res-status-badge');
+          if (badge) {
+            badge.className = 'res-status-badge cancelled';
+            badge.innerHTML = `<span class="status-dot-pulse"></span><span>Cancelled by Requestor</span>`;
+          }
 
-      // Update KPI counters
-      updateKpiCounts();
-      applyAllFilters();
+          // Remove cancel button from card side actions
+          const cancelBtn = cardToCancel.querySelector('.js-cancel-res');
+          if (cancelBtn) cancelBtn.remove();
 
-      showToast(`Reservation ${cardToCancel.dataset.ref} was cancelled successfully.`);
-      cardToCancel = null;
+          // Close modal
+          cancelModal.classList.remove('show');
+          document.body.style.overflow = '';
+
+          // Update KPI counters
+          updateKpiCounts();
+          applyAllFilters();
+
+          showToast(`Reservation ${ref} was cancelled successfully.`);
+        } else {
+          showToast(data.message || 'Failed to cancel reservation.');
+        }
+        cardToCancel = null;
+      })
+      .catch(err => {
+        btnConfirmCancel.disabled = false;
+        btnConfirmCancel.textContent = 'Confirm Cancellation';
+        showToast('Network error while cancelling reservation.');
+        cardToCancel = null;
+      });
     });
   }
 }
@@ -754,21 +815,62 @@ function initCopyButtons() {
 }
 
 /* ==========================================================================
-   8. Download Slip Simulator
+   8. Download & View Official Slip Modal
    ========================================================================== */
 function initDownloadSlip() {
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.js-download-slip');
     if (!btn) return;
 
-    const ref = btn.dataset.ref || 'ATI-RES';
-    showToast(`Generating official reservation slip for ${ref}...`);
+    const ref = btn.dataset.ref;
+    if (!ref) return;
 
-    setTimeout(() => {
-      showToast(`Reservation slip ${ref}.pdf generated & downloaded!`);
-    }, 1200);
+    // Find card corresponding to this reference code
+    const card = document.querySelector(`.res-card[data-ref="${ref}"]`);
+    if (!card) return;
+
+    const title = card.querySelector('.res-event-title')?.textContent || 'Institutional Activity';
+    const venue = card.dataset.venueTitle || 'ATI Facility';
+    const dates = card.dataset.dates || 'Scheduled Dates';
+    const time = card.dataset.time || '08:00 AM – 05:00 PM';
+    const division = card.dataset.division || 'ATI Requesting Unit';
+    const pax = card.dataset.pax || 'Attendees';
+    const statusText = card.dataset.statusText || 'Pending';
+    const notes = card.dataset.specialNotes || 'Standard venue arrangement';
+
+    // Populate Printable Slip Modal
+    const elRef = document.getElementById('slipRefCode');
+    const elTitle = document.getElementById('slipEventTitle');
+    const elVenue = document.getElementById('slipVenueName');
+    const elDates = document.getElementById('slipScheduleDates');
+    const elTime = document.getElementById('slipTimeSlot');
+    const elDiv = document.getElementById('slipApplicantDivision');
+    const elPax = document.getElementById('slipPaxCount');
+    const elStatus = document.getElementById('slipStatusText');
+    const elNotes = document.getElementById('slipNotes');
+
+    if (elRef) elRef.textContent = ref;
+    if (elTitle) elTitle.textContent = title;
+    if (elVenue) elVenue.textContent = venue;
+    if (elDates) elDates.textContent = dates;
+    if (elTime) elTime.textContent = time;
+    if (elDiv) elDiv.textContent = division;
+    if (elPax) elPax.textContent = pax;
+    if (elStatus) elStatus.textContent = statusText;
+    if (elNotes) elNotes.textContent = notes && notes.trim() !== '' ? notes : 'Standard venue arrangement';
+
+    // Show slip modal
+    const slipModal = document.getElementById('slipModal');
+    if (slipModal) {
+      slipModal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
   });
 }
+
+window.printSlipDocument = function () {
+  window.print();
+};
 
 /* ==========================================================================
    9. Helper Toast Notification

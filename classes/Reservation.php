@@ -76,14 +76,25 @@ class Reservation extends BaseModel {
         return false;
     }
 
-    public function checkAvailability($facility_id, $start_date, $end_date) {
-        $query = "SELECT id FROM " . $this->table_name . " 
-                  WHERE facility_id = ? AND status IN ('Approved', 'Completed') 
-                  AND (start_date <= ? AND end_date >= ?)";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $facility_id);
-        $stmt->bindParam(2, $end_date);
-        $stmt->bindParam(3, $start_date);
+    public function checkAvailability($facility_id, $start_date, $end_date, $room_id = null) {
+        if ($room_id) {
+            $query = "SELECT id, event_title, start_date, end_date FROM " . $this->table_name . " 
+                      WHERE facility_id = ? AND room_id = ? AND status IN ('Approved', 'Completed') 
+                      AND (start_date <= ? AND end_date >= ?)";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(1, $facility_id);
+            $stmt->bindParam(2, $room_id);
+            $stmt->bindParam(3, $end_date);
+            $stmt->bindParam(4, $start_date);
+        } else {
+            $query = "SELECT id, event_title, start_date, end_date FROM " . $this->table_name . " 
+                      WHERE facility_id = ? AND (room_id IS NULL OR room_id = 0) AND status IN ('Approved', 'Completed') 
+                      AND (start_date <= ? AND end_date >= ?)";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(1, $facility_id);
+            $stmt->bindParam(2, $end_date);
+            $stmt->bindParam(3, $start_date);
+        }
         $stmt->execute();
         return $stmt->rowCount() == 0;
     }

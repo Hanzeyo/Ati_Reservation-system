@@ -13,6 +13,42 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
 } else {
   $activeType = 'all';
 }
+
+$userId = $_SESSION['user_id'] ?? 1;
+
+// Fetch reservations for the current user joined with facilities and rooms
+$query = "SELECT r.*, 
+                 f.name AS facility_name, 
+                 f.type AS facility_type,
+                 rm.room_number,
+                 rm.floor AS room_floor,
+                 u.full_name,
+                 u.office_agency
+          FROM reservations r
+          LEFT JOIN facilities f ON r.facility_id = f.id
+          LEFT JOIN rooms rm ON r.room_id = rm.id
+          LEFT JOIN users u ON r.user_id = u.id
+          WHERE r.user_id = :user_id
+          ORDER BY r.id DESC";
+
+$stmt = $db->prepare($query);
+$stmt->execute([':user_id' => $userId]);
+$reservationsList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Calculate dynamic stats
+$statsTotal = count($reservationsList);
+$statsPending = 0;
+$statsApproved = 0;
+$statsCompleted = 0;
+$statsCancelled = 0;
+
+foreach ($reservationsList as $resItem) {
+    $st = strtolower($resItem['status'] ?? 'pending');
+    if ($st === 'pending') $statsPending++;
+    elseif ($st === 'approved') $statsApproved++;
+    elseif ($st === 'completed') $statsCompleted++;
+    elseif ($st === 'cancelled') $statsCancelled++;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -87,7 +123,7 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
           <span>My Reservations</span>
-          <span class="nav-badge-count" id="navBadgeFacilityCount">4</span>
+          <span class="nav-badge-count" id="navBadgeFacilityCount"><?= $statsTotal ?></span>
         </a>
 
         <!-- Master Schedule -->
@@ -196,10 +232,10 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
       <div class="drawer-body">
         <!-- User Profile Card -->
         <div class="drawer-profile-card">
-          <div class="drawer-avatar">JD</div>
+          <div class="drawer-avatar"><?= getUserInitials($_SESSION['full_name'] ?? 'Juan Dela Cruz') ?></div>
           <div class="drawer-profile-info">
-            <h5>Juan Dela Cruz</h5>
-            <p>ATI Staff (CDD)</p>
+            <h5><?= htmlspecialchars($_SESSION['full_name'] ?? 'Juan Dela Cruz') ?></h5>
+            <p><?= htmlspecialchars(ucfirst(str_replace('_', ' ', $_SESSION['role'] ?? 'User'))) ?></p>
             <span class="drawer-badge">Verified Personnel</span>
           </div>
         </div>
@@ -241,7 +277,7 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
               </svg>
             </div>
             <span class="drawer-link-text">My Reservations</span>
-            <span class="drawer-badge-count">4</span>
+            <span class="drawer-badge-count"><?= $statsTotal ?></span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -369,7 +405,7 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
             <span class="seg-title">Active Reservations</span>
             <span class="seg-subtitle">Pending Clearances &amp; Upcoming Confirmed Schedules</span>
           </div>
-          <span class="seg-count-badge">4</span>
+          <span class="seg-count-badge"><?= $statsTotal ?></span>
         </a>
 
         <!-- Tab 2: Booking History (Link to History Archive) -->
@@ -384,7 +420,7 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
             <span class="seg-title">Booking History</span>
             <span class="seg-subtitle">Completed Activities &amp; Cancelled Requests Archive</span>
           </div>
-          <span class="seg-count-badge blue">6</span>
+          <span class="seg-count-badge blue"><?= $statsCompleted + $statsCancelled ?></span>
         </a>
       </div>
     </div>
@@ -426,7 +462,7 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiTotal">6</span>
+          <span class="stat-value" id="kpiTotal"><?= $statsTotal ?></span>
           <span class="stat-label">Total Reservations</span>
         </div>
       </div>
@@ -440,7 +476,7 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiPending">3</span>
+          <span class="stat-value" id="kpiPending"><?= $statsPending ?></span>
           <span class="stat-label">Pending Clearance</span>
         </div>
       </div>
@@ -454,7 +490,7 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiApproved">2</span>
+          <span class="stat-value" id="kpiApproved"><?= $statsApproved ?></span>
           <span class="stat-label">Confirmed &amp; Active</span>
         </div>
       </div>
@@ -467,7 +503,7 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiCompleted">1</span>
+          <span class="stat-value" id="kpiCompleted"><?= $statsCompleted ?></span>
           <span class="stat-label">Completed Events</span>
         </div>
       </div>
@@ -591,654 +627,219 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
          ========================================================================== -->
     <section class="reservations-container" id="reservationsList">
 
-      <!-- CARD 1: FUNCTION HALL (PENDING ADMIN REVIEW) -->
-      <article class="res-card" data-status="pending" data-category="facility" data-venue="function-hall"
-        data-ref="ATI-RES-2026-1042" data-venue-title="Function Hall" data-dates="Oct 14 - 16, 2026 (3 Days)"
-        data-time="08:00 AM - 05:00 PM (Full Day)" data-pax="120 Attendees"
-        data-division="Career Development Division (CDD)" data-status-text="Pending Administrative Clearance">
-
-        <div class="res-card-media">
-          <img src="assets/images/function_hall.jpg" alt="ATI Function Hall">
-          <span class="venue-thumb-pill">Function Hall</span>
+      <?php if (empty($reservationsList)): ?>
+        <!-- Shown if user has zero total reservations in database -->
+        <div class="empty-res-state" style="display: block; width: 100%; text-align: center; padding: 3.5rem 1.5rem; background: #fff; border-radius: 14px; border: 1.5px dashed #d0ded4;">
+          <div class="empty-res-icon" style="margin: 0 auto 1.25rem;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#175432" width="48" height="48">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <h3 style="font-size: 1.35rem; font-weight: 800; color: #173822; margin-bottom: 0.5rem;">No Reservations Yet</h3>
+          <p style="color: #557262; max-width: 460px; margin: 0 auto 1.5rem; font-size: 0.92rem;">You haven't submitted any reservation requests yet. Click below to book a training hall, function venue, or dormitory lodging.</p>
+          <a href="booking.php" class="btn-new-res-action" style="display: inline-flex; text-decoration: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Create First Reservation</span>
+          </a>
         </div>
+      <?php else: ?>
 
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag">ATI-RES-2026-1042</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-1042" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <span class="res-timestamp">&bull; Oct 02, 2026</span>
+        <?php foreach ($reservationsList as $item): 
+          $statusLower = strtolower($item['status'] ?? 'pending');
+          $isDorm = ($item['facility_type'] === 'dormitories') || !empty($item['room_id']);
+          $category = $isDorm ? 'dormitory' : 'facility';
+          
+          $venueName = $item['facility_name'] ?? 'Facility';
+          $slug = 'function-hall';
+          $venueThumb = 'assets/images/function_hall.jpg';
+          if (stripos($venueName, 'boardroom') !== false) {
+              $slug = 'boardroom';
+              $venueThumb = 'assets/images/boardroom.jpg';
+          } elseif (stripos($venueName, 'training') !== false) {
+              $slug = 'training-hall';
+              $venueThumb = 'assets/images/training_hall.jpg';
+          } elseif (stripos($venueName, 'mess') !== false) {
+              $slug = 'mess-hall';
+              $venueThumb = 'assets/images/mess_hall.jpg';
+          } elseif ($isDorm) {
+              $slug = 'dormitory';
+              $venueThumb = 'assets/images/dormitory.jpg';
+          }
+
+          $startTs = strtotime($item['start_date']);
+          $endTs = strtotime($item['end_date'] ?: $item['start_date']);
+          $daysCount = max(1, round(($endTs - $startTs) / 86400) + 1);
+          $daysSuffix = $daysCount . ($daysCount > 1 ? ' Days' : ' Day');
+          if ($startTs === $endTs) {
+              $formattedDates = date('M d, Y', $startTs) . " (1 Day)";
+          } else {
+              $formattedDates = date('M d', $startTs) . ' – ' . date('M d, Y', $endTs) . " ({$daysSuffix})";
+          }
+
+          $paxText = ($item['pax_count'] ?: 0) . ' Attendees';
+          $divisionText = $item['office_agency'] ?: 'ATI Personnel';
+          $eventTitle = $item['event_title'] ?: 'Official Institutional Activity';
+          $timeSlotText = $item['time_slot'] ?: '08:00 AM – 05:00 PM';
+          $createdDateText = date('M d, Y', strtotime($item['created_at']));
+
+          $statusBadgeClass = $statusLower;
+          if ($statusLower === 'approved') {
+              $statusBadgeText = 'Confirmed & Approved';
+          } elseif ($statusLower === 'completed') {
+              $statusBadgeText = 'Completed & Archived';
+          } elseif ($statusLower === 'cancelled') {
+              $statusBadgeText = 'Cancelled by Requestor';
+          } elseif ($statusLower === 'rejected') {
+              $statusBadgeText = 'Disapproved / Returned';
+          } else {
+              $statusBadgeText = 'Pending Administrative Clearance';
+          }
+        ?>
+
+        <!-- RESERVATION CARD -->
+        <article class="res-card" 
+          data-status="<?= htmlspecialchars($statusLower) ?>" 
+          data-category="<?= htmlspecialchars($category) ?>" 
+          data-venue="<?= htmlspecialchars($slug) ?>"
+          data-ref="<?= htmlspecialchars($item['reference_no']) ?>" 
+          data-venue-title="<?= htmlspecialchars($venueName . (!empty($item['room_number']) ? ' - Room ' . $item['room_number'] : '')) ?>" 
+          data-dates="<?= htmlspecialchars($formattedDates) ?>"
+          data-time="<?= htmlspecialchars($timeSlotText) ?>" 
+          data-pax="<?= htmlspecialchars($paxText) ?>"
+          data-division="<?= htmlspecialchars($divisionText) ?>" 
+          data-status-text="<?= htmlspecialchars($statusBadgeText) ?>"
+          data-doc-path="<?= htmlspecialchars($item['document_path'] ?? '') ?>"
+          data-special-notes="<?= htmlspecialchars($item['special_notes'] ?? '') ?>"
+          data-remarks="<?= htmlspecialchars($item['admin_remarks'] ?? '') ?>">
+
+          <div class="res-card-media">
+            <img src="<?= htmlspecialchars($venueThumb) ?>" alt="<?= htmlspecialchars($venueName) ?>">
+            <span class="venue-thumb-pill <?= $isDorm ? 'dorm-pill' : '' ?>"><?= htmlspecialchars($venueName) ?></span>
+          </div>
+
+          <div class="res-card-main">
+            <div class="res-main-top">
+              <div class="res-ref-group">
+                <span class="res-ref-tag <?= $isDorm ? 'dorm-ref' : '' ?>"><?= htmlspecialchars($item['reference_no']) ?></span>
+                <button type="button" class="btn-copy-ref" data-ref="<?= htmlspecialchars($item['reference_no']) ?>" title="Copy Reference Code">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+                <span class="res-timestamp">&bull; <?= htmlspecialchars($createdDateText) ?></span>
+              </div>
+              <div class="res-status-badge <?= htmlspecialchars($statusBadgeClass) ?>">
+                <span class="status-dot-pulse"></span>
+                <span><?= htmlspecialchars($statusBadgeText) ?></span>
+              </div>
             </div>
-            <div class="res-status-badge pending">
-              <span class="status-dot-pulse"></span>
-              <span>Pending Administrative Clearance</span>
+
+            <h3 class="res-event-title"><?= htmlspecialchars($eventTitle) ?></h3>
+
+            <div class="res-details-chips">
+              <div class="res-chip-item">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span><?= htmlspecialchars($formattedDates) ?></span>
+              </div>
+              <div class="res-chip-item">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span><?= htmlspecialchars($timeSlotText) ?></span>
+              </div>
+              <div class="res-chip-item">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span><?= htmlspecialchars($paxText) ?></span>
+              </div>
+              <div class="res-chip-item">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                </svg>
+                <span><?= htmlspecialchars($divisionText) ?></span>
+              </div>
+            </div>
+
+            <!-- Mini Routing Stepper / Progress Bar -->
+            <div class="res-mini-routing">
+              <div class="routing-progress-bar">
+                <div class="progress-segment filled" title="1. Request Submitted (Done)"></div>
+                <div class="progress-segment <?= $statusLower === 'approved' || $statusLower === 'completed' ? 'filled' : 'active-pulse' ?>" title="2. Administrative Evaluation"></div>
+                <div class="progress-segment <?= $statusLower === 'approved' || $statusLower === 'completed' ? 'filled' : '' ?>" title="3. Institutional Clearance"></div>
+                <div class="progress-segment <?= $statusLower === 'completed' ? 'filled' : '' ?>" title="4. Concluded"></div>
+              </div>
+              <div class="routing-status-label">
+                <?php if ($statusLower === 'approved'): ?>
+                  <span class="routing-step-desc"><strong style="color: #15803d;">Official Status:</strong> Approved & Confirmed on Master Board</span>
+                <?php elseif ($statusLower === 'cancelled'): ?>
+                  <span class="routing-step-desc"><strong style="color: #b91c1c;">Status:</strong> Cancelled by Requestor</span>
+                <?php elseif ($statusLower === 'completed'): ?>
+                  <span class="routing-step-desc"><strong style="color: #475569;">Status:</strong> Concluded & Archived</span>
+                <?php else: ?>
+                  <span class="routing-step-desc"><strong style="color: #b45309;">Stage:</strong> Under Administrative Endorsement & Review</span>
+                <?php endif; ?>
+                <?php if (!empty($item['document_path'])): ?>
+                  <span class="routing-note">Doc Attached: <a href="<?= htmlspecialchars($item['document_path']) ?>" target="_blank" style="color: #174d2f; font-weight: 700; text-decoration: underline;">View Upload</a></span>
+                <?php endif; ?>
+              </div>
             </div>
           </div>
 
-          <h3 class="res-event-title">Regional Agricultural Extension Coordinators Training 2026</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Oct 14 – 16, 2026 (3 Days)</span>
-            </div>
-            <div class="res-chip-item">
+          <div class="res-card-side-actions">
+            <?php if ($statusLower === 'approved'): ?>
+              <button type="button" class="btn-card-action primary"
+                onclick="showGatePassModal('<?= htmlspecialchars($item['reference_no']) ?>', '<?= htmlspecialchars(addslashes($eventTitle)) ?>', '<?= htmlspecialchars(addslashes($venueName)) ?>', '<?= htmlspecialchars(addslashes($formattedDates)) ?>')">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                <span>Pass &amp; QR</span>
+              </button>
+            <?php endif; ?>
+            <button type="button" class="btn-card-action secondary js-view-details">
               <svg viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
               </svg>
-              <span>08:00 AM – 05:00 PM</span>
-            </div>
-            <div class="res-chip-item">
+              <span>View Details</span>
+            </button>
+            <button type="button" class="btn-card-action secondary js-download-slip" data-ref="<?= htmlspecialchars($item['reference_no']) ?>">
               <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                <rect x="6" y="14" width="12" height="8"></rect>
               </svg>
-              <span>120 Delegates</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>CDD</span>
-            </div>
-          </div>
-
-          <!-- Mini Routing Stepper / Progress Bar -->
-          <div class="res-mini-routing">
-            <div class="routing-progress-bar">
-              <div class="progress-segment filled" title="1. Request Submitted (Done)"></div>
-              <div class="progress-segment filled" title="2. Division Endorsed (Done)"></div>
-              <div class="progress-segment active-pulse" title="3. Admin Services Clearance (Under Evaluation)"></div>
-              <div class="progress-segment" title="4. Final Approval"></div>
-            </div>
-            <div class="routing-status-label">
-              <span class="routing-step-desc"><strong style="color: #b45309;">Step 3 of 4:</strong> Admin Services
-                Clearance (Under Evaluation)</span>
-              <span class="routing-note">Special Setup: 4 wireless mics &amp; projector</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-1042">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Download</span>
-          </button>
-          <button type="button" class="btn-card-action outline-danger js-cancel-res">
-            <svg viewBox="0 0 24 24" fill="none">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-            <span>Cancel</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- CARD 2: TRAINING HALL A (PENDING DIVISION ENDORSEMENT) -->
-      <article class="res-card" data-status="pending" data-category="facility" data-venue="training-hall"
-        data-ref="ATI-RES-2026-1039" data-venue-title="Training Hall A" data-dates="Oct 22 - 23, 2026 (2 Days)"
-        data-time="08:30 AM - 04:30 PM" data-pax="45 Attendees"
-        data-division="Partnership & Accreditation Division (PAD)" data-status-text="Pending Division Endorsement">
-
-        <div class="res-card-media">
-          <img src="assets/images/training_hall.jpg" alt="ATI Training Hall A">
-          <span class="venue-thumb-pill">Training Hall A</span>
-        </div>
-
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag">ATI-RES-2026-1039</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-1039" title="Copy Reference Code">
+              <span>Print Slip</span>
+            </button>
+            <?php if ($statusLower === 'pending' || $statusLower === 'approved'): ?>
+              <button type="button" class="btn-card-action outline-danger js-cancel-res">
                 <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
+                <span>Cancel</span>
               </button>
-              <span class="res-timestamp">&bull; Oct 01, 2026</span>
-            </div>
-            <div class="res-status-badge pending">
-              <span class="status-dot-pulse"></span>
-              <span>Pending Division Endorsement</span>
-            </div>
+            <?php endif; ?>
           </div>
+        </article>
+        <?php endforeach; ?>
 
-          <h3 class="res-event-title">Smart Agriculture Technologies Demonstration Workshop</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Oct 22 – 23, 2026 (2 Days)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span>08:30 AM – 04:30 PM</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>45 Attendees</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>PAD</span>
-            </div>
-          </div>
-
-          <!-- Mini Routing Stepper / Progress Bar -->
-          <div class="res-mini-routing">
-            <div class="routing-progress-bar">
-              <div class="progress-segment filled" title="1. Request Submitted (Done)"></div>
-              <div class="progress-segment active-pulse" title="2. Division Endorsement (In Progress)"></div>
-              <div class="progress-segment" title="3. Admin Clearance"></div>
-              <div class="progress-segment" title="4. Final Approval"></div>
-            </div>
-            <div class="routing-status-label">
-              <span class="routing-step-desc"><strong style="color: #b45309;">Step 2 of 4:</strong> Division Endorsement
-                (Awaiting Division Chief Sign)</span>
-              <span class="routing-note">Layout: Classroom style with 6 tables</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-1039">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Download</span>
-          </button>
-          <button type="button" class="btn-card-action outline-danger js-cancel-res">
-            <svg viewBox="0 0 24 24" fill="none">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-            <span>Cancel</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- CARD 3: BOARDROOM (APPROVED & CONFIRMED) -->
-      <article class="res-card" data-status="approved" data-category="facility" data-venue="boardroom"
-        data-ref="ATI-RES-2026-0985" data-venue-title="Boardroom" data-dates="Oct 08, 2026 (1 Day)"
-        data-time="09:00 AM - 05:00 PM" data-pax="25 Dignitaries" data-division="Office of the Director (OD)"
-        data-status-text="Confirmed & Approved">
-
-        <div class="res-card-media">
-          <img src="assets/images/boardroom.jpg" alt="ATI Boardroom">
-          <span class="venue-thumb-pill">Executive Boardroom</span>
-        </div>
-
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag">ATI-RES-2026-0985</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0985" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <span class="res-timestamp">&bull; Approved Sep 28, 2026</span>
-            </div>
-            <div class="res-status-badge approved">
-              <span class="status-dot-pulse"></span>
-              <span>Confirmed &amp; Approved</span>
-            </div>
-          </div>
-
-          <h3 class="res-event-title">Executive Directorate Quarterly Planning & Strategy Session</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Oct 08, 2026 (1 Day)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span>09:00 AM – 05:00 PM</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>25 Attendees</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>OD</span>
-            </div>
-          </div>
-
-          <!-- Mini Routing Stepper / Progress Bar -->
-          <div class="res-mini-routing">
-            <div class="routing-progress-bar">
-              <div class="progress-segment filled" title="1. Submitted (Done)"></div>
-              <div class="progress-segment filled" title="2. Endorsed (Done)"></div>
-              <div class="progress-segment filled" title="3. Cleared (Done)"></div>
-              <div class="progress-segment filled" title="4. Pass Issued (Done)"></div>
-            </div>
-            <div class="routing-status-label">
-              <span class="routing-step-desc"><strong style="color: #16a34a;">Step 4 of 4:</strong> Routing Complete
-                &bull; Security Pass Active</span>
-              <span class="routing-note" style="color: #15803d;">&#10003; Security guards &amp; technicians
-                notified</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action primary"
-            onclick="showGatePassModal('ATI-RES-2026-0985', 'Executive Directorate Quarterly Planning & Strategy Session', 'Executive Boardroom', 'Oct 08, 2026')">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-            <span>Gate Pass &amp; QR</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0985">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Download</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- CARD 4: DORMITORY (APPROVED & CONFIRMED) -->
-      <article class="res-card" data-status="approved" data-category="dormitory" data-venue="dormitory"
-        data-ref="ATI-RES-2026-0941" data-venue-title="ATI Dormitory (Executive Wing)"
-        data-dates="Oct 05 - 07, 2026 (2 Nights)" data-time="Check-in 02:00 PM • Check-out 12:00 PM"
-        data-pax="8 Delegates (4 Twin Rooms)" data-division="Career Development Division (CDD)"
-        data-status-text="Confirmed & Approved">
-
-        <div class="res-card-media">
-          <img src="assets/images/dormitory.jpg" alt="ATI Dormitory">
-          <span class="venue-thumb-pill dorm-pill">Dormitory (Executive)</span>
-        </div>
-
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag dorm-ref">ATI-RES-2026-0941</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0941" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <span class="res-timestamp">&bull; Approved Sep 22, 2026</span>
-            </div>
-            <div class="res-status-badge approved">
-              <span class="status-dot-pulse"></span>
-              <span>Confirmed &amp; Approved</span>
-            </div>
-          </div>
-
-          <h3 class="res-event-title">Guest Lecturers & Resource Persons Lodging (Visayas & Mindanao Trainers)</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Oct 05 – 07, 2026 (2 Nights)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span>In: 02:00 PM • Out: 12:00 PM</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>Rooms 201-204 (Exec Wing)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>8 Resource Speakers</span>
-            </div>
-          </div>
-
-          <!-- Mini Routing Stepper / Progress Bar -->
-          <div class="res-mini-routing">
-            <div class="routing-progress-bar">
-              <div class="progress-segment filled" title="1. Submitted (Done)"></div>
-              <div class="progress-segment filled" title="2. Endorsed (Done)"></div>
-              <div class="progress-segment filled" title="3. Custodian Cleared (Done)"></div>
-              <div class="progress-segment filled" title="4. Keys Ready (Done)"></div>
-            </div>
-            <div class="routing-status-label">
-              <span class="routing-step-desc"><strong style="color: #16a34a;">Step 4 of 4:</strong> Keys Allocation
-                Ready at Lobby Desk</span>
-              <span class="routing-note">Towels &amp; linens provided. Curfew: 10:00 PM</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action primary"
-            onclick="showGatePassModal('ATI-RES-2026-0941', 'Guest Lecturers & Resource Persons Lodging', 'ATI Dormitory Executive Wing', 'Oct 05 - 07, 2026')">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-            <span>Gate Pass &amp; QR</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0941">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Download</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- CARD 6: DORMITORY SUITES A & B (PENDING CUSTODIAN ALLOCATION) -->
-      <article class="res-card" data-status="pending" data-category="dormitory" data-venue="dormitory"
-        data-ref="ATI-BK-2026-1055" data-venue-title="Dormitory Suites A & B" data-dates="Nov 10 - 14, 2026 (4 Nights)"
-        data-time="Check-in 02:00 PM • Check-out 11:00 AM" data-pax="24 Trainees (12 Twin Bed Rooms)"
-        data-division="Partnership & Accreditation Division (PAD)" data-status-text="Pending Custodian Bed Allotment">
-
-        <div class="res-card-media">
-          <img src="assets/images/dormitory.jpg" alt="ATI Dormitory Suites">
-          <span class="venue-thumb-pill dorm-pill">Dormitory Suites</span>
-        </div>
-
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag dorm-ref">ATI-BK-2026-1055</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-BK-2026-1055" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <span class="res-timestamp">&bull; Oct 04, 2026</span>
-            </div>
-            <div class="res-status-badge pending">
-              <span class="status-dot-pulse"></span>
-              <span>Pending Custodian Bed Allotment</span>
-            </div>
-          </div>
-
-          <h3 class="res-event-title">National Young Farmers Camp Participant Lodging (Batch 4)</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Nov 10 – 14, 2026 (4 Nights)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span>In: 02:00 PM • Out: 11:00 AM</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>Floors 3 &amp; 4 (Suites A &amp; B)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>24 Delegates (12 Rooms)</span>
-            </div>
-          </div>
-
-          <!-- Mini Routing Stepper / Progress Bar -->
-          <div class="res-mini-routing">
-            <div class="routing-progress-bar">
-              <div class="progress-segment filled" title="1. Booking Request Submitted (Done)"></div>
-              <div class="progress-segment filled" title="2. Division Endorsed (Done)"></div>
-              <div class="progress-segment active-pulse" title="3. Dormitory Custodian Review (Under Evaluation)"></div>
-              <div class="progress-segment" title="4. Bed Allotment & Keys Release"></div>
-            </div>
-            <div class="routing-status-label">
-              <span class="routing-step-desc"><strong style="color: #b45309;">Step 3 of 4:</strong> Dormitory Custodian
-                Room & Bed Assignment in Progress</span>
-              <span class="routing-note">Gender-segregated room allocation requested. Linens requested.</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-1055">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Download</span>
-          </button>
-          <button type="button" class="btn-card-action outline-danger js-cancel-res">
-            <svg viewBox="0 0 24 24" fill="none">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-            <span>Cancel</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- CARD 5: MESS HALL (COMPLETED / HISTORICAL) -->
-      <article class="res-card" data-status="completed" data-category="facility" data-venue="mess-hall"
-        data-ref="ATI-RES-2026-0812" data-venue-title="Mess Hall" data-dates="Sep 25, 2026 (1 Day)"
-        data-time="11:00 AM - 03:00 PM" data-pax="180 Attendees" data-division="Administrative and Finance Unit"
-        data-status-text="Completed">
-
-        <div class="res-card-media">
-          <img src="assets/images/mess_hall.jpg" alt="ATI Mess Hall">
-          <span class="venue-thumb-pill">Mess Hall</span>
-        </div>
-
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag">ATI-RES-2026-0812</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0812" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <span class="res-timestamp">&bull; Concluded Sep 25, 2026</span>
-            </div>
-            <div class="res-status-badge completed">
-              <span class="status-dot-pulse"></span>
-              <span>Completed &amp; Cleared</span>
-            </div>
-          </div>
-
-          <h3 class="res-event-title">ATI Mid-Year General Assembly & Fellowship Gathering</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Sep 25, 2026 (1 Day)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span>11:00 AM – 03:00 PM</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>180 Personnel</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>Admin &amp; Finance Unit</span>
-            </div>
-          </div>
-
-          <!-- Mini Routing Stepper / Progress Bar -->
-          <div class="res-mini-routing">
-            <div class="routing-progress-bar">
-              <div class="progress-segment filled" title="1. Submitted (Done)"></div>
-              <div class="progress-segment filled" title="2. Endorsed (Done)"></div>
-              <div class="progress-segment filled" title="3. Executed (Done)"></div>
-              <div class="progress-segment filled" title="4. Concluded (Done)"></div>
-            </div>
-            <div class="routing-status-label">
-              <span class="routing-step-desc"><strong style="color: #64748b;">Event Concluded:</strong> Cleared &bull;
-                Post-Activity Inspected</span>
-              <span class="routing-note">Post-activity report: Clean &amp; undamaged</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Summary</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0812">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Download</span>
-          </button>
-        </div>
-      </article>
+      <?php endif; ?>
 
       <!-- ALTERNATIVE TABLE VIEW (TOGGLEABLE) -->
       <div class="reservations-table-wrap" id="reservationsTableWrap" style="display: none;">
@@ -1253,182 +854,63 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
             </tr>
           </thead>
           <tbody>
-            <tr class="res-table-row" data-status="pending" data-category="facility" data-venue="function-hall">
-              <td>
-                <span class="res-ref-tag">ATI-RES-2026-1042</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Function Hall
-                </div>
-              </td>
-              <td>
-                <div style="font-weight: 800; color: #142e20;">Regional Agricultural Extension Coordinators Training
-                  2026</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Career Development Division (CDD) &bull; 120 Delegates
-                </div>
-              </td>
-              <td>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Oct 14 – 16, 2026 (3 Days)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">08:00 AM – 05:00 PM</div>
-              </td>
-              <td>
-                <span class="res-status-badge pending"><span class="status-dot-pulse"></span><span>Pending Clearance
-                    (Step 3/4)</span></span>
-              </td>
-              <td style="text-align: right;">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                  <button type="button" class="btn-card-action secondary js-download-slip"
-                    data-ref="ATI-RES-2026-1042">Slip</button>
-                </div>
-              </td>
-            </tr>
+            <?php foreach ($reservationsList as $item): 
+              $statusLower = strtolower($item['status'] ?? 'pending');
+              $isDorm = ($item['facility_type'] === 'dormitories') || !empty($item['room_id']);
+              $category = $isDorm ? 'dormitory' : 'facility';
+              $venueName = $item['facility_name'] ?? 'Facility';
+              $slug = 'function-hall';
+              if (stripos($venueName, 'boardroom') !== false) $slug = 'boardroom';
+              elseif (stripos($venueName, 'training') !== false) $slug = 'training-hall';
+              elseif (stripos($venueName, 'mess') !== false) $slug = 'mess-hall';
+              elseif ($isDorm) $slug = 'dormitory';
 
-            <tr class="res-table-row" data-status="pending" data-category="facility" data-venue="training-hall">
+              $startTs = strtotime($item['start_date']);
+              $endTs = strtotime($item['end_date'] ?: $item['start_date']);
+              $formattedDates = ($startTs === $endTs) ? date('M d, Y', $startTs) : date('M d', $startTs) . ' – ' . date('M d, Y', $endTs);
+              $eventTitle = $item['event_title'] ?: 'Official Institutional Activity';
+              $divisionText = $item['office_agency'] ?: 'ATI Personnel';
+              $paxText = ($item['pax_count'] ?: 0) . ' Pax';
+              $timeSlotText = $item['time_slot'] ?: '08:00 AM – 05:00 PM';
+            ?>
+            <tr class="res-table-row" 
+                data-status="<?= htmlspecialchars($statusLower) ?>" 
+                data-category="<?= htmlspecialchars($category) ?>" 
+                data-venue="<?= htmlspecialchars($slug) ?>"
+                data-ref="<?= htmlspecialchars($item['reference_no']) ?>">
               <td>
-                <span class="res-ref-tag">ATI-RES-2026-1039</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Training Hall A
-                </div>
+                <span class="res-ref-tag <?= $isDorm ? 'dorm-ref' : '' ?>"><?= htmlspecialchars($item['reference_no']) ?></span>
+                <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;"><?= htmlspecialchars($venueName) ?></div>
               </td>
               <td>
-                <div style="font-weight: 800; color: #142e20;">Smart Agriculture Technologies Demonstration Workshop
-                </div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Partnership &amp; Accreditation Division (PAD) &bull;
-                  45 Attendees</div>
+                <div style="font-weight: 800; color: #142e20;"><?= htmlspecialchars($eventTitle) ?></div>
+                <div style="font-size: 0.78rem; color: #556e5f;"><?= htmlspecialchars($divisionText) ?> &bull; <?= htmlspecialchars($paxText) ?></div>
               </td>
               <td>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Oct 22 – 23, 2026 (2 Days)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">08:30 AM – 04:30 PM</div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;"><?= htmlspecialchars($formattedDates) ?></div>
+                <div style="font-size: 0.76rem; color: #617b6c;"><?= htmlspecialchars($timeSlotText) ?></div>
               </td>
               <td>
-                <span class="res-status-badge pending"><span class="status-dot-pulse"></span><span>Division Sign (Step
-                    2/4)</span></span>
+                <span class="res-status-badge <?= htmlspecialchars($statusLower) ?>">
+                  <span class="status-dot-pulse"></span>
+                  <span><?= htmlspecialchars(ucfirst($item['status'])) ?></span>
+                </span>
               </td>
               <td style="text-align: right;">
                 <div style="display: inline-flex; gap: 0.4rem;">
+                  <?php if ($statusLower === 'approved'): ?>
+                    <button type="button" class="btn-card-action primary"
+                      onclick="showGatePassModal('<?= htmlspecialchars($item['reference_no']) ?>', '<?= htmlspecialchars(addslashes($eventTitle)) ?>', '<?= htmlspecialchars(addslashes($venueName)) ?>', '<?= htmlspecialchars(addslashes($formattedDates)) ?>')">Pass</button>
+                  <?php endif; ?>
                   <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                  <button type="button" class="btn-card-action secondary js-download-slip"
-                    data-ref="ATI-RES-2026-1039">Slip</button>
+                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="<?= htmlspecialchars($item['reference_no']) ?>">Slip</button>
                 </div>
               </td>
             </tr>
-
-            <tr class="res-table-row" data-status="approved" data-category="facility" data-venue="boardroom">
-              <td>
-                <span class="res-ref-tag">ATI-RES-2026-0985</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Executive
-                  Boardroom</div>
-              </td>
-              <td>
-                <div style="font-weight: 800; color: #142e20;">Executive Directorate Quarterly Planning & Strategy
-                  Session</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Office of the Director (OD) &bull; 25 Dignitaries</div>
-              </td>
-              <td>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Oct 08, 2026 (1 Day)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">09:00 AM – 05:00 PM</div>
-              </td>
-              <td>
-                <span class="res-status-badge approved"><span class="status-dot-pulse"></span><span>Confirmed &amp;
-                    Approved</span></span>
-              </td>
-              <td style="text-align: right;">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action primary"
-                    onclick="showGatePassModal('ATI-RES-2026-0985', 'Executive Directorate Quarterly Planning & Strategy Session', 'Executive Boardroom', 'Oct 08, 2026')">Pass
-                    &amp; QR</button>
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr class="res-table-row" data-status="approved" data-category="dormitory" data-venue="dormitory">
-              <td>
-                <span class="res-ref-tag dorm-ref">ATI-RES-2026-0941</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Dormitory
-                  (Executive Wing)</div>
-              </td>
-              <td>
-                <div style="font-weight: 800; color: #142e20;">Guest Lecturers & Resource Persons Lodging</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Career Development Division (CDD) &bull; 8 Speakers (4
-                  Rooms)</div>
-              </td>
-              <td>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Oct 05 – 07, 2026 (2 Nights)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">In: 02:00 PM • Out: 12:00 PM</div>
-              </td>
-              <td>
-                <span class="res-status-badge approved"><span class="status-dot-pulse"></span><span>Keys Allocation
-                    Ready</span></span>
-              </td>
-              <td style="text-align: right;">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action primary"
-                    onclick="showGatePassModal('ATI-RES-2026-0941', 'Guest Lecturers & Resource Persons Lodging', 'ATI Dormitory Executive Wing', 'Oct 05 - 07, 2026')">Pass
-                    &amp; QR</button>
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr class="res-table-row" data-status="pending" data-category="dormitory" data-venue="dormitory">
-              <td>
-                <span class="res-ref-tag dorm-ref">ATI-BK-2026-1055</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Dormitory Suites
-                  A &amp; B</div>
-              </td>
-              <td>
-                <div style="font-weight: 800; color: #142e20;">National Young Farmers Camp Participant Lodging</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Partnership &amp; Accreditation Division (PAD) &bull;
-                  24 Delegates (12 Rooms)</div>
-              </td>
-              <td>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Nov 10 – 14, 2026 (4 Nights)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">In: 02:00 PM • Out: 11:00 AM</div>
-              </td>
-              <td>
-                <span class="res-status-badge pending"><span class="status-dot-pulse"></span><span>Custodian Review
-                    (Step 3/4)</span></span>
-              </td>
-              <td style="text-align: right;">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                  <button type="button" class="btn-card-action secondary js-download-slip"
-                    data-ref="ATI-BK-2026-1055">Slip</button>
-                </div>
-              </td>
-            </tr>
-
-            <tr class="res-table-row" data-status="completed" data-category="facility" data-venue="mess-hall">
-              <td>
-                <span class="res-ref-tag">ATI-RES-2026-0812</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #174d2f; margin-top: 0.2rem;">Mess Hall</div>
-              </td>
-              <td>
-                <div style="font-weight: 800; color: #142e20;">ATI Mid-Year General Assembly & Fellowship Gathering
-                </div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Administrative &amp; Finance Unit &bull; 180 Personnel
-                </div>
-              </td>
-              <td>
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Sep 25, 2026 (1 Day)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">11:00 AM – 03:00 PM</div>
-              </td>
-              <td>
-                <span class="res-status-badge completed"><span class="status-dot-pulse"></span><span>Completed &amp;
-                    Archived</span></span>
-              </td>
-              <td style="text-align: right;">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                  <button type="button" class="btn-card-action secondary js-download-slip"
-                    data-ref="ATI-RES-2026-0812">Slip</button>
-                </div>
-              </td>
-            </tr>
+            <?php endforeach; ?>
           </tbody>
         </table>
       </div>
-    </section>
-
     </section>
 
     <!-- Empty State Result -->
@@ -1500,39 +982,35 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
         </div>
 
         <!-- Attached Documents -->
-        <div style="margin-bottom: 1.5rem;">
+        <div style="margin-bottom: 1.5rem;" id="modalDocContainer">
           <h4
             style="font-size: 0.88rem; font-weight: 800; color: #174d2f; margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
-            Attached Official Documents</h4>
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem;">
-            <div
-              style="display: flex; align-items: center; gap: 0.65rem; background: #f7faf8; border: 1px solid #dce8e0; padding: 0.7rem 0.9rem; border-radius: 8px;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
-              <div style="overflow: hidden;">
-                <div
-                  style="font-size: 0.82rem; font-weight: 700; color: #1a2f22; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                  Activity_Design_Approved.pdf</div>
-                <div style="font-size: 0.7rem; color: #627b6c;">1.8 MB &bull; Signed Copy</div>
+            Attached Supporting Documents</h4>
+          <div id="modalDocAttachment" style="display: flex; align-items: center; gap: 0.65rem; background: #f7faf8; border: 1.5px solid #dce8e0; padding: 0.75rem 1rem; border-radius: 8px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            <div style="overflow: hidden; flex: 1;">
+              <div id="modalDocFileName" style="font-size: 0.85rem; font-weight: 700; color: #1a2f22; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                No document attached
               </div>
+              <div id="modalDocMeta" style="font-size: 0.72rem; color: #627b6c;">Official Request Letter / Attachment</div>
             </div>
-
-            <div
-              style="display: flex; align-items: center; gap: 0.65rem; background: #f7faf8; border: 1px solid #dce8e0; padding: 0.7rem 0.9rem; border-radius: 8px;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
-              <div style="overflow: hidden;">
-                <div
-                  style="font-size: 0.82rem; font-weight: 700; color: #1a2f22; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                  Special_Order_2026_CDD.pdf</div>
-                <div style="font-size: 0.7rem; color: #627b6c;">640 KB &bull; Verified</div>
-              </div>
-            </div>
+            <a href="#" id="modalDocLink" target="_blank" class="btn-card-action secondary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
+              View Document
+            </a>
           </div>
+        </div>
+
+        <!-- Special Notes / Administrative Remarks if any -->
+        <div id="modalNotesSection" style="margin-bottom: 1.5rem; display: none; background: #f9fbf9; border-left: 3px solid #175432; padding: 0.85rem 1rem; border-radius: 6px;">
+          <div style="font-size: 0.75rem; font-weight: 800; color: #175432; text-transform: uppercase; margin-bottom: 0.25rem;">Special Notes & Logistics</div>
+          <div id="modalNotesContent" style="font-size: 0.85rem; color: #2e4738;"></div>
+        </div>
+        <div id="modalRemarksSection" style="margin-bottom: 1.5rem; display: none; background: #fefce8; border-left: 3px solid #eab308; padding: 0.85rem 1rem; border-radius: 6px;">
+          <div style="font-size: 0.75rem; font-weight: 800; color: #854d0e; text-transform: uppercase; margin-bottom: 0.25rem;">Admin Remarks & Feedback</div>
+          <div id="modalRemarksContent" style="font-size: 0.85rem; color: #713f12;"></div>
         </div>
 
         <!-- Official Routing Trail Card -->
@@ -1702,6 +1180,124 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
       </div>
     </div>
   </div>
+
+  <!-- ==========================================================================
+       MODAL 4: OFFICIAL RESERVATION SLIP (PRINTABLE SHEET)
+       ========================================================================== -->
+  <div class="modal-overlay" id="slipModal" role="dialog" aria-modal="true">
+    <div class="modal-card" style="max-width: 780px;">
+      <button type="button" class="modal-close-btn js-close-res-modal" aria-label="Close modal">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="modal-content-area" style="padding: 2rem;">
+        <!-- Printable Document Container -->
+        <div id="printableSlipArea" style="background: #ffffff; color: #111827; font-family: 'Plus Jakarta Sans', sans-serif;">
+          <!-- Slip Header -->
+          <div style="text-align: center; border-bottom: 2px solid #175432; padding-bottom: 1.25rem; margin-bottom: 1.5rem;">
+            <img src="assets/images/ATI_Logo.png" alt="ATI Logo" style="height: 60px; margin-bottom: 0.5rem; object-fit: contain;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: #4b5563; font-weight: 700;">Republic of the Philippines • Department of Agriculture</div>
+            <h2 style="font-size: 1.35rem; font-weight: 800; color: #175432; margin: 0.2rem 0;">AGRICULTURAL TRAINING INSTITUTE</h2>
+            <p style="font-size: 0.78rem; color: #6b7280; margin: 0;">ATI Central Office, Elliptical Road, Diliman, Quezon City</p>
+            <div style="display: inline-block; background: #eaf3ed; border: 1.5px solid #175432; color: #175432; font-weight: 800; font-size: 0.82rem; padding: 0.35rem 1rem; border-radius: 9999px; margin-top: 0.85rem;">
+              OFFICIAL FACILITY &amp; DORMITORY RESERVATION SLIP
+            </div>
+          </div>
+
+          <!-- Slip Details Grid -->
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem; margin-bottom: 1.5rem;">
+            <tbody>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 0.65rem 0.5rem; font-weight: 700; color: #4b5563; width: 30%;">Reference Number:</td>
+                <td style="padding: 0.65rem 0.5rem; font-weight: 800; font-family: monospace; color: #175432; font-size: 1rem;" id="slipRefCode">--</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 0.65rem 0.5rem; font-weight: 700; color: #4b5563;">Status of Request:</td>
+                <td style="padding: 0.65rem 0.5rem; font-weight: 800;" id="slipStatusText">--</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 0.65rem 0.5rem; font-weight: 700; color: #4b5563;">Activity / Event Title:</td>
+                <td style="padding: 0.65rem 0.5rem; font-weight: 800; color: #111827;" id="slipEventTitle">--</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 0.65rem 0.5rem; font-weight: 700; color: #4b5563;">Venue / Assigned Facility:</td>
+                <td style="padding: 0.65rem 0.5rem; font-weight: 700; color: #175432;" id="slipVenueName">--</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 0.65rem 0.5rem; font-weight: 700; color: #4b5563;">Target Schedule Dates:</td>
+                <td style="padding: 0.65rem 0.5rem; font-weight: 700;" id="slipScheduleDates">--</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 0.65rem 0.5rem; font-weight: 700; color: #4b5563;">Time Slot / Duration:</td>
+                <td style="padding: 0.65rem 0.5rem;" id="slipTimeSlot">--</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 0.65rem 0.5rem; font-weight: 700; color: #4b5563;">Requestor / Division:</td>
+                <td style="padding: 0.65rem 0.5rem;" id="slipApplicantDivision">--</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 0.65rem 0.5rem; font-weight: 700; color: #4b5563;">Number of Attendees (PAX):</td>
+                <td style="padding: 0.65rem 0.5rem;" id="slipPaxCount">--</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 0.65rem 0.5rem; font-weight: 700; color: #4b5563;">Special Notes / Setup:</td>
+                <td style="padding: 0.65rem 0.5rem; color: #4b5563;" id="slipNotes">Standard venue arrangement</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Signatures Section -->
+          <div style="margin-top: 2.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div style="text-align: center;">
+              <div style="border-bottom: 1.5px solid #111827; height: 35px; margin-bottom: 0.4rem;"></div>
+              <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase;">Requesting Officer</div>
+              <div style="font-size: 0.72rem; color: #6b7280;">Applicant Signature over Printed Name</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="border-bottom: 1.5px solid #111827; height: 35px; margin-bottom: 0.4rem;"></div>
+              <div style="font-size: 0.8rem; font-weight: 800; text-transform: uppercase;">Facility Custodian / Admin</div>
+              <div style="font-size: 0.72rem; color: #6b7280;">Logistics &amp; Scheduling Clearance</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Slip Action Buttons -->
+        <div class="modal-footer-actions" style="margin-top: 1.75rem;">
+          <button type="button" class="btn-card-action secondary js-close-res-modal">Close</button>
+          <button type="button" class="btn-card-action primary" onclick="printSlipDocument()">
+            <svg viewBox="0 0 24 24" fill="none">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            <span>Print Official Slip (PDF)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #printableSlipArea, #printableSlipArea * {
+        visibility: visible !important;
+      }
+      #printableSlipArea {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 20px !important;
+      }
+    }
+  </style>
 
   <!-- Scripts -->
   <script src="js/my_reservations.js?v=<?php echo time(); ?>"></script>

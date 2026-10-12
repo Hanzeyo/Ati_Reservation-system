@@ -8,12 +8,19 @@ if (session_status() === PHP_SESSION_NONE) {
   session_start();
 }
 
-$isAdmin = (isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'super_admin', 'director', 'recommending_officer']))
-  || (isset($_COOKIE['ati_role']) && in_array($_COOKIE['ati_role'], ['admin', 'super_admin', 'director']));
+$isAdmin = isAdmin() || (isset($_SESSION['user_role']) && in_array(strtolower($_SESSION['user_role']), ['admin', 'super_admin', 'director']));
 
 if ($isAdmin || isset($_GET['admin'])) {
   header('Location: admin_schedule.php');
   exit;
+}
+
+$displayName = $_SESSION['full_name'] ?? 'Juan Dela Cruz';
+$displayRole = $_SESSION['role'] ?? ($_SESSION['category'] ?? 'ATI Personnel');
+$displayInitials = 'JD';
+if (!empty($_SESSION['full_name'])) {
+  $words = explode(' ', trim($_SESSION['full_name']));
+  $displayInitials = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
 }
 ?>
 <!DOCTYPE html>
@@ -90,17 +97,18 @@ if ($isAdmin || isset($_GET['admin'])) {
         <!-- User Profile Badge & Dropdown -->
         <div class="user-profile-menu">
           <div class="user-profile-badge" id="userProfileBadge" role="button" aria-haspopup="true">
-            <div class="user-avatar-circle">JD</div>
+            <div class="user-avatar-circle"><?= htmlspecialchars($displayInitials) ?></div>
             <div class="user-details">
-              <div class="user-name">Juan Dela Cruz</div>
-              <div class="user-role">ATI Staff (CDD)</div>
+              <div class="user-name"><?= htmlspecialchars($displayName) ?></div>
+              <div class="user-role"><?= htmlspecialchars($displayRole) ?></div>
             </div>
           </div>
 
           <div class="profile-dropdown" id="profileDropdown">
             <div class="dropdown-header-info">
-              <div class="dropdown-user-name">Juan Dela Cruz</div>
-              <div class="dropdown-user-email"><span class="user-verified-dot"></span> ATI Personnel &bull; CDD</div>
+              <div class="dropdown-user-name"><?= htmlspecialchars($displayName) ?></div>
+              <div class="dropdown-user-email"><span class="user-verified-dot"></span>
+                <?= htmlspecialchars($displayRole) ?></div>
             </div>
             <a href="profile.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -182,10 +190,10 @@ if ($isAdmin || isset($_GET['admin'])) {
       <div class="drawer-body">
         <!-- User Profile Card -->
         <div class="drawer-profile-card">
-          <div class="drawer-avatar">JD</div>
+          <div class="drawer-avatar"><?= htmlspecialchars($displayInitials) ?></div>
           <div class="drawer-profile-info">
-            <h5>Juan Dela Cruz</h5>
-            <p>ATI Staff (CDD)</p>
+            <h5><?= htmlspecialchars($displayName) ?></h5>
+            <p><?= htmlspecialchars($displayRole) ?></p>
             <span class="drawer-badge">Verified Personnel</span>
           </div>
         </div>

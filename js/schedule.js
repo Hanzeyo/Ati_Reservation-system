@@ -2,6 +2,9 @@
  * ATI Facility Reservation System - Master Schedule Interactive Logic
  */
 
+// Dynamic Database Events Store
+let dbEventsList = [];
+
 document.addEventListener('DOMContentLoaded', () => {
   initMasterCalendar();
   initFacilityFilters();
@@ -9,9 +12,29 @@ document.addEventListener('DOMContentLoaded', () => {
   initMonthlyEventsModal();
   initProfileDropdown();
   initMobileDrawer();
+  fetchLiveDatabaseEvents();
 });
 
-// Master Schedule Database
+/**
+ * Fetch approved reservations directly from MySQL database via AJAX
+ */
+function fetchLiveDatabaseEvents() {
+  fetch('ajax/get_events.php')
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.status === 'success' && Array.isArray(data.events)) {
+        dbEventsList = data.events;
+        if (typeof renderCalendarGlobal === 'function') {
+          renderCalendarGlobal();
+        }
+      }
+    })
+    .catch(err => {
+      console.warn('Live events fetch fallback:', err);
+    });
+}
+
+// Master Schedule Default / Template Database
 const masterEventsDatabase = [
   {
     id: 1,
@@ -161,10 +184,18 @@ let isAvailableFocusActive = false;
 let renderCalendarGlobal = null;
 
 /**
- * Retrieve all events combining static database and live user reservations in localStorage
+ * Retrieve all events combining live database reservations, static template events, and localStorage
  */
 function getAllEvents() {
-  const allEvents = [...masterEventsDatabase];
+  const allEvents = [...dbEventsList];
+
+  // Also include template events if not already present
+  masterEventsDatabase.forEach(ev => {
+    if (!allEvents.some(e => e.date === ev.date && e.facilityKey === ev.facilityKey && e.title === ev.title)) {
+      allEvents.push(ev);
+    }
+  });
+
   try {
     const local = JSON.parse(localStorage.getItem('ati_system_reservations') || '[]');
     if (Array.isArray(local) && local.length > 0) {

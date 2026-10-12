@@ -1017,16 +1017,18 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
           participants, and specific requirements.</p>
 
         <div class="auth-field-group">
-          <label class="auth-field-label" for="eventTitleInput" id="eventTitleLabel">Activity / Event Title</label>
+          <label class="auth-field-label" for="eventTitleInput" id="eventTitleLabel">Activity / Event Title <span style="color: #dc2626;">*</span></label>
           <input type="text" id="eventTitleInput" class="auth-input"
-            placeholder="e.g. Regional Agricultural Extension Coordinators Training 2026" style="padding-left: 1rem;">
+            placeholder="e.g. Regional Agricultural Extension Coordinators Training 2026" style="padding-left: 1rem;" required>
+          <small class="field-error-msg" id="eventTitleError" style="display: none; color: #dc2626; font-size: 0.78rem; font-weight: 600; margin-top: 0.35rem;">⚠️ Please enter the activity / event title (minimum 3 characters).</small>
         </div>
 
         <div style="display: grid; grid-template-columns: minmax(160px, 200px) minmax(280px, 420px); gap: 1.25rem; margin-bottom: 1.15rem; align-items: start;">
           <div class="auth-field-group" style="margin-bottom: 0;">
-            <label class="auth-field-label" for="eventPaxInput" id="eventPaxLabel">Estimated Number of Attendees</label>
-            <input type="number" id="eventPaxInput" class="auth-input" placeholder="e.g. 120"
-              style="padding: 0.55rem 0.85rem; font-size: 0.88rem; border-radius: 8px;">
+            <label class="auth-field-label" for="eventPaxInput" id="eventPaxLabel">Estimated Attendees <span style="color: #dc2626;">*</span></label>
+            <input type="number" id="eventPaxInput" class="auth-input" placeholder="e.g. 120" min="1" max="1000"
+              style="padding: 0.55rem 0.85rem; font-size: 0.88rem; border-radius: 8px;" required>
+            <small class="field-error-msg" id="eventPaxError" style="display: none; color: #dc2626; font-size: 0.78rem; font-weight: 600; margin-top: 0.35rem;">⚠️ Please specify at least 1 attendee.</small>
           </div>
           <div class="auth-field-group" style="margin-bottom: 0;">
             <label class="auth-field-label" for="deptSelectTrigger">Requesting Division / Unit *</label>
@@ -1109,6 +1111,7 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             <div id="divisionOtherWrap" style="display: none; margin-top: 0.6rem;">
               <input type="text" id="divisionOtherInput" class="dept-other-input" placeholder="Type your Department, Unit, or Office name...">
               <small class="dept-other-note">Specify your office / organization for administrative routing</small>
+              <small class="field-error-msg" id="divisionOtherError" style="display: none; color: #dc2626; font-size: 0.78rem; font-weight: 600; margin-top: 0.35rem;">⚠️ Please specify your organization / division name.</small>
             </div>
           </div>
         </div>
@@ -1128,15 +1131,46 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
          ========================================================================== -->
     <div class="wizard-step-view" data-step="4">
       <div class="wizard-form-card">
-        <h3 class="wizard-form-title">Step 4: Supporting Documents Upload</h3>
+        <h3 class="wizard-form-title">Step 4: Supporting Documents Upload <span style="color: #dc2626;">*</span></h3>
         <p class="wizard-form-desc">Attach approved Special Order, Activity Design, or official request endorsement
-          memo.</p>
+          memo (Required for reservation processing).</p>
+
+        <!-- Official ATI Form Download Box -->
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #e6f7ec 100%); border: 1.5px solid #a3d9b5; border-radius: 12px; padding: 1.15rem 1.35rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.9rem;">
+            <div style="width: 44px; height: 44px; border-radius: 10px; background: #175432; color: #facc15; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(23,84,50,0.2);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+            </div>
+            <div>
+              <div style="font-size: 0.92rem; font-weight: 800; color: #173822; margin-bottom: 0.2rem;">
+                Official ATI Facility Reservation Form &amp; Terms
+              </div>
+              <div style="font-size: 0.8rem; color: #476652; line-height: 1.35;">
+                Need the official form? Download or print the 2-page reservation template with Terms &amp; Conditions, fill it out, and upload the signed copy below.
+              </div>
+            </div>
+          </div>
+
+          <a href="download_form.php" target="_blank" class="btn-card-action primary" style="padding: 0.65rem 1.15rem; font-size: 0.84rem; text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.45rem; background: #175432; color: #ffffff; border-radius: 8px; font-weight: 700; box-shadow: 0 3px 8px rgba(23,84,50,0.25);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download Official Form</span>
+          </a>
+        </div>
 
         <div id="documentUploadZone"
-          style="border: 2px dashed #b8ccbe; border-radius: 12px; padding: 3rem 2rem; text-align: center; background: #fbfdfc; cursor: pointer;">
-          <input type="file" id="documentUploadInput" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display: none;">
+          style="border: 2px dashed #b8ccbe; border-radius: 12px; padding: 3rem 2rem; text-align: center; background: #fbfdfc; cursor: pointer; transition: all 0.25s ease;">
+          <input type="file" id="documentUploadInput" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display: none;" required>
           <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="1.8"
-            style="margin-bottom: 0.75rem;">
+            style="margin-bottom: 0.75rem;" id="docUploadSvg">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="17 8 12 3 7 8"></polyline>
             <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -1146,6 +1180,9 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
           <p id="documentUploadDesc" style="font-size: 0.85rem; color: #627b6c;">PDF, DOCX, or PNG formats up to 15MB
           </p>
         </div>
+        <small class="field-error-msg" id="documentUploadError" style="display: none; color: #dc2626; font-size: 0.82rem; font-weight: 700; margin-top: 0.65rem; text-align: center;">
+          ⚠️ Supporting document is required. Please upload your Activity Design, Special Order, or Official Request Memo.
+        </small>
       </div>
     </div>
 
@@ -1288,6 +1325,94 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             </div>
             <span class="badge-assigned-ok">✓ Ready to Reserve</span>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         VALIDATION WARNING POPUP MODAL (Clean ATI Custom Alert Dialog)
+         ========================================================================== -->
+    <div class="room-modal-overlay" id="validationWarningModal" style="display: none; z-index: 10000;">
+      <div class="room-modal-dialog" style="max-width: 480px; border-radius: 18px; text-align: center; padding: 2rem 1.75rem;">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: #fef2f2; border: 2px solid #fecaca; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <h3 id="valModalTitle" style="font-size: 1.3rem; font-weight: 800; color: #1f2937; margin-bottom: 0.5rem;">Requirement Missing</h3>
+        <p id="valModalMessage" style="font-size: 0.92rem; color: #4b5563; line-height: 1.55; margin-bottom: 1.5rem;">
+          Please complete all required fields before proceeding.
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center;">
+          <button type="button" id="btnDismissValModal" style="background: #175432; color: #ffffff; font-weight: 700; font-size: 0.9rem; padding: 0.7rem 2rem; border-radius: 9999px; border: none; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(23, 84, 50, 0.25);">
+            Understood
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         RESERVATION SUCCESS POPUP MODAL (Official Receipt & Confirmation)
+         ========================================================================== -->
+    <div class="room-modal-overlay" id="reservationSuccessModal" style="display: none; z-index: 10000;">
+      <div class="room-modal-dialog" style="max-width: 540px; border-radius: 20px; text-align: center; padding: 2.25rem 2rem; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);">
+        <!-- Animated Success Checkmark Icon -->
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: #ecfdf5; border: 2.5px solid #a7f3d0; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+
+        <span style="display: inline-block; background: #e0f2fe; color: #0284c7; font-size: 0.75rem; font-weight: 800; padding: 3px 12px; border-radius: 9999px; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.5rem;">
+          REQUEST TRANSMITTED
+        </span>
+
+        <h3 style="font-size: 1.45rem; font-weight: 800; color: #142e1f; margin-bottom: 0.35rem;">
+          Reservation Submitted Successfully!
+        </h3>
+        
+        <p style="font-size: 0.88rem; color: #526f5e; line-height: 1.5; margin-bottom: 1.25rem;">
+          Your official reservation request has been registered and queued for Administrative Review and Approval.
+        </p>
+
+        <!-- Summary Receipt Card -->
+        <div style="background: #f8faf9; border: 1.5px solid #e1ece4; border-radius: 12px; padding: 1.15rem; text-align: left; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.85rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #d5e3da; padding-bottom: 0.5rem;">
+            <span style="color: #637f70; font-weight: 600;">Reference No.:</span>
+            <strong style="color: #175432; font-size: 0.95rem; font-family: monospace; letter-spacing: 0.05em;" id="succModalRef">ATI-RES-XXXX</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #637f70; font-weight: 600;">Facility / Venue:</span>
+            <strong style="color: #1f2937;" id="succModalFacility">Function Hall</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #637f70; font-weight: 600;">Schedule Dates:</span>
+            <strong style="color: #1f2937;" id="succModalSchedule">Selected Dates</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #637f70; font-weight: 600;">Time Slot:</span>
+            <strong style="color: #1f2937;" id="succModalTime">Whole Day</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #637f70; font-weight: 600;">Status:</span>
+            <span style="background: #fef3c7; color: #92400e; font-weight: 800; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px;">Pending Approval</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <a href="my_reservations.php" style="background: #175432; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 0.88rem; padding: 0.75rem 1.65rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 4px 12px rgba(23, 84, 50, 0.25);">
+            <span>View My Reservations</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+          <a href="home.php" style="background: #edf5ef; color: #175432; text-decoration: none; font-weight: 700; font-size: 0.88rem; padding: 0.75rem 1.5rem; border-radius: 9999px; border: 1.5px solid #cce0d2;">
+            Return to Home
+          </a>
         </div>
       </div>
     </div>

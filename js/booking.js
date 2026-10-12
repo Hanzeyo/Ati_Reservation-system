@@ -67,6 +67,12 @@ function initDocumentUpload() {
 
       // Keep reference globally
       bookingState.documentFile = file;
+
+      // Clear any validation error styling
+      dropZone.style.borderColor = '#2e7d32';
+      dropZone.style.backgroundColor = '#f0fdf4';
+      const docErr = document.getElementById('documentUploadError');
+      if (docErr) docErr.style.display = 'none';
     }
   }
 }
@@ -1166,29 +1172,171 @@ function initStepperNavigation() {
     });
   });
 
+  // Validation helper for Step 3 (Event & Lodging Details)
+  function validateStep3Inputs() {
+    let isValid = true;
+    let firstInvalidInput = null;
+
+    const titleInput = document.getElementById('eventTitleInput') || document.getElementById('dormLodgingPurpose');
+    const titleError = document.getElementById('eventTitleError');
+    const paxInput = document.getElementById('eventPaxInput') || document.getElementById('dormGuestCount');
+    const paxError = document.getElementById('eventPaxError');
+    const divSelect = document.getElementById('divisionSelect') || document.getElementById('dormDivisionUnit');
+    const divOtherInput = document.getElementById('divisionOtherInput') || document.getElementById('dormDivisionOtherInput');
+    const divOtherError = document.getElementById('divisionOtherError');
+
+    // 1. Validate Event Title
+    if (titleInput) {
+      const val = titleInput.value.trim();
+      if (!val || val.length < 3) {
+        isValid = false;
+        titleInput.style.borderColor = '#dc2626';
+        titleInput.style.backgroundColor = '#fff5f5';
+        if (titleError) titleError.style.display = 'block';
+        if (!firstInvalidInput) firstInvalidInput = titleInput;
+      } else {
+        titleInput.style.borderColor = '';
+        titleInput.style.backgroundColor = '';
+        if (titleError) titleError.style.display = 'none';
+      }
+    }
+
+    // 2. Validate Attendees Count (PAX)
+    if (paxInput) {
+      const num = parseInt(paxInput.value, 10);
+      if (isNaN(num) || num <= 0) {
+        isValid = false;
+        paxInput.style.borderColor = '#dc2626';
+        paxInput.style.backgroundColor = '#fff5f5';
+        if (paxError) paxError.style.display = 'block';
+        if (!firstInvalidInput) firstInvalidInput = paxInput;
+      } else {
+        paxInput.style.borderColor = '';
+        paxInput.style.backgroundColor = '';
+        if (paxError) paxError.style.display = 'none';
+      }
+    }
+
+    // 3. Validate Division if "Other" is selected
+    if (divSelect && divSelect.value === 'Other' && divOtherInput) {
+      const otherVal = divOtherInput.value.trim();
+      if (!otherVal || otherVal.length < 2) {
+        isValid = false;
+        divOtherInput.style.borderColor = '#dc2626';
+        divOtherInput.style.backgroundColor = '#fff5f5';
+        if (divOtherError) divOtherError.style.display = 'block';
+        if (!firstInvalidInput) firstInvalidInput = divOtherInput;
+      } else {
+        divOtherInput.style.borderColor = '';
+        divOtherInput.style.backgroundColor = '';
+        if (divOtherError) divOtherError.style.display = 'none';
+      }
+    }
+
+    if (!isValid && firstInvalidInput) {
+      firstInvalidInput.focus();
+      firstInvalidInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    return isValid;
+  }
+
+  // Custom Clean Popup Modal for Validation Alerts
+  function showValidationModal(title, message, onDismiss) {
+    const modal = document.getElementById('validationWarningModal');
+    const titleEl = document.getElementById('valModalTitle');
+    const msgEl = document.getElementById('valModalMessage');
+    const btnDismiss = document.getElementById('btnDismissValModal');
+
+    if (!modal) {
+      alert(`${title}\n\n${message}`);
+      if (typeof onDismiss === 'function') onDismiss();
+      return;
+    }
+
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.textContent = message;
+
+    modal.style.display = 'flex';
+
+    function closeModal() {
+      modal.style.display = 'none';
+      btnDismiss.removeEventListener('click', closeModal);
+      modal.removeEventListener('click', handleBackdrop);
+      if (typeof onDismiss === 'function') onDismiss();
+    }
+
+    function handleBackdrop(e) {
+      if (e.target === modal) {
+        closeModal();
+      }
+    }
+
+    btnDismiss.addEventListener('click', closeModal);
+    modal.addEventListener('click', handleBackdrop);
+  }
+
   // Proceed button click listener
   if (proceedBtn) {
     proceedBtn.addEventListener('click', () => {
       const isDorm = isDormitorySelected();
       if (bookingState.currentStep === 1) {
         if (isDorm && !bookingState.selectedFacility?.roomNumber) {
-          alert('Please choose a room unit (e.g. Room 101, 102, 103) inside your chosen dormitory floor before proceeding to Date & Time Selection.');
-          const card = document.querySelector('.facility-choice-card.selected');
-          if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          showValidationModal(
+            'Room Selection Required',
+            'Please choose a room unit (e.g. Room 101, 102, 103) inside your chosen dormitory floor before proceeding to Date & Time Selection.',
+            () => {
+              const card = document.querySelector('.facility-choice-card.selected');
+              if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          );
           return;
         }
         if (!isDorm && !bookingState.selectedFacility?.setupName) {
-          alert('Please choose a venue layout & setup (e.g. Theater Setup, Classroom Setup, Banquet Dining) before proceeding to Date & Time Selection.');
-          const card = document.querySelector('.facility-choice-card.selected');
-          if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          showValidationModal(
+            'Venue Layout Required',
+            'Please choose a venue layout & setup (e.g. Theater Setup, Classroom Setup, Banquet Dining) before proceeding to Date & Time Selection.',
+            () => {
+              const card = document.querySelector('.facility-choice-card.selected');
+              if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          );
           return;
         }
         goToStep(2);
       } else if (bookingState.currentStep === 2) {
         goToStep(3); // Proceeds to Event Details for BOTH dormitories and halls!
       } else if (bookingState.currentStep === 3) {
+        if (!validateStep3Inputs()) {
+          showValidationModal(
+            'Event Details Incomplete',
+            'Please fill out all required fields marked with an asterisk (*) — Activity Title, Estimated Attendees, and Division/Unit.'
+          );
+          return; // Block advancement if required fields are missing
+        }
         goToStep(4);
       } else if (bookingState.currentStep === 4) {
+        // Step 4 Validation: Require supporting document upload
+        const docInput = document.getElementById('documentUploadInput') || document.getElementById('dormDocUpload');
+        const hasFile = (docInput && docInput.files && docInput.files.length > 0) || bookingState.documentFile;
+
+        if (!hasFile) {
+          const dropZone = document.getElementById('documentUploadZone');
+          const docErr = document.getElementById('documentUploadError');
+          if (dropZone) {
+            dropZone.style.borderColor = '#dc2626';
+            dropZone.style.backgroundColor = '#fff5f5';
+            dropZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          if (docErr) {
+            docErr.style.display = 'block';
+          }
+          showValidationModal(
+            'Supporting Document Required',
+            'Please upload your approved Activity Design, Special Order, or Official Request Memo before proceeding to Review & Confirmation.'
+          );
+          return;
+        }
         goToStep(5);
       }
     });
@@ -1328,6 +1476,10 @@ function initStepperNavigation() {
       .then(data => {
         btnSubmitDormitory.innerHTML = origText;
         btnSubmitDormitory.disabled = false;
+        if (data && data.conflict) {
+          alert(`⚠️ Reservation Conflict Detected:\n\n${data.message}`);
+          return;
+        }
         window.showReservationSuccessModal(submitData);
       })
       .catch(err => {
@@ -1342,6 +1494,12 @@ function initStepperNavigation() {
   const finalSubmitBtn = document.getElementById('btnSubmitFinalReservation');
   if (finalSubmitBtn) {
     finalSubmitBtn.addEventListener('click', () => {
+      if (!validateStep3Inputs()) {
+        showValidationModal('Event Details Incomplete', 'Please complete all required fields (Event Title, Attendees, Division) before submitting.', () => {
+          goToStep(3);
+        });
+        return;
+      }
       const refNum = `ATI-RES-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
       const isDorm = isDormitorySelected();
       const curDivision = getEffectiveDivision();
@@ -1404,6 +1562,14 @@ function initStepperNavigation() {
         .then(data => {
           finalSubmitBtn.innerHTML = origText;
           finalSubmitBtn.disabled = false;
+          if (data && data.conflict) {
+            showValidationModal('Reservation Conflict Detected', data.message);
+            return;
+          }
+          if (data && !data.success && data.message) {
+            showValidationModal('Submission Error', data.message);
+            return;
+          }
           window.showReservationSuccessModal(submitData);
         })
         .catch(err => {
@@ -1418,6 +1584,51 @@ function initStepperNavigation() {
   // Initial stepper setup
   updateStepperMode();
 }
+
+/**
+ * Display Official Reservation Success Confirmation Modal
+ */
+window.showReservationSuccessModal = function (submitData) {
+  const modal = document.getElementById('reservationSuccessModal');
+  if (!modal) {
+    alert(`✓ Reservation Submitted Successfully!\n\nReference No.: ${submitData.refNum}\nFacility: ${submitData.facilityName}\nStatus: Pending Administrative Approval`);
+    window.location.href = 'my_reservations.php';
+    return;
+  }
+
+  // Populate receipt details in modal
+  const refEl = document.getElementById('succModalRef');
+  const facEl = document.getElementById('succModalFacility');
+  const schedEl = document.getElementById('succModalSchedule');
+  const timeEl = document.getElementById('succModalTime');
+
+  if (refEl) refEl.textContent = submitData.refNum || 'ATI-RES-PENDING';
+  if (facEl) facEl.textContent = `${submitData.facilityName} (${submitData.setup || 'Standard'})`;
+  if (schedEl) schedEl.textContent = submitData.schedule || 'Scheduled Dates';
+  if (timeEl) timeEl.textContent = submitData.time || 'Regular Hours';
+
+  // Save to localStorage for quick client sync
+  try {
+    const list = JSON.parse(localStorage.getItem('ati_system_reservations') || '[]');
+    list.unshift({
+      id: Date.now(),
+      ref: submitData.refNum,
+      title: submitData.purpose,
+      facility: submitData.facilityName,
+      facilityKey: submitData.isDorm ? 'dormitory' : 'function-hall',
+      date: typeof bookingState !== 'undefined' && bookingState.selectedStartDate ? `${bookingState.selectedStartDate.year}-${String(bookingState.selectedStartDate.month + 1).padStart(2, '0')}-${String(bookingState.selectedStartDate.day).padStart(2, '0')}` : new Date().toISOString().split('T')[0],
+      time: submitData.time,
+      division: submitData.requestedBy,
+      attendees: `${submitData.pax} Participants`,
+      status: 'Pending'
+    });
+    localStorage.setItem('ati_system_reservations', JSON.stringify(list));
+  } catch (e) {
+    console.warn('LocalStorage save error:', e);
+  }
+
+  modal.style.display = 'flex';
+};
 
 /* ==========================================================================
    4. Update Summary on Step 1 (Preview) and Step 5 (Official Summary)
@@ -1610,6 +1821,29 @@ function initDateSlotInteractions() {
     '2026-10-29', '2026-11-13', '2026-12-24', '2026-12-25'
   ]);
 
+  // Live booked dates from MySQL database
+  const DB_BOOKED_DATES = new Set();
+  const DB_BOOKED_DETAILS = {};
+
+  function fetchLiveAvailabilityForViewMonth() {
+    const facName = bookingState.selectedFacility?.name || '';
+    const roomNum = bookingState.selectedFacility?.roomNumber || '';
+    const url = `ajax/check_availability.php?facility_name=${encodeURIComponent(facName)}&room_number=${encodeURIComponent(roomNum)}&year=${viewYear}&month=${viewMonth + 1}`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.status === 'success' && Array.isArray(data.booked_dates)) {
+          DB_BOOKED_DATES.clear();
+          data.booked_dates.forEach(d => DB_BOOKED_DATES.add(d));
+          Object.assign(DB_BOOKED_DETAILS, data.booked_details || {});
+          renderCalendarGrid();
+          updateGridHighlights();
+        }
+      })
+      .catch(err => console.warn('Availability check fallback:', err));
+  }
+
   function dateToKey(y, m, d) {
     return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   }
@@ -1733,10 +1967,15 @@ function initDateSlotInteractions() {
     }
 
     const isRoomOccupiedThisDate = isOccupiedRoomDate(dateObj);
-    if (btn.classList.contains('reserved') || RESERVED_DATES.has(key) || isRoomOccupiedThisDate) {
+    const isDbBooked = DB_BOOKED_DATES.has(key);
+    if (btn.classList.contains('reserved') || RESERVED_DATES.has(key) || isRoomOccupiedThisDate || isDbBooked) {
       if (isRoomOccupiedThisDate) {
         const roomNum = bookingState.selectedFacility?.roomNumber;
         alert(`Room ${roomNum} is occupied on ${formatDisplayDate(dateObj)}.\n\nPlease select an available green slot to book this room.`);
+      } else if (isDbBooked) {
+        const details = DB_BOOKED_DETAILS[key] || [];
+        const evTitle = details.length > 0 ? ` (${details[0].title})` : '';
+        alert(`${formatDisplayDate(dateObj)} is already booked and approved${evTitle}.\n\nPlease select an available slot.`);
       } else {
         alert(`${formatDisplayDate(dateObj)} is already reserved for another official event. Please select an available green slot.`);
       }
@@ -1862,7 +2101,8 @@ function initDateSlotInteractions() {
       const isToday = isTodayDate(viewYear, viewMonth, day);
       const isSuspended = SUSPENDED_DATES.has(key);
       const isRoomOccupiedThisDate = isOccupiedRoomDate(dateObj);
-      const isReserved = RESERVED_DATES.has(key) || isRoomOccupiedThisDate;
+      const isDbBooked = DB_BOOKED_DATES.has(key);
+      const isReserved = RESERVED_DATES.has(key) || isRoomOccupiedThisDate || isDbBooked;
       const isSelected = isDateInRange(dateObj, selectedStart, selectedEnd);
 
       if (isPast) {
@@ -1876,6 +2116,9 @@ function initDateSlotInteractions() {
         btn.className = 'slot-day-btn reserved';
         if (isRoomOccupiedThisDate) {
           btn.title = `Room ${bookingState.selectedFacility?.roomNumber || ''} is occupied on this date`;
+        } else if (isDbBooked) {
+          const details = DB_BOOKED_DETAILS[key] || [];
+          btn.title = details.length > 0 ? `Booked: ${details[0].title}` : 'Reserved for Official Event';
         } else {
           btn.title = 'Reserved for Official Event';
         }
@@ -1917,6 +2160,7 @@ function initDateSlotInteractions() {
       }
       updateMonthHeader();
       renderCalendarGrid();
+      fetchLiveAvailabilityForViewMonth();
     });
   }
 
@@ -1931,150 +2175,20 @@ function initDateSlotInteractions() {
       }
       updateMonthHeader();
       renderCalendarGrid();
+      fetchLiveAvailabilityForViewMonth();
     });
   }
 
-  // Explicit helper to select current date (Today)
-  window.selectCurrentDate = function () {
-    const freshNow = new Date();
-    TODAY.year = freshNow.getFullYear();
-    TODAY.month = freshNow.getMonth();
-    TODAY.day = freshNow.getDate();
-
-    viewYear = TODAY.year;
-    viewMonth = TODAY.month;
-    selectedStart = { ...TODAY };
-    selectedEnd = { ...TODAY };
-    mode = 'single';
-    rangeWaitingForEnd = false;
-    if (btnModeSingle) btnModeSingle.classList.add('active');
-    if (btnModeRange) btnModeRange.classList.remove('active');
-    if (endDateWrap) endDateWrap.classList.remove('active-focus');
-    updateMonthHeader();
-    renderCalendarGrid();
-    renderSelectionDetails();
+  // Hook into facility changes to refresh slot availability for the newly selected venue
+  window.refreshLiveAvailabilityForCurrentFacility = function () {
+    fetchLiveAvailabilityForViewMonth();
   };
-
-  // Helper when user chose an occupied room: pre-select earliest open date (Today + 2 days)
-  window.selectAlternateAvailableDateForRoom = function (roomNumber) {
-    const cur = new Date();
-    const target = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + 2);
-    viewYear = target.getFullYear();
-    viewMonth = target.getMonth();
-    selectedStart = { year: viewYear, month: viewMonth, day: target.getDate() };
-    selectedEnd = { ...selectedStart };
-    mode = 'single';
-    rangeWaitingForEnd = false;
-    if (btnModeSingle) btnModeSingle.classList.add('active');
-    if (btnModeRange) btnModeRange.classList.remove('active');
-    if (endDateWrap) endDateWrap.classList.remove('active-focus');
-    updateMonthHeader();
-    renderCalendarGrid();
-    renderSelectionDetails();
-
-    if (statusTitle) {
-      statusTitle.textContent = `Room ${roomNumber} Available (${formatDisplayDate(selectedStart)})`;
-    }
-    if (statusDesc) {
-      statusDesc.textContent = `Room ${roomNumber} is occupied today and tomorrow. ${formatDisplayDate(selectedStart)} has been automatically selected as the earliest open date. You can choose any upcoming green slot on the calendar.`;
-    }
-  };
-
-  // Mode Toggle listeners
-  if (btnModeSingle && btnModeRange) {
-    btnModeSingle.addEventListener('click', () => {
-      mode = 'single';
-      rangeWaitingForEnd = false;
-      btnModeSingle.classList.add('active');
-      btnModeRange.classList.remove('active');
-      if (endDateWrap) endDateWrap.classList.remove('active-focus');
-      selectedEnd = { ...selectedStart };
-      renderSelectionDetails();
-      updateGridHighlights();
-    });
-
-    btnModeRange.addEventListener('click', () => {
-      mode = 'range';
-      rangeWaitingForEnd = true;
-      btnModeRange.classList.add('active');
-      btnModeSingle.classList.remove('active');
-      if (endDateWrap) endDateWrap.classList.add('active-focus');
-      if (statusDesc) {
-        statusDesc.textContent = `Start date is ${formatDisplayDate(selectedStart)}. Click another date on the calendar to set your End Date.`;
-      }
-    });
-  }
-
-  // Click on END DATE input box opens range mode
-  if (endInput && endDateWrap) {
-    endInput.addEventListener('click', () => {
-      mode = 'range';
-      rangeWaitingForEnd = true;
-      if (btnModeRange) btnModeRange.classList.add('active');
-      if (btnModeSingle) btnModeSingle.classList.remove('active');
-      endDateWrap.classList.add('active-focus');
-      if (statusDesc) {
-        statusDesc.textContent = `End Date picker active: Click an end date on or after ${formatDisplayDate(selectedStart)} on the calendar.`;
-      }
-    });
-  }
-
-  // Input change validation
-  if (startInput) {
-    startInput.addEventListener('change', () => {
-      const parts = startInput.value.split('/');
-      if (parts.length === 3) {
-        const m = parseInt(parts[0], 10) - 1;
-        const d = parseInt(parts[1], 10);
-        const y = parseInt(parts[2], 10);
-        if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
-          if (isPastDate(y, m, d)) {
-            alert('Cannot enter a date in the past. Reverting to today.');
-            window.selectCurrentDate();
-          } else {
-            selectedStart = { year: y, month: m, day: d };
-            if (compareDates(selectedEnd, selectedStart) < 0) {
-              selectedEnd = { ...selectedStart };
-            }
-            viewYear = y;
-            viewMonth = m;
-            updateMonthHeader();
-            renderCalendarGrid();
-            renderSelectionDetails();
-          }
-        }
-      }
-    });
-  }
-
-  if (endInput) {
-    endInput.addEventListener('change', () => {
-      const parts = endInput.value.split('/');
-      if (parts.length === 3) {
-        const m = parseInt(parts[0], 10) - 1;
-        const d = parseInt(parts[1], 10);
-        const y = parseInt(parts[2], 10);
-        if (!isNaN(y) && !isNaN(m) && !isNaN(d)) {
-          const newEnd = { year: y, month: m, day: d };
-          if (compareDates(newEnd, selectedStart) < 0) {
-            alert('End date must be on or after the start date.');
-            selectedEnd = { ...selectedStart };
-            renderSelectionDetails();
-            updateGridHighlights();
-          } else {
-            selectedEnd = newEnd;
-            renderSelectionDetails();
-            updateGridHighlights();
-          }
-        }
-      }
-    });
-  }
 
   // Initial Calendar Setup
   updateMonthHeader();
   renderCalendarGrid();
   renderSelectionDetails();
+  fetchLiveAvailabilityForViewMonth();
 }
 
 /* ==========================================================================
