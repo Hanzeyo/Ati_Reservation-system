@@ -672,43 +672,155 @@ require_once __DIR__ . '/includes/auth_guard.php';
     </div>
 
     <!-- ==========================================================================
-         STEP 2: STAY DATES & NIGHTS
+         STEP 2: STAY DATES & NIGHTS (AVAILABILITY SLOT CHECK)
          ========================================================================== -->
     <div class="wizard-step-view" data-step="2">
-      <div class="dates-main-layout">
-        <div class="date-picker-pane">
-          <div class="pane-sec-header">
-            <h4>Check-in &amp; Check-out Schedule</h4>
-            <p>Select your arrival and departure dates. Standard check-in is 02:00 PM and check-out is 12:00 PM.</p>
-          </div>
+      <div class="date-time-wizard-card">
+        <h3 class="date-time-card-title">Select Dates & Duration</h3>
+        <p class="date-time-card-desc">Choose your start/end dates and check for scheduling availability conflicts.</p>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-            <div>
-              <label for="dormCheckInDate"
-                style="display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; color: #1e3a29;">Check-in
-                Date *</label>
-              <input type="date" id="dormCheckInDate" class="step-text-input" value="2026-10-15"
-                style="width: 100%; padding: 0.75rem; border: 1.5px solid #c9ded0; border-radius: 8px;">
-            </div>
-            <div>
-              <label for="dormCheckOutDate"
-                style="display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; color: #1e3a29;">Check-out
-                Date *</label>
-              <input type="date" id="dormCheckOutDate" class="step-text-input" value="2026-10-18"
-                style="width: 100%; padding: 0.75rem; border: 1.5px solid #c9ded0; border-radius: 8px;">
-            </div>
-          </div>
-
-          <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 1.25rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <strong style="color: #14532d; font-size: 1.05rem;" id="dormNightsCountDisplay">3 Nights
-                  Accommodation</strong>
-                <p style="color: #166534; font-size: 0.82rem; margin: 0.2rem 0 0;">Check-in: 02:00 PM &bull; Check-out:
-                  12:00 PM</p>
+        <div class="date-time-layout-grid">
+          <!-- Left Column: Interactive Slot Check -->
+          <div class="interactive-slot-box">
+            <div class="slot-box-header">
+              <div class="slot-box-header-left">
+                <span class="slot-box-title">Availability Slot Check</span>
+                <div class="slot-mode-selector" id="slotModeSelector">
+                  <button type="button" class="slot-mode-btn active" id="btnModeSingle"
+                    title="Select single day reservation">Single Day</button>
+                  <button type="button" class="slot-mode-btn" id="btnModeRange" title="Select multi-day range">Multi-Day
+                    Range</button>
+                </div>
               </div>
-              <span style="font-weight: 800; font-size: 1.2rem; color: #15803d;"
-                id="dormEstimatedRateDisplay">₱1,500</span>
+              <div class="slot-month-nav" id="slotMonthNav">
+                <button type="button" class="slot-month-nav-btn" id="btnPrevMonth" title="Previous Month"
+                  aria-label="Previous Month" disabled>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                </button>
+                <span class="slot-month-pill" id="slotMonthDisplay"><?= date('F Y') ?></span>
+                <button type="button" class="slot-month-nav-btn" id="btnNextMonth" title="Next Month"
+                  aria-label="Next Month">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="slot-calendar-wrapper">
+              <div class="slot-weekdays-row">
+                <span>Sun</span>
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+              </div>
+
+              <div class="slot-days-grid" id="slotDaysGrid">
+                <!-- Dynamically rendered and populated by initDateSlotInteractions() -->
+              </div>
+            </div>
+
+            <!-- Legend with Available, Reserved, Suspended, Selected -->
+            <div class="slot-legend-row">
+              <div class="slot-legend-tag">
+                <span class="legend-circle available"></span>
+                <span>Available</span>
+              </div>
+              <div class="slot-legend-tag">
+                <span class="legend-circle reserved"></span>
+                <span>Reserved</span>
+              </div>
+              <div class="slot-legend-tag">
+                <span class="legend-circle suspended"></span>
+                <span>Suspended</span>
+              </div>
+              <div class="slot-legend-tag">
+                <span class="legend-circle selected"></span>
+                <span>Selected</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Date & Time Form Inputs -->
+          <div class="date-time-form-col">
+            <!-- Start Date -->
+            <div class="dt-field-group">
+              <label class="dt-field-label" for="startDateInput">START DATE</label>
+              <div class="dt-input-icon-wrap">
+                <input type="text" id="startDateInput" value="<?= date('m/d/Y') ?>">
+                <svg class="dt-calendar-svg" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </div>
+            </div>
+
+            <!-- End Date -->
+            <div class="dt-field-group">
+              <label class="dt-field-label" for="endDateInput">END DATE</label>
+              <div class="dt-input-icon-wrap" id="endDateWrap">
+                <input type="text" id="endDateInput" value="<?= date('m/d/Y') ?>">
+                <svg class="dt-calendar-svg" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Time Window Row -->
+            <div class="dt-time-row">
+              <div class="dt-field-group">
+                <label class="dt-field-label" for="startTimeSelect">START TIME</label>
+                <div class="dt-select-wrap">
+                  <select id="startTimeSelect">
+                    <option value="08:00 AM (Morning)" selected>08:00 AM (Morning)</option>
+                    <option value="09:00 AM">09:00 AM</option>
+                    <option value="01:00 PM">01:00 PM (Afternoon)</option>
+                    <option value="02:00 PM (Check-in)">02:00 PM (Check-in)</option>
+                    <option value="06:00 PM">06:00 PM (Evening)</option>
+                  </select>
+                  <svg class="dt-select-arrow" viewBox="0 0 24 24" fill="none">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="dt-field-group">
+                <label class="dt-field-label" for="endTimeSelect">END TIME</label>
+                <div class="dt-select-wrap">
+                  <select id="endTimeSelect">
+                    <option value="05:00 PM (Full Day)" selected>05:00 PM (Full Day)</option>
+                    <option value="12:00 PM (Check-out)">12:00 PM (Check-out)</option>
+                    <option value="06:00 PM">06:00 PM</option>
+                    <option value="09:00 PM">09:00 PM (Extended)</option>
+                  </select>
+                  <svg class="dt-select-arrow" viewBox="0 0 24 24" fill="none">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slot Status Banner -->
+            <div class="slot-available-banner" id="slotStatusBanner">
+              <div class="banner-check-circle">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <div class="banner-content-text">
+                <h4 id="slotStatusTitle">Selected Slot Available!</h4>
+                <p id="slotStatusDesc">No venue conflicts detected for 1 day duration (<?= date('F j, Y') ?>).</p>
+              </div>
             </div>
           </div>
         </div>
@@ -962,75 +1074,10 @@ require_once __DIR__ . '/includes/auth_guard.php';
 
   <script src="js/booking.js?v=<?php echo time(); ?>"></script>
   <script>
-    // Dormitory Stepper Logic
-    let currentDormStep = 1;
-    const totalDormSteps = 5;
-
-    function setDormStep(step) {
-      if (step < 1 || step > totalDormSteps) return;
-      currentDormStep = step;
-
-      document.querySelectorAll('.wizard-step-view').forEach(view => {
-        view.classList.toggle('active', parseInt(view.dataset.step) === step);
-      });
-
-      document.querySelectorAll('.step-tab-btn').forEach(tab => {
-        tab.classList.toggle('active', parseInt(tab.dataset.step) === step);
-      });
-
-      document.querySelectorAll('.mobile-dot').forEach(dot => {
-        dot.classList.toggle('active', parseInt(dot.dataset.step) === step);
-      });
-
-      const badge = document.getElementById('mobileStepBadge');
-      const stepName = document.getElementById('mobileStepName');
-      const percent = document.getElementById('mobileStepPercent');
-      const fill = document.getElementById('mobileProgressFill');
-      const btnBack = document.getElementById('btnStepBack');
-      const btnProceed = document.getElementById('btnProceedStep');
-
-      const names = ['Dormitory Floor', 'Stay Dates', 'Lodging Details', 'Roster Documents', 'Review & Submit'];
-      if (badge) badge.textContent = `Step ${step} of 5`;
-      if (stepName) stepName.textContent = names[step - 1];
-      const pct = (step / 5) * 100;
-      if (percent) percent.textContent = `${pct}%`;
-      if (fill) fill.style.width = `${pct}%`;
-
-      if (btnBack) btnBack.style.display = step > 1 ? 'inline-flex' : 'none';
-      if (btnProceed) {
-        if (step === 5) {
-          btnProceed.style.display = 'none';
-        } else {
-          btnProceed.style.display = 'inline-flex';
-          const nextNames = ['Stay Dates', 'Lodging Details', 'Roster Documents', 'Review Summary'];
-          btnProceed.querySelector('span').textContent = `Proceed to ${nextNames[step - 1]}`;
-        }
-      }
-
-      window.scrollTo({ top: 120, behavior: 'smooth' });
-    }
-
-    document.getElementById('btnProceedStep')?.addEventListener('click', () => {
-      setDormStep(currentDormStep + 1);
-    });
-
-    document.getElementById('btnStepBack')?.addEventListener('click', () => {
-      setDormStep(currentDormStep - 1);
-    });
-
-    document.querySelectorAll('.step-tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        setDormStep(parseInt(btn.dataset.step));
-      });
-    });
-
-    document.getElementById('btnSubmitDormitoryBooking')?.addEventListener('click', () => {
-      alert('Official Dormitory Booking Request Submitted Successfully!\nYour request has been routed to the Dormitory Custodian for Bed Assignment.');
-      window.location.href = 'booking_history.php';
-    });
-
     function closeRoomModal() {
-      document.getElementById('roomSelectionModal').style.display = 'none';
+      const modal = document.getElementById('roomSelectionModal');
+      if (modal) modal.style.display = 'none';
+      document.body.style.overflow = '';
     }
   </script>
 </body>

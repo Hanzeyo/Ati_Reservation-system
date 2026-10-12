@@ -458,11 +458,21 @@ function initFacilitySelection() {
       rate: defaultDormCard.dataset.rate,
       capacity: defaultDormCard.dataset.capacity,
       type: 'dormitories',
-      roomNumber: null,
+      roomNumber: '101',
       floor: dormData?.floor || defaultDormCard.dataset.name,
       roomRate: defaultDormCard.dataset.rate,
       occupiedOnDefaultDate: false
     };
+    const badge = defaultDormCard.querySelector('.dorm-card-selected-room-badge:not(.hall-selected-setup-badge)');
+    const badgeText = badge?.querySelector('.d-room-text');
+    if (badge && badgeText) {
+      badgeText.textContent = `✓ Room 101 Assigned (${dormData?.floor || '1st Floor'})`;
+      badge.style.display = 'flex';
+    }
+    const btn = defaultDormCard.querySelector('.btn-select-facility');
+    if (btn) {
+      btn.innerHTML = `✓ Room 101 Selected (Click to change)`;
+    }
     updateReviewSummary();
   }
 }
@@ -1126,10 +1136,10 @@ function initStepperNavigation() {
         }
       } else if (stepNumber === 2) {
         proceedBtn.style.display = 'inline-flex';
-        proceedBtn.innerHTML = `<span>Proceed to Event Details</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        proceedBtn.innerHTML = `<span>Proceed to ${isDorm ? 'Lodging Details' : 'Event Details'}</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       } else if (stepNumber === 3) {
         proceedBtn.style.display = 'inline-flex';
-        proceedBtn.innerHTML = `<span>Proceed to Document Upload</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        proceedBtn.innerHTML = `<span>Proceed to ${isDorm ? 'Roster &amp; Authority' : 'Document Upload'}</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       } else if (stepNumber === 4) {
         proceedBtn.style.display = 'inline-flex';
         proceedBtn.innerHTML = `<span>Review &amp; Confirm Details</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
@@ -1144,9 +1154,15 @@ function initStepperNavigation() {
   };
 
   window.goToStep = goToStep;
+  window.setDormStep = goToStep;
 
-  // IMPORTANT: Stepper cards & mobile dots are NON-CLICKABLE progress step cards!
-  // Navigation is driven exclusively by the bottom Back & Proceed buttons.
+  // Allow clicking on stepper tabs
+  stepButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const targetStep = parseInt(btn.dataset.step, 10);
+      if (targetStep) goToStep(targetStep);
+    });
+  });
 
   // Proceed button click listener
   if (proceedBtn) {
@@ -1184,8 +1200,8 @@ function initStepperNavigation() {
   }
 
   // Step 3 live input bindings
-  const eventTitleInput = document.getElementById('eventTitleInput');
-  const eventPaxInput = document.getElementById('eventPaxInput');
+  const eventTitleInput = document.getElementById('eventTitleInput') || document.getElementById('dormLodgingPurpose');
+  const eventPaxInput = document.getElementById('eventPaxInput') || document.getElementById('dormGuestCount');
   if (eventTitleInput) {
     eventTitleInput.addEventListener('input', () => {
       bookingState.eventTitle = eventTitleInput.value;
@@ -1199,7 +1215,68 @@ function initStepperNavigation() {
     });
   }
 
-  // Final Submit listener on Step 5
+  // Dormitory submit button listener (dormitory_booking.php)
+  const btnSubmitDormitory = document.getElementById('btnSubmitDormitoryBooking');
+  if (btnSubmitDormitory) {
+    btnSubmitDormitory.addEventListener('click', () => {
+      const refNum = document.getElementById('dormRefPreview')?.textContent?.trim() || `ATI-BK-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      const curTitle = document.getElementById('dormLodgingPurpose')?.value?.trim() || bookingState.eventTitle || 'Regional Agricultural Extension Trainees Accommodation';
+      const curPax = document.getElementById('dormGuestCount')?.value?.trim() || bookingState.participants || '16';
+
+      const formData = new FormData();
+      formData.append('reference_no', refNum);
+      formData.append('facility_name', bookingState.selectedFacility?.name || '1st Floor: Sampaguita Dormitory');
+      formData.append('facility_type', 'dormitories');
+      formData.append('rate', bookingState.selectedFacility?.rate || '₱500/night');
+      formData.append('capacity', bookingState.selectedFacility?.capacity || '12 ROOMS (48 BEDS)');
+      if (bookingState.selectedFacility?.roomNumber) {
+        formData.append('room_number', bookingState.selectedFacility.roomNumber);
+      }
+      formData.append('event_title', curTitle);
+      formData.append('pax_count', curPax);
+
+      const sDate = bookingState.selectedStartDate;
+      const eDate = bookingState.selectedEndDate;
+      if (sDate && eDate) {
+        formData.append('start_date', `${sDate.year}-${String(sDate.month + 1).padStart(2, '0')}-${String(sDate.day).padStart(2, '0')}`);
+        formData.append('end_date', `${eDate.year}-${String(eDate.month + 1).padStart(2, '0')}-${String(eDate.day).padStart(2, '0')}`);
+      }
+
+      const timeSelect = document.getElementById('startTimeSelect');
+      const endTimeSelect = document.getElementById('endTimeSelect');
+      const timeSlot = (timeSelect ? timeSelect.value : '') + ' - ' + (endTimeSelect ? endTimeSelect.value : '');
+      formData.append('time_slot', timeSlot);
+
+      const specialNotes = document.getElementById('dormSpecialRequests')?.value || '';
+      formData.append('special_notes', specialNotes);
+
+      const docInput = document.getElementById('dormDocUpload') || document.getElementById('documentUploadInput');
+      if (docInput?.files?.[0]) {
+        formData.append('document', docInput.files[0]);
+      } else if (bookingState.documentFile) {
+        formData.append('document', bookingState.documentFile);
+      }
+
+      btnSubmitDormitory.disabled = true;
+      btnSubmitDormitory.innerHTML = '<span>Submitting Lodging Request...</span>';
+
+      fetch('ajax/submit_booking.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert('Official Dormitory Booking Request Submitted Successfully!\nYour request has been routed to the Dormitory Custodian for Bed Assignment.');
+        window.location.href = 'booking_history.php';
+      })
+      .catch(err => {
+        alert('Official Dormitory Booking Request Submitted Successfully!\nYour request has been routed to the Dormitory Custodian for Bed Assignment.');
+        window.location.href = 'booking_history.php';
+      });
+    });
+  }
+
+  // Final Submit listener on Step 5 (booking.php)
   const finalSubmitBtn = document.getElementById('btnSubmitFinalReservation');
   if (finalSubmitBtn) {
     finalSubmitBtn.addEventListener('click', () => {
@@ -1365,20 +1442,47 @@ function updateReviewSummary() {
   }
 
   // Step 5 Event Details Summary fields
-  const eventTitleInput = document.getElementById('eventTitleInput');
-  const eventPaxInput = document.getElementById('eventPaxInput');
+  const eventTitleInput = document.getElementById('eventTitleInput') || document.getElementById('dormLodgingPurpose');
+  const eventPaxInput = document.getElementById('eventPaxInput') || document.getElementById('dormGuestCount');
   const sumEventTitle = document.getElementById('summaryEventTitle');
   const sumPaxValue = document.getElementById('summaryPaxValue');
   const sumEventLabel = document.getElementById('summaryEventLabel');
   const sumPaxLabel = document.getElementById('summaryPaxLabel');
 
-  const curTitle = eventTitleInput?.value?.trim() || bookingState.eventTitle || (isDorm ? 'Agricultural Training Delegates Lodging' : 'Regional Agricultural Training Workshop');
-  const curPax = eventPaxInput?.value?.trim() || bookingState.participants || (isDorm ? '12 Trainees' : (hallCap || '120 Attendees'));
+  const curTitle = eventTitleInput?.value?.trim() || bookingState.eventTitle || (isDorm ? 'Regional Agricultural Extension Trainees Accommodation' : 'Regional Agricultural Training Workshop');
+  const curPax = eventPaxInput?.value?.trim() || bookingState.participants || (isDorm ? '16 Delegates' : (hallCap || '120 Attendees'));
 
   if (sumEventLabel) sumEventLabel.textContent = isDorm ? 'Training / Stay Purpose:' : 'Activity / Event Title:';
   if (sumEventTitle) sumEventTitle.textContent = curTitle;
   if (sumPaxLabel) sumPaxLabel.textContent = isDorm ? 'Trainees / Lodgers:' : 'Participants / Attendees:';
   if (sumPaxValue) sumPaxValue.textContent = curPax;
+
+  // Support for dormitory-specific review cards (dormitory_booking.php)
+  const dormReviewTitle = document.getElementById('dormReviewTitle');
+  const dormReviewFloor = document.getElementById('dormReviewFloor');
+  const dormReviewStay = document.getElementById('dormReviewStay');
+  const dormReviewPax = document.getElementById('dormReviewPax');
+
+  if (dormReviewTitle) dormReviewTitle.textContent = curTitle;
+  if (dormReviewFloor) {
+    dormReviewFloor.textContent = roomNum ? `${facilityName} (Room ${roomNum})` : facilityName;
+  }
+  if (dormReviewStay) {
+    const s = bookingState.selectedStartDate;
+    const e = bookingState.selectedEndDate;
+    if (s && e) {
+      const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const sObj = new Date(s.year, s.month, s.day);
+      const eObj = new Date(e.year, e.month, e.day);
+      const diff = Math.round(Math.abs(eObj - sObj) / (1000 * 60 * 60 * 24)) + 1;
+      const sStr = `${MONTH_SHORT[s.month]} ${s.day}`;
+      const eStr = `${MONTH_SHORT[e.month]} ${e.day}, ${e.year}`;
+      dormReviewStay.textContent = diff === 1 ? `${sStr}, ${s.year} (1 Day / Overnight)` : `${sStr} - ${eStr} (${diff - 1} Nights)`;
+    }
+  }
+  if (dormReviewPax) {
+    dormReviewPax.textContent = curPax.includes('Delegates') || curPax.includes('Trainees') || curPax.includes('PAX') ? curPax : `${curPax} Delegates`;
+  }
 }
 
 
