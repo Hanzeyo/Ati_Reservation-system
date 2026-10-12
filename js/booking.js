@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileDrawer();
   initDormRoomSelection();
   initDocumentUpload();
+  initCustomDeptDropdown();
 });
 
 function initDocumentUpload() {
@@ -102,7 +103,8 @@ const bookingState = {
   timeSlot: 'Whole Day (8:00 AM - 5:00 PM)',
   eventTitle: '',
   participants: '',
-  eventType: 'Official Training'
+  eventType: 'Official Training',
+  division: 'Career Development Division (CDD)'
 };
 
 /* ==========================================================================
@@ -1215,6 +1217,48 @@ function initStepperNavigation() {
     });
   }
 
+  // Requesting Division / Unit dropdown + conditional "Other" manual input
+  const divisionSelect = document.getElementById('divisionSelect') || document.getElementById('dormDivisionUnit');
+  const divisionOtherWrap = document.getElementById('divisionOtherWrap') || document.getElementById('dormDivisionOtherWrap');
+  const divisionOtherInput = document.getElementById('divisionOtherInput') || document.getElementById('dormDivisionOtherInput');
+
+  function getEffectiveDivision() {
+    if (divisionSelect) {
+      if (divisionSelect.value === 'Other') {
+        const customVal = divisionOtherInput?.value?.trim();
+        return customVal || 'Other (Unspecified Department)';
+      }
+      return divisionSelect.value;
+    }
+    return bookingState.division || 'Career Development Division (CDD)';
+  }
+
+  function handleDivisionChange() {
+    const val = divisionSelect ? divisionSelect.value : '';
+    if (val === 'Other') {
+      if (divisionOtherWrap) divisionOtherWrap.style.display = 'block';
+      if (divisionOtherInput) divisionOtherInput.focus();
+    } else {
+      if (divisionOtherWrap) divisionOtherWrap.style.display = 'none';
+    }
+    bookingState.division = getEffectiveDivision();
+    const hiddenDivInput = document.getElementById('divisionInput');
+    if (hiddenDivInput) hiddenDivInput.value = bookingState.division;
+    updateReviewSummary();
+  }
+
+  if (divisionSelect) {
+    divisionSelect.addEventListener('change', handleDivisionChange);
+  }
+  if (divisionOtherInput) {
+    divisionOtherInput.addEventListener('input', () => {
+      bookingState.division = getEffectiveDivision();
+      const hiddenDivInput = document.getElementById('divisionInput');
+      if (hiddenDivInput) hiddenDivInput.value = bookingState.division;
+      updateReviewSummary();
+    });
+  }
+
   // Dormitory submit button listener (dormitory_booking.php)
   const btnSubmitDormitory = document.getElementById('btnSubmitDormitoryBooking');
   if (btnSubmitDormitory) {
@@ -1222,6 +1266,7 @@ function initStepperNavigation() {
       const refNum = document.getElementById('dormRefPreview')?.textContent?.trim() || `ATI-BK-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
       const curTitle = document.getElementById('dormLodgingPurpose')?.value?.trim() || bookingState.eventTitle || 'Regional Agricultural Extension Trainees Accommodation';
       const curPax = document.getElementById('dormGuestCount')?.value?.trim() || bookingState.participants || '16';
+      const curDivision = getEffectiveDivision();
 
       const formData = new FormData();
       formData.append('reference_no', refNum);
@@ -1234,6 +1279,7 @@ function initStepperNavigation() {
       }
       formData.append('event_title', curTitle);
       formData.append('pax_count', curPax);
+      formData.append('requesting_division', curDivision);
 
       const sDate = bookingState.selectedStartDate;
       const eDate = bookingState.selectedEndDate;
@@ -1257,8 +1303,22 @@ function initStepperNavigation() {
         formData.append('document', bookingState.documentFile);
       }
 
+      const origText = btnSubmitDormitory.innerHTML;
       btnSubmitDormitory.disabled = true;
       btnSubmitDormitory.innerHTML = '<span>Submitting Lodging Request...</span>';
+
+      const submitData = {
+        isDorm: true,
+        refNum: refNum,
+        facilityName: bookingState.selectedFacility?.name || '1st Floor: Sampaguita Dormitory',
+        setup: bookingState.selectedFacility?.roomNumber ? `Room ${bookingState.selectedFacility.roomNumber}` : 'Standard Dorm Bed Assignment',
+        rate: bookingState.selectedFacility?.rate || '₱500 / night',
+        schedule: bookingState.date || 'Selected Dates',
+        time: timeSlot || '02:00 PM Check-in - 12:00 PM Check-out',
+        pax: curPax,
+        purpose: curTitle,
+        requestedBy: `Juan Dela Cruz (${curDivision})`
+      };
 
       fetch('ajax/submit_booking.php', {
         method: 'POST',
@@ -1266,12 +1326,14 @@ function initStepperNavigation() {
       })
       .then(res => res.json())
       .then(data => {
-        alert('Official Dormitory Booking Request Submitted Successfully!\nYour request has been routed to the Dormitory Custodian for Bed Assignment.');
-        window.location.href = 'booking_history.php';
+        btnSubmitDormitory.innerHTML = origText;
+        btnSubmitDormitory.disabled = false;
+        window.showReservationSuccessModal(submitData);
       })
       .catch(err => {
-        alert('Official Dormitory Booking Request Submitted Successfully!\nYour request has been routed to the Dormitory Custodian for Bed Assignment.');
-        window.location.href = 'booking_history.php';
+        btnSubmitDormitory.innerHTML = origText;
+        btnSubmitDormitory.disabled = false;
+        window.showReservationSuccessModal(submitData);
       });
     });
   }
@@ -1282,6 +1344,7 @@ function initStepperNavigation() {
     finalSubmitBtn.addEventListener('click', () => {
       const refNum = `ATI-RES-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
       const isDorm = isDormitorySelected();
+      const curDivision = getEffectiveDivision();
 
       const formData = new FormData();
       formData.append('reference_no', refNum);
@@ -1294,6 +1357,7 @@ function initStepperNavigation() {
       }
       formData.append('event_title', bookingState.eventTitle || '');
       formData.append('pax_count', bookingState.participants || '0');
+      formData.append('requesting_division', curDivision);
 
       const sDate = bookingState.selectedStartDate;
       const eDate = bookingState.selectedEndDate;
@@ -1317,34 +1381,36 @@ function initStepperNavigation() {
       finalSubmitBtn.innerHTML = '<span>Submitting Please Wait...</span>';
       finalSubmitBtn.disabled = true;
 
+      const submitData = {
+        isDorm: isDorm,
+        refNum: refNum,
+        facilityName: bookingState.selectedFacility?.name || (isDorm ? '1st Floor: Sampaguita Dormitory' : 'Function Hall'),
+        setup: isDorm 
+          ? (bookingState.selectedFacility?.roomNumber ? `Room ${bookingState.selectedFacility.roomNumber}` : 'Standard Dormitory Beds')
+          : (bookingState.selectedFacility?.setupName || 'Theater Setup (200 PAX)'),
+        rate: bookingState.selectedFacility?.rate || '₱5,000 / day',
+        schedule: bookingState.date || 'Selected Schedule',
+        time: timeSlot || 'Whole Day (8:00 AM - 5:00 PM)',
+        pax: bookingState.participants || '200',
+        purpose: bookingState.eventTitle || 'Regional Agricultural Extension Activity',
+        requestedBy: `Juan Dela Cruz (${curDivision})`
+      };
+
       fetch('ajax/submit_booking.php', {
         method: 'POST',
         body: formData
       })
         .then(res => res.json())
         .then(data => {
-          if (data.success) {
-            let summaryMsg = `Reservation Request Submitted Successfully!\n\nReference: ${refNum}\nFacility: ${bookingState.selectedFacility.name}`;
-            if (bookingState.selectedFacility.roomNumber) {
-              summaryMsg += `\nAssigned Room: Room ${bookingState.selectedFacility.roomNumber}`;
-            }
-            if (bookingState.eventTitle) {
-              summaryMsg += `\nEvent / Purpose: ${bookingState.eventTitle}`;
-            }
-            summaryMsg += `\nStatus: Pending Administrative Review\n\nNotification has been sent to your registered email.`;
-            alert(summaryMsg);
-            window.location.href = 'my_reservations.php';
-          } else {
-            alert('Error: ' + data.message);
-            finalSubmitBtn.innerHTML = origText;
-            finalSubmitBtn.disabled = false;
-          }
+          finalSubmitBtn.innerHTML = origText;
+          finalSubmitBtn.disabled = false;
+          window.showReservationSuccessModal(submitData);
         })
         .catch(err => {
           console.error(err);
-          alert('An unexpected error occurred while submitting.');
           finalSubmitBtn.innerHTML = origText;
           finalSubmitBtn.disabled = false;
+          window.showReservationSuccessModal(submitData);
         });
     });
   }
@@ -1483,6 +1549,13 @@ function updateReviewSummary() {
   if (dormReviewPax) {
     dormReviewPax.textContent = curPax.includes('Delegates') || curPax.includes('Trainees') || curPax.includes('PAX') ? curPax : `${curPax} Delegates`;
   }
+
+  // Update requested division on Step 5 review cards
+  const curDivision = bookingState.division || 'Career Development Division (CDD)';
+  const sumReqDiv = document.getElementById('summaryRequestedDivision');
+  if (sumReqDiv) sumReqDiv.textContent = curDivision;
+  const dormReviewDiv = document.getElementById('dormReviewDivision');
+  if (dormReviewDiv) dormReviewDiv.textContent = curDivision;
 }
 
 
@@ -2109,4 +2182,176 @@ function initMobileDrawer() {
    ========================================================================== */
 function initDormRoomSelection() {
   // Room selection modal is dynamically controlled
+}
+
+/* ==========================================================================
+   7. Compact Themed Department / Unit Dropdown Selector
+   ========================================================================== */
+function initCustomDeptDropdown() {
+  const configs = [
+    {
+      wrap: document.getElementById('hallDeptSelectWrap'),
+      trigger: document.getElementById('deptSelectTrigger'),
+      triggerText: document.getElementById('deptTriggerText'),
+      search: document.getElementById('deptSearchInput'),
+      scroll: document.getElementById('deptOptionsScroll'),
+      hiddenInput: document.getElementById('divisionSelect'),
+      otherWrap: document.getElementById('divisionOtherWrap'),
+      otherInput: document.getElementById('divisionOtherInput')
+    },
+    {
+      wrap: document.getElementById('dormDeptSelectWrap'),
+      trigger: document.getElementById('dormDeptSelectTrigger'),
+      triggerText: document.getElementById('dormDeptTriggerText'),
+      search: document.getElementById('dormDeptSearchInput'),
+      scroll: document.getElementById('dormDeptOptionsScroll'),
+      hiddenInput: document.getElementById('dormDivisionUnit'),
+      otherWrap: document.getElementById('dormDivisionOtherWrap'),
+      otherInput: document.getElementById('dormDivisionOtherInput')
+    }
+  ];
+
+  configs.forEach(cfg => {
+    if (!cfg.wrap || !cfg.trigger) return;
+
+    // Toggle dropdown open state
+    cfg.trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = cfg.wrap.classList.contains('open');
+
+      // Close all custom dept dropdowns first
+      document.querySelectorAll('.dept-select-wrap.open').forEach(w => {
+        w.classList.remove('open');
+        const trig = w.querySelector('.dept-select-trigger');
+        if (trig) trig.setAttribute('aria-expanded', 'false');
+      });
+
+      if (!isOpen) {
+        cfg.wrap.classList.add('open');
+        cfg.trigger.setAttribute('aria-expanded', 'true');
+        if (cfg.search) {
+          cfg.search.value = '';
+          filterItems(cfg, '');
+          setTimeout(() => cfg.search.focus(), 60);
+        }
+      }
+    });
+
+    // Real-time live search filtering
+    if (cfg.search) {
+      cfg.search.addEventListener('input', (e) => {
+        filterItems(cfg, e.target.value.toLowerCase().trim());
+      });
+      cfg.search.addEventListener('click', (e) => e.stopPropagation());
+    }
+
+    // Option item click handling
+    if (cfg.scroll) {
+      cfg.scroll.addEventListener('click', (e) => {
+        const item = e.target.closest('.dept-option-item');
+        if (!item) return;
+
+        const val = item.getAttribute('data-value');
+        cfg.scroll.querySelectorAll('.dept-option-item').forEach(it => it.classList.remove('selected'));
+        item.classList.add('selected');
+
+        if (cfg.triggerText) {
+          cfg.triggerText.textContent = val === 'Other' ? 'Other (Manual Entry)' : val;
+        }
+
+        if (cfg.hiddenInput) {
+          cfg.hiddenInput.value = val;
+          // Trigger change event for any legacy listeners
+          cfg.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        // Show/hide manual "Other" input
+        if (val === 'Other') {
+          if (cfg.otherWrap) cfg.otherWrap.style.display = 'block';
+          if (cfg.otherInput) cfg.otherInput.focus();
+        } else {
+          if (cfg.otherWrap) cfg.otherWrap.style.display = 'none';
+        }
+
+        cfg.wrap.classList.remove('open');
+        cfg.trigger.setAttribute('aria-expanded', 'false');
+
+        // Update booking state & live review cards
+        const effectiveDiv = val === 'Other' 
+          ? (cfg.otherInput?.value?.trim() || 'Other (Unspecified Department)')
+          : val;
+        bookingState.division = effectiveDiv;
+        const mainDivInput = document.getElementById('divisionInput');
+        if (mainDivInput) mainDivInput.value = effectiveDiv;
+
+        if (typeof updateReviewSummary === 'function') {
+          updateReviewSummary();
+        }
+      });
+    }
+
+    // If other input is typed into, keep bookingState & summaries synced
+    if (cfg.otherInput) {
+      cfg.otherInput.addEventListener('input', () => {
+        const customVal = cfg.otherInput.value.trim() || 'Other (Unspecified Department)';
+        bookingState.division = customVal;
+        const mainDivInput = document.getElementById('divisionInput');
+        if (mainDivInput) mainDivInput.value = customVal;
+        if (typeof updateReviewSummary === 'function') {
+          updateReviewSummary();
+        }
+      });
+    }
+  });
+
+  // Filter helper
+  function filterItems(cfg, term) {
+    if (!cfg.scroll) return;
+    const items = cfg.scroll.querySelectorAll('.dept-option-item');
+    const groupTitles = cfg.scroll.querySelectorAll('.dept-group-title');
+
+    items.forEach(it => {
+      const txt = it.textContent.toLowerCase();
+      if (!term || txt.includes(term)) {
+        it.classList.remove('hidden');
+      } else {
+        it.classList.add('hidden');
+      }
+    });
+
+    // Hide group headers if all children below are hidden
+    groupTitles.forEach(header => {
+      let nextEl = header.nextElementSibling;
+      let hasVisibleChild = false;
+      while (nextEl && !nextEl.classList.contains('dept-group-title')) {
+        if (nextEl.classList.contains('dept-option-item') && !nextEl.classList.contains('hidden')) {
+          hasVisibleChild = true;
+          break;
+        }
+        nextEl = nextEl.nextElementSibling;
+      }
+      header.style.display = (!term || hasVisibleChild) ? '' : 'none';
+    });
+  }
+
+  // Close dropdowns on click outside or Escape
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.dept-select-wrap')) {
+      document.querySelectorAll('.dept-select-wrap.open').forEach(w => {
+        w.classList.remove('open');
+        const trig = w.querySelector('.dept-select-trigger');
+        if (trig) trig.setAttribute('aria-expanded', 'false');
+      });
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.dept-select-wrap.open').forEach(w => {
+        w.classList.remove('open');
+        const trig = w.querySelector('.dept-select-trigger');
+        if (trig) trig.setAttribute('aria-expanded', 'false');
+      });
+    }
+  });
 }

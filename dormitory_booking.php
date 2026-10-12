@@ -848,26 +848,93 @@ require_once __DIR__ . '/includes/auth_guard.php';
               style="width: 100%; padding: 0.85rem; border: 1.5px solid #c9ded0; border-radius: 8px;">
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div style="display: grid; grid-template-columns: minmax(180px, 240px) 1fr; gap: 1.25rem; margin-bottom: 1.15rem; align-items: start;">
             <div>
-              <label for="dormGuestCount"
-                style="display: block; font-weight: 700; font-size: 0.88rem; margin-bottom: 0.35rem; color: #1b3826;">Total
-                Number of Delegates / Guests *</label>
+              <label for="dormGuestCount" class="auth-field-label">Total Guests Staying *</label>
               <input type="number" id="dormGuestCount" class="step-text-input" value="16" min="1" max="48"
-                style="width: 100%; padding: 0.85rem; border: 1.5px solid #c9ded0; border-radius: 8px;">
+                style="width: 100%; padding: 0.55rem 0.85rem; font-size: 0.88rem; border: 1.5px solid #c9ded0; border-radius: 8px;">
             </div>
             <div>
-              <label for="dormDivisionUnit"
-                style="display: block; font-weight: 700; font-size: 0.88rem; margin-bottom: 0.35rem; color: #1b3826;">Endorsing
-                Division / Unit *</label>
-              <select id="dormDivisionUnit"
-                style="width: 100%; padding: 0.85rem; border: 1.5px solid #c9ded0; border-radius: 8px; font-weight: 600;">
-                <option value="CDD" selected>Career Development Division (CDD)</option>
-                <option value="PAD">Partnership &amp; Accreditation Division (PAD)</option>
-                <option value="ISD">Information Services Division (ISD)</option>
-                <option value="PPD">Policy &amp; Planning Division (PPD)</option>
-                <option value="AFU">Administrative and Finance Unit</option>
-              </select>
+              <label for="dormDeptSelectTrigger" class="auth-field-label">Endorsing Division / Unit *</label>
+              <div class="dept-select-wrap" id="dormDeptSelectWrap">
+                <button type="button" class="dept-select-trigger" id="dormDeptSelectTrigger" aria-haspopup="listbox" aria-expanded="false" style="padding: 0.55rem 0.85rem;">
+                  <span class="dept-trigger-text" id="dormDeptTriggerText">Career Development Division (CDD)</span>
+                  <svg class="dept-select-arrow" viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+
+                <div class="dept-dropdown-panel" id="dormDeptDropdownPanel">
+                  <div class="dept-search-box">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" class="dept-search-input" id="dormDeptSearchInput" placeholder="Quick search division, bureau, agency..." autocomplete="off">
+                  </div>
+
+                  <div class="dept-options-scroll" id="dormDeptOptionsScroll" role="listbox">
+                    <div class="dept-group-title">Agricultural Training Institute (ATI)</div>
+                    <div class="dept-option-item selected" data-value="Career Development Division (CDD)">Career Development Division (CDD)</div>
+                    <div class="dept-option-item" data-value="Partnerships and Accreditation Division (PAD)">Partnerships and Accreditation Division (PAD)</div>
+                    <div class="dept-option-item" data-value="Information Services Division (ISD)">Information Services Division (ISD)</div>
+                    <div class="dept-option-item" data-value="Policy and Planning Division (PPD)">Policy and Planning Division (PPD)</div>
+                    <div class="dept-option-item" data-value="Administrative and Finance Division (AFD / AFU)">Administrative and Finance Division (AFD / AFU)</div>
+                    <div class="dept-option-item" data-value="Office of the Director (OD)">Office of the Director (OD)</div>
+                    <div class="dept-option-item" data-value="Office of the Assistant Director (OAD)">Office of the Assistant Director (OAD)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC CAR (Cordillera Administrative Region)">ATI-RTC CAR (Cordillera Administrative Region)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC I (Ilocos Region)">ATI-RTC I (Ilocos Region)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC II (Cagayan Valley)">ATI-RTC II (Cagayan Valley)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC III (Central Luzon)">ATI-RTC III (Central Luzon)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC IV-A (CALABARZON)">ATI-RTC IV-A (CALABARZON)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC IV-B (MIMAROPA)">ATI-RTC IV-B (MIMAROPA)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC V (Bicol Region)">ATI-RTC V (Bicol Region)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC VI (Western Visayas)">ATI-RTC VI (Western Visayas)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC VII (Central Visayas)">ATI-RTC VII (Central Visayas)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC VIII (Eastern Visayas)">ATI-RTC VIII (Eastern Visayas)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC IX (Zamboanga Peninsula)">ATI-RTC IX (Zamboanga Peninsula)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC X (Northern Mindanao)">ATI-RTC X (Northern Mindanao)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC XI (Davao Region)">ATI-RTC XI (Davao Region)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC XII (SOCCSKSARGEN)">ATI-RTC XII (SOCCSKSARGEN)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC XIII (Caraga Region)">ATI-RTC XIII (Caraga Region)</div>
+                    <div class="dept-option-item" data-value="ATI-ITCPH (International Training Center on Pig Husbandry)">ATI-ITCPH (International Training Center on Pig Husbandry)</div>
+
+                    <div class="dept-group-title">Department of Agriculture (DA) &amp; Sister Agencies</div>
+                    <div class="dept-option-item" data-value="DA – Office of the Secretary (OSEC)">DA – Office of the Secretary (OSEC)</div>
+                    <div class="dept-option-item" data-value="BAI – Bureau of Animal Industry">BAI – Bureau of Animal Industry</div>
+                    <div class="dept-option-item" data-value="BAR – Bureau of Agricultural Research">BAR – Bureau of Agricultural Research</div>
+                    <div class="dept-option-item" data-value="BAFS – Bureau of Agriculture and Fisheries Standards">BAFS – Bureau of Agriculture and Fisheries Standards</div>
+                    <div class="dept-option-item" data-value="BFAR – Bureau of Fisheries and Aquatic Resources">BFAR – Bureau of Fisheries and Aquatic Resources</div>
+                    <div class="dept-option-item" data-value="BPI – Bureau of Plant Industry">BPI – Bureau of Plant Industry</div>
+                    <div class="dept-option-item" data-value="BSWM – Bureau of Soils and Water Management">BSWM – Bureau of Soils and Water Management</div>
+                    <div class="dept-option-item" data-value="ACPC – Agricultural Credit Policy Council">ACPC – Agricultural Credit Policy Council</div>
+                    <div class="dept-option-item" data-value="FPA – Fertilizer and Pesticide Authority">FPA – Fertilizer and Pesticide Authority</div>
+                    <div class="dept-option-item" data-value="NMIS – National Meat Inspection Service">NMIS – National Meat Inspection Service</div>
+                    <div class="dept-option-item" data-value="PCAF – Philippine Council for Agriculture and Fisheries">PCAF – Philippine Council for Agriculture and Fisheries</div>
+                    <div class="dept-option-item" data-value="PCC – Philippine Carabao Center">PCC – Philippine Carabao Center</div>
+                    <div class="dept-option-item" data-value="PhilMech – Philippine Center for Postharvest Development and Mechanization">PhilMech – Philippine Center for Postharvest Development and Mechanization</div>
+                    <div class="dept-option-item" data-value="NDA – National Dairy Authority">NDA – National Dairy Authority</div>
+                    <div class="dept-option-item" data-value="NFA – National Food Authority">NFA – National Food Authority</div>
+                    <div class="dept-option-item" data-value="NIA – National Irrigation Administration">NIA – National Irrigation Administration</div>
+                    <div class="dept-option-item" data-value="PCA – Philippine Coconut Authority">PCA – Philippine Coconut Authority</div>
+                    <div class="dept-option-item" data-value="PCIC – Philippine Crop Insurance Corporation">PCIC – Philippine Crop Insurance Corporation</div>
+                    <div class="dept-option-item" data-value="PhilFIDA – Philippine Fiber Industry Development Authority">PhilFIDA – Philippine Fiber Industry Development Authority</div>
+                    <div class="dept-option-item" data-value="PhilRice – Philippine Rice Research Institute">PhilRice – Philippine Rice Research Institute</div>
+                    <div class="dept-option-item" data-value="SRA – Sugar Regulatory Administration">SRA – Sugar Regulatory Administration</div>
+
+                    <div class="dept-group-title">Other / Partner Organization</div>
+                    <div class="dept-option-item" data-value="Other">Other (Please specify below...)</div>
+                  </div>
+                </div>
+
+                <!-- Retain hidden input for form sync and submission -->
+                <input type="hidden" id="dormDivisionUnit" value="Career Development Division (CDD)">
+              </div>
+
+              <div id="dormDivisionOtherWrap" style="display: none; margin-top: 0.6rem;">
+                <input type="text" id="dormDivisionOtherInput" class="dept-other-input" placeholder="Type your Department, Unit, or Office name...">
+                <small class="dept-other-note">Specify your office / organization for administrative routing</small>
+              </div>
             </div>
           </div>
 
@@ -975,7 +1042,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
           <div>
             <span style="font-size: 0.76rem; text-transform: uppercase; color: #526f5e; font-weight: 700;">Endorsing
               Unit</span>
-            <strong style="display: block; font-size: 0.95rem; color: #143522; margin-top: 0.2rem;">Career Development
+            <strong style="display: block; font-size: 0.95rem; color: #143522; margin-top: 0.2rem;" id="dormReviewDivision">Career Development
               Division (CDD)</strong>
           </div>
         </div>

@@ -976,19 +976,37 @@ body.booking-body {
 .facility-amenities-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
-  margin-bottom: 1.5rem;
-  flex-grow: 1;
+  align-content: flex-start;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  min-height: 58px;
 }
 
 .amenity-pill {
-  font-size: 0.76rem;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: #3b5044;
-  background: #f1f7f3;
+  color: #244b34;
+  background: #f0f7f2;
   padding: 0.28rem 0.65rem;
   border-radius: 6px;
-  border: 1px solid #dce8e0;
+  border: 1px solid #d4e5da;
+  line-height: 1.25;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+  flex-grow: 0 !important;
+  flex-shrink: 0;
+  height: auto;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.amenity-pill:hover {
+  background: #e2f0e6;
+  border-color: #b5d5c0;
+  color: #175432;
 }
 
 /* Card Action Button */
@@ -1005,6 +1023,7 @@ body.booking-body {
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
+  margin-top: auto;
   transition: var(--transition);
 }
 
@@ -2756,4 +2775,197 @@ body.booking-body {
 
 .booking-bottom-actions .btn-proceed-step {
   margin-left: auto;
+}
+
+/* ==========================================================================
+   COMPACT DEPARTMENT SELECT DROPDOWN (ATI THEMED)
+   ========================================================================== */
+.dept-select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.dept-select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #173b26;
+  background: #ffffff;
+  border: 1.5px solid #c9ded0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.dept-select-trigger:hover {
+  border-color: #175432;
+  background-color: #fcfdfc;
+}
+
+.dept-select-wrap.open .dept-select-trigger {
+  border-color: #175432;
+  box-shadow: 0 0 0 3px rgba(23, 84, 50, 0.12);
+  background-color: #ffffff;
+}
+
+.dept-trigger-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 0.5rem;
+}
+
+.dept-select-arrow {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  stroke: #526f5e;
+  transition: transform 0.25s ease;
+  pointer-events: none;
+}
+
+.dept-select-wrap.open .dept-select-arrow {
+  transform: rotate(180deg);
+  stroke: #175432;
+}
+
+.dept-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1.5px solid #c4d7cc;
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(16, 45, 27, 0.14);
+  z-index: 1050;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dept-select-wrap.open .dept-dropdown-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dept-search-box {
+  padding: 0.45rem 0.6rem;
+  background: #f8faf9;
+  border-bottom: 1px solid #e1ece4;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.dept-search-box svg {
+  width: 14px;
+  height: 14px;
+  stroke: #668372;
+}
+
+.dept-search-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 0.8rem;
+  font-family: inherit;
+  color: #173b26;
+  outline: none;
+}
+
+.dept-options-scroll {
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 0.35rem 0.25rem;
+}
+
+.dept-group-title {
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #0d4626;
+  background: #eff7f2;
+  padding: 0.3rem 0.65rem;
+  border-radius: 4px;
+  margin: 0.35rem 0.35rem 0.2rem 0.35rem;
+}
+
+.dept-option-item {
+  padding: 0.42rem 0.65rem;
+  font-size: 0.81rem;
+  color: #213d2c;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  margin: 1px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dept-option-item:hover {
+  background: #eaf4ee;
+  color: #0e3b20;
+  font-weight: 600;
+}
+
+.dept-option-item.selected {
+  background: #175432;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.dept-option-item.hidden {
+  display: none !important;
+}
+
+.dept-other-input {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.83rem;
+  font-family: inherit;
+  color: #173b26;
+  background: #ffffff;
+  border: 1.5px solid #175432;
+  border-radius: 8px;
+  outline: none;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 2.5px rgba(23, 84, 50, 0.1);
+}
+
+.dept-other-note {
+  display: block;
+  font-size: 0.74rem;
+  color: #556f60;
+  margin-top: 0.25rem;
+}
+
+/* Custom Scrollbar for Options */
+.dept-options-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.dept-options-scroll::-webkit-scrollbar-track {
+  background: #f4f8f5;
+}
+.dept-options-scroll::-webkit-scrollbar-thumb {
+  background: #b5ccbe;
+  border-radius: 4px;
+}
+.dept-options-scroll::-webkit-scrollbar-thumb:hover {
+  background: #89aa96;
 }
