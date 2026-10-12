@@ -11,7 +11,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Redirect to home if user is not an admin
-if (!in_array($_SESSION['role'], ['admin', 'super_admin'])) {
+$userRole = strtolower($_SESSION['role'] ?? '');
+if (!in_array($userRole, ['admin', 'super_admin'])) {
     header("Location: home.php");
     exit();
 }

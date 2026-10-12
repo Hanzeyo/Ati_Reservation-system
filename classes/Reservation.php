@@ -1,5 +1,6 @@
 <?php
-class Reservation extends BaseModel {
+class Reservation extends BaseModel
+{
     protected $table_name = "reservations";
 
     public $id;
@@ -17,12 +18,13 @@ class Reservation extends BaseModel {
     public $admin_remarks;
     public $document_path;
 
-    public function create() {
+    public function create()
+    {
         $query = "INSERT INTO " . $this->table_name . " 
                 (reference_no, user_id, facility_id, room_id, event_title, pax_count, start_date, end_date, time_slot, special_notes, status, document_path) 
                 VALUES 
                 (:reference_no, :user_id, :facility_id, :room_id, :event_title, :pax_count, :start_date, :end_date, :time_slot, :special_notes, :status, :document_path)";
-        
+
         $stmt = $this->conn->prepare($query);
 
         $stmt->bindParam(':reference_no', $this->reference_no);
@@ -38,13 +40,14 @@ class Reservation extends BaseModel {
         $stmt->bindParam(':status', $this->status);
         $stmt->bindParam(':document_path', $this->document_path);
 
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         return false;
     }
 
-    public function getByUser($user_id) {
+    public function getByUser($user_id)
+    {
         $query = "SELECT r.*, f.name as facility_name FROM " . $this->table_name . " r 
                   LEFT JOIN facilities f ON r.facility_id = f.id 
                   WHERE r.user_id = :user_id ORDER BY r.created_at DESC";
@@ -54,7 +57,8 @@ class Reservation extends BaseModel {
         return $stmt;
     }
 
-    public function getPending() {
+    public function getPending()
+    {
         $query = "SELECT r.*, f.name as facility_name, u.full_name as user_name FROM " . $this->table_name . " r 
                   LEFT JOIN facilities f ON r.facility_id = f.id 
                   LEFT JOIN users u ON r.user_id = u.id 
@@ -64,19 +68,21 @@ class Reservation extends BaseModel {
         return $stmt;
     }
 
-    public function updateStatus() {
+    public function updateStatus()
+    {
         $query = "UPDATE " . $this->table_name . " SET status = :status, admin_remarks = :admin_remarks WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':status', $this->status);
         $stmt->bindParam(':admin_remarks', $this->admin_remarks);
         $stmt->bindParam(':id', $this->id);
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         return false;
     }
 
-    public function checkAvailability($facility_id, $start_date, $end_date, $room_id = null) {
+    public function checkAvailability($facility_id, $start_date, $end_date, $room_id = null)
+    {
         if ($room_id) {
             $query = "SELECT id, event_title, start_date, end_date FROM " . $this->table_name . " 
                       WHERE facility_id = ? AND room_id = ? AND status IN ('Approved', 'Completed') 

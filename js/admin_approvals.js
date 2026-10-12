@@ -1,11 +1,13 @@
 /**
  * Agriculture Training Institute - Central Office
- * Super Admin Approvals Queue & Dual-Stage Endorsement Engine
- * Interactive Controller (Stage 1 Recommendation & Stage 2 Final Clearance)
+ * Super Admin Approvals Queue & Three-Stage Governance Engine
+ * Interactive Controller (Stage 1 Endorsement -> Stage 2 Recommendation -> Stage 3 Clearance)
  */
 
-// Initial Dataset of Reservations in the Pipeline
-const approvalsData = {
+// Initial Dataset of Reservations (loaded from MySQL with fallback)
+const approvalsData = (window.initialApprovalsData && typeof window.initialApprovalsData === 'object' && Object.keys(window.initialApprovalsData).length > 0)
+  ? Object.assign({}, window.initialApprovalsData)
+  : {
   'ATI-2026-0891': {
     ref: 'ATI-2026-0891',
     applicant: 'Engr. Juan Dela Cruz',
@@ -20,14 +22,17 @@ const approvalsData = {
     eventTitle: 'National TOT on Climate-Resilient Agriculture Technologies',
     equipment: 'Projector & Motorized Screen, 4 Wireless Microphones, Stage Rostrum, Classroom Type Seating',
     specialNotes: 'Participants include Regional Training Center Focal Persons nationwide. Catering arranged with in-house cafeteria.',
-    stage: 'stage1', // 'stage1' | 'stage2' | 'approved' | 'rejected'
+    stage: 'stage1', // 'stage1' | 'stage2' | 'stage3' | 'approved' | 'rejected'
     stage1By: null,
     stage1Date: null,
     stage1Remarks: null,
     stage2By: null,
     stage2Date: null,
     stage2Remarks: null,
-    urgency: 'medium', // 'urgent' | 'medium' | 'normal'
+    stage3By: null,
+    stage3Date: null,
+    stage3Remarks: null,
+    urgency: 'medium',
     dateFiled: '2026-10-02'
   },
   'ATI-2026-0892': {
@@ -51,6 +56,9 @@ const approvalsData = {
     stage2By: null,
     stage2Date: null,
     stage2Remarks: null,
+    stage3By: null,
+    stage3Date: null,
+    stage3Remarks: null,
     urgency: 'normal',
     dateFiled: '2026-10-03'
   },
@@ -68,14 +76,17 @@ const approvalsData = {
     eventTitle: 'Quasi-Judicial Administrative Adjudication Hearing',
     equipment: 'Video Conference System, Audio Recording Microphone System, Smart Interactive Display',
     specialNotes: 'Confidential executive proceeding. Strict soundproofing and dedicated network needed.',
-    stage: 'stage2', // Recommended by Stage 1, awaiting Stage 2 clearance!
-    stage1By: 'Recommending Officer',
-    stage1Date: 'Oct 04, 2026 2:15 PM',
-    stage1Remarks: 'Logistics and equipment verified available. Recommending approval for administrative session.',
+    stage: 'stage2', // Endorsed, awaiting Stage 2 recommendation!
+    stage1By: 'Division Chief',
+    stage1Date: 'Oct 04, 2026 11:30 AM',
+    stage1Remarks: 'Endorsed for official legal division proceedings.',
     stage2By: null,
     stage2Date: null,
     stage2Remarks: null,
-    urgency: 'urgent', // Oct 08 is upcoming!
+    stage3By: null,
+    stage3Date: null,
+    stage3Remarks: null,
+    urgency: 'urgent',
     dateFiled: '2026-10-01'
   },
   'ATI-2026-0894': {
@@ -92,39 +103,18 @@ const approvalsData = {
     eventTitle: 'Digital Agriculture Course & Rice Crop Manager Training of Trainers',
     equipment: 'High-speed WiFi Hub, Dual Projectors, 60 Ergonomic Chairs & Tables, Power extension cords',
     specialNotes: 'Participants will bring institutional laptops. Stable uninterrupted broadband required.',
-    stage: 'stage1',
-    stage1By: null,
-    stage1Date: null,
-    stage1Remarks: null,
-    stage2By: null,
-    stage2Date: null,
-    stage2Remarks: null,
+    stage: 'stage3', // Endorsed & Recommended, awaiting Stage 3 Clearance!
+    stage1By: 'Division Chief',
+    stage1Date: 'Oct 04, 2026 09:15 AM',
+    stage1Remarks: 'Endorsed for technical digital agriculture training.',
+    stage2By: 'Recommending Officer',
+    stage2Date: 'Oct 05, 2026 02:40 PM',
+    stage2Remarks: 'Logistics and equipment verified available. Recommended for final clearance.',
+    stage3By: null,
+    stage3Date: null,
+    stage3Remarks: null,
     urgency: 'normal',
     dateFiled: '2026-10-04'
-  },
-  'ATI-2026-0895': {
-    ref: 'ATI-2026-0895',
-    applicant: 'Carmela Lim',
-    agency: 'ATI - Information Services Division (ISD)',
-    email: 'carmela.lim@ati.da.gov.ph',
-    phone: '+63 917 888 9900',
-    venue: 'Dormitory Executive Suite',
-    venueCategory: 'dorms',
-    dates: 'October 25 – 27, 2026',
-    timeSlot: 'Check-in: Oct 25 1:00 PM | Check-out: Oct 27 11:00 AM',
-    pax: 14,
-    eventTitle: 'Knowledge Management Technical Working Group Accommodations',
-    equipment: 'Executive Suite Rooms, WiFi Access, Working Desks, Welcome Refreshments',
-    specialNotes: 'Accommodations for invited resource speakers and division technical staff.',
-    stage: 'stage2',
-    stage1By: 'Recommending Officer',
-    stage1Date: 'Oct 05, 2026 10:40 AM',
-    stage1Remarks: 'Dormitory rooms inspected and reserved under ISD quota. Recommended for final clearance.',
-    stage2By: null,
-    stage2Date: null,
-    stage2Remarks: null,
-    urgency: 'normal',
-    dateFiled: '2026-10-03'
   },
   'ATI-2026-0888': {
     ref: 'ATI-2026-0888',
@@ -141,20 +131,23 @@ const approvalsData = {
     equipment: 'Full Audio-Visual Setup, Live Stream Equipment, VIP Holding Area',
     specialNotes: 'Keynote by DA Undersecretary. Security detail coordination completed.',
     stage: 'approved',
-    stage1By: 'Recommending Officer',
+    stage1By: 'Division Chief',
     stage1Date: 'Oct 02, 2026 9:30 AM',
     stage1Remarks: 'Endorsed for priority scheduling.',
-    stage2By: 'Clearance Authority',
-    stage2Date: 'Oct 03, 2026 4:15 PM',
-    stage2Remarks: 'Approved for institutional hosting. Gate pass permit #2026-0888 issued.',
+    stage2By: 'Recommending Officer',
+    stage2Date: 'Oct 03, 2026 11:00 AM',
+    stage2Remarks: 'Logistics verified. Recommended.',
+    stage3By: 'Clearance Authority',
+    stage3Date: 'Oct 03, 2026 4:15 PM',
+    stage3Remarks: 'Approved for institutional hosting. Gate pass permit #2026-0888 issued.',
     urgency: 'normal',
     dateFiled: '2026-09-28'
   }
 };
 
 // Global State
-let activeRole = 'clearance'; // 'recommendation' (Morales) or 'clearance' (Recoter)
-let activeFilterTab = 'awaiting'; // 'awaiting' | 'stage1' | 'stage2' | 'approved' | 'rejected' | 'all'
+let activeRole = 'all'; // 'all' | 'endorsement' | 'recommendation' | 'clearance'
+let activeFilterTab = 'awaiting'; // 'awaiting' | 'stage1' | 'stage2' | 'stage3' | 'approved' | 'rejected' | 'all'
 let selectedRefIds = new Set();
 let currentDossierRef = null;
 let currentDisapproveRef = null;
@@ -176,10 +169,10 @@ document.addEventListener('DOMContentLoaded', function () {
 function initRoleFromURL() {
   const urlParams = new URLSearchParams(window.location.search);
   const roleParam = urlParams.get('role');
-  if (roleParam === 'recommendation') {
-    activeRole = 'recommendation';
+  if (['endorsement', 'recommendation', 'clearance', 'all'].includes(roleParam)) {
+    activeRole = roleParam;
   } else {
-    activeRole = 'clearance';
+    activeRole = 'all';
   }
   updatePersonaBannerUI();
 }
@@ -194,47 +187,48 @@ function switchAdminRole(role) {
   renderApprovalsTable();
   updateKPICounters();
 
-  const name = (activeRole === 'recommendation') ? 'Stage 1: Recommending Authority' : 'Stage 2: Final Clearance Authority';
-  showAdminToast(`Switched active workspace to: ${name}`, 'info');
+  let name = 'All Stages';
+  if (activeRole === 'endorsement') name = 'Stage 1: Endorsement';
+  else if (activeRole === 'recommendation') name = 'Stage 2: Recommendation';
+  else if (activeRole === 'clearance') name = 'Stage 3: Clearance';
+
+  showAdminToast(`Switched active governance role to: ${name}`, 'info');
 }
 
 function updatePersonaBannerUI() {
-  const avatar = document.getElementById('personaAvatar');
-  const nameEl = document.getElementById('personaName');
-  const roleTitleEl = document.getElementById('personaRoleTitle');
-  const descEl = document.getElementById('personaDesc');
+  const btnAll = document.getElementById('btnRoleAll');
+  const btnEnd = document.getElementById('btnRoleEnd');
   const btnRec = document.getElementById('btnRoleRec');
   const btnClear = document.getElementById('btnRoleClear');
 
-  const labelEl = document.getElementById('activeAuthorityLabel');
-  if (labelEl) {
-    labelEl.textContent = (activeRole === 'recommendation')
-      ? 'Stage 1: Recommending Authority (Operations Review)'
-      : 'Stage 2: Final Clearance Authority (Office of the Director)';
-  }
+  if (btnAll) btnAll.className = 'btn-persona-toggle' + (activeRole === 'all' ? ' active' : '');
+  if (btnEnd) btnEnd.className = 'btn-persona-toggle' + (activeRole === 'endorsement' ? ' active' : '');
+  if (btnRec) btnRec.className = 'btn-persona-toggle' + (activeRole === 'recommendation' ? ' active' : '');
+  if (btnClear) btnClear.className = 'btn-persona-toggle' + (activeRole === 'clearance' ? ' active director' : '');
 
-  if (activeRole === 'recommendation') {
-    if (avatar) {
-      avatar.textContent = 'RO';
-      avatar.className = 'persona-avatar-icon';
+  // Update floating bulk buttons based on active role
+  const btnBulkEnd = document.getElementById('btnBulkEndorse');
+  const btnBulkRec = document.getElementById('btnBulkRecommend');
+  const btnBulkClr = document.getElementById('btnBulkClearance');
+
+  if (btnBulkEnd && btnBulkRec && btnBulkClr) {
+    if (activeRole === 'endorsement') {
+      btnBulkEnd.style.display = 'inline-flex';
+      btnBulkRec.style.display = 'none';
+      btnBulkClr.style.display = 'none';
+    } else if (activeRole === 'recommendation') {
+      btnBulkEnd.style.display = 'none';
+      btnBulkRec.style.display = 'inline-flex';
+      btnBulkClr.style.display = 'none';
+    } else if (activeRole === 'clearance') {
+      btnBulkEnd.style.display = 'none';
+      btnBulkRec.style.display = 'none';
+      btnBulkClr.style.display = 'inline-flex';
+    } else {
+      btnBulkEnd.style.display = 'inline-flex';
+      btnBulkRec.style.display = 'inline-flex';
+      btnBulkClr.style.display = 'inline-flex';
     }
-    if (nameEl) nameEl.innerHTML = 'Stage 1: Recommending Authority <span class="facility-status-pill-overlay state-occupied" style="position:static; margin-left:0.4rem;">Recommending Officer</span>';
-    if (roleTitleEl) roleTitleEl.textContent = 'Administrative Services & Operations Review';
-    if (descEl) descEl.textContent = 'Review logistical feasibility, equipment availability, and formulate formal administrative recommendations.';
-
-    if (btnRec) btnRec.className = 'btn-persona-toggle active';
-    if (btnClear) btnClear.className = 'btn-persona-toggle';
-  } else {
-    if (avatar) {
-      avatar.textContent = 'DIR';
-      avatar.className = 'persona-avatar-icon director';
-    }
-    if (nameEl) nameEl.innerHTML = 'Stage 2: Final Clearance Authority <span class="facility-status-pill-overlay state-available" style="position:static; margin-left:0.4rem; background:#854d0e;">Directorate Level</span>';
-    if (roleTitleEl) roleTitleEl.textContent = 'Office of the Director / Final Approver';
-    if (descEl) descEl.textContent = 'Grant official executive clearance, issue campus booking permits, and authorize security gate passes.';
-
-    if (btnRec) btnRec.className = 'btn-persona-toggle';
-    if (btnClear) btnClear.className = 'btn-persona-toggle active director';
   }
 }
 
@@ -275,7 +269,7 @@ function toggleSidebar(forceState) {
 }
 
 /* ==========================================================================
-   RENDER TABLE & FILTERING
+   RENDER TABLE & FILTERING (3-STAGE GOVERNANCE: Endorse -> Recommend -> Clearance)
    ========================================================================== */
 function renderApprovalsTable() {
   const tbody = document.getElementById('approvalsTableBody');
@@ -290,11 +284,15 @@ function renderApprovalsTable() {
   entries.forEach(item => {
     // Stage Filter matching
     if (activeFilterTab === 'awaiting') {
-      if (activeRole === 'recommendation' && item.stage !== 'stage1') return;
-      if (activeRole === 'clearance' && item.stage !== 'stage2') return;
+      if (activeRole === 'endorsement' && item.stage !== 'stage1') return;
+      if (activeRole === 'recommendation' && item.stage !== 'stage2') return;
+      if (activeRole === 'clearance' && item.stage !== 'stage3') return;
+      if (activeRole === 'all' && !['stage1', 'stage2', 'stage3'].includes(item.stage)) return;
     } else if (activeFilterTab === 'stage1' && item.stage !== 'stage1') {
       return;
     } else if (activeFilterTab === 'stage2' && item.stage !== 'stage2') {
+      return;
+    } else if (activeFilterTab === 'stage3' && item.stage !== 'stage3') {
       return;
     } else if (activeFilterTab === 'approved' && item.stage !== 'approved') {
       return;
@@ -310,11 +308,11 @@ function renderApprovalsTable() {
     // Search query matching
     if (searchQuery) {
       const match = (
-        item.ref.toLowerCase().includes(searchQuery) ||
-        item.applicant.toLowerCase().includes(searchQuery) ||
-        item.agency.toLowerCase().includes(searchQuery) ||
-        item.venue.toLowerCase().includes(searchQuery) ||
-        item.eventTitle.toLowerCase().includes(searchQuery)
+        (item.ref || '').toLowerCase().includes(searchQuery) ||
+        (item.applicant || '').toLowerCase().includes(searchQuery) ||
+        (item.agency || '').toLowerCase().includes(searchQuery) ||
+        (item.venue || '').toLowerCase().includes(searchQuery) ||
+        (item.eventTitle || '').toLowerCase().includes(searchQuery)
       );
       if (!match) return;
     }
@@ -336,7 +334,7 @@ function renderApprovalsTable() {
     return;
   }
 
-  // Sort: Urgent first, then dateFiled
+  // Sort: Urgent first, then ID / ref descending
   rows.sort((a, b) => {
     if (a.urgency === 'urgent' && b.urgency !== 'urgent') return -1;
     if (b.urgency === 'urgent' && a.urgency !== 'urgent') return 1;
@@ -349,32 +347,57 @@ function renderApprovalsTable() {
       ? `<span class="urgency-badge urgent"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 11h2v4h-2zm0 6h2v2h-2z"/></svg> Urgent (&lt;48h)</span>`
       : `<span class="urgency-badge normal">Standard</span>`;
 
-    // Stepper HTML
+    // 3-Stage Stepper HTML
     let step1Class = 'stage-step-item';
     let step2Class = 'stage-step-item';
-    let lineClass = 'step-connector-line';
+    let step3Class = 'stage-step-item';
+    let line1Class = 'step-connector-line';
+    let line2Class = 'step-connector-line';
 
     if (item.stage === 'stage1') {
       step1Class += ' active';
     } else if (item.stage === 'stage2') {
       step1Class += ' completed';
       step2Class += ' active';
-      lineClass += ' done';
+      line1Class += ' done';
+    } else if (item.stage === 'stage3') {
+      step1Class += ' completed';
+      step2Class += ' completed';
+      step3Class += ' active';
+      line1Class += ' done';
+      line2Class += ' done';
     } else if (item.stage === 'approved') {
       step1Class += ' completed';
       step2Class += ' completed';
-      lineClass += ' done';
+      step3Class += ' completed';
+      line1Class += ' done';
+      line2Class += ' done';
     } else if (item.stage === 'rejected') {
       step1Class += ' rejected';
       step2Class += ' rejected';
+      step3Class += ' rejected';
     }
 
-    // Action buttons based on active role
+    // Action buttons based on current stage and activeRole
     let actionButtonsHtml = '';
     if (item.stage === 'stage1') {
-      if (activeRole === 'recommendation') {
+      if (activeRole === 'endorsement' || activeRole === 'all') {
         actionButtonsHtml = `
-          <button type="button" class="btn-card-action" style="background:#174d2f; color:#fff;" onclick="quickEndorseStage1('${item.ref}')">
+          <button type="button" class="btn-card-action" style="background:#d97706; color:#fff;" onclick="quickEndorseStage1('${item.ref}')" title="Issue Official Endorsement">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Endorse</span>
+          </button>
+          <button type="button" class="btn-card-action" onclick="openDisapproveModal('${item.ref}')" title="Return / Decline">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        `;
+      } else {
+        actionButtonsHtml = `<span style="font-size:0.75rem; color:#d97706; font-weight:700;">Awaiting Endorsement</span>`;
+      }
+    } else if (item.stage === 'stage2') {
+      if (activeRole === 'recommendation' || activeRole === 'all') {
+        actionButtonsHtml = `
+          <button type="button" class="btn-card-action" style="background:#2563eb; color:#fff;" onclick="quickRecommendStage2('${item.ref}')" title="Issue Logistics Recommendation">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
             <span>Recommend</span>
           </button>
@@ -383,29 +406,25 @@ function renderApprovalsTable() {
           </button>
         `;
       } else {
-        actionButtonsHtml = `
-          <span style="font-size:0.75rem; color:#854d0e; font-weight:700;">Pending Stage 1</span>
-        `;
+        actionButtonsHtml = `<span style="font-size:0.75rem; color:#2563eb; font-weight:700;">Awaiting Recommendation</span>`;
       }
-    } else if (item.stage === 'stage2') {
-      if (activeRole === 'clearance') {
+    } else if (item.stage === 'stage3') {
+      if (activeRole === 'clearance' || activeRole === 'all') {
         actionButtonsHtml = `
-          <button type="button" class="btn-card-action" style="background:#10b981; color:#fff;" onclick="quickGrantClearanceStage2('${item.ref}')">
+          <button type="button" class="btn-card-action" style="background:#10b981; color:#fff;" onclick="quickGrantClearanceStage3('${item.ref}')" title="Grant Directorial Clearance & Permit">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <span>Grant Clearance</span>
+            <span>Clearance</span>
           </button>
-          <button type="button" class="btn-card-action" onclick="openDisapproveModal('${item.ref}')" title="Return / Disapprove">
+          <button type="button" class="btn-card-action" onclick="openDisapproveModal('${item.ref}')" title="Withhold / Disapprove">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         `;
       } else {
-        actionButtonsHtml = `
-          <span style="font-size:0.75rem; color:#174d2f; font-weight:700;">Endorsed (Awaiting Stage 2)</span>
-        `;
+        actionButtonsHtml = `<span style="font-size:0.75rem; color:#10b981; font-weight:700;">Awaiting Clearance</span>`;
       }
     } else if (item.stage === 'approved') {
       actionButtonsHtml = `
-        <button type="button" class="btn-card-action" onclick="previewPermitDocument('${item.ref}')" title="View Official Permit">
+        <button type="button" class="btn-card-action" onclick="previewPermitDocument('${item.ref}')" title="View Official Permit & Gate Pass">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
           <span>Permit</span>
         </button>
@@ -415,6 +434,8 @@ function renderApprovalsTable() {
         <span style="font-size:0.75rem; color:#dc2626; font-weight:700;">Returned/Declined</span>
       `;
     }
+
+    const applicantInitial = (item.applicant || 'ATI').split(' ').map(n=>n[0]).slice(0,2).join('');
 
     return `
       <tr class="${isChecked ? 'row-selected' : ''}" data-ref="${item.ref}">
@@ -432,7 +453,7 @@ function renderApprovalsTable() {
         <td>
           <div class="facility-table-info-cell" style="gap: 0.65rem;">
             <div class="user-avatar-circle" style="background:#246a42; color:#fff; width:34px; height:34px; font-size:0.78rem;">
-              ${item.applicant.split(' ').map(n=>n[0]).slice(0,2).join('')}
+              ${applicantInitial}
             </div>
             <div class="facility-table-info-text">
               <strong>${item.applicant}</strong>
@@ -456,12 +477,17 @@ function renderApprovalsTable() {
           <div class="stage-stepper">
             <div class="${step1Class}">
               <div class="step-node">1</div>
-              <span class="step-caption">Recommendation</span>
+              <span class="step-caption">1. Endorse</span>
             </div>
-            <div class="${lineClass}"></div>
+            <div class="${line1Class}"></div>
             <div class="${step2Class}">
               <div class="step-node">2</div>
-              <span class="step-caption">Clearance</span>
+              <span class="step-caption">2. Recommend</span>
+            </div>
+            <div class="${line2Class}"></div>
+            <div class="${step3Class}">
+              <div class="step-node">3</div>
+              <span class="step-caption">3. Clearance</span>
             </div>
           </div>
         </td>
@@ -483,9 +509,6 @@ function renderApprovalsTable() {
 
 function applyApprovalsFilterTab(tab) {
   activeFilterTab = tab;
-  document.querySelectorAll('.approvals-filter-tab').forEach(el => {
-    el.classList.toggle('active', el.getAttribute('data-tab') === tab);
-  });
   renderApprovalsTable();
 }
 
@@ -534,75 +557,201 @@ function clearRowSelections() {
   renderApprovalsTable();
 }
 
-function executeBulkEndorse() {
-  if (selectedRefIds.size === 0) return;
-  const count = selectedRefIds.size;
-
-  selectedRefIds.forEach(ref => {
-    const item = approvalsData[ref];
-    if (item && item.stage === 'stage1') {
-      item.stage = 'stage2';
-      item.stage1By = 'Recommending Officer';
-      item.stage1Date = new Date().toLocaleString();
-      item.stage1Remarks = 'Batch endorsed by Recommending Officer.';
-    }
-  });
-
-  clearRowSelections();
-  updateKPICounters();
-  renderApprovalsTable();
-  showAdminToast(`Batch recommendation completed: ${count} requests forwarded for Stage 2 final clearance.`, 'success');
-}
-
-function executeBulkClearance() {
-  if (selectedRefIds.size === 0) return;
-  const count = selectedRefIds.size;
-
-  selectedRefIds.forEach(ref => {
-    const item = approvalsData[ref];
-    if (item && item.stage === 'stage2') {
-      item.stage = 'approved';
-      item.stage2By = 'Clearance Authority';
-      item.stage2Date = new Date().toLocaleString();
-      item.stage2Remarks = 'Batch final institutional clearance granted.';
-    }
-  });
-
-  clearRowSelections();
-  updateKPICounters();
-  renderApprovalsTable();
-  showAdminToast(`Batch final clearance granted: ${count} institutional permits issued.`, 'success');
+/* ==========================================================================
+   BACKEND API DISPATCHER (AJAX TO update_approval_stage.php)
+   ========================================================================== */
+async function callApprovalApi(formData) {
+  try {
+    const response = await fetch('ajax/update_approval_stage.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams(formData).toString()
+    });
+    const result = await response.json();
+    return result;
+  } catch (err) {
+    console.error('Approval API Error:', err);
+    return { success: false, message: 'Server communication error. Please check your connection.' };
+  }
 }
 
 /* ==========================================================================
-   QUICK ACTIONS (STAGE 1 & STAGE 2)
+   BATCH / BULK ACTIONS
    ========================================================================== */
-function quickEndorseStage1(ref) {
-  const item = approvalsData[ref];
-  if (!item) return;
+async function executeBulkEndorse() {
+  if (selectedRefIds.size === 0) return;
+  const refsArray = Array.from(selectedRefIds).filter(ref => approvalsData[ref] && approvalsData[ref].stage === 'stage1');
+  if (refsArray.length === 0) {
+    showAdminToast('None of the selected requests are currently awaiting Stage 1 Endorsement.', 'info');
+    return;
+  }
 
-  item.stage = 'stage2';
-  item.stage1By = 'Recommending Officer';
-  item.stage1Date = new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  item.stage1Remarks = 'Verified equipment, schedules, and logistical feasibility. Recommended for final clearance.';
+  const res = await callApprovalApi({
+    action: 'bulk_endorse',
+    refs: refsArray.join(','),
+    remarks: 'Batch endorsed by Division Head / Endorsing Officer.'
+  });
 
-  updateKPICounters();
-  renderApprovalsTable();
-  showAdminToast(`Stage 1 Endorsement recorded for ${ref}. Forwarded to Stage 2 for final clearance.`, 'success');
+  if (res.success) {
+    refsArray.forEach(ref => {
+      const item = approvalsData[ref];
+      if (item) {
+        item.stage = 'stage2';
+        item.stage1By = res.stage1By || 'Endorsing Officer';
+        item.stage1Date = res.stage1Date || new Date().toLocaleString();
+        item.stage1Remarks = 'Batch endorsed by Division Head.';
+      }
+    });
+
+    clearRowSelections();
+    updateKPICounters();
+    renderApprovalsTable();
+    showAdminToast(res.message || `Batch endorsement completed: ${refsArray.length} requests forwarded for Recommendation.`, 'success');
+  } else {
+    showAdminToast(res.message || 'Batch endorsement failed.', 'decline');
+  }
 }
 
-function quickGrantClearanceStage2(ref) {
+async function executeBulkRecommend() {
+  if (selectedRefIds.size === 0) return;
+  const refsArray = Array.from(selectedRefIds).filter(ref => approvalsData[ref] && approvalsData[ref].stage === 'stage2');
+  if (refsArray.length === 0) {
+    showAdminToast('None of the selected requests are currently awaiting Stage 2 Recommendation.', 'info');
+    return;
+  }
+
+  const res = await callApprovalApi({
+    action: 'bulk_recommend',
+    refs: refsArray.join(','),
+    remarks: 'Batch logistics verified and recommended for Stage 3 Clearance.'
+  });
+
+  if (res.success) {
+    refsArray.forEach(ref => {
+      const item = approvalsData[ref];
+      if (item) {
+        item.stage = 'stage3';
+        item.stage2By = res.stage2By || 'Recommending Officer';
+        item.stage2Date = res.stage2Date || new Date().toLocaleString();
+        item.stage2Remarks = 'Batch logistics verified. Recommended.';
+      }
+    });
+
+    clearRowSelections();
+    updateKPICounters();
+    renderApprovalsTable();
+    showAdminToast(res.message || `Batch recommendation completed: ${refsArray.length} requests forwarded for Clearance.`, 'success');
+  } else {
+    showAdminToast(res.message || 'Batch recommendation failed.', 'decline');
+  }
+}
+
+async function executeBulkClearance() {
+  if (selectedRefIds.size === 0) return;
+  const refsArray = Array.from(selectedRefIds).filter(ref => approvalsData[ref] && approvalsData[ref].stage === 'stage3');
+  if (refsArray.length === 0) {
+    showAdminToast('None of the selected requests are currently awaiting Stage 3 Clearance.', 'info');
+    return;
+  }
+
+  const res = await callApprovalApi({
+    action: 'bulk_clearance',
+    refs: refsArray.join(','),
+    remarks: 'Batch executive clearance granted and permits authorized.'
+  });
+
+  if (res.success) {
+    refsArray.forEach(ref => {
+      const item = approvalsData[ref];
+      if (item) {
+        item.stage = 'approved';
+        item.stage3By = res.stage3By || 'Clearance Authority';
+        item.stage3Date = res.stage3Date || new Date().toLocaleString();
+        item.stage3Remarks = 'Batch final executive clearance granted.';
+      }
+    });
+
+    clearRowSelections();
+    updateKPICounters();
+    renderApprovalsTable();
+    showAdminToast(res.message || `Batch final clearance granted: ${refsArray.length} institutional permits issued.`, 'success');
+  } else {
+    showAdminToast(res.message || 'Batch clearance failed.', 'decline');
+  }
+}
+
+/* ==========================================================================
+   QUICK ROW ACTIONS (STAGE 1, STAGE 2, STAGE 3)
+   ========================================================================== */
+async function quickEndorseStage1(ref) {
   const item = approvalsData[ref];
   if (!item) return;
 
-  item.stage = 'approved';
-  item.stage2By = 'Clearance Authority';
-  item.stage2Date = new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  item.stage2Remarks = 'Official approval granted. Permit issued for institutional calendar entry.';
+  const res = await callApprovalApi({
+    action: 'stage1',
+    ref: ref
+  });
 
-  updateKPICounters();
-  renderApprovalsTable();
-  showAdminToast(`Final clearance granted for ${ref}! Official Permit issued.`, 'success');
+  if (res.success) {
+    item.stage = 'stage2';
+    item.stage1By = res.stage1By || 'Endorsing Officer';
+    item.stage1Date = res.stage1Date || new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    item.stage1Remarks = res.stage1Remarks || 'Official endorsement issued.';
+
+    updateKPICounters();
+    renderApprovalsTable();
+    showAdminToast(res.message || `Stage 1 Endorsement recorded for ${ref}. Forwarded to Recommendation.`, 'success');
+  } else {
+    showAdminToast(res.message || 'Failed to record endorsement.', 'decline');
+  }
+}
+
+async function quickRecommendStage2(ref) {
+  const item = approvalsData[ref];
+  if (!item) return;
+
+  const res = await callApprovalApi({
+    action: 'stage2',
+    ref: ref
+  });
+
+  if (res.success) {
+    item.stage = 'stage3';
+    item.stage2By = res.stage2By || 'Recommending Officer';
+    item.stage2Date = res.stage2Date || new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    item.stage2Remarks = res.stage2Remarks || 'Verified logistics. Recommended for final clearance.';
+
+    updateKPICounters();
+    renderApprovalsTable();
+    showAdminToast(res.message || `Stage 2 Recommendation recorded for ${ref}. Forwarded to Final Clearance.`, 'success');
+  } else {
+    showAdminToast(res.message || 'Failed to record recommendation.', 'decline');
+  }
+}
+
+async function quickGrantClearanceStage3(ref) {
+  const item = approvalsData[ref];
+  if (!item) return;
+
+  const res = await callApprovalApi({
+    action: 'stage3',
+    ref: ref
+  });
+
+  if (res.success) {
+    item.stage = 'approved';
+    item.stage3By = res.stage3By || 'Clearance Authority';
+    item.stage3Date = res.stage3Date || new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    item.stage3Remarks = res.stage3Remarks || 'Official approval granted. Permit issued.';
+
+    updateKPICounters();
+    renderApprovalsTable();
+    showAdminToast(res.message || `Stage 3 Final Clearance granted for ${ref}! Permit generated.`, 'success');
+  } else {
+    showAdminToast(res.message || 'Failed to grant clearance.', 'decline');
+  }
 }
 
 /* ==========================================================================
@@ -626,7 +775,25 @@ function openDossierModal(ref) {
   document.getElementById('dossierEquipment').textContent = item.equipment;
   document.getElementById('dossierNotes').textContent = item.specialNotes || 'None specified.';
 
-  // Timeline render
+  // Supporting Document Attachment
+  const docContainerNone = document.getElementById('dossierDocNone');
+  const docLink = document.getElementById('dossierDocLink');
+  const docName = document.getElementById('dossierDocName');
+
+  if (item.documentPath) {
+    if (docContainerNone) docContainerNone.style.display = 'none';
+    if (docLink) {
+      docLink.style.display = 'inline-flex';
+      docLink.href = item.documentPath;
+      const fileName = item.documentPath.split('/').pop();
+      if (docName) docName.textContent = `Open Official Document (${fileName})`;
+    }
+  } else {
+    if (docContainerNone) docContainerNone.style.display = 'block';
+    if (docLink) docLink.style.display = 'none';
+  }
+
+  // 3-Stage Timeline rendering (Submitted -> Endorsed -> Recommended -> Cleared)
   const timelineEl = document.getElementById('dossierTimelineList');
   if (timelineEl) {
     let timelineHtml = `
@@ -639,13 +806,14 @@ function openDossierModal(ref) {
       </div>
     `;
 
+    // 1. Endorsement Milestone
     if (item.stage1By) {
       timelineHtml += `
         <div style="display:flex; gap:0.85rem; margin-bottom:1rem;">
           <div style="width:28px; height:28px; border-radius:50%; background:#d97706; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">✓</div>
           <div>
-            <strong style="display:block; font-size:0.85rem; color:#d97706;">Stage 1: Recommended by ${item.stage1By}</strong>
-            <small style="color:#637f6f;">${item.stage1Date} • "${item.stage1Remarks}"</small>
+            <strong style="display:block; font-size:0.85rem; color:#d97706;">Stage 1: Endorsed by ${item.stage1By}</strong>
+            <small style="color:#637f6f;">${item.stage1Date} • "${item.stage1Remarks || 'Endorsed'}"</small>
           </div>
         </div>
       `;
@@ -654,30 +822,54 @@ function openDossierModal(ref) {
         <div style="display:flex; gap:0.85rem; margin-bottom:1rem;">
           <div style="width:28px; height:28px; border-radius:50%; background:#e5e7eb; color:#6b7280; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">1</div>
           <div>
-            <strong style="display:block; font-size:0.85rem; color:#4b5563;">Stage 1: Awaiting Recommending Authority Review</strong>
-            <small style="color:#9ca3af;">Pending action by Recommending Officer</small>
+            <strong style="display:block; font-size:0.85rem; color:#4b5563;">Stage 1: Awaiting Endorsement</strong>
+            <small style="color:#9ca3af;">Pending action by Division / Originating Unit Head</small>
           </div>
         </div>
       `;
     }
 
+    // 2. Recommendation Milestone
     if (item.stage2By) {
+      timelineHtml += `
+        <div style="display:flex; gap:0.85rem; margin-bottom:1rem;">
+          <div style="width:28px; height:28px; border-radius:50%; background:#2563eb; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">✓</div>
+          <div>
+            <strong style="display:block; font-size:0.85rem; color:#2563eb;">Stage 2: Recommended by ${item.stage2By}</strong>
+            <small style="color:#637f6f;">${item.stage2Date} • "${item.stage2Remarks || 'Recommended'}"</small>
+          </div>
+        </div>
+      `;
+    } else {
+      timelineHtml += `
+        <div style="display:flex; gap:0.85rem; margin-bottom:1rem;">
+          <div style="width:28px; height:28px; border-radius:50%; background:#e5e7eb; color:#6b7280; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">2</div>
+          <div>
+            <strong style="display:block; font-size:0.85rem; color:#4b5563;">Stage 2: Awaiting Recommendation</strong>
+            <small style="color:#9ca3af;">Pending review by Administrative / Facility Section</small>
+          </div>
+        </div>
+      `;
+    }
+
+    // 3. Clearance Milestone
+    if (item.stage3By) {
       timelineHtml += `
         <div style="display:flex; gap:0.85rem;">
           <div style="width:28px; height:28px; border-radius:50%; background:#10b981; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">✓</div>
           <div>
-            <strong style="display:block; font-size:0.85rem; color:#10b981;">Stage 2: Final Institutional Clearance Granted</strong>
-            <small style="color:#637f6f;">${item.stage2Date} • Approved by ${item.stage2By}</small>
+            <strong style="display:block; font-size:0.85rem; color:#10b981;">Stage 3: Final Clearance Granted</strong>
+            <small style="color:#637f6f;">${item.stage3Date} • Cleared by ${item.stage3By}</small>
           </div>
         </div>
       `;
     } else {
       timelineHtml += `
         <div style="display:flex; gap:0.85rem;">
-          <div style="width:28px; height:28px; border-radius:50%; background:#e5e7eb; color:#6b7280; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">2</div>
+          <div style="width:28px; height:28px; border-radius:50%; background:#e5e7eb; color:#6b7280; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">3</div>
           <div>
-            <strong style="display:block; font-size:0.85rem; color:#4b5563;">Stage 2: Awaiting Directorate Clearance</strong>
-            <small style="color:#9ca3af;">Pending final review by Clearance Authority</small>
+            <strong style="display:block; font-size:0.85rem; color:#4b5563;">Stage 3: Awaiting Final Clearance</strong>
+            <small style="color:#9ca3af;">Pending executive clearance from Office of the Director</small>
           </div>
         </div>
       `;
@@ -692,23 +884,34 @@ function openDossierModal(ref) {
     if (item.stage === 'stage1') {
       actionBox.className = 'action-decision-box stage1';
       actionBox.innerHTML = `
-        <h4 style="margin: 0 0 0.5rem 0; font-size: 0.92rem; color: #b45309;">Stage 1: Recommending Authority Review Box</h4>
-        <p style="margin: 0 0 0.75rem 0; font-size: 0.8rem; color: #657b6f;">Review calendar availability, logistical feasibility, and formulate official administrative recommendation.</p>
-        <textarea id="dossierRemarksInput" rows="2" placeholder="Administrative review remarks (Logistics verified, schedule feasible)..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.85rem; margin-bottom: 0.75rem;"></textarea>
+        <h4 style="margin: 0 0 0.5rem 0; font-size: 0.92rem; color: #b45309;">Stage 1: Division Endorsement Desk</h4>
+        <p style="margin: 0 0 0.75rem 0; font-size: 0.8rem; color: #657b6f;">Verify originating division mandate, participant alignment, and issue official endorsement for administrative review.</p>
+        <textarea id="dossierRemarksInput" rows="2" placeholder="Endorsement remarks (Official division activity, documents verified)..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.85rem; margin-bottom: 0.75rem;"></textarea>
         <div style="display: flex; gap: 0.6rem; justify-content: flex-end;">
-          <button type="button" class="btn-card-action" onclick="openDisapproveModal('${item.ref}')">Recommend Return / Decline</button>
-          <button type="button" class="btn-system-primary" style="background:#d97706;" onclick="submitDossierAction('stage1')">Endorse for Clearance</button>
+          <button type="button" class="btn-card-action" onclick="openDisapproveModal('${item.ref}')">Return / Decline</button>
+          <button type="button" class="btn-system-primary" style="background:#d97706;" onclick="submitDossierAction('stage1')">Issue Endorsement</button>
         </div>
       `;
     } else if (item.stage === 'stage2') {
+      actionBox.className = 'action-decision-box stage1';
+      actionBox.innerHTML = `
+        <h4 style="margin: 0 0 0.5rem 0; font-size: 0.92rem; color: #2563eb;">Stage 2: Administrative Logistics Recommendation</h4>
+        <p style="margin: 0 0 0.75rem 0; font-size: 0.8rem; color: #657b6f;">Verify calendar conflicts, facility capacity, equipment availability, and submit official recommendation for Directorate clearance.</p>
+        <textarea id="dossierRemarksInput" rows="2" placeholder="Recommendation remarks (Logistics verified, room and A/V equipment ready)..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.85rem; margin-bottom: 0.75rem;"></textarea>
+        <div style="display: flex; gap: 0.6rem; justify-content: flex-end;">
+          <button type="button" class="btn-card-action" onclick="openDisapproveModal('${item.ref}')">Return / Decline</button>
+          <button type="button" class="btn-system-primary" style="background:#2563eb;" onclick="submitDossierAction('stage2')">Issue Recommendation</button>
+        </div>
+      `;
+    } else if (item.stage === 'stage3') {
       actionBox.className = 'action-decision-box stage2';
       actionBox.innerHTML = `
-        <h4 style="margin: 0 0 0.5rem 0; font-size: 0.92rem; color: #047857;">Stage 2: Directorial Clearance & Permit Issuance</h4>
-        <p style="margin: 0 0 0.75rem 0; font-size: 0.8rem; color: #657b6f;">Stage 1 has been endorsed. Grant final institutional clearance and authorize entry permits.</p>
-        <textarea id="dossierRemarksInput" rows="2" placeholder="Directorate clearance remarks & special conditions for the booking permit..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.85rem; margin-bottom: 0.75rem;"></textarea>
+        <h4 style="margin: 0 0 0.5rem 0; font-size: 0.92rem; color: #047857;">Stage 3: Directorate Final Clearance & Permit Issuance</h4>
+        <p style="margin: 0 0 0.75rem 0; font-size: 0.8rem; color: #657b6f;">Endorsed and recommended by units. Grant final executive clearance and authorize entry permits & gate passes.</p>
+        <textarea id="dossierRemarksInput" rows="2" placeholder="Directorate clearance remarks & special conditions for permit..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.85rem; margin-bottom: 0.75rem;"></textarea>
         <div style="display: flex; gap: 0.6rem; justify-content: flex-end;">
           <button type="button" class="btn-card-action" onclick="openDisapproveModal('${item.ref}')">Withhold Clearance</button>
-          <button type="button" class="btn-system-primary" style="background:#10b981;" onclick="submitDossierAction('stage2')">Grant Clearance & Issue Permit</button>
+          <button type="button" class="btn-system-primary" style="background:#10b981;" onclick="submitDossierAction('stage3')">Grant Final Clearance & Issue Permit</button>
         </div>
       `;
     } else {
@@ -716,7 +919,7 @@ function openDossierModal(ref) {
       actionBox.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <div>
-            <strong style="color: #174d2f;">Booking Action Finalized</strong>
+            <strong style="color: #174d2f;">Booking Governance Finalized</strong>
             <p style="margin:0.2rem 0 0 0; font-size:0.8rem; color:#637f6f;">This booking is marked as ${item.stage.toUpperCase()}.</p>
           </div>
           ${item.stage === 'approved' ? `<button type="button" class="btn-system-secondary" onclick="previewPermitDocument('${item.ref}')">View Official Permit</button>` : ''}
@@ -735,29 +938,45 @@ function closeDossierModal() {
   currentDossierRef = null;
 }
 
-function submitDossierAction(actionType) {
+async function submitDossierAction(actionType) {
   if (!currentDossierRef || !approvalsData[currentDossierRef]) return;
   const item = approvalsData[currentDossierRef];
   const remarksInput = document.getElementById('dossierRemarksInput');
   const remarks = remarksInput ? remarksInput.value.trim() : '';
 
-  if (actionType === 'stage1') {
-    item.stage = 'stage2';
-    item.stage1By = 'Recommending Officer';
-    item.stage1Date = new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    item.stage1Remarks = remarks || 'Endorsed for Stage 2 final clearance.';
-    showAdminToast(`Stage 1 Endorsement saved for ${item.ref}.`, 'success');
-  } else if (actionType === 'stage2') {
-    item.stage = 'approved';
-    item.stage2By = 'Clearance Authority';
-    item.stage2Date = new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    item.stage2Remarks = remarks || 'Final clearance granted. Permit issued.';
-    showAdminToast(`Final Clearance granted for ${item.ref}! Permit generated.`, 'success');
-  }
+  const res = await callApprovalApi({
+    action: actionType,
+    ref: item.ref,
+    remarks: remarks
+  });
 
-  closeDossierModal();
-  updateKPICounters();
-  renderApprovalsTable();
+  if (res.success) {
+    if (actionType === 'stage1') {
+      item.stage = 'stage2';
+      item.stage1By = res.stage1By || 'Endorsing Officer';
+      item.stage1Date = res.stage1Date || new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      item.stage1Remarks = res.stage1Remarks || remarks || 'Endorsed for Stage 2 Recommendation.';
+      showAdminToast(`Stage 1 Endorsement saved for ${item.ref}.`, 'success');
+    } else if (actionType === 'stage2') {
+      item.stage = 'stage3';
+      item.stage2By = res.stage2By || 'Recommending Officer';
+      item.stage2Date = res.stage2Date || new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      item.stage2Remarks = res.stage2Remarks || remarks || 'Recommended for Stage 3 Final Clearance.';
+      showAdminToast(`Stage 2 Recommendation saved for ${item.ref}.`, 'success');
+    } else if (actionType === 'stage3') {
+      item.stage = 'approved';
+      item.stage3By = res.stage3By || 'Clearance Authority';
+      item.stage3Date = res.stage3Date || new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      item.stage3Remarks = res.stage3Remarks || remarks || 'Final clearance granted. Permit issued.';
+      showAdminToast(`Stage 3 Final Clearance granted for ${item.ref}! Permit generated.`, 'success');
+    }
+
+    closeDossierModal();
+    updateKPICounters();
+    renderApprovalsTable();
+  } else {
+    showAdminToast(res.message || 'Action failed. Please try again.', 'decline');
+  }
 }
 
 /* ==========================================================================
@@ -765,7 +984,6 @@ function submitDossierAction(actionType) {
    ========================================================================== */
 function openDisapproveModal(ref) {
   currentDisapproveRef = ref;
-  const item = approvalsData[ref];
   const refEl = document.getElementById('disapproveRef');
   if (refEl) refEl.textContent = ref;
 
@@ -779,7 +997,7 @@ function closeDisapproveModal() {
   currentDisapproveRef = null;
 }
 
-function confirmDisapproval() {
+async function confirmDisapproval() {
   if (!currentDisapproveRef || !approvalsData[currentDisapproveRef]) return;
   const item = approvalsData[currentDisapproveRef];
   const reasonSelect = document.getElementById('disapproveReasonSelect');
@@ -788,15 +1006,26 @@ function confirmDisapproval() {
   const reason = reasonSelect ? reasonSelect.value : 'Administrative Grounds';
   const notes = remarksInput ? remarksInput.value.trim() : '';
 
-  item.stage = 'rejected';
-  item.rejectionGround = reason;
-  item.rejectionNotes = notes;
+  const res = await callApprovalApi({
+    action: 'reject',
+    ref: item.ref,
+    reason: reason,
+    remarks: notes
+  });
 
-  closeDisapproveModal();
-  closeDossierModal();
-  updateKPICounters();
-  renderApprovalsTable();
-  showAdminToast(`Request ${item.ref} has been returned/declined (${reason}). Official notice dispatched.`, 'decline');
+  if (res.success) {
+    item.stage = 'rejected';
+    item.rejectionGround = reason;
+    item.rejectionNotes = notes;
+
+    closeDisapproveModal();
+    closeDossierModal();
+    updateKPICounters();
+    renderApprovalsTable();
+    showAdminToast(`Request ${item.ref} has been returned/declined (${reason}). Official notice logged in audit trail.`, 'decline');
+  } else {
+    showAdminToast(res.message || 'Failed to decline request.', 'decline');
+  }
 }
 
 /* ==========================================================================
@@ -813,7 +1042,16 @@ function previewPermitDocument(ref) {
   document.getElementById('permitSchedule').textContent = `${item.dates} (${item.timeSlot})`;
   document.getElementById('permitPax').textContent = `${item.pax} Participants`;
   document.getElementById('permitEventTitle').textContent = item.eventTitle;
-  document.getElementById('permitIssueDate').textContent = item.stage2Date || new Date().toLocaleDateString('en-US');
+  document.getElementById('permitIssueDate').textContent = item.stage3Date || item.stage2Date || new Date().toLocaleDateString('en-US');
+
+  // Populate Signatories
+  const endorserEl = document.getElementById('permitEndorserName');
+  const recommenderEl = document.getElementById('permitRecommenderName');
+  const clearerEl = document.getElementById('permitClearerName');
+
+  if (endorserEl) endorserEl.textContent = item.stage1By ? item.stage1By.toUpperCase() : 'ENDORSING OFFICER';
+  if (recommenderEl) recommenderEl.textContent = item.stage2By ? item.stage2By.toUpperCase() : 'RECOMMENDING OFFICER';
+  if (clearerEl) clearerEl.textContent = item.stage3By ? item.stage3By.toUpperCase() : 'CLEARANCE AUTHORITY';
 
   const modal = document.getElementById('permitPreviewModal');
   if (modal) modal.style.display = 'flex';
@@ -829,51 +1067,48 @@ function printPermitDocument() {
 }
 
 /* ==========================================================================
-   KPI COUNTER UPDATER
+   KPI COUNTER UPDATER (3-STAGE GOVERNANCE)
    ========================================================================== */
 function updateKPICounters() {
   const items = Object.values(approvalsData);
   let awaitingCount = 0;
   let stage1Count = 0;
   let stage2Count = 0;
+  let stage3Count = 0;
   let approvedCount = 0;
   let rejectedCount = 0;
 
   items.forEach(it => {
     if (it.stage === 'stage1') stage1Count++;
     if (it.stage === 'stage2') stage2Count++;
+    if (it.stage === 'stage3') stage3Count++;
     if (it.stage === 'approved') approvedCount++;
     if (it.stage === 'rejected') rejectedCount++;
   });
 
-  if (activeRole === 'recommendation') {
+  if (activeRole === 'endorsement') {
     awaitingCount = stage1Count;
-  } else {
+  } else if (activeRole === 'recommendation') {
     awaitingCount = stage2Count;
+  } else if (activeRole === 'clearance') {
+    awaitingCount = stage3Count;
+  } else {
+    awaitingCount = stage1Count + stage2Count + stage3Count;
   }
 
   const kpiAwaiting = document.getElementById('kpiAwaitingCount');
   const kpiStage1 = document.getElementById('kpiStage1Count');
   const kpiStage2 = document.getElementById('kpiStage2Count');
+  const kpiStage3 = document.getElementById('kpiStage3Count');
   const kpiApproved = document.getElementById('kpiApprovedCount');
   const sidebarBadge = document.getElementById('sidebarPendingCount');
 
   if (kpiAwaiting) kpiAwaiting.textContent = awaitingCount;
   if (kpiStage1) kpiStage1.textContent = stage1Count;
   if (kpiStage2) kpiStage2.textContent = stage2Count;
+  if (kpiStage3) kpiStage3.textContent = stage3Count;
   if (kpiApproved) kpiApproved.textContent = approvedCount;
-  if (sidebarBadge) sidebarBadge.textContent = (stage1Count + stage2Count);
-
-  // Update Tab counts
-  const tabAwaiting = document.getElementById('tabCountAwaiting');
-  const tabStage1 = document.getElementById('tabCountStage1');
-  const tabStage2 = document.getElementById('tabCountStage2');
-  const tabApproved = document.getElementById('tabCountApproved');
-
-  if (tabAwaiting) tabAwaiting.textContent = awaitingCount;
-  if (tabStage1) tabStage1.textContent = stage1Count;
-  if (tabStage2) tabStage2.textContent = stage2Count;
-  if (tabApproved) tabApproved.textContent = approvedCount;
+  if (sidebarBadge) sidebarBadge.textContent = (stage1Count + stage2Count + stage3Count);
 }
 
 /* ==========================================================================

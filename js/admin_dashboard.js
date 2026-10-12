@@ -3,90 +3,62 @@
  * Unified ("Terno") Interactive Controller
  */
 
-// In-memory data store for sample records
-const reservationsData = {
-  'R-2026-0891': {
-    ref: 'R-2026-0891',
-    applicant: 'Engr. Juan Dela Cruz',
-    agency: 'ATI - Career Development Division (CDD)',
-    email: 'juan.delacruz@ati.da.gov.ph',
-    phone: '+63 917 123 4567',
-    venue: 'Serrano Function Hall',
-    schedule: 'October 12 – 14, 2026 (3 Days)',
-    pax: '85 Participants',
-    eventTitle: 'National TOT on Climate-Resilient Agriculture',
-    equipment: 'Projector & Screen, 4 Wireless Microphones, Stage Rostrum, Classroom Type Seating',
-    status: 'pending'
-  },
-  'R-2026-0892': {
-    ref: 'R-2026-0892',
-    applicant: 'Dr. Maria Santos',
-    agency: 'Bureau of Plant Industry (BPI)',
-    email: 'maria.santos@bpi.gov.ph',
-    phone: '+63 918 987 6543',
-    venue: 'Dormitory Suite A & B',
-    schedule: 'October 15 – 18, 2026 (4 Days)',
-    pax: '32 Delegates',
-    eventTitle: 'Inter-Agency Seed Inspection Workshop',
-    equipment: '32 Single Beds, Linen Sets, Common Lounge Access, Hot Water Showers',
-    status: 'pending'
-  },
-  'R-2026-0893': {
-    ref: 'R-2026-0893',
-    applicant: 'Atty. Bernardo Castro',
-    agency: 'DA - Legal Service Office',
-    email: 'bcastro@da.gov.ph',
-    phone: '+63 920 555 1212',
-    venue: 'Executive Boardroom',
-    schedule: 'October 08, 2026 (1:00 PM – 5:00 PM)',
-    pax: '18 PAX',
-    eventTitle: 'Administrative Adjudication Hearing',
-    equipment: 'Video Conference System, Audio Recording System, Smart Display Board',
-    status: 'pending'
-  },
-  'R-2026-0894': {
-    ref: 'R-2026-0894',
-    applicant: 'Ramon Pascual',
-    agency: 'PhilRice - Extension Division',
-    email: 'rpascual@philrice.gov.ph',
-    phone: '+63 922 444 3322',
-    venue: '4-H Learning Center',
-    schedule: 'October 20 – 22, 2026 (3 Days)',
-    pax: '60 PAX',
-    eventTitle: 'Digital Agriculture & Rice Crop Manager Training',
-    equipment: 'High-speed WiFi Hub, Dual Projectors, 60 Ergonomic Chairs & Tables',
-    status: 'pending'
-  },
-  'R-2026-0895': {
-    ref: 'R-2026-0895',
-    applicant: 'Carmela Lim',
-    agency: 'ATI - Information Services (ISD)',
-    email: 'carmela.lim@ati.da.gov.ph',
-    phone: '+63 917 888 9900',
-    venue: 'Dormitory Executive Suite',
-    schedule: 'October 25 – 27, 2026 (3 Days)',
-    pax: '14 Delegates',
-    eventTitle: 'Knowledge Management Technical Working Group Accommodations',
-    equipment: 'Executive Suite Rooms, WiFi Access, Working Desks, Welcome Refreshments',
-    status: 'pending'
-  },
-  'R-2026-0888': {
-    ref: 'R-2026-0888',
-    applicant: 'Grace Valenzuela',
-    agency: 'DA - National Rice Program',
-    email: 'gvalenzuela@da.gov.ph',
-    phone: '+63 928 333 7788',
-    venue: 'Serrano Hall',
-    schedule: 'October 06 – 07, 2026 (2 Days)',
-    pax: '100 PAX',
-    eventTitle: 'Q4 National Rice Assessment & Planning Workshop',
-    equipment: 'Full Audio-Visual Setup, Live Stream Equipment, VIP Holding Area',
-    status: 'approved'
-  }
-};
+// Live database store initialized from server injection, falling back to empty object
+const reservationsData = (typeof window.dashboardReservationsData === 'object' && window.dashboardReservationsData !== null)
+  ? window.dashboardReservationsData
+  : {};
 
 let currentDeclineTargetRef = null;
 let currentModalActiveRef = null;
+
+function updateKPIBadges() {
+  const rows = document.querySelectorAll('#adminTableBody tr[data-status]');
+  let total = 0;
+  let pending = 0;
+  let approved = 0;
+  let halls = 0;
+  let dorms = 0;
+
+  rows.forEach(row => {
+    total++;
+    const status = row.getAttribute('data-status');
+    const category = row.getAttribute('data-category');
+    if (status === 'pending') pending++;
+    if (status === 'approved') approved++;
+    if (category === 'halls') halls++;
+    if (category === 'dorms') dorms++;
+  });
+
+  const kpiTotal = document.getElementById('kpiTotal');
+  if (kpiTotal) kpiTotal.textContent = total;
+
+  const kpiPending = document.getElementById('kpiPending');
+  if (kpiPending) kpiPending.textContent = pending;
+
+  const sidebarPending = document.getElementById('sidebarPendingCount');
+  if (sidebarPending) sidebarPending.textContent = pending;
+
+  const tabCountAll = document.getElementById('tabCountAll');
+  if (tabCountAll) tabCountAll.textContent = total;
+
+  const tabCountPending = document.getElementById('tabCountPending');
+  if (tabCountPending) tabCountPending.textContent = pending;
+
+  const tabCountApproved = document.getElementById('tabCountApproved');
+  if (tabCountApproved) tabCountApproved.textContent = approved;
+
+  const tabCountHalls = document.getElementById('tabCountHalls');
+  if (tabCountHalls) tabCountHalls.textContent = halls;
+
+  const tabCountDorms = document.getElementById('tabCountDorms');
+  if (tabCountDorms) tabCountDorms.textContent = dorms;
+
+  const kpiOccupancy = document.getElementById('kpiOccupancy');
+  if (kpiOccupancy) {
+    const rate = total > 0 ? ((approved / total) * 100).toFixed(1) : '0';
+    kpiOccupancy.textContent = `${rate}%`;
+  }
+}
 
 document.addEventListener('DOMContentLoaded', function () {
   initDateDisplay();
@@ -165,48 +137,83 @@ function initDateDisplay() {
 /* ==========================================================================
    APPROVE RESERVATION ACTION
    ========================================================================== */
-function approveReservation(refId, applicantName, venueName) {
+async function approveReservation(refId, applicantName, venueName) {
   const row = document.querySelector(`tr[data-ref="${refId}"]`);
   if (!row) return;
 
-  // Update record
-  if (reservationsData[refId]) {
-    reservationsData[refId].status = 'approved';
+  const btnApprove = row.querySelector('.btn-table-action.approve');
+  if (btnApprove) {
+    btnApprove.disabled = true;
+    btnApprove.innerHTML = `<span>Approving...</span>`;
   }
 
-  // Update row status
-  row.setAttribute('data-status', 'approved');
-  const statusCell = row.querySelector('td:nth-child(6)');
-  if (statusCell) {
-    statusCell.innerHTML = `
-      <span class="status-pill status-approved">
-        <span class="status-dot"></span>
-        Confirmed & Approved
-      </span>
-    `;
+  try {
+    const formData = new FormData();
+    formData.append('action', 'stage2');
+    formData.append('ref', refId);
+    formData.append('remarks', 'Directly approved by Administrator via Executive Dashboard.');
+
+    const res = await fetch('ajax/update_approval_stage.php', {
+      method: 'POST',
+      body: formData
+    });
+    const result = await res.json();
+
+    if (!result.success) {
+      showAdminToast(result.message || 'Approval failed.', 'decline');
+      if (btnApprove) {
+        btnApprove.disabled = false;
+        btnApprove.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Approve</span>`;
+      }
+      return;
+    }
+
+    // Update record
+    if (reservationsData[refId]) {
+      reservationsData[refId].status = 'approved';
+    }
+
+    // Update row status
+    row.setAttribute('data-status', 'approved');
+    const statusCell = row.querySelector('td:nth-child(6)');
+    if (statusCell) {
+      statusCell.innerHTML = `
+        <span class="status-pill status-approved">
+          <span class="status-dot"></span>
+          Confirmed & Approved
+        </span>
+      `;
+    }
+
+    // Update actions cell
+    const actionsCell = row.querySelector('td:nth-child(7)');
+    if (actionsCell) {
+      actionsCell.innerHTML = `
+        <div class="action-buttons-wrap">
+          <span class="badge-approved-note">Approved by Director</span>
+          <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')" title="View Booking Form">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
+      `;
+    }
+
+    // Update counters
+    updateKPIBadges();
+
+    // Audit Log Entry
+    addAuditLogEntry(`Approved: Reservation <span class="audit-ref">${refId}</span> for ${venueName} was approved by the Clearance Authority.`, 'green');
+
+    // Toast
+    showAdminToast(result.message || `Reservation ${refId} officially approved! Applicant ${applicantName} notified.`, 'success');
+  } catch (err) {
+    console.error('Approval error:', err);
+    showAdminToast('Network error while processing approval.', 'decline');
+    if (btnApprove) {
+      btnApprove.disabled = false;
+      btnApprove.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Approve</span>`;
+    }
   }
-
-  // Update actions cell
-  const actionsCell = row.querySelector('td:nth-child(7)');
-  if (actionsCell) {
-    actionsCell.innerHTML = `
-      <div class="action-buttons-wrap">
-        <span class="badge-approved-note">Approved by Director</span>
-        <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')" title="View Booking Form">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        </button>
-      </div>
-    `;
-  }
-
-  // Update counters
-  updateKPIBadges();
-
-  // Audit Log Entry
-  addAuditLogEntry(`Approved: Reservation <span class="audit-ref">${refId}</span> for ${venueName} was approved by the Clearance Authority.`, 'green');
-
-  // Toast
-  showAdminToast(`Reservation ${refId} officially approved! Applicant ${applicantName} notified.`, 'success');
 }
 
 /* ==========================================================================
@@ -232,47 +239,86 @@ function closeDeclineModal() {
   currentDeclineTargetRef = null;
 }
 
-function submitDeclineAction() {
+async function submitDeclineAction() {
   if (!currentDeclineTargetRef) return;
   const refId = currentDeclineTargetRef;
   const reasonSelect = document.getElementById('declineReasonSelect');
   const reason = reasonSelect ? reasonSelect.value : 'Administrative Grounds';
+  const remarksInput = document.getElementById('declineRemarks');
+  const remarks = remarksInput ? remarksInput.value.trim() : '';
 
-  const row = document.querySelector(`tr[data-ref="${refId}"]`);
-  if (row) {
-    row.setAttribute('data-status', 'rejected');
-    const statusCell = row.querySelector('td:nth-child(6)');
-    if (statusCell) {
-      statusCell.innerHTML = `
-        <span class="status-pill status-cancelled">
-          <span class="status-dot"></span>
-          Declined
-        </span>
-      `;
-    }
-
-    const actionsCell = row.querySelector('td:nth-child(7)');
-    if (actionsCell) {
-      actionsCell.innerHTML = `
-        <div class="action-buttons-wrap">
-          <span style="font-size: 0.78rem; font-weight: 700; color: #b91c1c; background: #fee2e2; padding: 0.35rem 0.65rem; border-radius: 9999px;">Declined</span>
-          <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          </button>
-        </div>
-      `;
-    }
+  const confirmBtn = document.querySelector('#declineModal .btn-confirm-decline');
+  if (confirmBtn) {
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Declining...';
   }
 
-  if (reservationsData[refId]) {
-    reservationsData[refId].status = 'rejected';
+  try {
+    const formData = new FormData();
+    formData.append('action', 'reject');
+    formData.append('ref', refId);
+    formData.append('reason', reason);
+    formData.append('remarks', remarks);
+
+    const res = await fetch('ajax/update_approval_stage.php', {
+      method: 'POST',
+      body: formData
+    });
+    const result = await res.json();
+
+    if (!result.success) {
+      showAdminToast(result.message || 'Decline action failed.', 'decline');
+      if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Confirm & Send Notice';
+      }
+      return;
+    }
+
+    const row = document.querySelector(`tr[data-ref="${refId}"]`);
+    if (row) {
+      row.setAttribute('data-status', 'rejected');
+      const statusCell = row.querySelector('td:nth-child(6)');
+      if (statusCell) {
+        statusCell.innerHTML = `
+          <span class="status-pill status-cancelled">
+            <span class="status-dot"></span>
+            Declined
+          </span>
+        `;
+      }
+
+      const actionsCell = row.querySelector('td:nth-child(7)');
+      if (actionsCell) {
+        actionsCell.innerHTML = `
+          <div class="action-buttons-wrap">
+            <span class="badge-declined-note">Declined</span>
+            <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    if (reservationsData[refId]) {
+      reservationsData[refId].status = 'rejected';
+    }
+
+    closeDeclineModal();
+    updateKPIBadges();
+
+    addAuditLogEntry(`Declined: Reservation <span class="audit-ref">${refId}</span> was declined (${reason}).`, 'amber');
+    showAdminToast(result.message || `Reservation ${refId} has been declined. Official notice sent.`, 'decline');
+  } catch (err) {
+    console.error('Decline error:', err);
+    showAdminToast('Network error while processing decline.', 'decline');
+  } finally {
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Confirm & Send Notice';
+    }
   }
-
-  closeDeclineModal();
-  updateKPIBadges();
-
-  addAuditLogEntry(`Declined: Reservation <span class="audit-ref">${refId}</span> was declined (${reason}).`, 'amber');
-  showAdminToast(`Reservation ${refId} has been declined. Official notice sent.`, 'decline');
 }
 
 /* ==========================================================================

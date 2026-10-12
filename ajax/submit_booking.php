@@ -49,7 +49,7 @@ if ($room_number && $room_number !== 'null') {
 }
 
 $event_title = trim($_POST['event_title'] ?? '');
-$pax_count = (int)($_POST['pax_count'] ?? 0);
+$pax_count = (int) ($_POST['pax_count'] ?? 0);
 
 if (empty($event_title) || strlen($event_title) < 3) {
     echo json_encode([

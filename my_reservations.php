@@ -43,11 +43,16 @@ $statsCompleted = 0;
 $statsCancelled = 0;
 
 foreach ($reservationsList as $resItem) {
-    $st = strtolower($resItem['status'] ?? 'pending');
-    if ($st === 'pending') $statsPending++;
-    elseif ($st === 'approved') $statsApproved++;
-    elseif ($st === 'completed') $statsCompleted++;
-    elseif ($st === 'cancelled') $statsCancelled++;
+    $rawSt = $resItem['status'] ?? 'Pending';
+    if (in_array($rawSt, ['Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance'])) {
+        $statsPending++;
+    } elseif ($rawSt === 'Approved') {
+        $statsApproved++;
+    } elseif ($rawSt === 'Completed') {
+        $statsCompleted++;
+    } elseif ($rawSt === 'Cancelled') {
+        $statsCancelled++;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -688,23 +693,41 @@ foreach ($reservationsList as $resItem) {
           $timeSlotText = $item['time_slot'] ?: '08:00 AM – 05:00 PM';
           $createdDateText = date('M d, Y', strtotime($item['created_at']));
 
-          $statusBadgeClass = $statusLower;
-          if ($statusLower === 'approved') {
+          $rawStatus = $item['status'] ?? 'Pending';
+          $statusLower = strtolower($rawStatus);
+          
+          $filterStatus = 'pending';
+          if ($rawStatus === 'Approved') {
+              $filterStatus = 'approved';
+              $statusBadgeClass = 'approved';
               $statusBadgeText = 'Confirmed & Approved';
-          } elseif ($statusLower === 'completed') {
+          } elseif ($rawStatus === 'Completed') {
+              $filterStatus = 'completed';
+              $statusBadgeClass = 'completed';
               $statusBadgeText = 'Completed & Archived';
-          } elseif ($statusLower === 'cancelled') {
+          } elseif ($rawStatus === 'Cancelled') {
+              $filterStatus = 'cancelled';
+              $statusBadgeClass = 'cancelled';
               $statusBadgeText = 'Cancelled by Requestor';
-          } elseif ($statusLower === 'rejected') {
+          } elseif ($rawStatus === 'Rejected') {
+              $filterStatus = 'rejected';
+              $statusBadgeClass = 'rejected';
               $statusBadgeText = 'Disapproved / Returned';
+          } elseif ($rawStatus === 'Pending Recommendation') {
+              $statusBadgeClass = 'pending recommendation';
+              $statusBadgeText = 'Stage 2: Awaiting Recommendation';
+          } elseif ($rawStatus === 'Pending Clearance') {
+              $statusBadgeClass = 'pending clearance';
+              $statusBadgeText = 'Stage 3: Awaiting Clearance';
           } else {
-              $statusBadgeText = 'Pending Administrative Clearance';
+              $statusBadgeClass = 'pending endorsement';
+              $statusBadgeText = 'Stage 1: Awaiting Endorsement';
           }
         ?>
 
         <!-- RESERVATION CARD -->
         <article class="res-card" 
-          data-status="<?= htmlspecialchars($statusLower) ?>" 
+          data-status="<?= htmlspecialchars($filterStatus) ?>" 
           data-category="<?= htmlspecialchars($category) ?>" 
           data-venue="<?= htmlspecialchars($slug) ?>"
           data-ref="<?= htmlspecialchars($item['reference_no']) ?>" 
@@ -780,20 +803,26 @@ foreach ($reservationsList as $resItem) {
             <!-- Mini Routing Stepper / Progress Bar -->
             <div class="res-mini-routing">
               <div class="routing-progress-bar">
-                <div class="progress-segment filled" title="1. Request Submitted (Done)"></div>
-                <div class="progress-segment <?= $statusLower === 'approved' || $statusLower === 'completed' ? 'filled' : 'active-pulse' ?>" title="2. Administrative Evaluation"></div>
-                <div class="progress-segment <?= $statusLower === 'approved' || $statusLower === 'completed' ? 'filled' : '' ?>" title="3. Institutional Clearance"></div>
-                <div class="progress-segment <?= $statusLower === 'completed' ? 'filled' : '' ?>" title="4. Concluded"></div>
+                <div class="progress-segment filled" title="Request Submitted (Done)"></div>
+                <div class="progress-segment <?= in_array($rawStatus, ['Pending Recommendation', 'Pending Clearance', 'Approved', 'Completed']) ? 'filled' : 'active-pulse' ?>" title="1. Division Endorsement"></div>
+                <div class="progress-segment <?= in_array($rawStatus, ['Pending Clearance', 'Approved', 'Completed']) ? 'filled' : ($rawStatus === 'Pending Recommendation' ? 'active-pulse' : '') ?>" title="2. Logistics Recommendation"></div>
+                <div class="progress-segment <?= in_array($rawStatus, ['Approved', 'Completed']) ? 'filled' : ($rawStatus === 'Pending Clearance' ? 'active-pulse' : '') ?>" title="3. Directorate Clearance"></div>
               </div>
               <div class="routing-status-label">
-                <?php if ($statusLower === 'approved'): ?>
+                <?php if ($rawStatus === 'Approved'): ?>
                   <span class="routing-step-desc"><strong style="color: #15803d;">Official Status:</strong> Approved & Confirmed on Master Board</span>
-                <?php elseif ($statusLower === 'cancelled'): ?>
+                <?php elseif ($rawStatus === 'Cancelled'): ?>
                   <span class="routing-step-desc"><strong style="color: #b91c1c;">Status:</strong> Cancelled by Requestor</span>
-                <?php elseif ($statusLower === 'completed'): ?>
+                <?php elseif ($rawStatus === 'Completed'): ?>
                   <span class="routing-step-desc"><strong style="color: #475569;">Status:</strong> Concluded & Archived</span>
+                <?php elseif ($rawStatus === 'Rejected'): ?>
+                  <span class="routing-step-desc"><strong style="color: #b91c1c;">Status:</strong> Disapproved / Returned for Revision</span>
+                <?php elseif ($rawStatus === 'Pending Recommendation'): ?>
+                  <span class="routing-step-desc"><strong style="color: #2563eb;">Stage 2:</strong> Under Administrative & Logistics Recommendation</span>
+                <?php elseif ($rawStatus === 'Pending Clearance'): ?>
+                  <span class="routing-step-desc"><strong style="color: #047857;">Stage 3:</strong> Endorsed & Recommended &bull; Awaiting Directorate Clearance</span>
                 <?php else: ?>
-                  <span class="routing-step-desc"><strong style="color: #b45309;">Stage:</strong> Under Administrative Endorsement & Review</span>
+                  <span class="routing-step-desc"><strong style="color: #b45309;">Stage 1:</strong> Awaiting Division / Originating Unit Endorsement</span>
                 <?php endif; ?>
                 <?php if (!empty($item['document_path'])): ?>
                   <span class="routing-note">Doc Attached: <a href="<?= htmlspecialchars($item['document_path']) ?>" target="_blank" style="color: #174d2f; font-weight: 700; text-decoration: underline;">View Upload</a></span>
@@ -855,7 +884,37 @@ foreach ($reservationsList as $resItem) {
           </thead>
           <tbody>
             <?php foreach ($reservationsList as $item): 
-              $statusLower = strtolower($item['status'] ?? 'pending');
+              $rawStatus = $item['status'] ?? 'Pending';
+              $statusLower = strtolower($rawStatus);
+              
+              $filterStatus = 'pending';
+              if ($rawStatus === 'Approved') {
+                  $filterStatus = 'approved';
+                  $statusBadgeClass = 'approved';
+                  $statusBadgeText = 'Confirmed & Approved';
+              } elseif ($rawStatus === 'Completed') {
+                  $filterStatus = 'completed';
+                  $statusBadgeClass = 'completed';
+                  $statusBadgeText = 'Completed & Archived';
+              } elseif ($rawStatus === 'Cancelled') {
+                  $filterStatus = 'cancelled';
+                  $statusBadgeClass = 'cancelled';
+                  $statusBadgeText = 'Cancelled by Requestor';
+              } elseif ($rawStatus === 'Rejected') {
+                  $filterStatus = 'rejected';
+                  $statusBadgeClass = 'rejected';
+                  $statusBadgeText = 'Disapproved / Returned';
+              } elseif ($rawStatus === 'Pending Recommendation') {
+                  $statusBadgeClass = 'pending recommendation';
+                  $statusBadgeText = 'Stage 2: Recommendation';
+              } elseif ($rawStatus === 'Pending Clearance') {
+                  $statusBadgeClass = 'pending clearance';
+                  $statusBadgeText = 'Stage 3: Clearance';
+              } else {
+                  $statusBadgeClass = 'pending endorsement';
+                  $statusBadgeText = 'Stage 1: Endorsement';
+              }
+
               $isDorm = ($item['facility_type'] === 'dormitories') || !empty($item['room_id']);
               $category = $isDorm ? 'dormitory' : 'facility';
               $venueName = $item['facility_name'] ?? 'Facility';
@@ -874,7 +933,7 @@ foreach ($reservationsList as $resItem) {
               $timeSlotText = $item['time_slot'] ?: '08:00 AM – 05:00 PM';
             ?>
             <tr class="res-table-row" 
-                data-status="<?= htmlspecialchars($statusLower) ?>" 
+                data-status="<?= htmlspecialchars($filterStatus) ?>" 
                 data-category="<?= htmlspecialchars($category) ?>" 
                 data-venue="<?= htmlspecialchars($slug) ?>"
                 data-ref="<?= htmlspecialchars($item['reference_no']) ?>">
@@ -891,9 +950,9 @@ foreach ($reservationsList as $resItem) {
                 <div style="font-size: 0.76rem; color: #617b6c;"><?= htmlspecialchars($timeSlotText) ?></div>
               </td>
               <td>
-                <span class="res-status-badge <?= htmlspecialchars($statusLower) ?>">
+                <span class="res-status-badge <?= htmlspecialchars($statusBadgeClass) ?>">
                   <span class="status-dot-pulse"></span>
-                  <span><?= htmlspecialchars(ucfirst($item['status'])) ?></span>
+                  <span><?= htmlspecialchars($statusBadgeText) ?></span>
                 </span>
               </td>
               <td style="text-align: right;">

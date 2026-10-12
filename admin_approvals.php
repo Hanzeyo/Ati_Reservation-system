@@ -1,11 +1,138 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
+require_once __DIR__ . '/includes/admin_guard.php';
+
 /**
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Super Administrator: Dual-Stage Approvals Queue & Endorsement Center
  */
-$currentRole = isset($_GET['role']) && $_GET['role'] === 'recommendation' ? 'recommendation' : 'clearance';
-$isRecommendation = ($currentRole === 'recommendation');
+$validRoles = ['endorsement', 'recommendation', 'clearance', 'all'];
+$currentRole = isset($_GET['role']) && in_array($_GET['role'], $validRoles) ? $_GET['role'] : 'all';
+
+// Fetch all reservations from the database joined with facilities, rooms, users, and approvers
+$query = "SELECT r.*, 
+                 f.name AS facility_name, 
+                 f.type AS facility_type,
+                 rm.room_number,
+                 rm.floor AS room_floor,
+                 u.full_name AS applicant_name,
+                 u.email AS applicant_email,
+                 u.contact_number AS applicant_phone,
+                 u.office_agency AS applicant_agency,
+                 end_u.full_name AS endorsed_by_name,
+                 rec_u.full_name AS recommended_by_name,
+                 clr_u.full_name AS cleared_by_name
+          FROM reservations r
+          LEFT JOIN facilities f ON r.facility_id = f.id
+          LEFT JOIN rooms rm ON r.room_id = rm.id
+          LEFT JOIN users u ON r.user_id = u.id
+          LEFT JOIN users end_u ON r.endorsed_by = end_u.id
+          LEFT JOIN users rec_u ON r.recommended_by = rec_u.id
+          LEFT JOIN users clr_u ON r.cleared_by = clr_u.id
+          ORDER BY r.id DESC";
+
+$stmt = $db->query($query);
+$rawReservations = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+$approvalsData = [];
+$nowTime = time();
+
+$kpiStage1 = 0; // Endorsement Queue
+$kpiStage2 = 0; // Recommendation Queue
+$kpiStage3 = 0; // Final Clearance Queue
+$kpiApproved = 0;
+$kpiUrgent = 0;
+
+foreach ($rawReservations as $row) {
+    $ref = $row['reference_no'];
+    $st = $row['status'] ?? 'Pending';
+
+    // Map DB status to 3-stage approvals workflow:
+    // Stage 1: Endorsement -> Stage 2: Recommendation -> Stage 3: Clearance
+    if (in_array($st, ['Pending', 'Pending Endorsement'])) {
+        $stage = 'stage1'; // Awaiting Endorsement
+    } elseif ($st === 'Pending Recommendation') {
+        $stage = 'stage2'; // Awaiting Recommendation
+    } elseif ($st === 'Pending Clearance') {
+        $stage = 'stage3'; // Awaiting Clearance
+    } elseif (in_array($st, ['Approved', 'Completed'])) {
+        $stage = 'approved';
+    } elseif (in_array($st, ['Rejected', 'Cancelled'])) {
+        $stage = 'rejected';
+    } else {
+        $stage = 'stage1';
+    }
+
+    // Urgency calculation: within 48 hours of today
+    $startDateTimestamp = strtotime($row['start_date']);
+    $diffSeconds = $startDateTimestamp - $nowTime;
+    $isUrgent = ($diffSeconds >= -86400 && $diffSeconds <= 172800);
+    $urgency = $isUrgent ? 'urgent' : 'normal';
+
+    if ($stage === 'stage1') $kpiStage1++;
+    if ($stage === 'stage2') $kpiStage2++;
+    if ($stage === 'stage3') $kpiStage3++;
+    if ($stage === 'approved') $kpiApproved++;
+    if ($isUrgent && in_array($stage, ['stage1', 'stage2', 'stage3'])) $kpiUrgent++;
+
+    // Format target dates
+    $startDateStr = date('M d, Y', $startDateTimestamp);
+    if (!empty($row['end_date']) && $row['end_date'] !== $row['start_date']) {
+        $datesStr = date('M d', $startDateTimestamp) . ' – ' . date('M d, Y', strtotime($row['end_date']));
+    } else {
+        $datesStr = $startDateStr;
+    }
+
+    $venueCategory = (($row['facility_type'] ?? '') === 'dormitories' || !empty($row['room_number'])) ? 'dorms' : 'halls';
+    $venueDisplay = $row['facility_name'] ?: 'Official Facility';
+    if (!empty($row['room_number'])) {
+        $venueDisplay .= ' (Room ' . $row['room_number'] . ')';
+    }
+
+    $approvalsData[$ref] = [
+        'id' => (int)$row['id'],
+        'ref' => $ref,
+        'applicant' => $row['applicant_name'] ?: 'Official Guest',
+        'agency' => $row['applicant_agency'] ?: 'ATI Central Office',
+        'email' => $row['applicant_email'] ?: 'N/A',
+        'phone' => $row['applicant_phone'] ?: 'N/A',
+        'venue' => $venueDisplay,
+        'venueCategory' => $venueCategory,
+        'dates' => $datesStr,
+        'timeSlot' => $row['time_slot'] ?: 'Full Day (8:00 AM – 5:00 PM)',
+        'pax' => (int)($row['pax_count'] ?? 0),
+        'eventTitle' => $row['event_title'] ?: 'Official Institutional Activity',
+        'equipment' => $row['special_notes'] ?: 'Standard Logistics & Venue Equipment',
+        'specialNotes' => $row['special_notes'] ?: '',
+        'documentPath' => $row['document_path'] ?: '',
+        'stage' => $stage,
+        'stage1By' => $row['endorsed_by_name'] ?? null,
+        'stage1Date' => !empty($row['endorsed_at']) ? date('M d, Y h:i A', strtotime($row['endorsed_at'])) : null,
+        'stage1Remarks' => $row['endorsement_remarks'] ?? null,
+        'stage2By' => $row['recommended_by_name'] ?? null,
+        'stage2Date' => !empty($row['recommended_at']) ? date('M d, Y h:i A', strtotime($row['recommended_at'])) : null,
+        'stage2Remarks' => $row['recommendation_remarks'] ?? null,
+        'stage3By' => $row['cleared_by_name'] ?? null,
+        'stage3Date' => !empty($row['cleared_at']) ? date('M d, Y h:i A', strtotime($row['cleared_at'])) : null,
+        'stage3Remarks' => $row['clearance_remarks'] ?? null,
+        'urgency' => $urgency,
+        'dateFiled' => !empty($row['created_at']) ? date('Y-m-d', strtotime($row['created_at'])) : date('Y-m-d'),
+        'status' => $st,
+        'rejectionGround' => $row['admin_remarks'] ?: null,
+        'rejectionNotes' => $row['admin_remarks'] ?: null
+    ];
+}
+
+if ($currentRole === 'endorsement') {
+    $kpiAwaiting = $kpiStage1;
+} elseif ($currentRole === 'recommendation') {
+    $kpiAwaiting = $kpiStage2;
+} elseif ($currentRole === 'clearance') {
+    $kpiAwaiting = $kpiStage3;
+} else {
+    $kpiAwaiting = $kpiStage1 + $kpiStage2 + $kpiStage3;
+}
+$sidebarPendingCount = $kpiStage1 + $kpiStage2 + $kpiStage3;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -76,7 +203,8 @@ $isRecommendation = ($currentRole === 'recommendation');
         </a>
 
         <!-- Approvals Queue: ACTIVE HERE -->
-        <a href="admin_approvals.php<?= $isRecommendation ? '?role=recommendation' : '' ?>" class="sidebar-menu-item active">
+        <a href="admin_approvals.php<?= $isRecommendation ? '?role=recommendation' : '' ?>"
+          class="sidebar-menu-item active">
           <div class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -86,7 +214,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </svg>
           </div>
           <span class="menu-label">Approvals Queue</span>
-          <span class="sidebar-count-badge amber" id="sidebarPendingCount">5</span>
+          <span class="sidebar-count-badge amber" id="sidebarPendingCount"><?= $sidebarPendingCount ?></span>
         </a>
 
         <a href="admin_reservations.php" class="sidebar-menu-item">
@@ -199,7 +327,8 @@ $isRecommendation = ($currentRole === 'recommendation');
       <!-- Topbar Header -->
       <header class="admin-topbar">
         <div class="admin-topbar-left">
-          <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()" aria-label="Toggle Sidebar Navigation">
+          <button type="button" class="sidebar-toggle-btn" id="sidebarToggleBtn" onclick="toggleSidebar()"
+            aria-label="Toggle Sidebar Navigation">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <line x1="3" y1="12" x2="21" y2="12"></line>
               <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -239,43 +368,72 @@ $isRecommendation = ($currentRole === 'recommendation');
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
               </svg>
-              <span>Dual-Stage Endorsement Engine</span>
+              <span>Three-Stage Governance Engine</span>
             </div>
-            <h2>Institutional Reservation Endorsement Desk</h2>
+            <h2>Institutional Endorsement &amp; Clearance Desk</h2>
           </div>
 
-          <div class="admin-header-actions" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; justify-content: flex-end;">
-            <div class="persona-switch-buttons" style="display: flex; align-items: center; gap: 0.45rem; background: #ffffff; padding: 0.35rem 0.65rem; border-radius: 10px; border: 1.5px solid #dce8e0; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-              <span style="font-size: 0.72rem; font-weight: 800; color: #627b6c; text-transform: uppercase; margin-right: 0.25rem;">Authority Level:</span>
-              <button type="button" id="btnRoleRec" class="btn-persona-toggle <?= $isRecommendation ? 'active' : '' ?>" onclick="switchAdminRole('recommendation')">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                Stage 1 (Recommendation)
+          <div class="admin-header-actions"
+            style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; justify-content: flex-end;">
+            <div class="persona-switch-buttons"
+              style="display: flex; align-items: center; gap: 0.35rem; background: #ffffff; padding: 0.35rem 0.55rem; border-radius: 10px; border: 1.5px solid #dce8e0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); flex-wrap: wrap;">
+              <span
+                style="font-size: 0.72rem; font-weight: 800; color: #627b6c; text-transform: uppercase; margin-right: 0.2rem;">Authority:</span>
+              <button type="button" id="btnRoleAll" class="btn-persona-toggle <?= $currentRole === 'all' ? 'active' : '' ?>"
+                onclick="switchAdminRole('all')">
+                All Stages
               </button>
-              <button type="button" id="btnRoleClear" class="btn-persona-toggle <?= !$isRecommendation ? 'active director' : '' ?>" onclick="switchAdminRole('clearance')">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                Stage 2 (Final Clearance)
+              <button type="button" id="btnRoleEnd" class="btn-persona-toggle <?= $currentRole === 'endorsement' ? 'active' : '' ?>"
+                onclick="switchAdminRole('endorsement')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                1. Endorsement
+              </button>
+              <button type="button" id="btnRoleRec" class="btn-persona-toggle <?= $currentRole === 'recommendation' ? 'active' : '' ?>"
+                onclick="switchAdminRole('recommendation')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                2. Recommendation
+              </button>
+              <button type="button" id="btnRoleClear"
+                class="btn-persona-toggle <?= $currentRole === 'clearance' ? 'active director' : '' ?>"
+                onclick="switchAdminRole('clearance')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                3. Clearance
               </button>
             </div>
-            
+
             <div style="display: flex; gap: 0.5rem;">
               <button type="button" class="btn-system-secondary" onclick="window.print()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                  <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
                 <span>Print Sheet</span>
               </button>
               <a href="admin_schedule.php" class="btn-system-primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
                 <span>Master Schedule</span>
               </a>
             </div>
           </div>
         </section>
 
-
-
         <!-- ==========================================================================
-             KPI STAT CARDS
+             KPI STAT CARDS (3-STAGE WORKFLOW)
              ========================================================================== -->
-        <section class="my-res-stats-grid admin-kpi-grid" aria-label="Approvals Queue Metrics">
+        <section class="my-res-stats-grid admin-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));" aria-label="Approvals Queue Metrics">
           <!-- Awaiting Action -->
           <div class="my-res-stat-card admin-stat-highlight" onclick="applyApprovalsFilterTab('awaiting')">
             <div class="stat-icon-box amber">
@@ -286,42 +444,59 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiAwaitingCount">3</span>
-                <span class="stat-pill-urgent">Needs Action</span>
+                <span class="stat-value" id="kpiAwaitingCount"><?= $kpiAwaiting ?></span>
+                <span class="stat-pill-urgent">Queue</span>
               </div>
               <span class="stat-label">Awaiting My Action</span>
             </div>
           </div>
 
-          <!-- Stage 1 Queue -->
+          <!-- Stage 1: Endorsement Queue -->
           <div class="my-res-stat-card" onclick="applyApprovalsFilterTab('stage1')">
-            <div class="stat-icon-box green">
+            <div class="stat-icon-box amber">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiStage1Count">3</span>
+                <span class="stat-value" id="kpiStage1Count"><?= $kpiStage1 ?></span>
                 <span class="stat-trend">Stage 1</span>
               </div>
-              <span class="stat-label">Pending Recommendation</span>
+              <span class="stat-label">1. Awaiting Endorsement</span>
             </div>
           </div>
 
-          <!-- Stage 2 Queue -->
+          <!-- Stage 2: Recommendation Queue -->
           <div class="my-res-stat-card" onclick="applyApprovalsFilterTab('stage2')">
             <div class="stat-icon-box blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value-row">
+                <span class="stat-value" id="kpiStage2Count"><?= $kpiStage2 ?></span>
+                <span class="stat-trend positive">Stage 2</span>
+              </div>
+              <span class="stat-label">2. Awaiting Recommendation</span>
+            </div>
+          </div>
+
+          <!-- Stage 3: Clearance Queue -->
+          <div class="my-res-stat-card" onclick="applyApprovalsFilterTab('stage3')">
+            <div class="stat-icon-box emerald">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
               </svg>
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiStage2Count">2</span>
-                <span class="stat-trend positive">Stage 2</span>
+                <span class="stat-value" id="kpiStage3Count"><?= $kpiStage3 ?></span>
+                <span class="stat-trend positive">Stage 3</span>
               </div>
-              <span class="stat-label">Pending Final Clearance</span>
+              <span class="stat-label">3. Awaiting Clearance</span>
             </div>
           </div>
 
@@ -335,10 +510,10 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiApprovedCount">1</span>
+                <span class="stat-value" id="kpiApprovedCount"><?= $kpiApproved ?></span>
                 <span class="stat-trend positive">Official</span>
               </div>
-              <span class="stat-label">Cleared & Permits Issued</span>
+              <span class="stat-label">Approved &amp; Permitted</span>
             </div>
           </div>
         </section>
@@ -353,16 +528,19 @@ $isRecommendation = ($currentRole === 'recommendation');
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
-            <input type="text" id="approvalsSearchInput" placeholder="Filter by Ref #, agency, applicant, or event..." oninput="renderApprovalsTable()">
+            <input type="text" id="approvalsSearchInput" placeholder="Filter by Ref #, agency, applicant, or event..."
+              oninput="renderApprovalsTable()">
           </div>
 
           <div class="approvals-toolbar-actions">
-            <button type="button" class="btn-system-secondary" onclick="applyApprovalsFilterTab('all')" style="padding: 0.52rem 0.85rem; border-radius: 10px; height: 100%;">
+            <button type="button" class="btn-system-secondary" onclick="applyApprovalsFilterTab('all')"
+              style="padding: 0.52rem 0.85rem; border-radius: 10px; height: 100%;">
               View All
             </button>
-            
+
             <!-- Venue Category Filter -->
-            <select id="approvalsVenueFilter" onchange="renderApprovalsTable()" style="padding: 0.52rem 0.85rem; border: 1.5px solid #dce8e0; border-radius: 10px; font-family: inherit; font-size: 0.82rem; font-weight: 600; color: #172c1f; background: #fff; height: 100%;">
+            <select id="approvalsVenueFilter" onchange="renderApprovalsTable()"
+              style="padding: 0.52rem 0.85rem; border: 1.5px solid #dce8e0; border-radius: 10px; font-family: inherit; font-size: 0.82rem; font-weight: 600; color: #172c1f; background: #fff; height: 100%;">
               <option value="all">All Facility Types</option>
               <option value="halls">Training & Function Halls</option>
               <option value="dorms">Dormitory Suites</option>
@@ -378,7 +556,8 @@ $isRecommendation = ($currentRole === 'recommendation');
             <thead>
               <tr>
                 <th style="width: 40px; text-align: center;">
-                  <input type="checkbox" id="selectAllRowsCb" onchange="toggleSelectAllRows(this.checked)" title="Select all visible">
+                  <input type="checkbox" id="selectAllRowsCb" onchange="toggleSelectAllRows(this.checked)"
+                    title="Select all visible">
                 </th>
                 <th>Request Ref & Urgency</th>
                 <th>Applicant & Agency</th>
@@ -395,10 +574,12 @@ $isRecommendation = ($currentRole === 'recommendation');
         </div>
 
         <style>
-          #approvalsTable th:last-child, #approvalsTable td:last-child {
+          #approvalsTable th:last-child,
+          #approvalsTable td:last-child {
             background: #f4fdf8;
             border-left: 1px solid #dce8e0;
           }
+
           #approvalsTable td:last-child {
             box-shadow: inset 3px 0 0 #a9d6bb;
           }
@@ -416,13 +597,24 @@ $isRecommendation = ($currentRole === 'recommendation');
       <span>Selected Requests</span>
     </div>
     <div class="bulk-action-buttons">
-      <button type="button" class="btn-bulk-action recommend" onclick="executeBulkEndorse()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        <span>Batch Recommend (Stage 1)</span>
+      <button type="button" class="btn-bulk-action endorse" id="btnBulkEndorse" onclick="executeBulkEndorse()" style="background: #d97706; color: #fff;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Batch Endorse (Stage 1)</span>
       </button>
-      <button type="button" class="btn-bulk-action clearance" onclick="executeBulkClearance()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-        <span>Batch Issue Clearance (Stage 2)</span>
+      <button type="button" class="btn-bulk-action recommend" id="btnBulkRecommend" onclick="executeBulkRecommend()" style="background: #2563eb; color: #fff;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span>Batch Recommend (Stage 2)</span>
+      </button>
+      <button type="button" class="btn-bulk-action clearance" id="btnBulkClearance" onclick="executeBulkClearance()" style="background: #10b981; color: #fff;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+        </svg>
+        <span>Batch Issue Clearance (Stage 3)</span>
       </button>
       <button type="button" class="btn-bulk-action secondary" onclick="clearRowSelections()">Cancel</button>
     </div>
@@ -436,7 +628,8 @@ $isRecommendation = ($currentRole === 'recommendation');
       <div class="admin-modal-header">
         <div class="modal-title-wrap">
           <div class="my-res-top-badge admin-gold-badge" style="margin-bottom: 0.2rem;">Official Booking Dossier</div>
-          <h4>Reservation Packet: <span id="dossierModalRef" style="font-family: monospace; color: #174d2f;">REF</span></h4>
+          <h4>Reservation Packet: <span id="dossierModalRef" style="font-family: monospace; color: #174d2f;">REF</span>
+          </h4>
         </div>
         <button type="button" class="admin-modal-close" onclick="closeDossierModal()">&times;</button>
       </div>
@@ -447,7 +640,10 @@ $isRecommendation = ($currentRole === 'recommendation');
           <div>
             <div class="dossier-card-section" style="margin-bottom: 1rem;">
               <div class="dossier-section-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
                 <span>Applicant Information</span>
               </div>
               <div class="dossier-data-grid">
@@ -468,7 +664,12 @@ $isRecommendation = ($currentRole === 'recommendation');
 
             <div class="dossier-card-section">
               <div class="dossier-section-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
                 <span>Event Logistics & Specifications</span>
               </div>
               <div class="dossier-data-grid" style="margin-bottom: 0.85rem;">
@@ -499,7 +700,24 @@ $isRecommendation = ($currentRole === 'recommendation');
               </div>
               <div class="dossier-field-item">
                 <label>Special Remarks & Accommodation Notes</label>
-                <div class="field-value" id="dossierNotes" style="font-size: 0.82rem; font-weight: 500; color: #557262;">--</div>
+                <div class="field-value" id="dossierNotes"
+                  style="font-size: 0.82rem; font-weight: 500; color: #557262;">--</div>
+              </div>
+              <div class="dossier-field-item" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed #dce8e0;">
+                <label>Supporting Document (Letter of Intent / Special Order)</label>
+                <div id="dossierDocContainer" style="margin-top: 0.35rem;">
+                  <span id="dossierDocNone" style="font-size: 0.8rem; color: #8a9e92; font-style: italic;">No document attached</span>
+                  <a id="dossierDocLink" href="#" target="_blank" class="btn-system-secondary" style="display: none; align-items: center; gap: 0.45rem; padding: 0.45rem 0.85rem; font-size: 0.82rem; border-radius: 8px; text-decoration: none; color: #174d2f; font-weight: 700; background: #eaf3ed;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                      <polyline points="14 2 14 8 20 8"></polyline>
+                      <line x1="16" y1="13" x2="8" y2="13"></line>
+                      <line x1="16" y1="17" x2="8" y2="17"></line>
+                      <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span id="dossierDocName">Open Official Document (PDF/Image)</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -508,8 +726,10 @@ $isRecommendation = ($currentRole === 'recommendation');
           <div>
             <div class="dossier-card-section">
               <div class="dossier-section-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                <span>Dual-Stage Endorsement Trail</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Three-Stage Governance & Endorsement Trail</span>
               </div>
               <div id="dossierTimelineList">
                 <!-- Timeline items rendered via JS -->
@@ -541,24 +761,37 @@ $isRecommendation = ($currentRole === 'recommendation');
 
       <div class="admin-modal-body">
         <div class="form-group-decline" style="margin-bottom: 0.85rem;">
-          <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Primary Grounds for Action</label>
-          <select id="disapproveReasonSelect" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
-            <option value="Schedule Conflict with Priority DA Executive Activity">Schedule Conflict with Priority DA Executive Activity</option>
-            <option value="Facility Scheduled for Preventive Engineering Maintenance">Facility Scheduled for Preventive Engineering Maintenance</option>
-            <option value="Incomplete Supporting Documents / Missing Letter of Intent">Incomplete Supporting Documents / Missing Letter of Intent</option>
-            <option value="PAX Exceeds Approved Fire & Safety Venue Capacity">PAX Exceeds Approved Fire & Safety Venue Capacity</option>
-            <option value="Administrative Grounds / Discretion of the Directorate">Administrative Grounds / Discretion of the Directorate</option>
+          <label
+            style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Primary
+            Grounds for Action</label>
+          <select id="disapproveReasonSelect"
+            style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
+            <option value="Schedule Conflict with Priority DA Executive Activity">Schedule Conflict with Priority DA
+              Executive Activity</option>
+            <option value="Facility Scheduled for Preventive Engineering Maintenance">Facility Scheduled for Preventive
+              Engineering Maintenance</option>
+            <option value="Incomplete Supporting Documents / Missing Letter of Intent">Incomplete Supporting Documents /
+              Missing Letter of Intent</option>
+            <option value="PAX Exceeds Approved Fire & Safety Venue Capacity">PAX Exceeds Approved Fire & Safety Venue
+              Capacity</option>
+            <option value="Administrative Grounds / Discretion of the Directorate">Administrative Grounds / Discretion
+              of the Directorate</option>
           </select>
         </div>
 
         <div class="form-group-decline" style="margin-bottom: 1.25rem;">
-          <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Official Corrective Instructions for Applicant</label>
-          <textarea id="disapproveRemarks" rows="3" placeholder="Specify required revisions, alternative available dates, or compliance remarks..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;"></textarea>
+          <label
+            style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Official
+            Corrective Instructions for Applicant</label>
+          <textarea id="disapproveRemarks" rows="3"
+            placeholder="Specify required revisions, alternative available dates, or compliance remarks..."
+            style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;"></textarea>
         </div>
 
         <div class="admin-modal-footer" style="padding: 1rem 0 0 0; background: none; border-top: 1px solid #edf3ef;">
           <button type="button" class="btn-system-secondary" onclick="closeDisapproveModal()">Cancel</button>
-          <button type="button" class="btn-confirm-decline" onclick="confirmDisapproval()">Submit Official Notice</button>
+          <button type="button" class="btn-confirm-decline" onclick="confirmDisapproval()">Submit Official
+            Notice</button>
         </div>
       </div>
     </div>
@@ -581,10 +814,12 @@ $isRecommendation = ($currentRole === 'recommendation');
           <div class="permit-document-sheet">
             <div class="permit-header">
               <img src="assets/images/ATI_Logo.png" alt="ATI Logo" class="permit-header-logo">
-              <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: #4b5563;">Republic of the Philippines • Department of Agriculture</div>
+              <div style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: #4b5563;">
+                Republic of the Philippines • Department of Agriculture</div>
               <h2 class="permit-title">Agricultural Training Institute</h2>
               <p class="permit-subtitle">ATI Central Office, Elliptical Road, Diliman, Quezon City</p>
-              <div style="margin-top: 0.85rem; display: inline-block; background: #eaf3ed; border: 1px solid #174d2f; color: #174d2f; font-weight: 800; font-size: 0.82rem; padding: 0.25rem 0.85rem; border-radius: 999px;">
+              <div
+                style="margin-top: 0.85rem; display: inline-block; background: #eaf3ed; border: 1px solid #174d2f; color: #174d2f; font-weight: 800; font-size: 0.82rem; padding: 0.25rem 0.85rem; border-radius: 999px;">
                 OFFICIAL FACILITY RESERVATION PERMIT & GATE PASS
               </div>
             </div>
@@ -616,29 +851,41 @@ $isRecommendation = ($currentRole === 'recommendation');
               </tr>
             </table>
 
-            <div class="permit-signatures-row">
-              <div class="signature-block">
+            <div class="permit-signatures-row" style="display: flex; gap: 1.5rem; justify-content: space-between;">
+              <div class="signature-block" style="flex: 1;">
                 <div class="signature-line">
-                  <p class="signature-name">RECOMMENDING OFFICER</p>
+                  <p class="signature-name" id="permitEndorserName">ENDORSING OFFICER</p>
+                  <p class="signature-title">Division / Originating Unit Head</p>
+                  <small style="color: #6b7280; font-size: 0.7rem;">Official Endorsement Issued</small>
+                </div>
+              </div>
+              <div class="signature-block" style="flex: 1;">
+                <div class="signature-line">
+                  <p class="signature-name" id="permitRecommenderName">RECOMMENDING OFFICER</p>
                   <p class="signature-title">Administrative Services & Logistics Unit</p>
                   <small style="color: #6b7280; font-size: 0.7rem;">Verified Logistical Feasibility</small>
                 </div>
               </div>
-              <div class="signature-block">
+              <div class="signature-block" style="flex: 1;">
                 <div class="signature-line">
-                  <p class="signature-name">CLEARANCE AUTHORITY</p>
+                  <p class="signature-name" id="permitClearerName">CLEARANCE AUTHORITY</p>
                   <p class="signature-title">Office of the Executive Director</p>
-                  <small style="color: #6b7280; font-size: 0.7rem;">Official Executive Clearance Granted</small>
+                  <small style="color: #6b7280; font-size: 0.7rem;">Executive Clearance Granted</small>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="admin-modal-footer" style="padding: 1.25rem 0 0 0; background: none; border-top: 1px solid #edf3ef; justify-content: space-between;">
+        <div class="admin-modal-footer"
+          style="padding: 1.25rem 0 0 0; background: none; border-top: 1px solid #edf3ef; justify-content: space-between;">
           <button type="button" class="btn-system-secondary" onclick="closePermitModal()">Close Window</button>
           <button type="button" class="btn-system-primary" onclick="printPermitDocument()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
             <span>Print Official Permit (Gate Pass)</span>
           </button>
         </div>
@@ -649,7 +896,10 @@ $isRecommendation = ($currentRole === 'recommendation');
   <!-- Toast Notification Container -->
   <div class="admin-toast-container" id="adminToastContainer"></div>
 
-  <!-- JavaScript Engine -->
+  <!-- JavaScript Engine Data & Script -->
+  <script>
+    window.initialApprovalsData = <?= json_encode($approvalsData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+  </script>
   <script src="js/admin_approvals.js?v=<?php echo time(); ?>"></script>
 </body>
 

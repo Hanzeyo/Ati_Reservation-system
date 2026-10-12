@@ -1,12 +1,108 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/admin_guard.php';
+
 /**
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Super Administrator Executive Dashboard (Sidebar Layout - Terno with ATI Portal)
  */
 $currentRole = isset($_GET['role']) && $_GET['role'] === 'recommendation' ? 'recommendation' : 'clearance';
 $isRecommendation = ($currentRole === 'recommendation');
+
+// 1. Fetch all reservations joined with facilities, rooms, and applicants
+$resQuery = "SELECT r.*, 
+                    f.name AS facility_name, 
+                    f.type AS facility_type,
+                    rm.room_number,
+                    rm.floor AS room_floor,
+                    u.full_name AS applicant_name,
+                    u.email AS applicant_email,
+                    u.contact_number AS applicant_phone,
+                    u.office_agency AS applicant_agency
+             FROM reservations r
+             LEFT JOIN facilities f ON r.facility_id = f.id
+             LEFT JOIN rooms rm ON r.room_id = rm.id
+             LEFT JOIN users u ON r.user_id = u.id
+             ORDER BY r.id DESC";
+
+$stmt = $db->query($resQuery);
+$allReservations = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+$totalReservations = count($allReservations);
+$pendingReservations = 0;
+$approvedReservations = 0;
+$hallsCount = 0;
+$dormsCount = 0;
+$totalPaxServed = 0;
+
+$dashboardReservationsData = [];
+
+foreach ($allReservations as $row) {
+    $st = $row['status'] ?? 'Pending';
+    $isPending = in_array($st, ['Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance']);
+    $isApproved = in_array($st, ['Approved', 'Completed']);
+
+    if ($isPending) $pendingReservations++;
+    if ($isApproved) {
+        $approvedReservations++;
+        $totalPaxServed += (int)($row['pax_count'] ?? 0);
+    }
+
+    $isDorm = ($row['facility_type'] === 'dormitories' || !empty($row['room_number']));
+    if ($isDorm) {
+        $dormsCount++;
+    } else {
+        $hallsCount++;
+    }
+
+    $ref = $row['reference_no'];
+    $startDateTimestamp = strtotime($row['start_date']);
+    $startDateStr = date('M d, Y', $startDateTimestamp);
+    if (!empty($row['end_date']) && $row['end_date'] !== $row['start_date']) {
+        $datesStr = date('M d', $startDateTimestamp) . ' – ' . date('M d, Y', strtotime($row['end_date']));
+    } else {
+        $datesStr = $startDateStr;
+    }
+
+    $venueDisplay = $row['facility_name'] ?: 'Official Facility';
+    if (!empty($row['room_number'])) {
+        $venueDisplay .= ' (Room ' . $row['room_number'] . ')';
+    }
+
+    $dashboardReservationsData[$ref] = [
+        'ref' => $ref,
+        'applicant' => $row['applicant_name'] ?: 'Official Guest',
+        'agency' => $row['applicant_agency'] ?: 'ATI Central Office',
+        'email' => $row['applicant_email'] ?: 'N/A',
+        'phone' => $row['applicant_phone'] ?: 'N/A',
+        'venue' => $venueDisplay,
+        'schedule' => $datesStr . ' (' . ($row['time_slot'] ?: 'Full Day') . ')',
+        'pax' => (int)($row['pax_count'] ?? 0) . ' PAX',
+        'eventTitle' => $row['event_title'] ?: 'Official Institutional Activity',
+        'equipment' => $row['special_notes'] ?: 'Standard Logistics & Venue Equipment',
+        'status' => strtolower($isApproved ? 'approved' : ($st === 'Rejected' ? 'rejected' : 'pending')),
+        'rawStatus' => $st,
+        'category' => $isDorm ? 'dorms' : 'halls',
+        'dateFiled' => !empty($row['created_at']) ? date('M d, Y • h:i A', strtotime($row['created_at'])) : date('M d, Y • h:i A')
+    ];
+}
+
+// 2. Fetch User count
+$userCountStmt = $db->query("SELECT COUNT(*) FROM users");
+$totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
+
+// 3. Fetch Facilities
+$facStmt = $db->query("SELECT * FROM facilities ORDER BY id ASC");
+$monitoredFacilities = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+$facilitiesCount = count($monitoredFacilities);
+
+// 4. Fetch Recent Audit Logs
+$auditStmt = $db->query("SELECT a.*, u.full_name FROM audit_logs a LEFT JOIN users u ON a.user_id = u.id ORDER BY a.created_at DESC LIMIT 8");
+$recentAuditLogs = $auditStmt ? $auditStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+// 5. Calculations
+$occupancyRate = ($totalReservations > 0) ? round(($approvedReservations / $totalReservations) * 100, 1) : 0;
+$estimatedUtilization = number_format(max($totalPaxServed * 850, 45000));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -84,7 +180,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </svg>
           </div>
           <span class="menu-label">Approvals Queue</span>
-          <span class="sidebar-count-badge amber" id="sidebarPendingCount">5</span>
+          <span class="sidebar-count-badge amber" id="sidebarPendingCount"><?= $pendingReservations ?></span>
         </a>
 
         <a href="admin_reservations.php" class="sidebar-menu-item">
@@ -113,7 +209,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </svg>
           </div>
           <span class="menu-label">User & Role Access</span>
-          <span class="sidebar-count-badge green">18</span>
+          <span class="sidebar-count-badge green"><?= $totalUsersCount ?></span>
         </a>
 
         <div class="sidebar-section-title">FACILITY MANAGEMENT</div>
@@ -272,8 +368,8 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiTotal">128</span>
-                <span class="stat-trend positive">+14% MoM</span>
+                <span class="stat-value" id="kpiTotal"><?= $totalReservations ?></span>
+                <span class="stat-trend positive">Live</span>
               </div>
               <span class="stat-label">Total Reservations</span>
             </div>
@@ -289,7 +385,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiPending">5</span>
+                <span class="stat-value" id="kpiPending"><?= $pendingReservations ?></span>
                 <span class="stat-pill-urgent">Needs Action</span>
               </div>
               <span class="stat-label">Pending Approval Requests</span>
@@ -307,15 +403,15 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiOccupancy">76.4%</span>
-                <span class="stat-trend neutral">168 / 220 PAX</span>
+                <span class="stat-value" id="kpiOccupancy"><?= $occupancyRate ?>%</span>
+                <span class="stat-trend neutral"><?= $approvedReservations ?> Approved</span>
               </div>
               <span class="stat-label">Venue & Dorm Occupancy</span>
             </div>
           </div>
 
           <!-- Monthly Revenue / Utilization -->
-          <div class="my-res-stat-card" data-kpi="revenue" onclick="showAdminToast('October 2026 Estimated Utilization: ₱284,500 across all institutional facilities.', 'info')" title="Click to view monthly utilization summary">
+          <div class="my-res-stat-card" data-kpi="revenue" onclick="showAdminToast('Estimated Utilization: ₱<?= $estimatedUtilization ?> based on booked attendees.', 'info')" title="Click to view monthly utilization summary">
             <div class="stat-icon-box emerald">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -326,10 +422,10 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiRevenue">₱284,500</span>
-                <span class="stat-trend positive">Oct 2026</span>
+                <span class="stat-value" id="kpiRevenue">₱<?= $estimatedUtilization ?></span>
+                <span class="stat-trend positive">Live Est.</span>
               </div>
-              <span class="stat-label">Estimated Monthly Utilization</span>
+              <span class="stat-label">Estimated Facility Utilization</span>
             </div>
           </div>
         </section>
@@ -342,23 +438,23 @@ $isRecommendation = ($currentRole === 'recommendation');
           <div class="filter-tabs-group" role="tablist">
             <button type="button" class="filter-tab-btn active" data-filter="all" onclick="applyTabFilter('all')">
               <span>All Requests</span>
-              <span class="tab-count-pill" id="tabCountAll">128</span>
+              <span class="tab-count-pill" id="tabCountAll"><?= $totalReservations ?></span>
             </button>
             <button type="button" class="filter-tab-btn" data-filter="pending" onclick="applyTabFilter('pending')">
               <span>Pending Review</span>
-              <span class="tab-count-pill tab-count-pending" id="tabCountPending">5</span>
+              <span class="tab-count-pill tab-count-pending" id="tabCountPending"><?= $pendingReservations ?></span>
             </button>
             <button type="button" class="filter-tab-btn" data-filter="approved" onclick="applyTabFilter('approved')">
               <span>Approved</span>
-              <span class="tab-count-pill" id="tabCountApproved">114</span>
+              <span class="tab-count-pill" id="tabCountApproved"><?= $approvedReservations ?></span>
             </button>
             <button type="button" class="filter-tab-btn" data-filter="halls" onclick="applyTabFilter('halls')">
               <span>Function Halls</span>
-              <span class="tab-count-pill" id="tabCountHalls">80</span>
+              <span class="tab-count-pill" id="tabCountHalls"><?= $hallsCount ?></span>
             </button>
             <button type="button" class="filter-tab-btn" data-filter="dorms" onclick="applyTabFilter('dorms')">
               <span>Dormitories</span>
-              <span class="tab-count-pill" id="tabCountDorms">48</span>
+              <span class="tab-count-pill" id="tabCountDorms"><?= $dormsCount ?></span>
             </button>
           </div>
 
@@ -436,346 +532,124 @@ $isRecommendation = ($currentRole === 'recommendation');
                   </td>
                 </tr>
 
-                <!-- Row 1: Pending -->
-                <tr data-ref="R-2026-0891" data-status="pending" data-category="halls" data-venue="Serrano Hall">
-                  <td data-label="Reference & Date">
-                    <div class="td-ref-group">
-                      <span class="td-ref-id">R-2026-0891</span>
-                      <span class="td-sub-date">Oct 05, 2026 &bull; 08:30 AM</span>
-                    </div>
-                  </td>
-                  <td data-label="Applicant & Org">
-                    <div class="td-user-group">
-                      <div class="user-avatar-circle sm">JD</div>
-                      <div class="td-user-details">
-                        <span class="td-name">Engr. Juan Dela Cruz</span>
-                        <span class="td-org">ATI - Career Dev Division (CDD)</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td data-label="Requested Facility">
-                    <div class="td-facility-pill hall">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                      <span>Serrano Hall</span>
-                    </div>
-                  </td>
-                  <td data-label="Schedule / Duration">
-                    <div class="td-schedule-text">
-                      <strong>Oct 12 – Oct 14, 2026</strong>
-                      <span>8:00 AM – 5:00 PM (3 Days)</span>
-                    </div>
-                  </td>
-                  <td data-label="Attendees (PAX)">
-                    <div class="td-pax-count">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                      <span>85 PAX</span>
-                    </div>
-                  </td>
-                  <td data-label="Current Status">
-                    <span class="status-pill status-pending">
-                      <span class="status-dot"></span>
-                      Pending Review
-                    </span>
-                  </td>
-                  <td data-label="Actions" style="text-align: right;">
-                    <div class="action-buttons-wrap">
-                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0891', 'Engr. Juan Dela Cruz', 'Serrano Hall')" title="Approve Request">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span>Approve</span>
-                      </button>
-                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0891', 'Engr. Juan Dela Cruz')" title="Decline Request">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        <span>Decline</span>
-                      </button>
-                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0891')" title="View Booking Form">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                      </button>
+                <?php if (empty($allReservations)): ?>
+                <tr>
+                  <td colspan="7" class="admin-empty-table-state" style="padding: 3rem 1rem;">
+                    <div class="empty-state-content">
+                      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#8ca394" stroke-width="1.8">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      </svg>
+                      <h4>No Reservations Recorded</h4>
+                      <p>There are currently no facility reservations in the system.</p>
                     </div>
                   </td>
                 </tr>
-
-                <!-- Row 2: Pending (Dormitory) -->
-                <tr data-ref="R-2026-0892" data-status="pending" data-category="dorms" data-venue="Dormitory Suite">
-                  <td data-label="Reference & Date">
-                    <div class="td-ref-group">
-                      <span class="td-ref-id">R-2026-0892</span>
-                      <span class="td-sub-date">Oct 05, 2026 &bull; 09:15 AM</span>
-                    </div>
-                  </td>
-                  <td data-label="Applicant & Org">
-                    <div class="td-user-group">
-                      <div class="user-avatar-circle sm gold">MS</div>
-                      <div class="td-user-details">
-                        <span class="td-name">Dr. Maria Santos</span>
-                        <span class="td-org">Bureau of Plant Industry (BPI)</span>
+                <?php else: ?>
+                  <?php foreach ($allReservations as $row):
+                    $ref = htmlspecialchars($row['reference_no'] ?? '');
+                    $applicantName = htmlspecialchars($row['applicant_name'] ?? 'Official Guest');
+                    $applicantAgency = htmlspecialchars($row['applicant_agency'] ?? 'ATI Central Office');
+                    $st = $row['status'] ?? 'Pending';
+                    $isPending = in_array($st, ['Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance']);
+                    $isApproved = in_array($st, ['Approved', 'Completed']);
+                    $isRejected = ($st === 'Rejected' || $st === 'Cancelled');
+                    $statusKey = $isApproved ? 'approved' : ($isRejected ? 'rejected' : 'pending');
+                    $isDorm = (($row['facility_type'] ?? '') === 'dormitories' || !empty($row['room_number']));
+                    $categoryKey = $isDorm ? 'dorms' : 'halls';
+                    $venueName = $row['facility_name'] ?: 'Official Facility';
+                    if (!empty($row['room_number'])) {
+                      $venueName .= ' (Room ' . $row['room_number'] . ')';
+                    }
+                    $venueNameEsc = htmlspecialchars($venueName);
+                    
+                    $startDateTimestamp = strtotime($row['start_date'] ?? 'now');
+                    $startDateStr = date('M d, Y', $startDateTimestamp);
+                    if (!empty($row['end_date']) && $row['end_date'] !== $row['start_date']) {
+                      $datesStr = date('M d', $startDateTimestamp) . ' – ' . date('M d, Y', strtotime($row['end_date']));
+                    } else {
+                      $datesStr = $startDateStr;
+                    }
+                    $createdStr = !empty($row['created_at']) ? date('M d, Y • h:i A', strtotime($row['created_at'])) : date('M d, Y • h:i A');
+                    $timeSlotStr = htmlspecialchars($row['time_slot'] ?: 'Full Day');
+                    $pax = (int)($row['pax_count'] ?? 0);
+                  ?>
+                  <tr data-ref="<?= $ref ?>" data-status="<?= $statusKey ?>" data-category="<?= $categoryKey ?>" data-venue="<?= $venueNameEsc ?>">
+                    <td data-label="Reference & Date">
+                      <div class="td-ref-group">
+                        <span class="td-ref-id"><?= $ref ?></span>
+                        <span class="td-sub-date"><?= $createdStr ?></span>
                       </div>
-                    </div>
-                  </td>
-                  <td data-label="Requested Facility">
-                    <div class="td-facility-pill dorm">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                      <span>Dormitory Suite A & B</span>
-                    </div>
-                  </td>
-                  <td data-label="Schedule / Duration">
-                    <div class="td-schedule-text">
-                      <strong>Oct 15 – Oct 18, 2026</strong>
-                      <span>Check-in 2:00 PM (4 Days)</span>
-                    </div>
-                  </td>
-                  <td data-label="Attendees (PAX)">
-                    <div class="td-pax-count">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
-                      <span>32 Delegates</span>
-                    </div>
-                  </td>
-                  <td data-label="Current Status">
-                    <span class="status-pill status-pending">
-                      <span class="status-dot"></span>
-                      Pending Review
-                    </span>
-                  </td>
-                  <td data-label="Actions" style="text-align: right;">
-                    <div class="action-buttons-wrap">
-                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0892', 'Dr. Maria Santos', 'Dormitory Suite A & B')" title="Approve Request">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span>Approve</span>
-                      </button>
-                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0892', 'Dr. Maria Santos')" title="Decline Request">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        <span>Decline</span>
-                      </button>
-                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0892')" title="View Booking Form">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- Row 3: Pending -->
-                <tr data-ref="R-2026-0893" data-status="pending" data-category="halls" data-venue="Executive Boardroom">
-                  <td data-label="Reference & Date">
-                    <div class="td-ref-group">
-                      <span class="td-ref-id">R-2026-0893</span>
-                      <span class="td-sub-date">Oct 05, 2026 &bull; 10:45 AM</span>
-                    </div>
-                  </td>
-                  <td data-label="Applicant & Org">
-                    <div class="td-user-group">
-                      <div class="user-avatar-circle sm">AB</div>
-                      <div class="td-user-details">
-                        <span class="td-name">Atty. Bernardo Castro</span>
-                        <span class="td-org">DA - Legal Service Office</span>
+                    </td>
+                    <td data-label="Applicant & Org">
+                      <div class="td-user-group">
+                        <div class="user-avatar-circle sm"><?= htmlspecialchars(getUserInitials($applicantName)) ?></div>
+                        <div class="td-user-details">
+                          <span class="td-name"><?= $applicantName ?></span>
+                          <span class="td-org"><?= $applicantAgency ?></span>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td data-label="Requested Facility">
-                    <div class="td-facility-pill hall">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                      <span>Executive Boardroom</span>
-                    </div>
-                  </td>
-                  <td data-label="Schedule / Duration">
-                    <div class="td-schedule-text">
-                      <strong>Oct 08, 2026</strong>
-                      <span>1:00 PM – 5:00 PM (Half-Day)</span>
-                    </div>
-                  </td>
-                  <td data-label="Attendees (PAX)">
-                    <div class="td-pax-count">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
-                      <span>18 PAX</span>
-                    </div>
-                  </td>
-                  <td data-label="Current Status">
-                    <span class="status-pill status-pending">
-                      <span class="status-dot"></span>
-                      Pending Review
-                    </span>
-                  </td>
-                  <td data-label="Actions" style="text-align: right;">
-                    <div class="action-buttons-wrap">
-                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0893', 'Atty. Bernardo Castro', 'Executive Boardroom')" title="Approve Request">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span>Approve</span>
-                      </button>
-                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0893', 'Atty. Bernardo Castro')" title="Decline Request">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        <span>Decline</span>
-                      </button>
-                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0893')" title="View Booking Form">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- Row 4: Pending -->
-                <tr data-ref="R-2026-0894" data-status="pending" data-category="halls" data-venue="4-H Learning Center">
-                  <td data-label="Reference & Date">
-                    <div class="td-ref-group">
-                      <span class="td-ref-id">R-2026-0894</span>
-                      <span class="td-sub-date">Oct 05, 2026 &bull; 11:10 AM</span>
-                    </div>
-                  </td>
-                  <td data-label="Applicant & Org">
-                    <div class="td-user-group">
-                      <div class="user-avatar-circle sm">RP</div>
-                      <div class="td-user-details">
-                        <span class="td-name">Ramon Pascual</span>
-                        <span class="td-org">PhilRice - Extension Division</span>
+                    </td>
+                    <td data-label="Requested Facility">
+                      <div class="td-facility-pill <?= $categoryKey === 'dorms' ? 'dorm' : 'hall' ?>">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                        <span><?= $venueNameEsc ?></span>
                       </div>
-                    </div>
-                  </td>
-                  <td data-label="Requested Facility">
-                    <div class="td-facility-pill hall">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                      <span>4-H Learning Center</span>
-                    </div>
-                  </td>
-                  <td data-label="Schedule / Duration">
-                    <div class="td-schedule-text">
-                      <strong>Oct 20 – Oct 22, 2026</strong>
-                      <span>8:00 AM – 5:00 PM (3 Days)</span>
-                    </div>
-                  </td>
-                  <td data-label="Attendees (PAX)">
-                    <div class="td-pax-count">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
-                      <span>60 PAX</span>
-                    </div>
-                  </td>
-                  <td data-label="Current Status">
-                    <span class="status-pill status-pending">
-                      <span class="status-dot"></span>
-                      Pending Review
-                    </span>
-                  </td>
-                  <td data-label="Actions" style="text-align: right;">
-                    <div class="action-buttons-wrap">
-                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0894', 'Ramon Pascual', '4-H Learning Center')" title="Approve Request">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span>Approve</span>
-                      </button>
-                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0894', 'Ramon Pascual')" title="Decline Request">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        <span>Decline</span>
-                      </button>
-                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0894')" title="View Booking Form">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- Row 5: Pending (Dormitory) -->
-                <tr data-ref="R-2026-0895" data-status="pending" data-category="dorms" data-venue="Dormitory Suite">
-                  <td data-label="Reference & Date">
-                    <div class="td-ref-group">
-                      <span class="td-ref-id">R-2026-0895</span>
-                      <span class="td-sub-date">Oct 05, 2026 &bull; 11:40 AM</span>
-                    </div>
-                  </td>
-                  <td data-label="Applicant & Org">
-                    <div class="td-user-group">
-                      <div class="user-avatar-circle sm">CL</div>
-                      <div class="td-user-details">
-                        <span class="td-name">Carmela Lim</span>
-                        <span class="td-org">ATI - Information Services (ISD)</span>
+                    </td>
+                    <td data-label="Schedule / Duration">
+                      <div class="td-schedule-text">
+                        <strong><?= htmlspecialchars($datesStr) ?></strong>
+                        <span><?= $timeSlotStr ?></span>
                       </div>
-                    </div>
-                  </td>
-                  <td data-label="Requested Facility">
-                    <div class="td-facility-pill dorm">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                      <span>Dormitory Executive Suite</span>
-                    </div>
-                  </td>
-                  <td data-label="Schedule / Duration">
-                    <div class="td-schedule-text">
-                      <strong>Oct 25 – Oct 27, 2026</strong>
-                      <span>Check-in 1:00 PM (3 Days)</span>
-                    </div>
-                  </td>
-                  <td data-label="Attendees (PAX)">
-                    <div class="td-pax-count">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
-                      <span>14 Delegates</span>
-                    </div>
-                  </td>
-                  <td data-label="Current Status">
-                    <span class="status-pill status-pending">
-                      <span class="status-dot"></span>
-                      Pending Review
-                    </span>
-                  </td>
-                  <td data-label="Actions" style="text-align: right;">
-                    <div class="action-buttons-wrap">
-                      <button type="button" class="btn-table-action approve" onclick="approveReservation('R-2026-0895', 'Carmela Lim', 'Dormitory Executive Suite')" title="Approve Request">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span>Approve</span>
-                      </button>
-                      <button type="button" class="btn-table-action decline" onclick="openDeclineModal('R-2026-0895', 'Carmela Lim')" title="Decline Request">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        <span>Decline</span>
-                      </button>
-                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0895')" title="View Booking Form">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- Row 6: Approved (Sample confirmed record) -->
-                <tr data-ref="R-2026-0888" data-status="approved" data-category="halls" data-venue="Serrano Hall">
-                  <td data-label="Reference & Date">
-                    <div class="td-ref-group">
-                      <span class="td-ref-id">R-2026-0888</span>
-                      <span class="td-sub-date">Oct 02, 2026 &bull; 02:20 PM</span>
-                    </div>
-                  </td>
-                  <td data-label="Applicant & Org">
-                    <div class="td-user-group">
-                      <div class="user-avatar-circle sm">GV</div>
-                      <div class="td-user-details">
-                        <span class="td-name">Grace Valenzuela</span>
-                        <span class="td-org">DA - National Rice Program</span>
+                    </td>
+                    <td data-label="Attendees (PAX)">
+                      <div class="td-pax-count">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <span><?= $pax ?> PAX</span>
                       </div>
-                    </div>
-                  </td>
-                  <td data-label="Requested Facility">
-                    <div class="td-facility-pill hall">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                      <span>Serrano Hall</span>
-                    </div>
-                  </td>
-                  <td data-label="Schedule / Duration">
-                    <div class="td-schedule-text">
-                      <strong>Oct 06 – Oct 07, 2026</strong>
-                      <span>8:00 AM – 5:00 PM (2 Days)</span>
-                    </div>
-                  </td>
-                  <td data-label="Attendees (PAX)">
-                    <div class="td-pax-count">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
-                      <span>100 PAX</span>
-                    </div>
-                  </td>
-                  <td data-label="Current Status">
-                    <span class="status-pill status-approved">
-                      <span class="status-dot"></span>
-                      Confirmed & Approved
-                    </span>
-                  </td>
-                  <td data-label="Actions" style="text-align: right;">
-                    <div class="action-buttons-wrap">
-                      <span class="badge-approved-note">Approved by Director</span>
-                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('R-2026-0888')" title="View Booking Form">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                    </td>
+                    <td data-label="Current Status">
+                      <?php if ($isApproved): ?>
+                        <span class="status-pill status-approved">
+                          <span class="status-dot"></span>
+                          Confirmed & Approved
+                        </span>
+                      <?php elseif ($isRejected): ?>
+                        <span class="status-pill status-cancelled">
+                          <span class="status-dot"></span>
+                          Declined
+                        </span>
+                      <?php else: ?>
+                        <span class="status-pill status-pending">
+                          <span class="status-dot"></span>
+                          <?= htmlspecialchars($st === 'Pending' ? 'Pending Review' : $st) ?>
+                        </span>
+                      <?php endif; ?>
+                    </td>
+                    <td data-label="Actions" style="text-align: right;">
+                      <div class="action-buttons-wrap">
+                        <?php if ($isPending): ?>
+                          <button type="button" class="btn-table-action approve" onclick="approveReservation('<?= $ref ?>', '<?= addslashes($applicantName) ?>', '<?= addslashes($venueNameEsc) ?>')" title="Approve Request">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Approve</span>
+                          </button>
+                          <button type="button" class="btn-table-action decline" onclick="openDeclineModal('<?= $ref ?>', '<?= addslashes($applicantName) ?>')" title="Decline Request">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            <span>Decline</span>
+                          </button>
+                        <?php elseif ($isApproved): ?>
+                          <span class="badge-approved-note">Approved by Director</span>
+                        <?php else: ?>
+                          <span class="badge-declined-note">Declined</span>
+                        <?php endif; ?>
+                        <button type="button" class="btn-table-action view" onclick="viewReservationDetails('<?= $ref ?>')" title="View Booking Form">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  <?php endforeach; ?>
+                <?php endif; ?>
               </tbody>
             </table>
           </div>
@@ -920,37 +794,28 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
 
             <div class="audit-stream-wrapper" id="auditStream">
-              <div class="audit-item">
-                <div class="audit-dot green"></div>
-                <div class="audit-content">
-                  <p><strong>Approved:</strong> Reservation <span class="audit-ref">R-2026-0888</span> by <em>DA - National Rice Program</em> was confirmed by the Clearance Authority.</p>
-                  <span class="audit-time">Today &bull; 10:14 AM</span>
+              <?php if (!empty($recentAuditLogs)): ?>
+                <?php foreach ($recentAuditLogs as $log): 
+                  $logAction = $log['action'] ?? '';
+                  $logColor = 'blue';
+                  if (strpos($logAction, 'APPROVE') !== false || strpos($logAction, 'CLEARANCE') !== false) $logColor = 'green';
+                  elseif (strpos($logAction, 'RECOMMEND') !== false || strpos($logAction, 'STAGE') !== false || strpos($logAction, 'SUBMISSION') !== false) $logColor = 'amber';
+                  elseif (strpos($logAction, 'REJECT') !== false || strpos($logAction, 'CANCEL') !== false) $logColor = 'amber';
+                  $logTimeStr = date('M d, Y • h:i A', strtotime($log['created_at']));
+                ?>
+                  <div class="audit-item">
+                    <div class="audit-dot <?= $logColor ?>"></div>
+                    <div class="audit-content">
+                      <p><?= htmlspecialchars($log['details']) ?></p>
+                      <span class="audit-time"><?= $logTimeStr ?> &bull; Executed by <?= htmlspecialchars($log['full_name'] ?: 'Super Admin') ?></span>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <div style="padding: 1.5rem; text-align: center; color: #6b7280; font-size: 0.85rem;">
+                  No institutional audit records logged yet.
                 </div>
-              </div>
-
-              <div class="audit-item">
-                <div class="audit-dot amber"></div>
-                <div class="audit-content">
-                  <p><strong>New Submission:</strong> <em>Engr. Juan Dela Cruz (CDD)</em> submitted reservation <span class="audit-ref">R-2026-0891</span> for Serrano Hall (85 PAX).</p>
-                  <span class="audit-time">Today &bull; 08:30 AM</span>
-                </div>
-              </div>
-
-              <div class="audit-item">
-                <div class="audit-dot blue"></div>
-                <div class="audit-content">
-                  <p><strong>Schedule Update:</strong> Master Calendar synced with DA Central Office Agricultural Extension Summit dates.</p>
-                  <span class="audit-time">Yesterday &bull; 04:45 PM</span>
-                </div>
-              </div>
-
-              <div class="audit-item">
-                <div class="audit-dot green"></div>
-                <div class="audit-content">
-                  <p><strong>Maintenance Completed:</strong> Air conditioning maintenance completed for 4-H Learning Center by General Services Unit.</p>
-                  <span class="audit-time">Oct 03, 2026 &bull; 03:00 PM</span>
-                </div>
-              </div>
+              <?php endif; ?>
             </div>
           </div>
         </div>
@@ -1483,6 +1348,9 @@ $isRecommendation = ($currentRole === 'recommendation');
   <div class="admin-toast-container" id="adminToastContainer"></div>
 
   <!-- Scripts -->
+  <script>
+    window.dashboardReservationsData = <?= json_encode($dashboardReservationsData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+  </script>
   <script src="js/admin_dashboard.js?v=<?php echo time(); ?>"></script>
 </body>
 
