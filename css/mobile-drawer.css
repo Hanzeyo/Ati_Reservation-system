@@ -342,15 +342,15 @@
 
 /* 7. Strict Responsive Media Queries */
 
-/* Desktop Rule (> 900px): ALWAYS hide hamburger toggle */
-@media (min-width: 901px) {
+/* Desktop Rule (> 991px): ALWAYS hide hamburger toggle */
+@media (min-width: 992px) {
   .mobile-menu-toggle {
     display: none !important;
   }
 }
 
-/* Mobile Rule (<= 900px): Hide desktop navigation bar and show hamburger toggle on upper left */
-@media (max-width: 900px) {
+/* Mobile Rule (<= 991px): Show hamburger toggle */
+@media (max-width: 991px) {
   .booking-topbar-container {
     display: flex !important;
     flex-direction: row !important;
@@ -373,3 +373,4 @@
     flex-grow: 1 !important;
   }
 }
+

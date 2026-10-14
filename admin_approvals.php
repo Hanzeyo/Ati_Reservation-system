@@ -638,26 +638,26 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
   </div>
 
   <!-- ==========================================================================
-       MODAL 1: COMPREHENSIVE DOSSIER INSPECTOR
+       MODAL 1: RESERVATION DETAILS & APPROVAL REVIEW
        ========================================================================== -->
   <div class="admin-modal-overlay" id="dossierModal" style="display: none;">
-    <div class="admin-modal-card" style="max-width: 840px;">
+    <div class="admin-modal-card" style="max-width: 900px;">
       <div class="admin-modal-header">
         <div class="modal-title-wrap">
-          <div class="my-res-top-badge admin-gold-badge" style="margin-bottom: 0.2rem;">Official Booking Dossier</div>
-          <h4>Reservation Packet: <span id="dossierModalRef" style="font-family: monospace; color: #174d2f;">REF</span>
+          <div class="my-res-top-badge admin-gold-badge" style="margin-bottom: 0.35rem; font-size: 0.82rem; font-weight: 700;">Reservation Details</div>
+          <h4 style="font-size: 1.25rem;">Reservation No: <span id="dossierModalRef" style="font-family: monospace; color: #174d2f; font-weight: 800;">REF</span>
           </h4>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeDossierModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeDossierModal()" aria-label="Close modal">&times;</button>
       </div>
 
-      <div class="admin-modal-body">
+      <div class="admin-modal-body" style="padding: 1.5rem 1.85rem;">
         <div class="dossier-grid">
           <!-- Left Column: Details -->
           <div>
-            <div class="dossier-card-section" style="margin-bottom: 1rem;">
+            <div class="dossier-card-section" style="margin-bottom: 1.15rem;">
               <div class="dossier-section-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
@@ -665,15 +665,15 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
               </div>
               <div class="dossier-data-grid">
                 <div class="dossier-field-item">
-                  <label>Focal Officer</label>
+                  <label>Full Name</label>
                   <div class="field-value" id="dossierApplicantName">--</div>
                 </div>
                 <div class="dossier-field-item">
-                  <label>Agency / Division</label>
+                  <label>Agency / Office</label>
                   <div class="field-value" id="dossierApplicantAgency">--</div>
                 </div>
                 <div class="dossier-field-item" style="grid-column: 1 / -1;">
-                  <label>Official Contact</label>
+                  <label>Contact Number & Email</label>
                   <div class="field-value" id="dossierContact">--</div>
                 </div>
               </div>
@@ -681,58 +681,58 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
 
             <div class="dossier-card-section">
               <div class="dossier-section-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
                   <line x1="8" y1="2" x2="8" y2="6"></line>
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
-                <span>Event Logistics & Specifications</span>
+                <span>Event & Venue Details</span>
               </div>
-              <div class="dossier-data-grid" style="margin-bottom: 0.85rem;">
+              <div class="dossier-data-grid" style="margin-bottom: 1rem;">
                 <div class="dossier-field-item">
-                  <label>Venue / Facility</label>
-                  <div class="field-value" id="dossierVenue">--</div>
+                  <label>Facility / Venue</label>
+                  <div class="field-value" id="dossierVenue" style="color: #174d2f;">--</div>
                 </div>
                 <div class="dossier-field-item">
-                  <label>Attendees Count</label>
+                  <label>Number of Attendees</label>
                   <div class="field-value" id="dossierPax">--</div>
                 </div>
                 <div class="dossier-field-item">
-                  <label>Target Dates</label>
+                  <label>Date of Event</label>
                   <div class="field-value" id="dossierDates">--</div>
                 </div>
                 <div class="dossier-field-item">
-                  <label>Duration / Slots</label>
+                  <label>Time Slot</label>
                   <div class="field-value" id="dossierTimeSlot">--</div>
                 </div>
               </div>
-              <div class="dossier-field-item" style="margin-bottom: 0.65rem;">
-                <label>Official Activity Title</label>
-                <div class="field-value" id="dossierEventTitle" style="font-weight: 800; color: #174d2f;">--</div>
+              <div class="dossier-field-item" style="margin-bottom: 0.85rem;">
+                <label>Activity Title</label>
+                <div class="field-value" id="dossierEventTitle" style="font-weight: 800; color: #174d2f; font-size: 1rem;">--</div>
               </div>
-              <div class="dossier-field-item" style="margin-bottom: 0.65rem;">
-                <label>Requested Audio-Visual & Equipment</label>
-                <div class="field-value" id="dossierEquipment" style="font-size: 0.82rem; font-weight: 500;">--</div>
+              <div class="dossier-field-item" style="margin-bottom: 0.85rem;">
+                <label>Requested Equipment / Audio-Visual</label>
+                <div class="field-value" id="dossierEquipment" style="font-size: 0.9rem; font-weight: 600;">--</div>
               </div>
               <div class="dossier-field-item">
-                <label>Special Remarks & Accommodation Notes</label>
+                <label>Special Notes & Remarks</label>
                 <div class="field-value" id="dossierNotes"
-                  style="font-size: 0.82rem; font-weight: 500; color: #557262;">--</div>
+                  style="font-size: 0.88rem; font-weight: 500; color: #3b5042;">--</div>
               </div>
-              <div class="dossier-field-item" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed #dce8e0;">
-                <label>Supporting Document (Letter of Intent / Special Order)</label>
-                <div id="dossierDocContainer" style="margin-top: 0.35rem;">
-                  <span id="dossierDocNone" style="font-size: 0.8rem; color: #8a9e92; font-style: italic;">No document attached</span>
-                  <a id="dossierDocLink" href="#" target="_blank" class="btn-system-secondary" style="display: none; align-items: center; gap: 0.45rem; padding: 0.45rem 0.85rem; font-size: 0.82rem; border-radius: 8px; text-decoration: none; color: #174d2f; font-weight: 700; background: #eaf3ed;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <div class="dossier-field-item" style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1.5px dashed #dce8e0;">
+                <label>Attached Supporting Document</label>
+                <div id="dossierDocContainer" style="margin-top: 0.45rem;">
+                  <span id="dossierDocNone" style="font-size: 0.88rem; color: #728a7c; font-style: italic;">No document attached</span>
+                  <a id="dossierDocLink" href="#" target="_blank" class="btn-system-secondary" style="display: none; align-items: center; gap: 0.55rem; padding: 0.65rem 1rem; font-size: 0.9rem; border-radius: 9px; text-decoration: none; color: #174d2f; font-weight: 700; background: #eaf3ed; border: 1px solid #c2ded0;">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                       <polyline points="14 2 14 8 20 8"></polyline>
                       <line x1="16" y1="13" x2="8" y2="13"></line>
                       <line x1="16" y1="17" x2="8" y2="17"></line>
                       <polyline points="10 9 9 9 8 9"></polyline>
                     </svg>
-                    <span id="dossierDocName">Open Official Document (PDF/Image)</span>
+                    <span id="dossierDocName">Open Attached Document</span>
                   </a>
                 </div>
               </div>
@@ -743,10 +743,10 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
           <div>
             <div class="dossier-card-section">
               <div class="dossier-section-title">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                <span>Three-Stage Governance & Endorsement Trail</span>
+                <span>Approval Process</span>
               </div>
               <div id="dossierTimelineList">
                 <!-- Timeline items rendered via JS -->
@@ -767,48 +767,40 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
        MODAL 2: RETURN FOR REVISION / DISAPPROVAL
        ========================================================================== -->
   <div class="admin-modal-overlay" id="disapproveModal" style="display: none;">
-    <div class="admin-modal-card sm">
+    <div class="admin-modal-card sm" style="max-width: 560px;">
       <div class="admin-modal-header">
         <div class="modal-title-wrap">
-          <h4 style="color: #b91c1c;">Return / Withhold Clearance</h4>
-          <span style="font-size: 0.8rem; color: #637f6f;">Reference: <strong id="disapproveRef">REF</strong></span>
+          <h4 style="color: #b91c1c; font-size: 1.15rem; font-weight: 800;">Decline or Return Reservation</h4>
+          <span style="font-size: 0.85rem; color: #4b6354;">Reference: <strong id="disapproveRef" style="font-family: monospace;">REF</strong></span>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeDisapproveModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeDisapproveModal()" aria-label="Close modal">&times;</button>
       </div>
 
-      <div class="admin-modal-body">
-        <div class="form-group-decline" style="margin-bottom: 0.85rem;">
+      <div class="admin-modal-body" style="padding: 1.4rem;">
+        <div class="form-group-decline" style="margin-bottom: 1rem;">
           <label
-            style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Primary
-            Grounds for Action</label>
+            style="font-size: 0.88rem; font-weight: 800; color: #172c1f; display: block; margin-bottom: 0.4rem;">Reason for Decline / Return:</label>
           <select id="disapproveReasonSelect"
-            style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
-            <option value="Schedule Conflict with Priority DA Executive Activity">Schedule Conflict with Priority DA
-              Executive Activity</option>
-            <option value="Facility Scheduled for Preventive Engineering Maintenance">Facility Scheduled for Preventive
-              Engineering Maintenance</option>
-            <option value="Incomplete Supporting Documents / Missing Letter of Intent">Incomplete Supporting Documents /
-              Missing Letter of Intent</option>
-            <option value="PAX Exceeds Approved Fire & Safety Venue Capacity">PAX Exceeds Approved Fire & Safety Venue
-              Capacity</option>
-            <option value="Administrative Grounds / Discretion of the Directorate">Administrative Grounds / Discretion
-              of the Directorate</option>
+            style="width: 100%; padding: 0.75rem; border: 1.5px solid #d4e4da; border-radius: 9px; font-family: inherit; font-size: 0.92rem; color: #172c1f; background: #ffffff;">
+            <option value="Schedule Conflict with Priority Official Activity">Schedule Conflict with Priority Activity</option>
+            <option value="Facility Scheduled for Maintenance">Facility Scheduled for Maintenance</option>
+            <option value="Incomplete Supporting Documents / Missing Letter of Intent">Incomplete Supporting Documents / Missing Letter</option>
+            <option value="Number of Attendees Exceeds Room Capacity">Number of Attendees Exceeds Room Capacity</option>
+            <option value="Administrative Grounds / Special Conditions">Administrative Grounds / Other Official Reasons</option>
           </select>
         </div>
 
         <div class="form-group-decline" style="margin-bottom: 1.25rem;">
           <label
-            style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Official
-            Corrective Instructions for Applicant</label>
+            style="font-size: 0.88rem; font-weight: 800; color: #172c1f; display: block; margin-bottom: 0.4rem;">Instructions / Notes for Applicant:</label>
           <textarea id="disapproveRemarks" rows="3"
-            placeholder="Specify required revisions, alternative available dates, or compliance remarks..."
-            style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;"></textarea>
+            placeholder="Specify reason or instructions for the applicant (e.g. choose alternative dates or attach signed letter)..."
+            style="width: 100%; box-sizing: border-box; padding: 0.75rem; border: 1.5px solid #d4e4da; border-radius: 9px; font-family: inherit; font-size: 0.92rem; color: #172c1f; resize: vertical;"></textarea>
         </div>
 
-        <div class="admin-modal-footer" style="padding: 1rem 0 0 0; background: none; border-top: 1px solid #edf3ef;">
-          <button type="button" class="btn-system-secondary" onclick="closeDisapproveModal()">Cancel</button>
-          <button type="button" class="btn-confirm-decline" onclick="confirmDisapproval()">Submit Official
-            Notice</button>
+        <div class="admin-modal-footer" style="padding: 1rem 0 0 0; background: none; border-top: 1px solid #edf3ef; display: flex; gap: 0.75rem; justify-content: flex-end;">
+          <button type="button" class="btn-system-secondary" style="padding: 0.65rem 1.2rem; font-size: 0.9rem; font-weight: 700;" onclick="closeDisapproveModal()">Cancel</button>
+          <button type="button" class="btn-confirm-decline" style="background: #dc2626; color: #ffffff; padding: 0.65rem 1.2rem; font-size: 0.9rem; font-weight: 700; border: none; border-radius: 8px; cursor: pointer;" onclick="confirmDisapproval()">Submit Notice</button>
         </div>
       </div>
     </div>

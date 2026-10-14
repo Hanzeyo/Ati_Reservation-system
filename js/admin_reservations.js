@@ -574,46 +574,6 @@ function updateKPIBadges() {
 }
 
 /* ==========================================================================
-   EXPORT REPORT (CSV GENERATOR)
-   ========================================================================== */
-function exportReservationData() {
-  const items = Object.values(reservationsData);
-  if (items.length === 0) {
-    showAdminToast('No reservations to export.', 'decline');
-    return;
-  }
-
-  const headers = ['Reference ID', 'Applicant', 'Agency', 'Email', 'Phone', 'Venue', 'Schedule', 'PAX', 'Status', 'Date Filed'];
-  const csvRows = [headers.join(',')];
-
-  items.forEach(it => {
-    const row = [
-      `"${it.ref || ''}"`,
-      `"${(it.applicant || '').replace(/"/g, '""')}"`,
-      `"${(it.agency || '').replace(/"/g, '""')}"`,
-      `"${(it.email || '').replace(/"/g, '""')}"`,
-      `"${(it.phone || '').replace(/"/g, '""')}"`,
-      `"${(it.venue || '').replace(/"/g, '""')}"`,
-      `"${(it.schedule || '').replace(/"/g, '""')}"`,
-      `"${(it.pax || '').replace(/"/g, '""')}"`,
-      `"${(it.status || '').replace(/"/g, '""')}"`,
-      `"${(it.dateFiled || '').replace(/"/g, '""')}"`
-    ];
-    csvRows.push(row.join(','));
-  });
-
-  const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvRows.join('\n'));
-  const link = document.createElement('a');
-  link.setAttribute('href', csvContent);
-  link.setAttribute('download', `ATI_Official_Reservations_Report_${new Date().toISOString().slice(0, 10)}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  showAdminToast(`Exported ${items.length} reservations as official CSV report.`, 'success');
-}
-
-/* ==========================================================================
    TOAST HELPER
    ========================================================================== */
 function showAdminToast(message, type = 'success') {

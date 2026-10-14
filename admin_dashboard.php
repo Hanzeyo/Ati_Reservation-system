@@ -339,17 +339,6 @@ $estimatedUtilization = number_format(max($totalPaxServed * 850, 45000));
             <h2>Facility & Dormitory Reservation Overview</h2>
             <p>Review and act on pending institutional requests, oversee auditorium & dormitory occupancy, and maintain live facility schedules for ATI Central Office.</p>
           </div>
-
-          <div class="admin-header-actions">
-            <button type="button" class="btn-system-secondary" id="btnExportData" onclick="exportReservationData()">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              <span>Export Official Report</span>
-            </button>
-          </div>
         </section>
 
         <!-- ==========================================================================

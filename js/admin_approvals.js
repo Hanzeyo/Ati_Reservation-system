@@ -364,10 +364,10 @@ function renderApprovalsTable() {
         <td style="text-align: right; white-space: nowrap;">
           <div style="display: inline-flex; align-items: center; gap: 0.4rem;">
             ${actionButtonsHtml}
-            <button type="button" class="btn-card-action" onclick="openDossierModal('${item.ref}')" title="Inspect Full Dossier">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              <span>Dossier</span>
-            </button>
+            <a href="admin_approval_details.php?ref=${encodeURIComponent(item.ref)}" class="btn-card-action" style="text-decoration: none;" title="Review Full Reservation Details">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <span>Review Details</span>
+            </a>
           </div>
         </td>
       </tr>
@@ -679,21 +679,21 @@ function openDossierModal(ref) {
     // 1. Endorsement Milestone
     if (item.stage1By) {
       timelineHtml += `
-        <div style="display:flex; gap:0.85rem; margin-bottom:1rem;">
-          <div style="width:28px; height:28px; border-radius:50%; background:#d97706; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">✓</div>
+        <div style="display:flex; gap:0.95rem; margin-bottom:1.15rem; align-items:flex-start;">
+          <div style="width:32px; height:32px; border-radius:50%; background:#d97706; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:800; flex-shrink:0; box-shadow:0 2px 6px rgba(217,119,6,0.3);">✓</div>
           <div>
-            <strong style="display:block; font-size:0.85rem; color:#d97706;">Stage 1: Endorsed by ${item.stage1By}</strong>
-            <small style="color:#637f6f;">${item.stage1Date} • "${item.stage1Remarks || 'Endorsed'}"</small>
+            <strong style="display:block; font-size:0.92rem; color:#b45309; font-weight:800;">Step 1: Endorsed by ${item.stage1By}</strong>
+            <small style="color:#4b6555; font-size:0.82rem; font-weight:500;">${item.stage1Date} • "${item.stage1Remarks || 'Endorsed'}"</small>
           </div>
         </div>
       `;
     } else {
       timelineHtml += `
-        <div style="display:flex; gap:0.85rem; margin-bottom:1rem;">
-          <div style="width:28px; height:28px; border-radius:50%; background:#e5e7eb; color:#6b7280; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">1</div>
+        <div style="display:flex; gap:0.95rem; margin-bottom:1.15rem; align-items:flex-start;">
+          <div style="width:32px; height:32px; border-radius:50%; background:#e2e8f0; color:#475569; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:800; flex-shrink:0;">1</div>
           <div>
-            <strong style="display:block; font-size:0.85rem; color:#4b5563;">Stage 1: Awaiting Endorsement</strong>
-            <small style="color:#9ca3af;">Pending action by Division / Originating Unit Head</small>
+            <strong style="display:block; font-size:0.92rem; color:#334155; font-weight:800;">Step 1: Division Endorsement</strong>
+            <small style="color:#64748b; font-size:0.82rem;">Awaiting verification by Division / Unit Head</small>
           </div>
         </div>
       `;
@@ -702,21 +702,21 @@ function openDossierModal(ref) {
     // 2. Recommendation Milestone
     if (item.stage2By) {
       timelineHtml += `
-        <div style="display:flex; gap:0.85rem; margin-bottom:1rem;">
-          <div style="width:28px; height:28px; border-radius:50%; background:#2563eb; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">✓</div>
+        <div style="display:flex; gap:0.95rem; margin-bottom:1.15rem; align-items:flex-start;">
+          <div style="width:32px; height:32px; border-radius:50%; background:#2563eb; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:800; flex-shrink:0; box-shadow:0 2px 6px rgba(37,99,235,0.3);">✓</div>
           <div>
-            <strong style="display:block; font-size:0.85rem; color:#2563eb;">Stage 2: Recommended by ${item.stage2By}</strong>
-            <small style="color:#637f6f;">${item.stage2Date} • "${item.stage2Remarks || 'Recommended'}"</small>
+            <strong style="display:block; font-size:0.92rem; color:#1d4ed8; font-weight:800;">Step 2: Recommended by ${item.stage2By}</strong>
+            <small style="color:#4b6555; font-size:0.82rem; font-weight:500;">${item.stage2Date} • "${item.stage2Remarks || 'Recommended'}"</small>
           </div>
         </div>
       `;
     } else {
       timelineHtml += `
-        <div style="display:flex; gap:0.85rem; margin-bottom:1rem;">
-          <div style="width:28px; height:28px; border-radius:50%; background:#e5e7eb; color:#6b7280; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">2</div>
+        <div style="display:flex; gap:0.95rem; margin-bottom:1.15rem; align-items:flex-start;">
+          <div style="width:32px; height:32px; border-radius:50%; background:#e2e8f0; color:#475569; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:800; flex-shrink:0;">2</div>
           <div>
-            <strong style="display:block; font-size:0.85rem; color:#4b5563;">Stage 2: Awaiting Recommendation</strong>
-            <small style="color:#9ca3af;">Pending review by Administrative / Facility Section</small>
+            <strong style="display:block; font-size:0.92rem; color:#334155; font-weight:800;">Step 2: Admin & Logistics Check</strong>
+            <small style="color:#64748b; font-size:0.82rem;">Awaiting facility and equipment availability review</small>
           </div>
         </div>
       `;
@@ -725,21 +725,21 @@ function openDossierModal(ref) {
     // 3. Clearance Milestone
     if (item.stage3By) {
       timelineHtml += `
-        <div style="display:flex; gap:0.85rem;">
-          <div style="width:28px; height:28px; border-radius:50%; background:#10b981; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">✓</div>
+        <div style="display:flex; gap:0.95rem; align-items:flex-start;">
+          <div style="width:32px; height:32px; border-radius:50%; background:#10b981; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:800; flex-shrink:0; box-shadow:0 2px 6px rgba(16,185,129,0.3);">✓</div>
           <div>
-            <strong style="display:block; font-size:0.85rem; color:#10b981;">Stage 3: Final Clearance Granted</strong>
-            <small style="color:#637f6f;">${item.stage3Date} • Cleared by ${item.stage3By}</small>
+            <strong style="display:block; font-size:0.92rem; color:#047857; font-weight:800;">Step 3: Approved by Director</strong>
+            <small style="color:#4b6555; font-size:0.82rem; font-weight:500;">${item.stage3Date} • Cleared by ${item.stage3By}</small>
           </div>
         </div>
       `;
     } else {
       timelineHtml += `
-        <div style="display:flex; gap:0.85rem;">
-          <div style="width:28px; height:28px; border-radius:50%; background:#e5e7eb; color:#6b7280; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:800; flex-shrink:0;">3</div>
+        <div style="display:flex; gap:0.95rem; align-items:flex-start;">
+          <div style="width:32px; height:32px; border-radius:50%; background:#e2e8f0; color:#475569; display:flex; align-items:center; justify-content:center; font-size:0.85rem; font-weight:800; flex-shrink:0;">3</div>
           <div>
-            <strong style="display:block; font-size:0.85rem; color:#4b5563;">Stage 3: Awaiting Final Clearance</strong>
-            <small style="color:#9ca3af;">Pending executive clearance from Office of the Director</small>
+            <strong style="display:block; font-size:0.92rem; color:#334155; font-weight:800;">Step 3: Director's Final Approval</strong>
+            <small style="color:#64748b; font-size:0.82rem;">Awaiting executive approval from Office of the Director</small>
           </div>
         </div>
       `;
@@ -754,45 +754,45 @@ function openDossierModal(ref) {
     if (item.stage === 'stage1') {
       actionBox.className = 'action-decision-box stage1';
       actionBox.innerHTML = `
-        <h4 style="margin: 0 0 0.5rem 0; font-size: 0.92rem; color: #b45309;">Stage 1: Division Endorsement Desk</h4>
-        <p style="margin: 0 0 0.75rem 0; font-size: 0.8rem; color: #657b6f;">Verify originating division mandate, participant alignment, and issue official endorsement for administrative review.</p>
-        <textarea id="dossierRemarksInput" rows="2" placeholder="Endorsement remarks (Official division activity, documents verified)..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.85rem; margin-bottom: 0.75rem;"></textarea>
-        <div style="display: flex; gap: 0.6rem; justify-content: flex-end;">
-          <button type="button" class="btn-card-action" onclick="openDisapproveModal('${item.ref}')">Return / Decline</button>
-          <button type="button" class="btn-system-primary" style="background:#d97706;" onclick="submitDossierAction('stage1')">Issue Endorsement</button>
+        <h4 style="margin: 0 0 0.35rem 0; font-size: 1rem; font-weight: 800; color: #b45309;">Action: Step 1 (Division Endorsement)</h4>
+        <p style="margin: 0 0 0.85rem 0; font-size: 0.85rem; color: #4b6354; line-height: 1.45;">Verify if the request aligns with official agency activities before issuing endorsement.</p>
+        <textarea id="dossierRemarksInput" rows="2" placeholder="Add remarks or instructions (optional)..."></textarea>
+        <div class="action-decision-btn-group">
+          <button type="button" class="btn-card-action" style="background:#ffffff; color:#b91c1c; border:1.5px solid #fca5a5;" onclick="openDisapproveModal('${item.ref}')">Decline / Return</button>
+          <button type="button" class="btn-system-primary" style="background:#d97706; color:#ffffff; border:none; box-shadow:0 3px 10px rgba(217,119,6,0.3);" onclick="submitDossierAction('stage1')">Endorse Booking &rarr;</button>
         </div>
       `;
     } else if (item.stage === 'stage2') {
-      actionBox.className = 'action-decision-box stage1';
+      actionBox.className = 'action-decision-box stage2';
       actionBox.innerHTML = `
-        <h4 style="margin: 0 0 0.5rem 0; font-size: 0.92rem; color: #2563eb;">Stage 2: Administrative Logistics Recommendation</h4>
-        <p style="margin: 0 0 0.75rem 0; font-size: 0.8rem; color: #657b6f;">Verify calendar conflicts, facility capacity, equipment availability, and submit official recommendation for Directorate clearance.</p>
-        <textarea id="dossierRemarksInput" rows="2" placeholder="Recommendation remarks (Logistics verified, room and A/V equipment ready)..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.85rem; margin-bottom: 0.75rem;"></textarea>
-        <div style="display: flex; gap: 0.6rem; justify-content: flex-end;">
-          <button type="button" class="btn-card-action" onclick="openDisapproveModal('${item.ref}')">Return / Decline</button>
-          <button type="button" class="btn-system-primary" style="background:#2563eb;" onclick="submitDossierAction('stage2')">Issue Recommendation</button>
+        <h4 style="margin: 0 0 0.35rem 0; font-size: 1rem; font-weight: 800; color: #1d4ed8;">Action: Step 2 (Logistics Recommendation)</h4>
+        <p style="margin: 0 0 0.85rem 0; font-size: 0.85rem; color: #4b6354; line-height: 1.45;">Confirm that the room is available, capacity is adequate, and equipment is ready.</p>
+        <textarea id="dossierRemarksInput" rows="2" placeholder="Add logistics verification notes (optional)..."></textarea>
+        <div class="action-decision-btn-group">
+          <button type="button" class="btn-card-action" style="background:#ffffff; color:#b91c1c; border:1.5px solid #fca5a5;" onclick="openDisapproveModal('${item.ref}')">Decline / Return</button>
+          <button type="button" class="btn-system-primary" style="background:#2563eb; color:#ffffff; border:none; box-shadow:0 3px 10px rgba(37,99,235,0.3);" onclick="submitDossierAction('stage2')">Recommend Booking &rarr;</button>
         </div>
       `;
     } else if (item.stage === 'stage3') {
-      actionBox.className = 'action-decision-box stage2';
+      actionBox.className = 'action-decision-box stage3';
       actionBox.innerHTML = `
-        <h4 style="margin: 0 0 0.5rem 0; font-size: 0.92rem; color: #047857;">Stage 3: Directorate Final Clearance & Permit Issuance</h4>
-        <p style="margin: 0 0 0.75rem 0; font-size: 0.8rem; color: #657b6f;">Endorsed and recommended by units. Grant final executive clearance and authorize entry permits & gate passes.</p>
-        <textarea id="dossierRemarksInput" rows="2" placeholder="Directorate clearance remarks & special conditions for permit..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.85rem; margin-bottom: 0.75rem;"></textarea>
-        <div style="display: flex; gap: 0.6rem; justify-content: flex-end;">
-          <button type="button" class="btn-card-action" onclick="openDisapproveModal('${item.ref}')">Withhold Clearance</button>
-          <button type="button" class="btn-system-primary" style="background:#10b981;" onclick="submitDossierAction('stage3')">Grant Final Clearance & Issue Permit</button>
+        <h4 style="margin: 0 0 0.35rem 0; font-size: 1rem; font-weight: 800; color: #047857;">Action: Step 3 (Director Final Approval)</h4>
+        <p style="margin: 0 0 0.85rem 0; font-size: 0.85rem; color: #4b6354; line-height: 1.45;">Endorsed and verified. Click approve to authorize the reservation and generate the official permit.</p>
+        <textarea id="dossierRemarksInput" rows="2" placeholder="Final approval remarks or permit conditions (optional)..."></textarea>
+        <div class="action-decision-btn-group">
+          <button type="button" class="btn-card-action" style="background:#ffffff; color:#b91c1c; border:1.5px solid #fca5a5;" onclick="openDisapproveModal('${item.ref}')">Decline / Return</button>
+          <button type="button" class="btn-system-primary" style="background:#10b981; color:#ffffff; border:none; box-shadow:0 3px 10px rgba(16,185,129,0.3);" onclick="submitDossierAction('stage3')">Approve Reservation &check;</button>
         </div>
       `;
     } else {
       actionBox.className = 'action-decision-box';
       actionBox.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
           <div>
-            <strong style="color: #174d2f;">Booking Governance Finalized</strong>
-            <p style="margin:0.2rem 0 0 0; font-size:0.8rem; color:#637f6f;">This booking is marked as ${item.stage.toUpperCase()}.</p>
+            <strong style="color: #174d2f; font-size:1rem; font-weight:800;">Review Completed (Status: ${item.stage.toUpperCase()})</strong>
+            <p style="margin:0.25rem 0 0 0; font-size:0.85rem; color:#4b6354;">This reservation has already been processed in the system.</p>
           </div>
-          ${item.stage === 'approved' ? `<button type="button" class="btn-system-secondary" onclick="previewPermitDocument('${item.ref}')">View Official Permit</button>` : ''}
+          ${item.stage === 'approved' ? `<button type="button" class="btn-system-secondary" style="font-weight:700; padding:0.65rem 1.15rem; font-size:0.9rem;" onclick="previewPermitDocument('${item.ref}')">View Official Permit</button>` : ''}
         </div>
       `;
     }

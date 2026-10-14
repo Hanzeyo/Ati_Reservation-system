@@ -629,32 +629,6 @@ function updateKPIBadges() {
 }
 
 /* ==========================================================================
-   EXPORT REPORT (CSV GENERATOR)
-   ========================================================================== */
-function exportReservationData() {
-  const rows = [
-    ['Reference ID', 'Applicant', 'Agency', 'Venue', 'Schedule', 'PAX', 'Status'],
-    ['R-2026-0891', 'Engr. Juan Dela Cruz', 'ATI - CDD', 'Serrano Hall', 'Oct 12-14, 2026', '85', 'Pending'],
-    ['R-2026-0892', 'Dr. Maria Santos', 'Bureau of Plant Industry', 'Dormitory Suite A & B', 'Oct 15-18, 2026', '32', 'Pending'],
-    ['R-2026-0893', 'Atty. Bernardo Castro', 'DA - Legal Service', 'Executive Boardroom', 'Oct 08, 2026', '18', 'Pending'],
-    ['R-2026-0894', 'Ramon Pascual', 'PhilRice Extension', '4-H Learning Center', 'Oct 20-22, 2026', '60', 'Pending'],
-    ['R-2026-0895', 'Carmela Lim', 'ATI - ISD', 'Dormitory Executive Suite', 'Oct 25-27, 2026', '14', 'Pending'],
-    ['R-2026-0888', 'Grace Valenzuela', 'DA - National Rice Program', 'Serrano Hall', 'Oct 06-07, 2026', '100', 'Approved']
-  ];
-
-  let csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement('a');
-  link.setAttribute('href', encodedUri);
-  link.setAttribute('download', 'ATI_Official_Reservations_Report_Oct2026.csv');
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  showAdminToast('Official Reservations Report downloaded as CSV.', 'success');
-}
-
-/* ==========================================================================
    TOAST HELPER
    ========================================================================== */
 function showAdminToast(message, type = 'success') {

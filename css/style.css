@@ -1655,11 +1655,11 @@ button {
   }
 
   .site-header .brand-text h1 {
-    font-size: 1.05rem;
+    font-size: 1.02rem;
   }
 
   .site-header .brand-text p {
-    font-size: 0.7rem;
+    font-size: 0.68rem;
     display: none;
   }
 
@@ -1677,6 +1677,7 @@ button {
     white-space: nowrap;
     order: 1;
     text-decoration: none;
+    flex-shrink: 0;
   }
 
   .footer-top {
@@ -1692,17 +1693,22 @@ button {
 
 @media (max-width: 640px) {
   .hero-section {
-    padding: 2.25rem 0 3rem;
+    padding: 1.75rem 0 2.5rem;
+  }
+
+  .hero-grid {
+    gap: 2rem;
   }
 
   .hero-title {
-    font-size: 1.85rem;
-    line-height: 1.22;
+    font-size: 1.75rem;
+    line-height: 1.25;
   }
 
   .hero-subtitle {
-    font-size: 0.9rem;
-    margin-bottom: 1.5rem;
+    font-size: 0.88rem;
+    margin-bottom: 1.25rem;
+    padding: 0 0.25rem;
   }
 
   .hero-actions {
@@ -1723,53 +1729,123 @@ button {
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 1.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .hero-showcase {
+    max-width: 100%;
+    width: 100%;
+    padding: 0 0.5rem;
+    box-sizing: border-box;
+  }
+
+  .hero-card {
+    height: auto;
+    aspect-ratio: 16 / 10;
+    max-height: 280px;
+    border-radius: 18px;
   }
 
   .hero-pill-badge {
-    bottom: -14px;
-    right: 50%;
-    transform: translateX(50%);
-    font-size: 0.78rem;
-    padding: 0.35rem 0.85rem;
+    position: static;
+    transform: none;
+    margin-top: 0.75rem;
+    min-width: auto;
+    width: auto;
+    font-size: 0.88rem;
+    padding: 0.4rem 1.4rem;
+    display: inline-block;
   }
 
   .section {
-    padding: 3rem 0;
+    padding: 2.25rem 0;
+  }
+
+  .section-header {
+    margin-bottom: 1.25rem;
+    padding: 0 0.5rem;
   }
 
   .section-title {
-    font-size: 1.65rem;
+    font-size: 1.55rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .facilities-grid {
+    gap: 1.25rem;
+    padding: 0 0.25rem;
+  }
+
+  .facility-card {
+    border-radius: 16px;
+  }
+
+  .facility-img-wrapper {
+    height: 155px;
   }
 
   .calendar-card {
-    padding: 1rem 0.75rem;
+    padding: 1rem 0.65rem;
+    border-radius: 16px;
   }
 
   .calendar-weekdays {
-    font-size: 0.75rem;
-    gap: 2px;
+    font-size: 0.72rem;
+    gap: 1px;
   }
 
   .calendar-days-grid {
-    gap: 3px;
+    gap: 2px;
   }
 
-  .calendar-day-btn {
-    min-height: 38px;
-    font-size: 0.82rem;
+  .cal-day {
+    max-width: 34px;
+    max-height: 34px;
+    font-size: 0.8rem;
   }
 
   .calendar-legend {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem 0.75rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem 0.6rem;
     justify-items: center;
-    padding-top: 0.75rem;
+    padding-top: 0.65rem;
+    font-size: 0.72rem;
   }
 
   .availability-preview-card {
-    padding: 1.25rem 1rem;
+    padding: 1.15rem 0.85rem;
+    border-radius: 16px;
+    margin-top: 1rem;
+  }
+
+  .how-it-works-grid {
+    gap: 1rem;
+  }
+
+  .step-card {
+    width: 100%;
+    max-width: 380px;
+    box-sizing: border-box;
+    padding: 1.25rem 1rem 1rem;
+  }
+
+  .step-arrow {
+    transform: rotate(90deg);
+    margin: -0.25rem 0;
+  }
+
+  .footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.65rem 1rem;
+  }
+
+  .footer-divider {
+    display: none;
   }
 
   .modal-card {
@@ -1786,12 +1862,12 @@ button {
   }
 
   .modal-facility-img {
-    height: 180px;
+    height: 170px;
     object-fit: cover;
   }
 
   .modal-facility-content {
-    padding: 1.25rem 1rem;
+    padding: 1.15rem 0.85rem;
   }
 
   .facility-amenities-list {
@@ -1801,9 +1877,22 @@ button {
 }
 
 @media (max-width: 420px) {
+  .site-header {
+    height: 64px;
+  }
+
+  .site-header .nav-container {
+    padding: 0 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .site-header .brand-img {
+    height: 34px;
+  }
+
   .site-header .brand-text h1 {
-    font-size: 0.92rem;
-    max-width: 180px;
+    font-size: 0.88rem;
+    max-width: 165px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1814,12 +1903,31 @@ button {
   }
 
   .mobile-topbar-signin {
-    padding: 0.45rem 0.55rem;
+    padding: 0.42rem 0.55rem;
+    border-radius: 7px;
   }
 
-  .calendar-day-btn {
-    min-height: 34px;
-    font-size: 0.76rem;
+  .mobile-menu-toggle {
+    width: 38px;
+    height: 38px;
+  }
+
+  .hamburger-line {
+    width: 19px;
+  }
+
+  .cal-day {
+    max-width: 30px;
+    max-height: 30px;
+    font-size: 0.75rem;
+  }
+
+  .hero-title {
+    font-size: 1.55rem;
+  }
+
+  .hero-card {
+    aspect-ratio: 16 / 11;
   }
 }
 
