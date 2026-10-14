@@ -418,3 +418,51 @@
     justify-content: space-between;
   }
 }
+
+/* ==========================================================================
+   FIXED CURRENCY (PESO) INPUT GROUP
+   ========================================================================== */
+.peso-input-group {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid #dce8e0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #ffffff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.peso-input-group:focus-within {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.12);
+}
+
+.peso-input-addon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef7f2;
+  color: #1b5e20;
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 0 0.85rem;
+  border-right: 1.5px solid #dce8e0;
+  user-select: none;
+}
+
+.peso-input-field {
+  flex: 1;
+  width: 100%;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0.65rem 0.75rem !important;
+  font-family: inherit;
+  font-size: 0.88rem;
+  background: transparent;
+  color: #153321;
+}
+
+.peso-input-field::placeholder {
+  color: #94a3b8;
+}

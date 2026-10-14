@@ -6,6 +6,21 @@ require_once __DIR__ . '/includes/auth_guard.php';
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Authenticated Portal Home: Facility & Dormitory Category Selection
  */
+
+// Fetch active institutional facilities for dynamic dashboard indicators & showcase
+$facStmt = $db->query("SELECT * FROM facilities WHERE status != 'inactive' ORDER BY id ASC");
+$allFacilities = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+$hallsCount = 0;
+$dormsCount = 0;
+foreach ($allFacilities as $f) {
+  if (strtolower($f['type']) === 'dorms') {
+    $dormsCount++;
+  } else {
+    $hallsCount++;
+  }
+}
+$totalFacilities = count($allFacilities);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -735,7 +750,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
       <!-- 1. Halls Category Card -->
       <a href="booking.php?category=halls" class="portal-cat-card" id="cardCatHalls" title="Explore ATI Halls">
         <div class="cat-card-header">
-          <span class="cat-count-badge">4 Venues Available</span>
+          <span class="cat-count-badge"><?= $hallsCount ?> Venues Available</span>
         </div>
         <div class="cat-icon-container">
           <svg width="48" height="48" viewBox="0 0 64 64" fill="none" stroke="#174d2f" stroke-width="2.4"
@@ -758,7 +773,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
       <!-- 2. Dormitories Category Card -->
       <a href="dormitory_booking.php" class="portal-cat-card" id="cardCatDormitories" title="Explore ATI Dormitories">
         <div class="cat-card-header">
-          <span class="cat-count-badge">4 Room Types</span>
+          <span class="cat-count-badge"><?= $dormsCount ?> Room Types Available</span>
         </div>
         <div class="cat-icon-container">
           <svg width="48" height="48" viewBox="0 0 64 64" fill="none" stroke="#b45309" stroke-width="2.4"

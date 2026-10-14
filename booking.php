@@ -7,9 +7,40 @@ require_once __DIR__ . '/includes/auth_guard.php';
  * Step-by-Step Facility Booking Portal
  */
 $reqCategory = isset($_GET['category']) ? strtolower(trim($_GET['category'])) : 'halls';
+$selectedFacilityId = isset($_GET['facility_id']) ? intval($_GET['facility_id']) : 0;
+
+// Fetch all active facilities dynamically from MySQL
+$facStmt = $db->query("SELECT * FROM facilities WHERE status != 'inactive' ORDER BY id ASC");
+$dbFacilities = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+// If facility_id is passed, align category with the requested facility
+if ($selectedFacilityId > 0) {
+  foreach ($dbFacilities as $f) {
+    if ($f['id'] == $selectedFacilityId) {
+      if (strtolower($f['type']) === 'dorms') {
+        $reqCategory = 'dormitories';
+      } else {
+        $reqCategory = 'halls';
+      }
+      break;
+    }
+  }
+}
+
 if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
   $reqCategory = 'halls';
 }
+
+$hallsCount = 0;
+$dormsCount = 0;
+foreach ($dbFacilities as $f) {
+  if (strtolower($f['type']) === 'dorms') {
+    $dormsCount++;
+  } else {
+    $hallsCount++;
+  }
+}
+$totalCount = count($dbFacilities);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -416,22 +447,22 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
             <span class="indicator-dot"></span>
             <span id="activeCategoryName"><?php
             if ($reqCategory === 'dormitories')
-              echo 'Dormitories (6 Floors)';
+              echo 'Dormitories (' . $dormsCount . ' Suites)';
             elseif ($reqCategory === 'halls')
-              echo 'Halls (4 Available)';
+              echo 'Halls (' . $hallsCount . ' Available)';
             else
-              echo 'All Facilities (10 Total)';
+              echo 'All Facilities (' . $totalCount . ' Total)';
             ?></span>
           </span>
         </div>
 
         <div class="filter-pills-list">
           <button type="button" class="filter-pill <?php echo $reqCategory === 'halls' ? 'active' : ''; ?>"
-            id="btnFilterHalls" data-category-filter="halls">Halls (4)</button>
+            id="btnFilterHalls" data-category-filter="halls">Halls (<?= $hallsCount ?>)</button>
           <button type="button" class="filter-pill <?php echo $reqCategory === 'dormitories' ? 'active' : ''; ?>"
-            id="btnFilterDormitories" data-category-filter="dormitories">Dormitories (6)</button>
+            id="btnFilterDormitories" data-category-filter="dormitories">Dormitories (<?= $dormsCount ?>)</button>
           <button type="button" class="filter-pill <?php echo $reqCategory === 'all' ? 'active' : ''; ?>"
-            id="btnFilterAll" data-category-filter="all">Show All (10)</button>
+            id="btnFilterAll" data-category-filter="all">Show All (<?= $totalCount ?>)</button>
         </div>
       </div>
 
@@ -443,40 +474,94 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
           </svg>
           <span id="categorySectionHeading"><?php
           if ($reqCategory === 'dormitories')
-            echo 'AVAILABLE DORMITORY FLOORS (6):';
+            echo 'AVAILABLE DORMITORY SUITES (' . $dormsCount . '):';
           elseif ($reqCategory === 'halls')
-            echo 'AVAILABLE HALLS & VENUES (4):';
+            echo 'AVAILABLE HALLS & VENUES (' . $hallsCount . '):';
           else
-            echo 'ALL AVAILABLE FACILITIES & ROOMS (10):';
+            echo 'ALL AVAILABLE FACILITIES & ROOMS (' . $totalCount . '):';
           ?></span>
         </div>
         <p class="select-instruction-text">Select one facility card below to proceed with your booking.</p>
       </div>
 
-      <!-- Facility Cards Grid -->
+      <!-- Facility Cards Grid (Dynamically rendered from MySQL facilities database) -->
       <div class="facility-selection-grid" id="facilitySelectionGrid">
-        <!-- =================== 1. HALLS CATEGORY (4 VENUES) =================== -->
-        <!-- Hall 1: Function Hall -->
-        <article class="facility-choice-card <?php echo $reqCategory === 'halls' ? 'selected' : ''; ?>"
-          data-id="function-hall" style="<?php echo $reqCategory === 'dormitories' ? 'display: none;' : ''; ?>"
-          data-name="Function Hall" data-rate="₱5,000/day" data-capacity="150 - 200 PAX" data-facility-type="halls">
+        <?php 
+        $hasSelectedCard = false;
+        foreach ($dbFacilities as $index => $f): 
+          $isDorm = strtolower($f['type']) === 'dorms';
+          $cardCategory = $isDorm ? 'dormitories' : 'halls';
+          
+          $displayStyle = '';
+          if ($reqCategory === 'halls' && $isDorm) {
+            $displayStyle = 'display: none;';
+          } elseif ($reqCategory === 'dormitories' && !$isDorm) {
+            $displayStyle = 'display: none;';
+          }
+          
+          $isSelected = false;
+          if ($selectedFacilityId > 0 && $f['id'] == $selectedFacilityId) {
+            $isSelected = true;
+            $hasSelectedCard = true;
+          } elseif (!$hasSelectedCard && $displayStyle === '') {
+            $isSelected = true;
+            $hasSelectedCard = true;
+          }
+          
+          $cardSlug = 'facility-' . $f['id'];
+          $lowerName = strtolower($f['name']);
+          if (strpos($lowerName, 'function hall') !== false) {
+            $cardSlug = 'function-hall';
+          } elseif (strpos($lowerName, 'training hall') !== false) {
+            $cardSlug = 'training-hall-a';
+          } elseif (strpos($lowerName, 'mess hall') !== false) {
+            $cardSlug = 'mess-hall';
+          } elseif (strpos($lowerName, 'boardroom') !== false) {
+            $cardSlug = 'executive-boardroom';
+          }
+
+          $imgSrc = !empty($f['image']) ? $f['image'] : ($isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg');
+          $capDisplay = $isDorm ? ($f['capacity'] . ' PAX / ' . ($f['beds'] ?? 0) . ' BEDS') : ($f['capacity'] . ' PAX');
+          if (stripos($f['capacity'], 'PAX') !== false) {
+            $capDisplay = $f['capacity'];
+          }
+          
+          $featuresList = [];
+          if (!empty($f['features'])) {
+            $featuresList = array_map('trim', explode(',', $f['features']));
+          } else {
+            $featuresList = $isDorm ? ['Air-conditioned', 'Single Bunks', 'Lockers', 'Study Area'] : ['Central Aircon', 'PA Sound System', 'HD Projector', 'Stage'];
+          }
+          
+          $categoryTag = strtoupper($f['type']) . ($isDorm ? ' &bull; DORMITORY SUITE' : ' &bull; VENUE & HALLS');
+        ?>
+        <article class="facility-choice-card <?= $isDorm ? 'dorm-suite-card' : '' ?> <?= $isSelected ? 'selected' : '' ?>"
+          data-id="<?= $cardSlug ?>"
+          data-facility-db-id="<?= $f['id'] ?>"
+          data-name="<?= htmlspecialchars($f['name']) ?>"
+          data-rate="<?= htmlspecialchars($f['rate']) ?>"
+          data-capacity="<?= htmlspecialchars($capDisplay) ?>"
+          data-facility-type="<?= $cardCategory ?>"
+          data-status="<?= htmlspecialchars($f['status']) ?>"
+          style="<?= $displayStyle ?>">
           <div class="facility-card-image">
-            <img src="assets/images/function_hall.jpg" alt="Function Hall" loading="lazy">
-            <span class="facility-cap-badge">150 - 200 PAX</span>
+            <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($f['name']) ?>" loading="lazy">
+            <span class="facility-cap-badge"><?= htmlspecialchars($capDisplay) ?></span>
+            <?php if ($f['status'] === 'maintenance'): ?>
+              <span class="facility-maint-badge" style="position:absolute; top:10px; left:10px; background:#b45309; color:#fff; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(0,0,0,0.25);">UNDER MAINTENANCE</span>
+            <?php endif; ?>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">LARGE EVENT VENUE &bull; HALLS</span>
-            <h3 class="facility-title">Function Hall</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱5,000/day</div>
+            <span class="facility-category-tag"><?= $categoryTag ?></span>
+            <h3 class="facility-title"><?= htmlspecialchars($f['name']) ?></h3>
+            <div class="facility-rate-tag">Standard Rate: <?= htmlspecialchars($f['rate']) ?></div>
             <div class="facility-amenities-tags">
-              <span class="amenity-pill">Central Aircon</span>
-              <span class="amenity-pill">PA Sound System</span>
-              <span class="amenity-pill">HD Projector</span>
-              <span class="amenity-pill">Stage Setup</span>
-              <span class="amenity-pill">VIP Waiting Lounge</span>
+              <?php foreach (array_slice($featuresList, 0, 4) as $feat): ?>
+                <span class="amenity-pill"><?= htmlspecialchars($feat) ?></span>
+              <?php endforeach; ?>
             </div>
-            <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
-              <span class="d-room-text">✓ Theater Setup Selected (200 PAX)</span>
+            <div class="dorm-card-selected-room-badge <?= !$isDorm ? 'hall-selected-setup-badge' : '' ?>" style="<?= $isSelected ? 'display:flex;' : 'display:none;' ?>">
+              <span class="d-room-text"><?= $isDorm ? '✓ Room Assigned' : '✓ Standard Configuration Selected' ?></span>
             </div>
             <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -484,301 +569,11 @@ if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
                 <line x1="3" y1="9" x2="21" y2="9"></line>
                 <line x1="9" y1="21" x2="9" y2="9"></line>
               </svg>
-              Select Setup &amp; View Floor Plan
+              <?= $isDorm ? 'Select Room &amp; View Floor Plan' : 'Select Setup &amp; View Floor Plan' ?>
             </button>
           </div>
         </article>
-
-        <!-- Hall 2: Training Hall A -->
-        <article class="facility-choice-card" data-id="training-hall-a"
-          style="<?php echo $reqCategory === 'dormitories' ? 'display: none;' : ''; ?>" data-name="Training Hall A"
-          data-rate="₱3,000/day" data-capacity="50 - 80 PAX" data-facility-type="halls">
-          <div class="facility-card-image">
-            <img src="assets/images/training_hall.jpg" alt="Training Hall A" loading="lazy">
-            <span class="facility-cap-badge">50 - 80 PAX</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">INTERACTIVE TRAINING &bull; HALLS</span>
-            <h3 class="facility-title">Training Hall A</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱3,000/day</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">Modular Desks</span>
-              <span class="amenity-pill">Smart Display</span>
-              <span class="amenity-pill">High-Speed Wifi</span>
-              <span class="amenity-pill">Breakout Corners</span>
-            </div>
-            <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
-              <span class="d-room-text">✓ Modular Pods Selected (60 PAX)</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Setup &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
-
-        <!-- Hall 3: Mess Hall & Dining Area -->
-        <article class="facility-choice-card" data-id="mess-hall" data-name="Mess Hall & Dining Area"
-          data-rate="₱3,500/day" data-capacity="100 PAX DINING" data-facility-type="halls">
-          <div class="facility-card-image">
-            <img src="assets/images/mess_hall.jpg" alt="Mess Hall & Dining Area" loading="lazy">
-            <span class="facility-cap-badge">100 PAX DINING</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">DINING & CATERING &bull; HALLS</span>
-            <h3 class="facility-title">Mess Hall & Dining Area</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱3,500/day</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">Buffet Counters</span>
-              <span class="amenity-pill">Kitchen Access</span>
-              <span class="amenity-pill">Washing Station</span>
-              <span class="amenity-pill">Outdoor Patio Deck</span>
-            </div>
-            <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
-              <span class="d-room-text">✓ Full Buffet Selected (100 PAX)</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Setup &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
-
-        <!-- Hall 4: Executive Boardroom -->
-        <article class="facility-choice-card" data-id="executive-boardroom"
-          style="<?php echo $reqCategory === 'dormitories' ? 'display: none;' : ''; ?>" data-name="Executive Boardroom"
-          data-rate="₱2,500/day" data-capacity="20 - 30 PAX" data-facility-type="halls">
-          <div class="facility-card-image">
-            <img src="assets/images/boardroom.jpg" alt="Executive Boardroom" loading="lazy">
-            <span class="facility-cap-badge">20 - 30 PAX</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">VIP CONFERENCE ROOM &bull; HALLS</span>
-            <h3 class="facility-title">Executive Boardroom</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱2,500/day</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">Executive Leather Chairs</span>
-              <span class="amenity-pill">Video Conference Cam</span>
-              <span class="amenity-pill">Coffee Machine</span>
-              <span class="amenity-pill">Acoustic Wall Paneling</span>
-            </div>
-            <div class="dorm-card-selected-room-badge hall-selected-setup-badge" style="display: none;">
-              <span class="d-room-text">✓ Board Table Selected (25 PAX)</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Setup &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
-
-        <!-- =================== 2. DORMITORIES CATEGORY (6 ORDERED FLOORS: PHILIPPINE FLOWERS) =================== -->
-        <!-- 1st Floor: Sampaguita Dormitory -->
-        <article
-          class="facility-choice-card dorm-suite-card <?php echo $reqCategory === 'dormitories' ? 'selected' : ''; ?>"
-          data-id="dorm-floor-1" data-name="1st Floor: Sampaguita Dormitory" data-rate="₱500/night"
-          data-capacity="12 ROOMS (48 BEDS)" data-facility-type="dormitories"
-          style="<?php echo $reqCategory === 'halls' ? 'display: none;' : ''; ?>">
-          <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="1st Floor: Sampaguita Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">1ST FLOOR &bull; SAMPAGUITA DORMITORY</span>
-            <h3 class="facility-title">1st Floor: Sampaguita Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
-            </div>
-            <div class="dorm-card-selected-room-badge" style="display: none;">
-              <span class="d-room-text">✓ Room Selected</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Room &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
-
-        <!-- 2nd Floor: Ilang-Ilang Dormitory -->
-        <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-2"
-          data-name="2nd Floor: Ilang-Ilang Dormitory" data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)"
-          data-facility-type="dormitories" style="<?php echo $reqCategory === 'halls' ? 'display: none;' : ''; ?>">
-          <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="2nd Floor: Ilang-Ilang Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">2ND FLOOR &bull; ILANG-ILANG DORMITORY</span>
-            <h3 class="facility-title">2nd Floor: Ilang-Ilang Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
-            </div>
-            <div class="dorm-card-selected-room-badge" style="display: none;">
-              <span class="d-room-text">✓ Room Selected</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Room &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
-
-        <!-- 3rd Floor: Gumamela Dormitory -->
-        <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-3"
-          data-name="3rd Floor: Gumamela Dormitory" data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)"
-          data-facility-type="dormitories" style="<?php echo $reqCategory === 'halls' ? 'display: none;' : ''; ?>">
-          <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="3rd Floor: Gumamela Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">3RD FLOOR &bull; GUMAMELA DORMITORY</span>
-            <h3 class="facility-title">3rd Floor: Gumamela Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
-            </div>
-            <div class="dorm-card-selected-room-badge" style="display: none;">
-              <span class="d-room-text">✓ Room Selected</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Room &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
-
-        <!-- 4th Floor: Rosal Dormitory -->
-        <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-4"
-          data-name="4th Floor: Rosal Dormitory" data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)"
-          data-facility-type="dormitories" style="<?php echo $reqCategory === 'halls' ? 'display: none;' : ''; ?>">
-          <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="4th Floor: Rosal Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">4TH FLOOR &bull; ROSAL DORMITORY</span>
-            <h3 class="facility-title">4th Floor: Rosal Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
-            </div>
-            <div class="dorm-card-selected-room-badge" style="display: none;">
-              <span class="d-room-text">✓ Room Selected</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Room &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
-
-        <!-- 5th Floor: Waling-Waling Dormitory -->
-        <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-5"
-          data-name="5th Floor: Waling-Waling Dormitory" data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)"
-          data-facility-type="dormitories" style="<?php echo $reqCategory === 'halls' ? 'display: none;' : ''; ?>">
-          <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="5th Floor: Waling-Waling Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">5TH FLOOR &bull; WALING-WALING DORMITORY</span>
-            <h3 class="facility-title">5th Floor: Waling-Waling Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
-            </div>
-            <div class="dorm-card-selected-room-badge" style="display: none;">
-              <span class="d-room-text">✓ Room Selected</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Room &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
-
-        <!-- 6th Floor: Tayabak Dormitory -->
-        <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-6"
-          data-name="6th Floor: Tayabak Dormitory" data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)"
-          data-facility-type="dormitories" style="<?php echo $reqCategory === 'halls' ? 'display: none;' : ''; ?>">
-          <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="6th Floor: Tayabak Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">6TH FLOOR &bull; TAYABAK DORMITORY</span>
-            <h3 class="facility-title">6th Floor: Tayabak Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
-            </div>
-            <div class="dorm-card-selected-room-badge" style="display: none;">
-              <span class="d-room-text">✓ Room Selected</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Room &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
-
+        <?php endforeach; ?>
       </div>
 
       <!-- Step 1 Reservation Summary Preview (Visible before proceeding) -->

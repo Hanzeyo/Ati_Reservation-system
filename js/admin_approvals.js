@@ -4,146 +4,10 @@
  * Interactive Controller (Stage 1 Endorsement -> Stage 2 Recommendation -> Stage 3 Clearance)
  */
 
-// Initial Dataset of Reservations (loaded from MySQL with fallback)
-const approvalsData = (window.initialApprovalsData && typeof window.initialApprovalsData === 'object' && Object.keys(window.initialApprovalsData).length > 0)
+// Initial Dataset of Reservations (loaded dynamically from MySQL via PHP)
+const approvalsData = (window.initialApprovalsData && typeof window.initialApprovalsData === 'object' && !Array.isArray(window.initialApprovalsData))
   ? Object.assign({}, window.initialApprovalsData)
-  : {
-  'ATI-2026-0891': {
-    ref: 'ATI-2026-0891',
-    applicant: 'Engr. Juan Dela Cruz',
-    agency: 'ATI - Career Development Division (CDD)',
-    email: 'juan.delacruz@ati.da.gov.ph',
-    phone: '+63 917 123 4567',
-    venue: 'Serrano Function Hall',
-    venueCategory: 'halls',
-    dates: 'October 12 – 14, 2026',
-    timeSlot: '8:00 AM – 5:00 PM (3 Days)',
-    pax: 85,
-    eventTitle: 'National TOT on Climate-Resilient Agriculture Technologies',
-    equipment: 'Projector & Motorized Screen, 4 Wireless Microphones, Stage Rostrum, Classroom Type Seating',
-    specialNotes: 'Participants include Regional Training Center Focal Persons nationwide. Catering arranged with in-house cafeteria.',
-    stage: 'stage1', // 'stage1' | 'stage2' | 'stage3' | 'approved' | 'rejected'
-    stage1By: null,
-    stage1Date: null,
-    stage1Remarks: null,
-    stage2By: null,
-    stage2Date: null,
-    stage2Remarks: null,
-    stage3By: null,
-    stage3Date: null,
-    stage3Remarks: null,
-    urgency: 'medium',
-    dateFiled: '2026-10-02'
-  },
-  'ATI-2026-0892': {
-    ref: 'ATI-2026-0892',
-    applicant: 'Dr. Maria Santos',
-    agency: 'Bureau of Plant Industry (BPI - Central)',
-    email: 'maria.santos@bpi.gov.ph',
-    phone: '+63 918 987 6543',
-    venue: 'Dormitory Suites A & B',
-    venueCategory: 'dorms',
-    dates: 'October 15 – 18, 2026',
-    timeSlot: 'Check-in: Oct 15 2:00 PM | Check-out: Oct 18 12:00 PM',
-    pax: 32,
-    eventTitle: 'Inter-Agency Seed Quality & Nursery Inspection Workshop',
-    equipment: '32 Single Beds, Linen Sets, Common Lounge Access, Hot Water Showers',
-    specialNotes: 'Delegates arriving from Regions III and IV-A. Vehicle parking required for 3 official vans.',
-    stage: 'stage1',
-    stage1By: null,
-    stage1Date: null,
-    stage1Remarks: null,
-    stage2By: null,
-    stage2Date: null,
-    stage2Remarks: null,
-    stage3By: null,
-    stage3Date: null,
-    stage3Remarks: null,
-    urgency: 'normal',
-    dateFiled: '2026-10-03'
-  },
-  'ATI-2026-0893': {
-    ref: 'ATI-2026-0893',
-    applicant: 'Atty. Bernardo Castro',
-    agency: 'Department of Agriculture - Legal Service',
-    email: 'bcastro@da.gov.ph',
-    phone: '+63 920 555 1212',
-    venue: 'Executive Boardroom',
-    venueCategory: 'halls',
-    dates: 'October 08, 2026',
-    timeSlot: '1:00 PM – 5:00 PM (Half Day)',
-    pax: 18,
-    eventTitle: 'Quasi-Judicial Administrative Adjudication Hearing',
-    equipment: 'Video Conference System, Audio Recording Microphone System, Smart Interactive Display',
-    specialNotes: 'Confidential executive proceeding. Strict soundproofing and dedicated network needed.',
-    stage: 'stage2', // Endorsed, awaiting Stage 2 recommendation!
-    stage1By: 'Division Chief',
-    stage1Date: 'Oct 04, 2026 11:30 AM',
-    stage1Remarks: 'Endorsed for official legal division proceedings.',
-    stage2By: null,
-    stage2Date: null,
-    stage2Remarks: null,
-    stage3By: null,
-    stage3Date: null,
-    stage3Remarks: null,
-    urgency: 'urgent',
-    dateFiled: '2026-10-01'
-  },
-  'ATI-2026-0894': {
-    ref: 'ATI-2026-0894',
-    applicant: 'Ramon Pascual',
-    agency: 'Philippine Rice Research Institute (PhilRice)',
-    email: 'rpascual@philrice.gov.ph',
-    phone: '+63 922 444 3322',
-    venue: '4-H Learning Center',
-    venueCategory: 'halls',
-    dates: 'October 20 – 22, 2026',
-    timeSlot: '8:30 AM – 5:00 PM (3 Days)',
-    pax: 60,
-    eventTitle: 'Digital Agriculture Course & Rice Crop Manager Training of Trainers',
-    equipment: 'High-speed WiFi Hub, Dual Projectors, 60 Ergonomic Chairs & Tables, Power extension cords',
-    specialNotes: 'Participants will bring institutional laptops. Stable uninterrupted broadband required.',
-    stage: 'stage3', // Endorsed & Recommended, awaiting Stage 3 Clearance!
-    stage1By: 'Division Chief',
-    stage1Date: 'Oct 04, 2026 09:15 AM',
-    stage1Remarks: 'Endorsed for technical digital agriculture training.',
-    stage2By: 'Recommending Officer',
-    stage2Date: 'Oct 05, 2026 02:40 PM',
-    stage2Remarks: 'Logistics and equipment verified available. Recommended for final clearance.',
-    stage3By: null,
-    stage3Date: null,
-    stage3Remarks: null,
-    urgency: 'normal',
-    dateFiled: '2026-10-04'
-  },
-  'ATI-2026-0888': {
-    ref: 'ATI-2026-0888',
-    applicant: 'Grace Valenzuela',
-    agency: 'Department of Agriculture - National Rice Program',
-    email: 'gvalenzuela@da.gov.ph',
-    phone: '+63 928 333 7788',
-    venue: 'Serrano Function Hall',
-    venueCategory: 'halls',
-    dates: 'October 06 – 07, 2026',
-    timeSlot: '8:00 AM – 5:00 PM (2 Days)',
-    pax: 100,
-    eventTitle: 'Q4 National Rice Assessment & Strategic Planning Workshop',
-    equipment: 'Full Audio-Visual Setup, Live Stream Equipment, VIP Holding Area',
-    specialNotes: 'Keynote by DA Undersecretary. Security detail coordination completed.',
-    stage: 'approved',
-    stage1By: 'Division Chief',
-    stage1Date: 'Oct 02, 2026 9:30 AM',
-    stage1Remarks: 'Endorsed for priority scheduling.',
-    stage2By: 'Recommending Officer',
-    stage2Date: 'Oct 03, 2026 11:00 AM',
-    stage2Remarks: 'Logistics verified. Recommended.',
-    stage3By: 'Clearance Authority',
-    stage3Date: 'Oct 03, 2026 4:15 PM',
-    stage3Remarks: 'Approved for institutional hosting. Gate pass permit #2026-0888 issued.',
-    urgency: 'normal',
-    dateFiled: '2026-09-28'
-  }
-};
+  : {};
 
 // Global State
 let activeRole = 'all'; // 'all' | 'endorsement' | 'recommendation' | 'clearance'
@@ -323,10 +187,16 @@ function renderApprovalsTable() {
   if (rows.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" style="text-align: center; padding: 3rem 1rem; color: #637f6f;">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#9bb5a5" stroke-width="1.5" style="margin-bottom: 0.5rem;"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
-          <p style="font-size: 0.95rem; font-weight: 700; color: #244633; margin: 0;">No reservation requests found matching current filter.</p>
-          <small style="color: #637f6f;">All pending matters for this view have been processed or moved.</small>
+        <td colspan="7" style="text-align: center; padding: 3.5rem 1rem; color: #637f6f;">
+          <div style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: #eef7f2; margin-bottom: 0.75rem;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+          </div>
+          <h4 style="font-size: 1.05rem; font-weight: 700; color: #172c1f; margin: 0 0 0.35rem 0;">No reservation found</h4>
+          <p style="color: #637f6f; font-size: 0.85rem; margin: 0;">There are currently no reservation requests for this view.</p>
         </td>
       </tr>
     `;

@@ -1,6 +1,14 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/auth_guard.php';
+
+$selectedFacilityId = isset($_GET['facility_id']) ? intval($_GET['facility_id']) : 0;
+
+// Fetch active dormitory facilities from MySQL
+$dormStmt = $db->query("SELECT * FROM facilities WHERE type = 'dorms' AND status != 'inactive' ORDER BY id ASC");
+$dbDorms = $dormStmt ? $dormStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+$dormCount = count($dbDorms);
+
 /**
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Step-by-Step Dormitory Lodging & Room Booking Portal
@@ -434,7 +442,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
           </a>
           <span class="active-category-indicator" id="activeCategoryBadge">
             <span class="indicator-dot"></span>
-            <span id="activeCategoryName">Dormitories (6 Floors Available)</span>
+            <span id="activeCategoryName">Dormitories (<?= $dormCount ?> Suites Available)</span>
           </span>
         </div>
       </div>
@@ -444,65 +452,80 @@ require_once __DIR__ . '/includes/auth_guard.php';
           <svg viewBox="0 0 24 24" fill="none">
             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
           </svg>
-          <span id="categorySectionHeading">AVAILABLE DORMITORY FLOORS (6):</span>
+          <span id="categorySectionHeading">AVAILABLE DORMITORY SUITES (<?= $dormCount ?>):</span>
         </div>
         <p class="select-instruction-text">Select a dormitory floor below, then click to view rooms and choose your room
           allotment.</p>
       </div>
 
-      <!-- Facility Cards Grid (6 Floors) -->
+      <!-- Facility Cards Grid (Dynamically rendered from MySQL facilities database) -->
       <div class="facility-selection-grid" id="facilitySelectionGrid">
-        <!-- 1st Floor: Sampaguita Dormitory -->
-        <article class="facility-choice-card dorm-suite-card selected" data-id="dorm-floor-1"
-          data-name="1st Floor: Sampaguita Dormitory" data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)"
-          data-facility-type="dormitories">
-          <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="1st Floor: Sampaguita Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">1ST FLOOR &bull; SAMPAGUITA DORMITORY</span>
-            <h3 class="facility-title">1st Floor: Sampaguita Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
-            </div>
-            <div class="dorm-card-selected-room-badge" style="display: none;">
-              <span class="d-room-text">✓ Room Selected</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Room &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
+        <?php 
+        $hasSelected = false;
+        foreach ($dbDorms as $idx => $f): 
+          $isSelected = false;
+          if ($selectedFacilityId > 0 && $f['id'] == $selectedFacilityId) {
+            $isSelected = true;
+            $hasSelected = true;
+          } elseif (!$hasSelected) {
+            $isSelected = true;
+            $hasSelected = true;
+          }
+          
+          $cardSlug = 'dorm-facility-' . $f['id'];
+          $lower = strtolower($f['name']);
+          if (strpos($lower, 'sampaguita') !== false || strpos($lower, '1st') !== false) {
+            $cardSlug = 'dorm-floor-1';
+          } elseif (strpos($lower, 'ilang-ilang') !== false || strpos($lower, '2nd') !== false) {
+            $cardSlug = 'dorm-floor-2';
+          } elseif (strpos($lower, 'gumamela') !== false || strpos($lower, '3rd') !== false) {
+            $cardSlug = 'dorm-floor-3';
+          } elseif (strpos($lower, 'rosas') !== false || strpos($lower, 'rosal') !== false || strpos($lower, '4th') !== false) {
+            $cardSlug = 'dorm-floor-4';
+          } elseif (strpos($lower, 'waling') !== false || strpos($lower, '5th') !== false) {
+            $cardSlug = 'dorm-floor-5';
+          } elseif (strpos($lower, 'tayabak') !== false || strpos($lower, '6th') !== false) {
+            $cardSlug = 'dorm-floor-6';
+          }
 
-        <!-- 2nd Floor: Ilang-Ilang Dormitory -->
-        <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-2"
-          data-name="2nd Floor: Ilang-Ilang Dormitory" data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)"
-          data-facility-type="dormitories">
+          $imgSrc = !empty($f['image']) ? $f['image'] : 'assets/images/dormitory.jpg';
+          $capDisplay = $f['capacity'] . ' PAX / ' . ($f['beds'] ?? 0) . ' BEDS';
+          if (stripos($f['capacity'], 'PAX') !== false || stripos($f['capacity'], 'BED') !== false) {
+            $capDisplay = $f['capacity'];
+          }
+          
+          $featuresList = [];
+          if (!empty($f['features'])) {
+            $featuresList = array_map('trim', explode(',', $f['features']));
+          } else {
+            $featuresList = ['Aircon Rooms', 'Single Bunk Beds', 'Individual Lockers', 'Study Desks & Lounge'];
+          }
+        ?>
+        <article class="facility-choice-card dorm-suite-card <?= $isSelected ? 'selected' : '' ?>"
+          data-id="<?= $cardSlug ?>"
+          data-facility-db-id="<?= $f['id'] ?>"
+          data-name="<?= htmlspecialchars($f['name']) ?>"
+          data-rate="<?= htmlspecialchars($f['rate']) ?>"
+          data-capacity="<?= htmlspecialchars($capDisplay) ?>"
+          data-facility-type="dormitories"
+          data-status="<?= htmlspecialchars($f['status']) ?>">
           <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="2nd Floor: Ilang-Ilang Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
+            <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($f['name']) ?>" loading="lazy">
+            <span class="facility-cap-badge"><?= htmlspecialchars($capDisplay) ?></span>
+            <?php if ($f['status'] === 'maintenance'): ?>
+              <span class="facility-maint-badge" style="position:absolute; top:10px; left:10px; background:#b45309; color:#fff; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(0,0,0,0.25);">UNDER MAINTENANCE</span>
+            <?php endif; ?>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag">2ND FLOOR &bull; ILANG-ILANG DORMITORY</span>
-            <h3 class="facility-title">2nd Floor: Ilang-Ilang Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
+            <span class="facility-category-tag"><?= htmlspecialchars(strtoupper($f['name'])) ?></span>
+            <h3 class="facility-title"><?= htmlspecialchars($f['name']) ?></h3>
+            <div class="facility-rate-tag">Standard Rate: <?= htmlspecialchars($f['rate']) ?></div>
             <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
+              <?php foreach (array_slice($featuresList, 0, 4) as $feat): ?>
+                <span class="amenity-pill"><?= htmlspecialchars($feat) ?></span>
+              <?php endforeach; ?>
             </div>
-            <div class="dorm-card-selected-room-badge" style="display: none;">
+            <div class="dorm-card-selected-room-badge" style="<?= $isSelected ? 'display:flex;' : 'display:none;' ?>">
               <span class="d-room-text">✓ Room Selected</span>
             </div>
             <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
@@ -515,134 +538,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
             </button>
           </div>
         </article>
-
-        <!-- 3rd Floor: Gumamela Dormitory -->
-        <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-3"
-          data-name="3rd Floor: Gumamela Dormitory" data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)"
-          data-facility-type="dormitories">
-          <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="3rd Floor: Gumamela Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">3RD FLOOR &bull; GUMAMELA DORMITORY</span>
-            <h3 class="facility-title">3rd Floor: Gumamela Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
-            </div>
-            <div class="dorm-card-selected-room-badge" style="display: none;">
-              <span class="d-room-text">✓ Room Selected</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Room &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
-
-        <!-- 4th Floor: Rosal Dormitory -->
-        <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-4"
-          data-name="4th Floor: Rosal Dormitory" data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)"
-          data-facility-type="dormitories">
-          <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="4th Floor: Rosal Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">4TH FLOOR &bull; ROSAL DORMITORY</span>
-            <h3 class="facility-title">4th Floor: Rosal Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
-            </div>
-            <div class="dorm-card-selected-room-badge" style="display: none;">
-              <span class="d-room-text">✓ Room Selected</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Room &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
-
-        <!-- 5th Floor: Waling-Waling Dormitory -->
-        <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-5"
-          data-name="5th Floor: Waling-Waling Dormitory" data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)"
-          data-facility-type="dormitories">
-          <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="5th Floor: Waling-Waling Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">5TH FLOOR &bull; WALING-WALING DORMITORY</span>
-            <h3 class="facility-title">5th Floor: Waling-Waling Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
-            </div>
-            <div class="dorm-card-selected-room-badge" style="display: none;">
-              <span class="d-room-text">✓ Room Selected</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Room &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
-
-        <!-- 6th Floor: Tayabak Dormitory -->
-        <article class="facility-choice-card dorm-suite-card" data-id="dorm-floor-6"
-          data-name="6th Floor: Tayabak Dormitory" data-rate="₱500/night" data-capacity="12 ROOMS (48 BEDS)"
-          data-facility-type="dormitories">
-          <div class="facility-card-image">
-            <img src="assets/images/dormitory.jpg" alt="6th Floor: Tayabak Dormitory" loading="lazy">
-            <span class="facility-cap-badge">12 ROOMS (48 BEDS)</span>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag">6TH FLOOR &bull; TAYABAK DORMITORY</span>
-            <h3 class="facility-title">6th Floor: Tayabak Dormitory</h3>
-            <div class="facility-rate-tag">Standard Rate: ₱500/night</div>
-            <div class="facility-amenities-tags">
-              <span class="amenity-pill">12 Aircon Rooms</span>
-              <span class="amenity-pill">Single Bunk Beds</span>
-              <span class="amenity-pill">Individual Lockers</span>
-              <span class="amenity-pill">Study Desks &amp; Lounge</span>
-            </div>
-            <div class="dorm-card-selected-room-badge" style="display: none;">
-              <span class="d-room-text">✓ Room Selected</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              Select Room &amp; View Floor Plan
-            </button>
-          </div>
-        </article>
+        <?php endforeach; ?>
       </div>
 
       <!-- Selection Summary Preview -->

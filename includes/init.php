@@ -24,7 +24,12 @@ $auditLog = new AuditLog($db);
 // Helper to check if current logged-in user is an admin
 if (!function_exists('isAdmin')) {
     function isAdmin() {
-        return isset($_SESSION['role']) && in_array(strtolower($_SESSION['role']), ['admin', 'super_admin']);
+        if (!isset($_SESSION['role'])) return false;
+        $r = strtolower($_SESSION['role']);
+        return in_array($r, [
+            'admin', 'super_admin', 'director', 'division_chief', 
+            'clearance', 'recommendation', 'endorsement', 'recommender', 'endorser'
+        ]);
     }
 }
 ?>

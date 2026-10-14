@@ -7,6 +7,97 @@ require_once __DIR__ . '/includes/admin_guard.php';
  */
 $currentRole = isset($_GET['role']) && $_GET['role'] === 'recommendation' ? 'recommendation' : 'clearance';
 $isRecommendation = ($currentRole === 'recommendation');
+
+$db = (new Database())->getConnection();
+
+// Dynamic sidebar counts
+$pendingStmt = $db->query("SELECT COUNT(*) FROM reservations WHERE status IN ('Pending', 'Awaiting Endorsement', 'Awaiting Recommendation', 'Awaiting Clearance')");
+$pendingCount = (int)$pendingStmt->fetchColumn();
+
+$userCountStmt = $db->query("SELECT COUNT(*) FROM users");
+$totalUsersCount = (int)$userCountStmt->fetchColumn();
+
+// Fetch all facilities from DB
+$stmt = $db->query("SELECT * FROM facilities ORDER BY id ASC");
+$facilitiesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$facilitiesData = [];
+$totalAssets = count($facilitiesList);
+$availableCount = 0;
+$occupiedCount = 0;
+$maintenanceCount = 0;
+$totalPax = 0;
+$totalBeds = 0;
+
+// Active reservations today for occupied status
+$today = date('Y-m-d');
+$occStmt = $db->prepare("SELECT DISTINCT facility_id FROM reservations WHERE status IN ('Approved', 'Completed') AND start_date <= ? AND end_date >= ?");
+$occStmt->execute([$today, $today]);
+$occupiedFacilityIds = $occStmt->fetchAll(PDO::FETCH_COLUMN);
+
+foreach ($facilitiesList as $row) {
+    $fid = (string)$row['id'];
+    $isMaint = ($row['status'] === 'maintenance');
+    $isOccupied = in_array($row['id'], $occupiedFacilityIds);
+
+    $status = 'available';
+    $statusLabel = 'Available';
+    if ($isMaint) {
+        $status = 'maintenance';
+        $statusLabel = 'Under Maintenance';
+        $maintenanceCount++;
+    } elseif ($isOccupied) {
+        $status = 'occupied';
+        $statusLabel = 'Occupied (Active Today)';
+        $occupiedCount++;
+    } else {
+        $availableCount++;
+    }
+
+    $pax = (int)preg_replace('/[^0-9]/', '', $row['capacity'] ?? '0');
+    if ($pax === 0 && is_numeric($row['capacity'] ?? null)) {
+        $pax = (int)$row['capacity'];
+    }
+    $beds = (int)($row['beds'] ?? 0);
+    $totalPax += $pax;
+    $totalBeds += $beds;
+
+    $featuresArray = array_filter(array_map('trim', explode(',', $row['features'] ?? '')));
+    if (empty($featuresArray)) {
+        $featuresArray = ['Airconditioned', 'Standard Equipment'];
+    }
+
+    $categoryLabel = 'Training & Function Hall';
+    if ($row['type'] === 'dorms') {
+        $categoryLabel = 'Institutional Dormitory';
+    } elseif ($row['type'] === 'dining') {
+        $categoryLabel = 'Dining Facility';
+    }
+
+    $facilitiesData[$fid] = [
+        'id' => $fid,
+        'db_id' => (int)$row['id'],
+        'name' => $row['name'],
+        'category' => $row['type'],
+        'categoryLabel' => $categoryLabel,
+        'pax' => $pax,
+        'beds' => $beds,
+        'rate' => $row['rate'] ?? '',
+        'location' => $row['location'] ?? 'ATI Central Office',
+        'image' => !empty($row['image']) ? $row['image'] : 'assets/images/function_hall.jpg',
+        'features' => array_values($featuresArray),
+        'status' => $status,
+        'statusLabel' => $statusLabel,
+        'maintenance' => $isMaint,
+        'maintenanceReason' => $row['maintenance_reason'] ?? '',
+        'estResumeDate' => $row['est_resume_date'] ?? '',
+        'notes' => $row['notes'] ?? $row['description'] ?? ''
+    ];
+}
+
+$hallsCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'halls'));
+$dormsCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'dorms'));
+$diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'dining'));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -85,7 +176,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </svg>
           </div>
           <span class="menu-label">Approvals Queue</span>
-          <span class="sidebar-count-badge amber" id="sidebarPendingCount">5</span>
+          <span class="sidebar-count-badge amber" id="sidebarPendingCount"><?= $pendingCount ?></span>
         </a>
 
         <a href="admin_reservations.php" class="sidebar-menu-item">
@@ -114,7 +205,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </svg>
           </div>
           <span class="menu-label">User & Role Access</span>
-          <span class="sidebar-count-badge green">18</span>
+          <span class="sidebar-count-badge green"><?= $totalUsersCount ?></span>
         </a>
 
         <div class="sidebar-section-title">FACILITY MANAGEMENT</div>
@@ -286,7 +377,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiTotalFacilities">6</span>
+                <span class="stat-value" id="kpiTotalFacilities"><?= $totalAssets ?></span>
                 <span class="stat-trend positive">100% Operational</span>
               </div>
               <span class="stat-label">Total Monitored Assets</span>
@@ -302,7 +393,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiAvailableFacilities">4</span>
+                <span class="stat-value" id="kpiAvailableFacilities"><?= $availableCount ?></span>
                 <span class="stat-trend positive">Ready to Book</span>
               </div>
               <span class="stat-label">Available for Reservations</span>
@@ -319,8 +410,8 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiOccupiedFacilities">1</span>
-                <span class="stat-trend neutral">Active Session</span>
+                <span class="stat-value" id="kpiOccupiedFacilities"><?= $occupiedCount ?></span>
+                <span class="stat-trend neutral"><?= $occupiedCount > 0 ? 'Active Session' : 'No Active Session' ?></span>
               </div>
               <span class="stat-label">Currently Occupied</span>
             </div>
@@ -335,7 +426,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiMaintenanceFacilities">1</span>
+                <span class="stat-value" id="kpiMaintenanceFacilities"><?= $maintenanceCount ?></span>
                 <span class="stat-trend negative">Admin Hold</span>
               </div>
               <span class="stat-label">Under Maintenance</span>
@@ -354,7 +445,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiTotalCapacity" style="font-size: 1.15rem;">445 PAX / 56 Beds</span>
+                <span class="stat-value" id="kpiTotalCapacity" style="font-size: 1.15rem;"><?= $totalPax ?> PAX<?= $totalBeds > 0 ? " / {$totalBeds} Beds" : "" ?></span>
               </div>
               <span class="stat-label">Total Institution Capacity</span>
             </div>
@@ -375,11 +466,11 @@ $isRecommendation = ($currentRole === 'recommendation');
 
           <div class="facility-toolbar-actions">
             <div class="facility-filter-group">
-              <button type="button" class="facility-filter-tab active" data-category="all" onclick="filterFacilitiesByCategory('all', this)">All Assets (6)</button>
-              <button type="button" class="facility-filter-tab" data-category="halls" onclick="filterFacilitiesByCategory('halls', this)">Training & Function Halls (3)</button>
-              <button type="button" class="facility-filter-tab" data-category="dorms" onclick="filterFacilitiesByCategory('dorms', this)">Dormitory Suites (2)</button>
-              <button type="button" class="facility-filter-tab" data-category="dining" onclick="filterFacilitiesByCategory('dining', this)">Dining Pavilions (1)</button>
-              <button type="button" class="facility-filter-tab" data-category="maintenance" onclick="filterFacilitiesByCategory('maintenance', this)">Maintenance Holds (1)</button>
+              <button type="button" class="facility-filter-tab active" data-category="all" onclick="filterFacilitiesByCategory('all', this)">All Assets (<?= $totalAssets ?>)</button>
+              <button type="button" class="facility-filter-tab" data-category="halls" onclick="filterFacilitiesByCategory('halls', this)">Training &amp; Function Halls (<?= $hallsCount ?>)</button>
+              <button type="button" class="facility-filter-tab" data-category="dorms" onclick="filterFacilitiesByCategory('dorms', this)">Dormitory Suites (<?= $dormsCount ?>)</button>
+              <button type="button" class="facility-filter-tab" data-category="dining" onclick="filterFacilitiesByCategory('dining', this)">Dining Pavilions (<?= $diningCount ?>)</button>
+              <button type="button" class="facility-filter-tab" data-category="maintenance" onclick="filterFacilitiesByCategory('maintenance', this)">Maintenance Holds (<?= $maintenanceCount ?>)</button>
             </div>
 
             <!-- View Mode Switcher -->
@@ -401,326 +492,80 @@ $isRecommendation = ($currentRole === 'recommendation');
              ========================================================================== -->
         <div class="facility-cards-grid" id="facilityCardsGrid">
 
-          <!-- Card 1: Serrano Function Hall -->
-          <div class="facility-card-item" data-id="serrano" data-category="halls" data-maintenance="false">
-            <div class="facility-card-media">
-              <img src="assets/images/function_hall.jpg" alt="Serrano Function Hall" class="facility-card-img">
-              <span class="facility-type-badge">Function Hall</span>
-              <span class="facility-status-pill-overlay state-occupied">Occupied (Oct 06-07)</span>
+          <?php if (empty($facilitiesData)): ?>
+            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; background: #fff; border-radius: 16px; border: 1.5px dashed #c8dcd0;">
+              <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: #eef7f2; margin-bottom: 0.85rem;">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <h4 style="font-size: 1.15rem; font-weight: 700; color: #172c1f; margin: 0 0 0.4rem 0;">No facilities found</h4>
+              <p style="color: #637f6f; font-size: 0.9rem; margin: 0 0 1.25rem 0;">Click "+ Register New Venue / Room" above to register your first institutional facility.</p>
+              <button type="button" class="btn-create-facility" onclick="openNewFacilityModal()">+ Register New Venue / Room</button>
             </div>
-            <div class="facility-card-body">
-              <div class="facility-card-header-row">
-                <h3 class="facility-card-title">Serrano Function Hall</h3>
+          <?php else: ?>
+            <?php foreach ($facilitiesData as $fid => $item): 
+              $isMaint = $item['maintenance'];
+              $statusClass = $item['status'] === 'maintenance' ? 'state-maintenance' : ($item['status'] === 'occupied' ? 'state-occupied' : 'state-available');
+              $typeBadge = $item['category'] === 'dorms' ? 'Institutional Dormitory' : ($item['category'] === 'dining' ? 'Dining Pavilion' : 'Function & Training Hall');
+              $capDisplay = $item['pax'] . ' Participants';
+              if ($item['beds'] > 0) {
+                $capDisplay = $item['pax'] . ' PAX (' . $item['beds'] . ' Beds)';
+              }
+            ?>
+            <div class="facility-card-item" data-id="<?= htmlspecialchars($fid) ?>" data-category="<?= htmlspecialchars($item['category']) ?>" data-maintenance="<?= $isMaint ? 'true' : 'false' ?>">
+              <div class="facility-card-media">
+                <img src="<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="facility-card-img" onerror="this.src='assets/images/function_hall.jpg'">
+                <span class="facility-type-badge"><?= htmlspecialchars($typeBadge) ?></span>
+                <span class="facility-status-pill-overlay <?= $statusClass ?>"><?= htmlspecialchars($item['statusLabel']) ?></span>
               </div>
-              <div class="facility-location-tag">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <span>Main Training Building, 1st Floor</span>
-              </div>
-              <div class="facility-specs-grid">
-                <div class="spec-cell-item">
-                  <span class="spec-label">Capacity</span>
-                  <strong class="spec-val spec-capacity-val">120 Participants</strong>
+              <div class="facility-card-body">
+                <div class="facility-card-header-row">
+                  <h3 class="facility-card-title"><?= htmlspecialchars($item['name']) ?></h3>
                 </div>
-                <div class="spec-cell-item">
-                  <span class="spec-label">Access Mode</span>
-                  <strong class="spec-val">Institutional & Public</strong>
+                <div class="facility-location-tag">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  <span><?= htmlspecialchars($item['location']) ?></span>
                 </div>
-              </div>
-              <div class="facility-features-wrap">
-                <span class="feature-pill-tag">Airconditioned</span>
-                <span class="feature-pill-tag">Dual Projectors</span>
-                <span class="feature-pill-tag">Sound System</span>
-                <span class="feature-pill-tag">Wireless Mics</span>
-                <span class="feature-pill-tag">Stage Rostrum</span>
-                <span class="feature-pill-tag">Fiber Wi-Fi</span>
-              </div>
-              <div class="facility-card-footer">
-                <div class="facility-maintenance-quick-toggle">
-                  <label class="switch-toggle" title="Toggle Maintenance Mode">
-                    <input type="checkbox" onchange="onMaintenanceSwitchChange('serrano', this.checked)">
-                    <span class="slider-round"></span>
-                  </label>
-                  <span>Maintenance</span>
+                <div class="facility-specs-grid">
+                  <div class="spec-cell-item">
+                    <span class="spec-label">Capacity</span>
+                    <strong class="spec-val spec-capacity-val"><?= htmlspecialchars($capDisplay) ?></strong>
+                  </div>
+                  <div class="spec-cell-item">
+                    <span class="spec-label">Standard Rate</span>
+                    <strong class="spec-val spec-rate-val"><?= htmlspecialchars(!empty($item['rate']) ? $item['rate'] : 'Institutional') ?></strong>
+                  </div>
                 </div>
-                <div class="card-action-btns">
-                  <button type="button" class="btn-card-action" onclick="openEditFacilityModal('serrano')">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                    <span>Edit</span>
-                  </button>
-                  <a href="schedule.php" class="btn-card-action" title="View in Master Schedule">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
-                  </a>
+                <div class="facility-features-wrap">
+                  <?php foreach (array_slice($item['features'], 0, 5) as $feat): ?>
+                    <span class="feature-pill-tag"><?= htmlspecialchars($feat) ?></span>
+                  <?php endforeach; ?>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 2: 4-H Learning Center -->
-          <div class="facility-card-item" data-id="four_h" data-category="halls" data-maintenance="false">
-            <div class="facility-card-media">
-              <img src="assets/images/training_hall.jpg" alt="4-H Learning Center" class="facility-card-img">
-              <span class="facility-type-badge">Training Hall</span>
-              <span class="facility-status-pill-overlay state-available">Available</span>
-            </div>
-            <div class="facility-card-body">
-              <div class="facility-card-header-row">
-                <h3 class="facility-card-title">4-H Learning Center</h3>
-              </div>
-              <div class="facility-location-tag">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <span>4-H Youth Building, 2nd Floor</span>
-              </div>
-              <div class="facility-specs-grid">
-                <div class="spec-cell-item">
-                  <span class="spec-label">Capacity</span>
-                  <strong class="spec-val spec-capacity-val">80 Participants</strong>
-                </div>
-                <div class="spec-cell-item">
-                  <span class="spec-label">Access Mode</span>
-                  <strong class="spec-val">Configurable Modular</strong>
-                </div>
-              </div>
-              <div class="facility-features-wrap">
-                <span class="feature-pill-tag">Airconditioned</span>
-                <span class="feature-pill-tag">75" 4K Smart TV</span>
-                <span class="feature-pill-tag">Moveable Tables</span>
-                <span class="feature-pill-tag">Whiteboards</span>
-                <span class="feature-pill-tag">PA System</span>
-              </div>
-              <div class="facility-card-footer">
-                <div class="facility-maintenance-quick-toggle">
-                  <label class="switch-toggle" title="Toggle Maintenance Mode">
-                    <input type="checkbox" onchange="onMaintenanceSwitchChange('four_h', this.checked)">
-                    <span class="slider-round"></span>
-                  </label>
-                  <span>Maintenance</span>
-                </div>
-                <div class="card-action-btns">
-                  <button type="button" class="btn-card-action" onclick="openEditFacilityModal('four_h')">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                    <span>Edit</span>
-                  </button>
-                  <a href="schedule.php" class="btn-card-action" title="View in Master Schedule">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
-                  </a>
+                <div class="facility-card-footer">
+                  <div class="facility-maintenance-quick-toggle">
+                    <label class="switch-toggle" title="Toggle Maintenance Mode">
+                      <input type="checkbox" <?= $isMaint ? 'checked' : '' ?> onchange="onMaintenanceSwitchChange('<?= htmlspecialchars($fid) ?>', this.checked)">
+                      <span class="slider-round"></span>
+                    </label>
+                    <span>Maintenance</span>
+                  </div>
+                  <div class="card-action-btns">
+                    <button type="button" class="btn-card-action" onclick="openEditFacilityModal('<?= htmlspecialchars($fid) ?>')">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                      <span>Edit</span>
+                    </button>
+                    <a href="schedule.php" class="btn-card-action" title="View in Master Schedule">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Card 3: Executive Boardroom -->
-          <div class="facility-card-item" data-id="boardroom" data-category="halls" data-maintenance="false">
-            <div class="facility-card-media">
-              <img src="assets/images/boardroom.jpg" alt="Executive Boardroom" class="facility-card-img">
-              <span class="facility-type-badge">Boardroom</span>
-              <span class="facility-status-pill-overlay state-available">Available</span>
-            </div>
-            <div class="facility-card-body">
-              <div class="facility-card-header-row">
-                <h3 class="facility-card-title">Executive Boardroom</h3>
-              </div>
-              <div class="facility-location-tag">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <span>Director's Wing, 3rd Floor</span>
-              </div>
-              <div class="facility-specs-grid">
-                <div class="spec-cell-item">
-                  <span class="spec-label">Capacity</span>
-                  <strong class="spec-val spec-capacity-val">25 PAX</strong>
-                </div>
-                <div class="spec-cell-item">
-                  <span class="spec-label">Access Mode</span>
-                  <strong class="spec-val">Executive / Director</strong>
-                </div>
-              </div>
-              <div class="facility-features-wrap">
-                <span class="feature-pill-tag">Hybrid Teleconferencing</span>
-                <span class="feature-pill-tag">PTZ Cameras</span>
-                <span class="feature-pill-tag">Executive Leather</span>
-                <span class="feature-pill-tag">Private Restroom</span>
-                <span class="feature-pill-tag">VIP Holding</span>
-              </div>
-              <div class="facility-card-footer">
-                <div class="facility-maintenance-quick-toggle">
-                  <label class="switch-toggle" title="Toggle Maintenance Mode">
-                    <input type="checkbox" onchange="onMaintenanceSwitchChange('boardroom', this.checked)">
-                    <span class="slider-round"></span>
-                  </label>
-                  <span>Maintenance</span>
-                </div>
-                <div class="card-action-btns">
-                  <button type="button" class="btn-card-action" onclick="openEditFacilityModal('boardroom')">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                    <span>Edit</span>
-                  </button>
-                  <a href="schedule.php" class="btn-card-action" title="View in Master Schedule">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 4: ATI Mess Hall & Dining Pavilion -->
-          <div class="facility-card-item" data-id="mess_hall" data-category="dining" data-maintenance="false">
-            <div class="facility-card-media">
-              <img src="assets/images/mess_hall.jpg" alt="ATI Mess Hall" class="facility-card-img">
-              <span class="facility-type-badge">Dining Pavilion</span>
-              <span class="facility-status-pill-overlay state-available">Available</span>
-            </div>
-            <div class="facility-card-body">
-              <div class="facility-card-header-row">
-                <h3 class="facility-card-title">ATI Mess Hall & Dining Pavilion</h3>
-              </div>
-              <div class="facility-location-tag">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <span>Services Annex, Ground Floor</span>
-              </div>
-              <div class="facility-specs-grid">
-                <div class="spec-cell-item">
-                  <span class="spec-label">Capacity</span>
-                  <strong class="spec-val spec-capacity-val">150 Diners</strong>
-                </div>
-                <div class="spec-cell-item">
-                  <span class="spec-label">Access Mode</span>
-                  <strong class="spec-val">Buffet & Catering</strong>
-                </div>
-              </div>
-              <div class="facility-features-wrap">
-                <span class="feature-pill-tag">Buffet Counters</span>
-                <span class="feature-pill-tag">Ceiling Fans</span>
-                <span class="feature-pill-tag">Water Stations</span>
-                <span class="feature-pill-tag">Handwashing Sinks</span>
-                <span class="feature-pill-tag">Sound System</span>
-              </div>
-              <div class="facility-card-footer">
-                <div class="facility-maintenance-quick-toggle">
-                  <label class="switch-toggle" title="Toggle Maintenance Mode">
-                    <input type="checkbox" onchange="onMaintenanceSwitchChange('mess_hall', this.checked)">
-                    <span class="slider-round"></span>
-                  </label>
-                  <span>Maintenance</span>
-                </div>
-                <div class="card-action-btns">
-                  <button type="button" class="btn-card-action" onclick="openEditFacilityModal('mess_hall')">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                    <span>Edit</span>
-                  </button>
-                  <a href="schedule.php" class="btn-card-action" title="View in Master Schedule">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 5: Dormitory Suite A -->
-          <div class="facility-card-item" data-id="dorm_a" data-category="dorms" data-maintenance="false">
-            <div class="facility-card-media">
-              <img src="assets/images/dormitory.jpg" alt="Dormitory Suite A" class="facility-card-img">
-              <span class="facility-type-badge">Dormitory (Male)</span>
-              <span class="facility-status-pill-overlay state-occupied">Reserved (Oct 15-18)</span>
-            </div>
-            <div class="facility-card-body">
-              <div class="facility-card-header-row">
-                <h3 class="facility-card-title">Dormitory Suite A (Male Wing)</h3>
-              </div>
-              <div class="facility-location-tag">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <span>Dormitory Building, Wing A (2nd Floor)</span>
-              </div>
-              <div class="facility-specs-grid">
-                <div class="spec-cell-item">
-                  <span class="spec-label">Capacity</span>
-                  <strong class="spec-val spec-capacity-val">24 Beds (6 Quads)</strong>
-                </div>
-                <div class="spec-cell-item">
-                  <span class="spec-label">Access Mode</span>
-                  <strong class="spec-val">Overnight Delegates</strong>
-                </div>
-              </div>
-              <div class="facility-features-wrap">
-                <span class="feature-pill-tag">Spring Mattresses</span>
-                <span class="feature-pill-tag">En-suite Bathroom</span>
-                <span class="feature-pill-tag">Hot Water Showers</span>
-                <span class="feature-pill-tag">Steel Lockers</span>
-                <span class="feature-pill-tag">Study Lounge</span>
-                <span class="feature-pill-tag">Free Wi-Fi</span>
-              </div>
-              <div class="facility-card-footer">
-                <div class="facility-maintenance-quick-toggle">
-                  <label class="switch-toggle" title="Toggle Maintenance Mode">
-                    <input type="checkbox" onchange="onMaintenanceSwitchChange('dorm_a', this.checked)">
-                    <span class="slider-round"></span>
-                  </label>
-                  <span>Maintenance</span>
-                </div>
-                <div class="card-action-btns">
-                  <button type="button" class="btn-card-action" onclick="openEditFacilityModal('dorm_a')">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                    <span>Edit</span>
-                  </button>
-                  <a href="schedule.php" class="btn-card-action" title="View in Master Schedule">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 6: Dormitory Suite B -->
-          <div class="facility-card-item" data-id="dorm_b" data-category="dorms" data-maintenance="true">
-            <div class="facility-card-media">
-              <img src="assets/images/dormitory.jpg" alt="Dormitory Suite B" class="facility-card-img">
-              <span class="facility-type-badge">Dormitory (Female)</span>
-              <span class="facility-status-pill-overlay state-maintenance">Under Maintenance</span>
-            </div>
-            <div class="facility-card-body">
-              <div class="facility-card-header-row">
-                <h3 class="facility-card-title">Dormitory Suite B (Female Wing)</h3>
-              </div>
-              <div class="facility-location-tag">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <span>Dormitory Building, Wing B (3rd Floor)</span>
-              </div>
-              <div class="facility-specs-grid">
-                <div class="spec-cell-item">
-                  <span class="spec-label">Capacity</span>
-                  <strong class="spec-val spec-capacity-val">32 Beds (8 Quads)</strong>
-                </div>
-                <div class="spec-cell-item">
-                  <span class="spec-label">Access Mode</span>
-                  <strong class="spec-val">Overnight Delegates</strong>
-                </div>
-              </div>
-              <div class="facility-features-wrap">
-                <span class="feature-pill-tag">Spring Mattresses</span>
-                <span class="feature-pill-tag">En-suite Bathroom</span>
-                <span class="feature-pill-tag">Hot Water Showers</span>
-                <span class="feature-pill-tag">Steel Lockers</span>
-                <span class="feature-pill-tag">24/7 Security</span>
-              </div>
-              <div class="facility-card-footer">
-                <div class="facility-maintenance-quick-toggle">
-                  <label class="switch-toggle" title="Toggle Maintenance Mode">
-                    <input type="checkbox" checked onchange="onMaintenanceSwitchChange('dorm_b', this.checked)">
-                    <span class="slider-round"></span>
-                  </label>
-                  <span>Maintenance</span>
-                </div>
-                <div class="card-action-btns">
-                  <button type="button" class="btn-card-action" onclick="openEditFacilityModal('dorm_b')">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                    <span>Edit</span>
-                  </button>
-                  <a href="schedule.php" class="btn-card-action" title="View in Master Schedule">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
+            <?php endforeach; ?>
+          <?php endif; ?>
         </div>
 
         <!-- ==========================================================================
@@ -741,161 +586,71 @@ $isRecommendation = ($currentRole === 'recommendation');
                 </tr>
               </thead>
               <tbody id="facilityTableBody">
-                <!-- Row 1 -->
-                <tr data-id="serrano" data-category="halls" data-maintenance="false">
-                  <td>
-                    <div class="facility-table-info-cell">
-                      <img src="assets/images/function_hall.jpg" alt="Serrano Function Hall" class="facility-table-thumb">
-                      <div class="facility-table-info-text">
-                        <strong>Serrano Function Hall</strong>
-                        <span>Main Training Building, 1st Floor</span>
+                <?php if (empty($facilitiesData)): ?>
+                  <tr>
+                    <td colspan="7" style="text-align: center; padding: 3.5rem 1rem; color: #637f6f;">
+                      <div style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: #eef7f2; margin-bottom: 0.75rem;">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="8" x2="12" y2="12"></line>
+                          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
                       </div>
-                    </div>
-                  </td>
-                  <td><span class="event-type-chip approval">FUNCTION HALL</span></td>
-                  <td><strong>120 PAX</strong></td>
-                  <td><span class="feature-pill-tag">Projectors</span> <span class="feature-pill-tag">Sound System</span> <span class="feature-pill-tag">Wi-Fi</span></td>
-                  <td>
-                    <label class="switch-toggle">
-                      <input type="checkbox" onchange="onMaintenanceSwitchChange('serrano', this.checked)">
-                      <span class="slider-round"></span>
-                    </label>
-                  </td>
-                  <td><span class="status-badge-chip chip-pending">Occupied (Oct 06-07)</span></td>
-                  <td style="text-align: right;">
-                    <button type="button" class="btn-card-action" onclick="openEditFacilityModal('serrano')">Configure</button>
-                  </td>
-                </tr>
-
-                <!-- Row 2 -->
-                <tr data-id="four_h" data-category="halls" data-maintenance="false">
-                  <td>
-                    <div class="facility-table-info-cell">
-                      <img src="assets/images/training_hall.jpg" alt="4-H Learning Center" class="facility-table-thumb">
-                      <div class="facility-table-info-text">
-                        <strong>4-H Learning Center</strong>
-                        <span>4-H Youth Building, 2nd Floor</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span class="event-type-chip approval">TRAINING HALL</span></td>
-                  <td><strong>80 PAX</strong></td>
-                  <td><span class="feature-pill-tag">75" 4K TV</span> <span class="feature-pill-tag">Modular Tables</span></td>
-                  <td>
-                    <label class="switch-toggle">
-                      <input type="checkbox" onchange="onMaintenanceSwitchChange('four_h', this.checked)">
-                      <span class="slider-round"></span>
-                    </label>
-                  </td>
-                  <td><span class="status-badge-chip chip-confirmed">Available</span></td>
-                  <td style="text-align: right;">
-                    <button type="button" class="btn-card-action" onclick="openEditFacilityModal('four_h')">Configure</button>
-                  </td>
-                </tr>
-
-                <!-- Row 3 -->
-                <tr data-id="boardroom" data-category="halls" data-maintenance="false">
-                  <td>
-                    <div class="facility-table-info-cell">
-                      <img src="assets/images/boardroom.jpg" alt="Executive Boardroom" class="facility-table-thumb">
-                      <div class="facility-table-info-text">
-                        <strong>Executive Boardroom</strong>
-                        <span>Director's Wing, 3rd Floor</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span class="event-type-chip approval">BOARDROOM</span></td>
-                  <td><strong>25 PAX</strong></td>
-                  <td><span class="feature-pill-tag">Hybrid Teleconf</span> <span class="feature-pill-tag">PTZ Cameras</span></td>
-                  <td>
-                    <label class="switch-toggle">
-                      <input type="checkbox" onchange="onMaintenanceSwitchChange('boardroom', this.checked)">
-                      <span class="slider-round"></span>
-                    </label>
-                  </td>
-                  <td><span class="status-badge-chip chip-confirmed">Available</span></td>
-                  <td style="text-align: right;">
-                    <button type="button" class="btn-card-action" onclick="openEditFacilityModal('boardroom')">Configure</button>
-                  </td>
-                </tr>
-
-                <!-- Row 4 -->
-                <tr data-id="mess_hall" data-category="dining" data-maintenance="false">
-                  <td>
-                    <div class="facility-table-info-cell">
-                      <img src="assets/images/mess_hall.jpg" alt="ATI Mess Hall" class="facility-table-thumb">
-                      <div class="facility-table-info-text">
-                        <strong>ATI Mess Hall & Dining Pavilion</strong>
-                        <span>Services Annex, Ground Floor</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span class="event-type-chip maintenance">DINING HALL</span></td>
-                  <td><strong>150 PAX</strong></td>
-                  <td><span class="feature-pill-tag">Buffet Counters</span> <span class="feature-pill-tag">Water Stations</span></td>
-                  <td>
-                    <label class="switch-toggle">
-                      <input type="checkbox" onchange="onMaintenanceSwitchChange('mess_hall', this.checked)">
-                      <span class="slider-round"></span>
-                    </label>
-                  </td>
-                  <td><span class="status-badge-chip chip-confirmed">Available</span></td>
-                  <td style="text-align: right;">
-                    <button type="button" class="btn-card-action" onclick="openEditFacilityModal('mess_hall')">Configure</button>
-                  </td>
-                </tr>
-
-                <!-- Row 5 -->
-                <tr data-id="dorm_a" data-category="dorms" data-maintenance="false">
-                  <td>
-                    <div class="facility-table-info-cell">
-                      <img src="assets/images/dormitory.jpg" alt="Dormitory Suite A" class="facility-table-thumb">
-                      <div class="facility-table-info-text">
-                        <strong>Dormitory Suite A (Male Wing)</strong>
-                        <span>Dormitory Building, Wing A (2nd Floor)</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span class="event-type-chip schedule">DORMITORY</span></td>
-                  <td><strong>24 Beds</strong><br><small style="color: #637f6f;">24 PAX</small></td>
-                  <td><span class="feature-pill-tag">En-suite Bath</span> <span class="feature-pill-tag">Hot Showers</span></td>
-                  <td>
-                    <label class="switch-toggle">
-                      <input type="checkbox" onchange="onMaintenanceSwitchChange('dorm_a', this.checked)">
-                      <span class="slider-round"></span>
-                    </label>
-                  </td>
-                  <td><span class="status-badge-chip chip-pending">Reserved (Oct 15-18)</span></td>
-                  <td style="text-align: right;">
-                    <button type="button" class="btn-card-action" onclick="openEditFacilityModal('dorm_a')">Configure</button>
-                  </td>
-                </tr>
-
-                <!-- Row 6 -->
-                <tr data-id="dorm_b" data-category="dorms" data-maintenance="true">
-                  <td>
-                    <div class="facility-table-info-cell">
-                      <img src="assets/images/dormitory.jpg" alt="Dormitory Suite B" class="facility-table-thumb">
-                      <div class="facility-table-info-text">
-                        <strong>Dormitory Suite B (Female Wing)</strong>
-                        <span>Dormitory Building, Wing B (3rd Floor)</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span class="event-type-chip schedule">DORMITORY</span></td>
-                  <td><strong>32 Beds</strong><br><small style="color: #637f6f;">32 PAX</small></td>
-                  <td><span class="feature-pill-tag">En-suite Bath</span> <span class="feature-pill-tag">Steel Lockers</span></td>
-                  <td>
-                    <label class="switch-toggle">
-                      <input type="checkbox" checked onchange="onMaintenanceSwitchChange('dorm_b', this.checked)">
-                      <span class="slider-round"></span>
-                    </label>
-                  </td>
-                  <td><span class="status-badge-chip chip-declined">Maintenance Hold</span></td>
-                  <td style="text-align: right;">
-                    <button type="button" class="btn-card-action" onclick="openEditFacilityModal('dorm_b')">Configure</button>
-                  </td>
-                </tr>
+                      <h4 style="font-size: 1.05rem; font-weight: 700; color: #172c1f; margin: 0 0 0.35rem 0;">No facilities found</h4>
+                      <p style="color: #637f6f; font-size: 0.85rem; margin: 0;">There are currently no facilities matching this view.</p>
+                    </td>
+                  </tr>
+                <?php else: ?>
+                  <?php foreach ($facilitiesData as $fid => $item): ?>
+                    <tr data-id="<?= htmlspecialchars($fid) ?>" data-category="<?= htmlspecialchars($item['category']) ?>" data-maintenance="<?= $item['maintenance'] ? 'true' : 'false' ?>">
+                      <td>
+                        <div class="facility-table-info-cell">
+                          <img src="<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="facility-table-thumb" onerror="this.src='assets/images/function_hall.jpg'">
+                          <div class="facility-table-info-text">
+                            <strong><?= htmlspecialchars($item['name']) ?></strong>
+                            <span><?= htmlspecialchars($item['location']) ?></span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="event-type-chip <?= $item['category'] === 'dorms' ? 'schedule' : ($item['category'] === 'dining' ? 'maintenance' : 'approval') ?>">
+                          <?= htmlspecialchars(strtoupper($item['category'])) ?>
+                        </span>
+                      </td>
+                      <td>
+                        <strong><?= $item['pax'] ?> PAX</strong>
+                        <?php if ($item['beds'] > 0): ?>
+                          <br><small style="color: #637f6f;"><?= $item['beds'] ?> Beds</small>
+                        <?php endif; ?>
+                      </td>
+                      <td>
+                        <div class="facility-features-wrap" style="margin: 0;">
+                          <?php foreach (array_slice($item['features'], 0, 3) as $f): ?>
+                            <span class="feature-pill-tag"><?= htmlspecialchars($f) ?></span>
+                          <?php endforeach; ?>
+                        </div>
+                      </td>
+                      <td>
+                        <label class="switch-toggle">
+                          <input type="checkbox" <?= $item['maintenance'] ? 'checked' : '' ?> onchange="onMaintenanceSwitchChange('<?= htmlspecialchars($fid) ?>', this.checked)">
+                          <span class="slider-round"></span>
+                        </label>
+                      </td>
+                      <td>
+                        <?php if ($item['status'] === 'available'): ?>
+                          <span class="status-badge-chip chip-confirmed">Available</span>
+                        <?php elseif ($item['status'] === 'occupied'): ?>
+                          <span class="status-badge-chip chip-pending"><?= htmlspecialchars($item['statusLabel']) ?></span>
+                        <?php else: ?>
+                          <span class="status-badge-chip chip-declined">Maintenance Hold</span>
+                        <?php endif; ?>
+                      </td>
+                      <td style="text-align: right;">
+                        <button type="button" class="btn-card-action" onclick="openEditFacilityModal('<?= htmlspecialchars($fid) ?>')">Configure</button>
+                      </td>
+                    </tr>
+                  <?php endforeach; ?>
+                <?php endif; ?>
               </tbody>
             </table>
           </div>
@@ -937,7 +692,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
             <div class="form-group-decline">
               <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Participant Capacity (PAX)</label>
               <input type="number" id="editFacilityPax" min="1" max="1000" required style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
@@ -946,6 +701,10 @@ $isRecommendation = ($currentRole === 'recommendation');
             <div class="form-group-decline">
               <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Total Bed Inventory (For Dorms)</label>
               <input type="number" id="editFacilityBeds" min="0" max="200" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
+            </div>
+            <div class="form-group-decline">
+              <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Standard Rate</label>
+              <div class="peso-input-group"><span class="peso-input-addon">₱</span><input type="text" id="editFacilityRate" class="peso-input-field" placeholder="5,000 / day"></div>
             </div>
           </div>
 
@@ -1034,7 +793,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
             <div class="form-group-decline">
               <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Participant Capacity (PAX)</label>
               <input type="number" id="addFacilityPax" min="1" max="1000" placeholder="50" required style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
@@ -1043,6 +802,10 @@ $isRecommendation = ($currentRole === 'recommendation');
             <div class="form-group-decline">
               <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Bed Capacity (If Dormitory)</label>
               <input type="number" id="addFacilityBeds" min="0" max="200" placeholder="0" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
+            </div>
+            <div class="form-group-decline">
+              <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Standard Rate</label>
+              <div class="peso-input-group"><span class="peso-input-addon">₱</span><input type="text" id="addFacilityRate" class="peso-input-field" placeholder="5,000 / day"></div>
             </div>
           </div>
 
@@ -1152,6 +915,9 @@ $isRecommendation = ($currentRole === 'recommendation');
   <div class="admin-toast-container" id="adminToastContainer"></div>
 
   <!-- Scripts -->
+  <script>
+    window.initialFacilitiesData = <?= json_encode((object)$facilitiesData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+  </script>
   <script src="js/admin_facilities.js?v=<?php echo time(); ?>"></script>
 </body>
 

@@ -1,12 +1,107 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/admin_guard.php';
+
 /**
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Super Administrator: Role-Based Access Control (RBAC) & User Management Portal
  */
 $currentRole = isset($_GET['role']) && $_GET['role'] === 'recommendation' ? 'recommendation' : 'clearance';
 $isRecommendation = ($currentRole === 'recommendation');
+
+$db = (new Database())->getConnection();
+
+// Dynamic sidebar count
+$pendingStmt = $db->query("SELECT COUNT(*) FROM reservations WHERE status IN ('Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance', 'Awaiting Endorsement', 'Awaiting Recommendation', 'Awaiting Clearance')");
+$sidebarPendingCount = (int)($pendingStmt ? $pendingStmt->fetchColumn() : 0);
+
+// Fetch dynamic users from MySQL database
+$stmt = $db->query("SELECT id, full_name, email, contact_number, office_agency, category, role, status, created_at FROM users ORDER BY id ASC");
+$usersList = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+// Dynamic KPI metrics for 3-Stage Governance
+$totalUsers = count($usersList);
+$activeUsers = 0;
+$endorsementCount = 0;
+$recommendationCount = 0;
+$clearanceCount = 0;
+$superAdminCount = 0;
+$requestorCount = 0;
+
+foreach ($usersList as $u) {
+    if ($u['status'] === 'active') $activeUsers++;
+    
+    $r = strtolower($u['role']);
+    if (in_array($r, ['endorsement', 'endorser', 'division_chief'])) {
+        $endorsementCount++;
+    } elseif (in_array($r, ['recommendation', 'recommender', 'admin'])) {
+        $recommendationCount++;
+    } elseif (in_array($r, ['clearance', 'director'])) {
+        $clearanceCount++;
+    } elseif ($r === 'super_admin') {
+        $superAdminCount++;
+    } else {
+        $requestorCount++;
+    }
+}
+
+function getUserInitials($name) {
+    $parts = explode(' ', trim($name));
+    if (count($parts) > 1) {
+        return strtoupper(substr($parts[0], 0, 1) . substr($parts[count($parts) - 1], 0, 1));
+    }
+    return strtoupper(substr($name, 0, 2));
+}
+
+function getRolePresentation($role) {
+    $r = strtolower($role);
+    if (in_array($r, ['endorsement', 'endorser', 'division_chief'])) {
+        return [
+            'badgeClass' => 'status-role-endorse',
+            'badgeText' => 'Endorsement Officer',
+            'iconSvg' => '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>',
+            'privilege' => 'Division Endorsement & Document Verification',
+            'filterKey' => 'endorsement',
+            'avatarClass' => 'endorsement'
+        ];
+    } elseif (in_array($r, ['recommendation', 'recommender', 'admin'])) {
+        return [
+            'badgeClass' => 'status-role-recommend',
+            'badgeText' => 'Recommending Officer',
+            'iconSvg' => '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>',
+            'privilege' => 'Schedule Verification & Logistics Recommendation',
+            'filterKey' => 'recommendation',
+            'avatarClass' => 'recommending'
+        ];
+    } elseif (in_array($r, ['clearance', 'director'])) {
+        return [
+            'badgeClass' => 'status-role-clearance',
+            'badgeText' => 'Clearance Authority',
+            'iconSvg' => '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>',
+            'privilege' => 'Final Approval & Gate Pass Authorization',
+            'filterKey' => 'clearance',
+            'avatarClass' => 'director'
+        ];
+    } elseif ($r === 'super_admin') {
+        return [
+            'badgeClass' => 'status-role-super',
+            'badgeText' => 'Super Administrator',
+            'iconSvg' => '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>',
+            'privilege' => 'Master Executive Access across All Modules',
+            'filterKey' => 'super_admin',
+            'avatarClass' => 'super_admin'
+        ];
+    } else {
+        return [
+            'badgeClass' => 'status-role-staff',
+            'badgeText' => 'Authorized Requestor',
+            'iconSvg' => '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
+            'privilege' => 'Submit Reservations & Track Clearance Status',
+            'filterKey' => 'user',
+            'avatarClass' => 'staff'
+        ];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -44,7 +139,7 @@ $isRecommendation = ($currentRole === 'recommendation');
     <aside class="admin-sidebar" id="adminSidebar">
       <!-- Sidebar Brand Header -->
       <div class="admin-sidebar-header">
-        <a href="admin_dashboard.php" class="admin-sidebar-brand">
+        <a href="admin_dashboard.php<?= $isRecommendation ? '?role=recommendation' : '' ?>" class="admin-sidebar-brand">
           <div class="admin-sidebar-logo-box">
             <img src="assets/images/ATI_Logo.png" alt="Agricultural Training Institute Logo" class="admin-sidebar-logo">
           </div>
@@ -63,7 +158,7 @@ $isRecommendation = ($currentRole === 'recommendation');
       <nav class="admin-sidebar-menu" aria-label="Admin Navigation">
         <div class="sidebar-section-title">CORE COMMAND</div>
 
-        <a href="admin_dashboard.php" class="sidebar-menu-item">
+        <a href="admin_dashboard.php<?= $isRecommendation ? '?role=recommendation' : '' ?>" class="sidebar-menu-item">
           <div class="menu-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="7" height="7"></rect>
@@ -85,7 +180,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </svg>
           </div>
           <span class="menu-label">Approvals Queue</span>
-          <span class="sidebar-count-badge amber" id="sidebarPendingCount">5</span>
+          <span class="sidebar-count-badge amber" id="sidebarPendingCount"><?= $sidebarPendingCount ?></span>
         </a>
 
         <a href="admin_reservations.php" class="sidebar-menu-item">
@@ -114,7 +209,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </svg>
           </div>
           <span class="menu-label">User & Role Access</span>
-          <span class="sidebar-count-badge green">18</span>
+          <span class="sidebar-count-badge green" id="sidebarUsersCount"><?= $totalUsers ?></span>
         </a>
 
         <div class="sidebar-section-title">FACILITY MANAGEMENT</div>
@@ -172,8 +267,8 @@ $isRecommendation = ($currentRole === 'recommendation');
             <?= $isRecommendation ? 'RO' : 'DIR' ?>
           </div>
           <div class="sidebar-user-info">
-            <h5><?= $isRecommendation ? 'Recommending Officer' : 'Clearance Authority' ?></h5>
-            <p><?= $isRecommendation ? 'Stage 1: Admin & Logistics' : 'Stage 2: Directorate Clearance' ?></p>
+            <h5><?= htmlspecialchars($_SESSION['full_name'] ?? 'Super Admin') ?></h5>
+            <p><?= htmlspecialchars($_SESSION['role'] ?? 'Executive Directorate') ?></p>
           </div>
         </div>
         <a href="index.php" class="sidebar-signout-btn" title="Sign Out">
@@ -231,7 +326,7 @@ $isRecommendation = ($currentRole === 'recommendation');
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <span id="currentDateDisplay">Monday, Oct 05, 2026</span>
+            <span id="currentDateDisplay"><?= date('l, M d, Y') ?></span>
           </div>
         </div>
       </header>
@@ -246,10 +341,10 @@ $isRecommendation = ($currentRole === 'recommendation');
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
               </svg>
-              <span>Security & Clearance Governance</span>
+              <span>Governance & Role Access Matrix</span>
             </div>
             <h2>User Management & Institutional Role Matrix</h2>
-            <p>Manage administrative clearances, assign Recommending and Approval authorities, and oversee authorized staff and external agency accounts for ATI Central Office.</p>
+            <p>Manage the reservation approval workflow (Endorsement &rarr; Recommendation &rarr; Clearance), assign division roles, and oversee authorized staff accounts.</p>
           </div>
 
           <div class="admin-header-actions">
@@ -260,13 +355,13 @@ $isRecommendation = ($currentRole === 'recommendation');
                 <line x1="20" y1="8" x2="20" y2="14"></line>
                 <line x1="23" y1="11" x2="17" y2="11"></line>
               </svg>
-              <span>Add User</span>
+              <span>Add Personnel</span>
             </button>
           </div>
         </section>
 
         <!-- ==========================================================================
-             KPI STAT CARDS (USER DIRECTORY)
+             KPI STAT CARDS (3-STAGE GOVERNANCE METRICS)
              ========================================================================== -->
         <section class="my-res-stats-grid admin-kpi-grid" aria-label="RBAC Statistics">
           <!-- Total Accounts -->
@@ -281,31 +376,32 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiTotalUsers">18</span>
-                <span class="stat-trend positive">17 Active</span>
+                <span class="stat-value" id="kpiTotalUsers"><?= $totalUsers ?></span>
+                <span class="stat-trend positive" id="kpiActiveUsers"><?= $activeUsers ?> Active</span>
               </div>
               <span class="stat-label">Total System Accounts</span>
             </div>
           </div>
 
-          <!-- Final Clearance Authorities (Stage 2) -->
-          <div class="my-res-stat-card" onclick="filterUsersByRole('clear')">
-            <div class="stat-icon-box amber">
+          <!-- Stage 1: Endorsement Authorities -->
+          <div class="my-res-stat-card" onclick="filterUsersByRole('endorsement')">
+            <div class="stat-icon-box blue" style="color: #0284c7; background: #e0f2fe;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                <path d="M9 11l3 3L22 4"></path>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
               </svg>
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiDirectorCount">2</span>
-                <span class="stat-pill-urgent" style="background: #fef3c7; color: #92400e; border-color: #fde68a; animation: none;">Stage 2</span>
+                <span class="stat-value" id="kpiEndorsementCount"><?= $endorsementCount ?></span>
+                <span class="stat-pill-urgent" style="background: #e0f2fe; color: #0369a1; border-color: #bae6fd; animation: none;">Endorsement</span>
               </div>
-              <span class="stat-label">Final Clearance Authorities</span>
+              <span class="stat-label">Endorsement Officers</span>
             </div>
           </div>
 
-          <!-- Recommending Officers (Stage 1) -->
-          <div class="my-res-stat-card" onclick="filterUsersByRole('rec')">
+          <!-- Stage 2: Recommending Officers -->
+          <div class="my-res-stat-card" onclick="filterUsersByRole('recommendation')">
             <div class="stat-icon-box emerald">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -313,16 +409,32 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiRecommendingCount">4</span>
-                <span class="stat-trend positive">Division Chiefs</span>
+                <span class="stat-value" id="kpiRecommendingCount"><?= $recommendationCount ?></span>
+                <span class="stat-pill-urgent" style="background: #dcfce7; color: #15803d; border-color: #bbf7d0; animation: none;">Recommendation</span>
               </div>
-              <span class="stat-label">Stage 1: Recommending Officers</span>
+              <span class="stat-label">Recommending Officers</span>
             </div>
           </div>
 
-          <!-- Staff Requestors & External Partners -->
-          <div class="my-res-stat-card" onclick="filterUsersByRole('staff')">
-            <div class="stat-icon-box blue">
+          <!-- Stage 3: Final Clearance Authorities -->
+          <div class="my-res-stat-card" onclick="filterUsersByRole('clearance')">
+            <div class="stat-icon-box amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value-row">
+                <span class="stat-value" id="kpiClearanceCount"><?= $clearanceCount ?></span>
+                <span class="stat-pill-urgent" style="background: #fef3c7; color: #92400e; border-color: #fde68a; animation: none;">Clearance</span>
+              </div>
+              <span class="stat-label">Clearance Authorities</span>
+            </div>
+          </div>
+
+          <!-- Staff Requestors & Admins -->
+          <div class="my-res-stat-card" onclick="filterUsersByRole('user')">
+            <div class="stat-icon-box purple" style="color: #6d28d9; background: #f3e8ff;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="7" r="4"></circle>
                 <path d="M5.5 21a8.38 8.38 0 0 1 13 0"></path>
@@ -330,8 +442,8 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiStaffCount">12</span>
-                <span class="stat-trend neutral">Staff & Partners</span>
+                <span class="stat-value" id="kpiStaffCount"><?= $requestorCount + $superAdminCount ?></span>
+                <span class="stat-trend neutral">Staff & Admins</span>
               </div>
               <span class="stat-label">Authorized Requestors</span>
             </div>
@@ -346,23 +458,27 @@ $isRecommendation = ($currentRole === 'recommendation');
           <div class="filter-tabs-group" role="tablist">
             <button type="button" class="user-filter-pill active" data-role="all" onclick="filterUsersByRole('all')">
               <span>All Accounts</span>
-              <span class="tab-count-pill" id="pillCountAll">18</span>
+              <span class="tab-count-pill" id="pillCountAll"><?= $totalUsers ?></span>
             </button>
-            <button type="button" class="user-filter-pill" data-role="clear" onclick="filterUsersByRole('clear')">
-              <span>Stage 2: Final Clearance</span>
-              <span class="tab-count-pill" id="pillCountClear">2</span>
+            <button type="button" class="user-filter-pill" data-role="endorsement" onclick="filterUsersByRole('endorsement')">
+              <span>Endorsement</span>
+              <span class="tab-count-pill" id="pillCountEndorse"><?= $endorsementCount ?></span>
             </button>
-            <button type="button" class="user-filter-pill" data-role="rec" onclick="filterUsersByRole('rec')">
-              <span>Stage 1: Recommending</span>
-              <span class="tab-count-pill" id="pillCountRec">4</span>
+            <button type="button" class="user-filter-pill" data-role="recommendation" onclick="filterUsersByRole('recommendation')">
+              <span>Recommendation</span>
+              <span class="tab-count-pill" id="pillCountRec"><?= $recommendationCount ?></span>
             </button>
-            <button type="button" class="user-filter-pill" data-role="staff" onclick="filterUsersByRole('staff')">
-              <span>Division Staff</span>
-              <span class="tab-count-pill" id="pillCountStaff">8</span>
+            <button type="button" class="user-filter-pill" data-role="clearance" onclick="filterUsersByRole('clearance')">
+              <span>Clearance</span>
+              <span class="tab-count-pill" id="pillCountClear"><?= $clearanceCount ?></span>
             </button>
-            <button type="button" class="user-filter-pill" data-role="external" onclick="filterUsersByRole('external')">
-              <span>External Partners</span>
-              <span class="tab-count-pill" id="pillCountExt">4</span>
+            <button type="button" class="user-filter-pill" data-role="super_admin" onclick="filterUsersByRole('super_admin')">
+              <span>Super Admin</span>
+              <span class="tab-count-pill" id="pillCountSuper"><?= $superAdminCount ?></span>
+            </button>
+            <button type="button" class="user-filter-pill" data-role="user" onclick="filterUsersByRole('user')">
+              <span>Requestors / Staff</span>
+              <span class="tab-count-pill" id="pillCountStaff"><?= $requestorCount ?></span>
             </button>
           </div>
 
@@ -382,7 +498,7 @@ $isRecommendation = ($currentRole === 'recommendation');
               <select id="userStatusFilterSelect" class="venue-filter-select" onchange="handleStatusFilter(this.value)">
                 <option value="all">All Statuses</option>
                 <option value="active">Active Only</option>
-                <option value="suspended">Suspended</option>
+                <option value="suspended">Suspended Only</option>
                 <option value="pending">Pending Verification</option>
               </select>
             </div>
@@ -390,13 +506,13 @@ $isRecommendation = ($currentRole === 'recommendation');
         </div>
 
         <!-- ==========================================================================
-             USERS & ROLES TABLE CARD
+             USERS & ROLES TABLE CARD (DATABASE-DRIVEN)
              ========================================================================== -->
         <div class="admin-table-card">
           <div class="admin-card-header">
             <div class="admin-card-title-group">
               <h3>Authorized Personnel Directory</h3>
-              <p>Review authorized credentials, configure clearance privileges, or manage account access states.</p>
+              <p>Database-synchronized directory with governance clearances (Endorsement &rarr; Recommendation &rarr; Clearance).</p>
             </div>
             <div class="admin-card-header-badge">
               <span class="indicator-live-dot"></span>
@@ -432,719 +548,67 @@ $isRecommendation = ($currentRole === 'recommendation');
                   </td>
                 </tr>
 
-                <!-- User 1: Director IV -->
-                <tr data-user-id="USR-1001" data-user-role="clear" data-user-status="active">
+                <!-- Dynamic DB Rows -->
+                <?php foreach ($usersList as $u): 
+                    $pres = getRolePresentation($u['role']);
+                    $initials = getUserInitials($u['full_name']);
+                    $isActive = ($u['status'] === 'active');
+                ?>
+                <tr data-user-id="<?= $u['id'] ?>" 
+                    data-user-role="<?= htmlspecialchars($pres['filterKey']) ?>" 
+                    data-user-status="<?= htmlspecialchars($u['status']) ?>">
                   <td>
                     <div class="user-avatar-cell">
-                      <div class="user-avatar-badge director">
-                        RR
-                        <span class="user-online-dot"></span>
+                      <div class="user-avatar-badge <?= $pres['avatarClass'] ?>">
+                        <?= htmlspecialchars($initials) ?>
+                        <span class="user-online-dot <?= $isActive ? '' : 'offline' ?>"></span>
                       </div>
                       <div>
-                        <div class="user-name-title">Clearance Authority</div>
-                        <span class="user-email-text">director@ati.da.gov.ph</span>
+                        <div class="user-name-title"><?= htmlspecialchars($u['full_name']) ?></div>
+                        <span class="user-email-text"><?= htmlspecialchars($u['email']) ?></span>
                       </div>
                     </div>
                   </td>
                   <td>
-                    <span class="user-dept-text">Office of the Director (OD)</span>
+                    <span class="user-dept-text"><?= htmlspecialchars($u['office_agency'] ?: 'ATI Central Office') ?></span>
+                    <span class="user-email-text" style="font-size: 0.73rem; color: #6e8c79;"><?= htmlspecialchars($u['category'] ?: 'ATI Personnel') ?></span>
                   </td>
                   <td>
-                    <span class="user-role-badge status-role-clearance">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                      Stage 2: Final Clearance Authority
+                    <span class="user-role-badge <?= $pres['badgeClass'] ?>">
+                      <?= $pres['iconSvg'] ?>
+                      <?= $pres['badgeText'] ?>
                     </span>
                   </td>
                   <td>
-                    <span class="privilege-summary-tag">Final Approval & Gate Pass Authorization</span>
+                    <span class="privilege-summary-tag"><?= $pres['privilege'] ?></span>
                   </td>
                   <td>
-                    <span class="status-badge-chip active">
+                    <span class="status-badge-chip <?= $isActive ? 'active' : 'suspended' ?>">
                       <span class="chip-status-dot"></span>
-                      Active
+                      <?= ucfirst($u['status']) ?>
                     </span>
                   </td>
                   <td style="text-align: right;">
                     <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1001', 'Clearance Authority', 'director@ati.da.gov.ph', 'clear', 'Office of the Director')" title="Configure clearance role">
+                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal(<?= $u['id'] ?>, '<?= addslashes(htmlspecialchars($u['full_name'])) ?>', '<?= addslashes(htmlspecialchars($u['email'])) ?>', '<?= addslashes(htmlspecialchars($pres['filterKey'])) ?>', '<?= addslashes(htmlspecialchars($u['office_agency'] ?: '')) ?>')" title="Configure clearance role">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                         <span>Role</span>
                       </button>
+                      <button type="button" class="btn-user-action status-toggle <?= $isActive ? '' : 'activate' ?>" onclick="toggleUserStatus(<?= $u['id'] ?>)" title="<?= $isActive ? 'Suspend access' : 'Reactivate access' ?>">
+                        <?= $isActive 
+                          ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg><span>Suspend</span>'
+                          : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Activate</span>'
+                        ?>
+                      </button>
+                      <?php if ($u['id'] != ($_SESSION['user_id'] ?? 0)): ?>
+                        <button type="button" class="btn-user-action" style="color: #dc2626; border-color: #fecaca; background: #fef2f2;" onclick="confirmDeleteUser(<?= $u['id'] ?>, '<?= addslashes(htmlspecialchars($u['full_name'])) ?>')" title="Remove user account">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                      <?php endif; ?>
                     </div>
                   </td>
                 </tr>
-
-                <!-- User 2: Assistant Director -->
-                <tr data-user-id="USR-1002" data-user-role="clear" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge director">
-                        AA
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Antonieta J. Arceo</div>
-                        <span class="user-email-text">asst.director@ati.da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">Office of the Assistant Director</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-clearance">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                      Stage 2: Final Clearance Authority
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">Delegated Executive Approver</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1002', 'Antonieta J. Arceo', 'asst.director@ati.da.gov.ph', 'clear', 'Office of the Assistant Director')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 3: Chief CDD (Recommending) -->
-                <tr data-user-id="USR-1003" data-user-role="rec" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge recommending">
-                        JD
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Engr. Juan Dela Cruz</div>
-                        <span class="user-email-text">juan.delacruz@ati.da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">Career Development Division (CDD)</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-recommend">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      Stage 1: Recommending Officer
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">Schedule Verification & Recommending Endorsement</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1003', 'Engr. Juan Dela Cruz', 'juan.delacruz@ati.da.gov.ph', 'rec', 'Career Development Division')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus('USR-1003')" title="Suspend access">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <span>Suspend</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 4: Chief Legal Service -->
-                <tr data-user-id="USR-1004" data-user-role="rec" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge recommending">
-                        BC
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Atty. Bernardo Castro</div>
-                        <span class="user-email-text">bernardo.castro@ati.da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">DA - Legal Service Office</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-recommend">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      Stage 1: Recommending Officer
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">Legal Clearance & Document Endorsement</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1004', 'Atty. Bernardo Castro', 'bernardo.castro@ati.da.gov.ph', 'rec', 'DA - Legal Service Office')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus('USR-1004')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <span>Suspend</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 5: Chief AFD -->
-                <tr data-user-id="USR-1005" data-user-role="rec" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge recommending">
-                        RS
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Rowena Santos</div>
-                        <span class="user-email-text">rowena.santos@ati.da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">Administrative & Finance Division (AFD)</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-recommend">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      Stage 1: Recommending Officer
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">Financial Clearance & Endorsement</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1005', 'Rowena Santos', 'rowena.santos@ati.da.gov.ph', 'rec', 'Administrative & Finance Division')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus('USR-1005')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <span>Suspend</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 6: Chief Budget -->
-                <tr data-user-id="USR-1006" data-user-role="rec" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge recommending">
-                        LB
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Liza Bautista</div>
-                        <span class="user-email-text">liza.bautista@ati.da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">Budget & Accounting Section</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-recommend">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      Stage 1: Recommending Officer
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">Budget Allocation Verification</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1006', 'Liza Bautista', 'liza.bautista@ati.da.gov.ph', 'rec', 'Budget & Accounting Section')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus('USR-1006')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <span>Suspend</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 7: GSU Head -->
-                <tr data-user-id="USR-1007" data-user-role="gsu" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge gsu">
-                        DM
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Arch. Danilo Mendoza</div>
-                        <span class="user-email-text">danilo.mendoza@ati.da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">General Services Unit (GSU)</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;">
-                      Facility & Maintenance Officer
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">Venue Maintenance Hold & Physical Inspection</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1007', 'Arch. Danilo Mendoza', 'danilo.mendoza@ati.da.gov.ph', 'gsu', 'General Services Unit')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus('USR-1007')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <span>Suspend</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 8: Staff ISD -->
-                <tr data-user-id="USR-1008" data-user-role="staff" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge staff">
-                        CL
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Carmela Lim</div>
-                        <span class="user-email-text">carmela.lim@ati.da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">Information Services Division (ISD)</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-staff">
-                      Division Personnel / Requestor
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">Submit Reservations & Track Endorsements</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1008', 'Carmela Lim', 'carmela.lim@ati.da.gov.ph', 'staff', 'Information Services Division')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus('USR-1008')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <span>Suspend</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 9: Staff National Rice Program -->
-                <tr data-user-id="USR-1009" data-user-role="staff" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge staff">
-                        GV
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Grace Valenzuela</div>
-                        <span class="user-email-text">grace.valenzuela@da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">DA - National Rice Program</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-staff">
-                      Division Personnel / Requestor
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">Submit Reservations & Track Endorsements</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1009', 'Grace Valenzuela', 'grace.valenzuela@da.gov.ph', 'staff', 'DA - National Rice Program')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus('USR-1009')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <span>Suspend</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 10: Staff PAD -->
-                <tr data-user-id="USR-1010" data-user-role="staff" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge staff">
-                        ER
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Eduardo Ramos</div>
-                        <span class="user-email-text">eduardo.ramos@ati.da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">Partnerships & Accreditation (PAD)</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-staff">
-                      Division Personnel / Requestor
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">Submit Reservations & Track Endorsements</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1010', 'Eduardo Ramos', 'eduardo.ramos@ati.da.gov.ph', 'staff', 'Partnerships & Accreditation')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus('USR-1010')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <span>Suspend</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 11: Dormitory Supervisor -->
-                <tr data-user-id="USR-1011" data-user-role="gsu" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge gsu">
-                        DA
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Dexter Alcantara</div>
-                        <span class="user-email-text">dexter.alcantara@ati.da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">ATI Dormitory Management Unit</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;">
-                      Facility & Dormitory Staff
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">Dormitory Bed Allotment & Check-In Log</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1011', 'Dexter Alcantara', 'dexter.alcantara@ati.da.gov.ph', 'gsu', 'ATI Dormitory Management Unit')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus('USR-1011')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <span>Suspend</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 12: External BPI -->
-                <tr data-user-id="USR-1012" data-user-role="external" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge external">
-                        MS
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Dr. Maria Santos</div>
-                        <span class="user-email-text">maria.santos@bpi.da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">Bureau of Plant Industry (BPI)</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-external">
-                      External Agency Partner
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">External Facility Booking Applicant</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1012', 'Dr. Maria Santos', 'maria.santos@bpi.da.gov.ph', 'external', 'Bureau of Plant Industry')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus('USR-1012')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <span>Suspend</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 13: External PhilRice -->
-                <tr data-user-id="USR-1013" data-user-role="external" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge external">
-                        RP
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Ramon Pascual</div>
-                        <span class="user-email-text">ramon.pascual@philrice.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">PhilRice - Extension Division</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-external">
-                      External Agency Partner
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">External Facility Booking Applicant</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1013', 'Ramon Pascual', 'ramon.pascual@philrice.gov.ph', 'external', 'PhilRice Extension')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus('USR-1013')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <span>Suspend</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 14: External BAR -->
-                <tr data-user-id="USR-1014" data-user-role="external" data-user-status="active">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge external">
-                        PG
-                        <span class="user-online-dot"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Patricia Mae Gomez</div>
-                        <span class="user-email-text">pmgomez@bar.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">DA - Bureau of Agricultural Research</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-external">
-                      External Agency Partner
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">External Facility Booking Applicant</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip active">
-                      <span class="chip-status-dot"></span>
-                      Active
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1014', 'Patricia Mae Gomez', 'pmgomez@bar.gov.ph', 'external', 'DA - BAR')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus('USR-1014')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
-                        <span>Suspend</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 15: External Pending Verification -->
-                <tr data-user-id="USR-1015" data-user-role="external" data-user-status="pending">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge external">
-                        JM
-                        <span class="user-online-dot offline"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">External Requestor</div>
-                        <span class="user-email-text">external.requestor@rfo3.da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">DA Regional Field Office III</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-external">
-                      External Agency Partner
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">Pending Document Accreditation</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip pending">
-                      <span class="chip-status-dot"></span>
-                      Pending
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1015', 'External Requestor', 'external.requestor@rfo3.da.gov.ph', 'external', 'DA RFO III')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <!-- User 16: Staff Suspended -->
-                <tr data-user-id="USR-1016" data-user-role="staff" data-user-status="suspended">
-                  <td>
-                    <div class="user-avatar-cell">
-                      <div class="user-avatar-badge gsu">
-                        GO
-                        <span class="user-online-dot offline"></span>
-                      </div>
-                      <div>
-                        <div class="user-name-title">Gilbert Ocampo</div>
-                        <span class="user-email-text">gilbert.ocampo@ati.da.gov.ph</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <span class="user-dept-text">Security & Facilities Oversight</span>
-                  </td>
-                  <td>
-                    <span class="user-role-badge status-role-staff">
-                      Facility & Dormitory Staff
-                    </span>
-                  </td>
-                  <td>
-                    <span class="privilege-summary-tag">Access Suspended by Super Admin</span>
-                  </td>
-                  <td>
-                    <span class="status-badge-chip suspended">
-                      <span class="chip-status-dot"></span>
-                      Suspended
-                    </span>
-                  </td>
-                  <td style="text-align: right;">
-                    <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal('USR-1016', 'Gilbert Ocampo', 'gilbert.ocampo@ati.da.gov.ph', 'staff', 'Security & Facilities')">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle activate" onclick="toggleUserStatus('USR-1016')" title="Reactivate user access">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        <span>Activate</span>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                <?php endforeach; ?>
               </tbody>
             </table>
           </div>
@@ -1155,14 +619,14 @@ $isRecommendation = ($currentRole === 'recommendation');
   </div>
 
   <!-- ==========================================================================
-       MODAL: CONFIGURE ROLE & PRIVILEGES
+       MODAL: CONFIGURE ROLE & PRIVILEGES (3-STAGE GOVERNANCE)
        ========================================================================== -->
   <div class="admin-modal-overlay" id="editRoleModal" style="display: none;">
     <div class="admin-modal-card sm" style="max-width: 540px;">
       <div class="admin-modal-header">
         <div class="modal-title-wrap">
-          <span class="modal-badge-ref">RBAC Clearance</span>
-          <h4>Configure Access Level & Permissions</h4>
+          <span class="modal-badge-ref">Governance Role</span>
+          <h4>Configure Access Level & Clearances</h4>
         </div>
         <button type="button" class="admin-modal-close" onclick="closeEditRoleModal()">&times;</button>
       </div>
@@ -1171,21 +635,28 @@ $isRecommendation = ($currentRole === 'recommendation');
         <div class="modal-applicant-summary" style="margin-bottom: 1.25rem;">
           <div class="user-avatar-circle" id="editRoleUserAvatar">JD</div>
           <div class="applicant-meta">
-            <h5 id="editRoleUserName">Engr. Juan Dela Cruz</h5>
-            <p id="editRoleUserDept">Career Development Division (CDD)</p>
-            <span class="applicant-contact" id="editRoleUserEmail">juan.delacruz@ati.da.gov.ph</span>
+            <h5 id="editRoleUserName">Personnel Name</h5>
+            <p id="editRoleUserDept">Division / Office</p>
+            <span class="applicant-contact" id="editRoleUserEmail">email@ati.da.gov.ph</span>
           </div>
         </div>
 
         <form id="editRoleForm" onsubmit="saveRoleChanges(event)">
+          <input type="hidden" id="editRoleUserId" value="">
+          
           <div class="form-group-decline" style="margin-bottom: 1rem;">
-            <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.4rem;">Designated Clearance Level</label>
-            <select id="roleSelectDropdown" style="width: 100%; height: 42px; padding: 0 1rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; font-weight: 600;">
-              <option value="clear">Final Clearance Authority</option>
-              <option value="rec">Recommending Officer</option>
-              <option value="gsu">Facility & Maintenance Officer (GSU)</option>
-              <option value="staff">Division Personnel / Requestor (ATI Staff)</option>
-              <option value="external">External Agency Partner (BPI, PhilRice, Guest)</option>
+            <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.4rem;">Office / Division / Bureau</label>
+            <input type="text" id="editRoleUserDeptInput" placeholder="e.g. Career Development Division (CDD)" style="width: 100%; height: 42px; padding: 0 1rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; box-sizing: border-box;" required>
+          </div>
+
+          <div class="form-group-decline" style="margin-bottom: 1rem;">
+            <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.4rem;">Designated Approval Stage / Role</label>
+            <select id="roleSelectDropdown" style="width: 100%; height: 42px; padding: 0 1rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; font-weight: 600; box-sizing: border-box;">
+              <option value="endorsement">Endorsement Officer (Division Chief / Section Head)</option>
+              <option value="recommendation">Recommending Officer (Admin & Logistics)</option>
+              <option value="clearance">Clearance Authority (Executive Director)</option>
+              <option value="super_admin">Super Administrator (Full System Control)</option>
+              <option value="user">Authorized Requestor / Personnel (Standard Staff)</option>
             </select>
           </div>
 
@@ -1195,31 +666,31 @@ $isRecommendation = ($currentRole === 'recommendation');
               <input type="checkbox" id="permInspect" checked>
               <div class="perm-checkbox-text">
                 <strong>Inspect & Verify Request Attachments</strong>
-                <span>Can view signed endorsement letters and applicant credentials</span>
+                <span>Can view uploaded activity permits and applicant credentials</span>
               </div>
             </label>
 
             <label class="perm-checkbox-item">
-              <input type="checkbox" id="permRecommend" checked>
+              <input type="checkbox" id="permEndorse">
               <div class="perm-checkbox-text">
-                <strong>Issue Stage 1 Recommendation</strong>
-                <span>Authorized to recommend reservations forward to Director IV</span>
+                <strong>Issue Division Endorsement</strong>
+                <span>Authorized to endorse division reservation requests</span>
+              </div>
+            </label>
+
+            <label class="perm-checkbox-item">
+              <input type="checkbox" id="permRecommend">
+              <div class="perm-checkbox-text">
+                <strong>Issue Logistics Recommendation</strong>
+                <span>Authorized to review logistics and recommend reservations</span>
               </div>
             </label>
 
             <label class="perm-checkbox-item">
               <input type="checkbox" id="permClearance">
               <div class="perm-checkbox-text">
-                <strong>Executive Final Clearance & Gate Pass Approval</strong>
-                <span>Final authority to confirm bookings and issue security gate passes</span>
-              </div>
-            </label>
-
-            <label class="perm-checkbox-item">
-              <input type="checkbox" id="permMaintenance">
-              <div class="perm-checkbox-text">
-                <strong>Facility Maintenance & Schedule Hold</strong>
-                <span>Can place auditoriums or dormitories under maintenance hold</span>
+                <strong>Clearance & Gate Pass Approval</strong>
+                <span>Final authority to confirm bookings and issue gate passes</span>
               </div>
             </label>
 
@@ -1242,10 +713,10 @@ $isRecommendation = ($currentRole === 'recommendation');
   </div>
 
   <!-- ==========================================================================
-       MODAL: REGISTER NEW USER
+       MODAL: REGISTER NEW USER (DATABASE-SAVED)
        ========================================================================== -->
   <div class="admin-modal-overlay" id="addUserModal" style="display: none;">
-    <div class="admin-modal-card sm" style="max-width: 520px;">
+    <div class="admin-modal-card sm" style="max-width: 540px;">
       <div class="admin-modal-header">
         <div class="modal-title-wrap">
           <span class="modal-badge-ref">New Registration</span>
@@ -1263,28 +734,53 @@ $isRecommendation = ($currentRole === 'recommendation');
                 style="width: 100%; height: 40px; padding: 0 0.85rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; box-sizing: border-box;">
             </div>
 
-            <div>
-              <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Official Government Email</label>
-              <input type="email" id="newUserEmail" placeholder="e.g. mark.rivera@ati.da.gov.ph" required
-                style="width: 100%; height: 40px; padding: 0 0.85rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; box-sizing: border-box;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+              <div>
+                <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Official Government Email</label>
+                <input type="email" id="newUserEmail" placeholder="e.g. mark.rivera@ati.da.gov.ph" required
+                  style="width: 100%; height: 40px; padding: 0 0.85rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Contact Number</label>
+                <input type="text" id="newUserPhone" placeholder="e.g. 09171234567"
+                  style="width: 100%; height: 40px; padding: 0 0.85rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; box-sizing: border-box;">
+              </div>
             </div>
 
-            <div>
-              <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Assigned Division / Bureau</label>
-              <input type="text" id="newUserDept" placeholder="e.g. Policy & Planning Division (PPD)" required
-                style="width: 100%; height: 40px; padding: 0 0.85rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; box-sizing: border-box;">
+            <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 0.85rem;">
+              <div>
+                <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Assigned Division / Bureau</label>
+                <input type="text" id="newUserDept" placeholder="e.g. Policy & Planning Division (PPD)" required
+                  style="width: 100%; height: 40px; padding: 0 0.85rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Category</label>
+                <select id="newUserCategory"
+                  style="width: 100%; height: 40px; padding: 0 0.85rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; font-weight: 600; box-sizing: border-box;">
+                  <option value="ATI Personnel">ATI Personnel</option>
+                  <option value="Gov Agency">Gov Agency</option>
+                  <option value="Private / Guest">Private / Guest</option>
+                </select>
+              </div>
             </div>
 
-            <div>
-              <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Designated Clearance Level</label>
-              <select id="newUserRole"
-                style="width: 100%; height: 40px; padding: 0 0.85rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; font-weight: 600; box-sizing: border-box;">
-                <option value="staff">Division Personnel / Requestor (Standard Staff)</option>
-                <option value="rec">Recommending Officer</option>
-                <option value="clear">Final Clearance Authority</option>
-                <option value="gsu">Facility & Maintenance Officer (GSU)</option>
-                <option value="external">External Agency Partner (DA Bureaus / Visitors)</option>
-              </select>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+              <div>
+                <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Initial Password</label>
+                <input type="password" id="newUserPassword" placeholder="Default: AtiPass2026!"
+                  style="width: 100%; height: 40px; padding: 0 0.85rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; box-sizing: border-box;">
+              </div>
+              <div>
+                <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Designated Governance Role</label>
+                <select id="newUserRole"
+                  style="width: 100%; height: 40px; padding: 0 0.85rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; font-weight: 600; box-sizing: border-box;">
+                  <option value="user">Authorized Requestor (Staff / Partner)</option>
+                  <option value="endorsement">Endorsement Officer</option>
+                  <option value="recommendation">Recommending Officer</option>
+                  <option value="clearance">Clearance Authority</option>
+                  <option value="super_admin">Super Administrator</option>
+                </select>
+              </div>
             </div>
           </div>
 

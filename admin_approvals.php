@@ -8,6 +8,7 @@ require_once __DIR__ . '/includes/admin_guard.php';
  */
 $validRoles = ['endorsement', 'recommendation', 'clearance', 'all'];
 $currentRole = isset($_GET['role']) && in_array($_GET['role'], $validRoles) ? $_GET['role'] : 'all';
+$isRecommendation = ($currentRole === 'recommendation');
 
 // Fetch all reservations from the database joined with facilities, rooms, users, and approvers
 $query = "SELECT r.*, 
@@ -133,6 +134,9 @@ if ($currentRole === 'endorsement') {
     $kpiAwaiting = $kpiStage1 + $kpiStage2 + $kpiStage3;
 }
 $sidebarPendingCount = $kpiStage1 + $kpiStage2 + $kpiStage3;
+
+$userCountStmt = $db->query("SELECT COUNT(*) FROM users");
+$totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -243,7 +247,7 @@ $sidebarPendingCount = $kpiStage1 + $kpiStage2 + $kpiStage3;
             </svg>
           </div>
           <span class="menu-label">User & Role Access</span>
-          <span class="sidebar-count-badge green">18</span>
+          <span class="sidebar-count-badge green"><?= $totalUsersCount ?></span>
         </a>
 
         <div class="sidebar-section-title">FACILITY MANAGEMENT</div>
@@ -569,6 +573,19 @@ $sidebarPendingCount = $kpiStage1 + $kpiStage2 + $kpiStage3;
             </thead>
             <tbody id="approvalsTableBody">
               <!-- Dynamically rendered via renderApprovalsTable() -->
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 3.5rem 1rem; color: #637f6f;">
+                  <div style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: #eef7f2; margin-bottom: 0.75rem;">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                  </div>
+                  <h4 style="font-size: 1.05rem; font-weight: 700; color: #172c1f; margin: 0 0 0.35rem 0;">No reservation found</h4>
+                  <p style="color: #637f6f; font-size: 0.85rem; margin: 0;">There are currently no reservation requests for this view.</p>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -898,7 +915,7 @@ $sidebarPendingCount = $kpiStage1 + $kpiStage2 + $kpiStage3;
 
   <!-- JavaScript Engine Data & Script -->
   <script>
-    window.initialApprovalsData = <?= json_encode($approvalsData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    window.initialApprovalsData = <?= json_encode((object)$approvalsData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
   </script>
   <script src="js/admin_approvals.js?v=<?php echo time(); ?>"></script>
 </body>

@@ -87,6 +87,40 @@ try {
         }
     }
 
+    // Check administrative schedule_blocks (blackout holds)
+    try {
+        $bQuery = "SELECT * FROM schedule_blocks 
+                   WHERE (facility_id = 'all' OR facility_id = :fac_str)
+                     AND (start_date <= :bMonthEnd AND end_date >= :bMonthStart)";
+        $bStmt = $conn->prepare($bQuery);
+        $bStmt->execute([
+            ':fac_str' => (string)$facility_id,
+            ':bMonthEnd' => $monthEnd,
+            ':bMonthStart' => $monthStart
+        ]);
+        $blocks = $bStmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($blocks as $blk) {
+            $bStart = new DateTime(max($blk['start_date'], $monthStart));
+            $bEnd = new DateTime(min($blk['end_date'], $monthEnd));
+            $bCurr = clone $bStart;
+            while ($bCurr <= $bEnd) {
+                $bKey = $bCurr->format('Y-m-d');
+                if (!isset($bookedDates[$bKey])) {
+                    $bookedDates[$bKey] = [];
+                }
+                $bookedDates[$bKey][] = [
+                    'title' => 'Administrative Hold: ' . $blk['title'],
+                    'facility' => $blk['facility_name'] ?: 'All Facilities',
+                    'room' => null,
+                    'is_hold' => true
+                ];
+                $bCurr->modify('+1 day');
+            }
+        }
+    } catch (Exception $e) {
+        // schedule_blocks table might not be queried if not yet created
+    }
+
     echo json_encode([
         'status' => 'success',
         'facility_id' => $facility_id,

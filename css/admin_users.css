@@ -173,6 +173,14 @@
   background: linear-gradient(135deg, #15803d, #22c55e);
 }
 
+.user-avatar-badge.endorsement {
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+}
+
+.user-avatar-badge.super_admin {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+}
+
 .user-avatar-badge.staff {
   background: linear-gradient(135deg, #0f766e, #14b8a6);
 }
@@ -183,6 +191,18 @@
 
 .user-avatar-badge.gsu {
   background: linear-gradient(135deg, #475569, #64748b);
+}
+
+.status-role-endorse {
+  background: #ecfeff;
+  color: #0e7490;
+  border: 1px solid #a5f3fc;
+}
+
+.status-role-super {
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1px solid #ddd6fe;
 }
 
 .user-online-dot {

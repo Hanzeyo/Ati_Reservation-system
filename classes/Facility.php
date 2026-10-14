@@ -8,9 +8,15 @@ class Facility extends BaseModel {
     public $type;
     public $rate;
     public $capacity;
+    public $beds;
     public $location;
     public $description;
+    public $features;
+    public $image;
+    public $notes;
     public $status;
+    public $maintenance_reason;
+    public $est_resume_date;
 
     public function getAll($type = null) {
         $query = "SELECT * FROM " . $this->table_name;
@@ -39,9 +45,15 @@ class Facility extends BaseModel {
             $this->type = $row['type'];
             $this->rate = $row['rate'];
             $this->capacity = $row['capacity'];
+            $this->beds = $row['beds'] ?? 0;
             $this->location = $row['location'];
             $this->description = $row['description'];
+            $this->features = $row['features'] ?? '';
+            $this->image = $row['image'] ?? 'assets/images/function_hall.jpg';
+            $this->notes = $row['notes'] ?? '';
             $this->status = $row['status'];
+            $this->maintenance_reason = $row['maintenance_reason'] ?? '';
+            $this->est_resume_date = $row['est_resume_date'] ?? '';
             return true;
         }
         return false;

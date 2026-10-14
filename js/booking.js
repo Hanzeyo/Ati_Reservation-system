@@ -330,7 +330,7 @@ function selectFacilityCard(card, openModal = true) {
   let location = null;
 
   if (!isDorm) {
-    location = hallLayoutData[card.dataset.id]?.location || null;
+    location = hallLayoutData[card.dataset.id]?.location || 'ATI Institutional Complex';
     setupRate = card.dataset.rate || null;
     if (bookingState.selectedFacility?.id === card.dataset.id && bookingState.selectedFacility?.setupName) {
       setupName = bookingState.selectedFacility.setupName;
@@ -341,6 +341,10 @@ function selectFacilityCard(card, openModal = true) {
       setupId = defLayout.id;
       setupName = defLayout.name;
       setupCap = defLayout.cap;
+    } else {
+      setupId = 'standard';
+      setupName = 'Standard Configuration';
+      setupCap = card.dataset.capacity || 'Standard Capacity';
     }
   }
 
@@ -424,68 +428,54 @@ function initFacilitySelection() {
     }
   });
 
-  // Pre-initialize default Function Hall setup badge if Function Hall is selected
-  const defaultHallCard = document.querySelector('.facility-choice-card.selected[data-id="function-hall"]');
-  if (defaultHallCard) {
-    const defaultLayout = hallLayoutData['function-hall'].layouts[0];
-    bookingState.selectedFacility = {
-      id: 'function-hall',
-      name: 'Function Hall',
-      rate: '₱5,000/day',
-      capacity: defaultLayout.cap,
-      type: 'halls',
-      setupId: defaultLayout.id,
-      setupName: defaultLayout.name,
-      setupCap: defaultLayout.cap,
-      location: hallLayoutData['function-hall'].location,
-      setupRate: '₱5,000/day',
-      occupiedOnDefaultDate: false
-    };
-    const badge = defaultHallCard.querySelector('.hall-selected-setup-badge');
-    const badgeText = defaultHallCard.querySelector('.d-room-text');
-    if (badge && badgeText) {
-      badgeText.textContent = `✓ ${defaultLayout.name} Selected (${defaultLayout.cap})`;
-      badge.style.display = 'flex';
-    }
-    const btn = defaultHallCard.querySelector('.btn-select-facility');
-    if (btn) {
-      btn.innerHTML = `✓ ${defaultLayout.name} Selected (Click to change)`;
-    }
-    updateReviewSummary();
-  }
-
-  // Pre-initialize default Dormitory selection if on dormitory page or dorm card is pre-selected
-  const isDormPageInit = window.location.pathname.includes('dormitory_booking');
-  const defaultDormCard = document.querySelector('.facility-choice-card.selected[data-facility-type="dormitories"]');
-  if (defaultDormCard && (!defaultHallCard || isDormPageInit)) {
-    const dormId = defaultDormCard.dataset.id;
-    const dormData = dormFloorData[dormId];
-    bookingState.selectedFacility = {
-      id: dormId,
-      name: defaultDormCard.dataset.name,
-      rate: defaultDormCard.dataset.rate,
-      capacity: defaultDormCard.dataset.capacity,
-      type: 'dormitories',
-      roomNumber: '101',
-      floor: dormData?.floor || defaultDormCard.dataset.name,
-      roomRate: defaultDormCard.dataset.rate,
-      occupiedOnDefaultDate: false
-    };
-    const badge = defaultDormCard.querySelector('.dorm-card-selected-room-badge:not(.hall-selected-setup-badge)');
-    const badgeText = badge?.querySelector('.d-room-text');
-    if (badge && badgeText) {
-      badgeText.textContent = `✓ Room 101 Assigned (${dormData?.floor || '1st Floor'})`;
-      badge.style.display = 'flex';
-    }
-    const btn = defaultDormCard.querySelector('.btn-select-facility');
-    if (btn) {
-      btn.innerHTML = `✓ Room 101 Selected (Click to change)`;
-    }
-    updateReviewSummary();
+  // Dynamically pre-initialize the currently selected card (or first visible card)
+  const initialCard = document.querySelector('.facility-choice-card.selected') || 
+                      document.querySelector('.facility-choice-card:not([style*="display: none"])');
+  if (initialCard) {
+    selectFacilityCard(initialCard, false);
   }
 }
 
 function openFacilityModal(facilityId) {
+  const card = document.querySelector(`.facility-choice-card[data-id="${facilityId}"]`);
+
+  // Auto-generate interactive modal layout/rooms for custom or newly registered facilities
+  if (!dormFloorData[facilityId] && !hallLayoutData[facilityId] && card) {
+    const isDormType = card.dataset.facilityType === 'dormitories';
+    if (isDormType) {
+      const dormName = card.dataset.name || 'Dormitory Suite';
+      dormFloorData[facilityId] = {
+        title: dormName,
+        floor: 'Institutional Dormitory Wing',
+        desc: 'Air-conditioned rooms with single beds, personal lockers, and comfortable amenities.',
+        rate: card.dataset.rate || '₱500 / night',
+        rooms: [
+          { num: '101', available: true },
+          { num: '102', available: true },
+          { num: '103', available: true },
+          { num: '104', available: true },
+          { num: '105', available: false },
+          { num: '106', available: true }
+        ]
+      };
+    } else {
+      const hallName = card.dataset.name || 'Institutional Hall';
+      const capVal = card.dataset.capacity || '100 PAX';
+      hallLayoutData[facilityId] = {
+        title: hallName,
+        location: 'ATI Campus Complex',
+        desc: `Institutional facility equipped for official events, seminars, and meetings. Capacity: ${capVal}.`,
+        rate: card.dataset.rate || '₱3,000 / day',
+        layouts: [
+          { id: `${facilityId}-theater`, name: 'Theater Setup', cap: capVal, available: true, desc: 'Row seating facing main presentation screen' },
+          { id: `${facilityId}-classroom`, name: 'Classroom Setup', cap: capVal, available: true, desc: 'Desks and chairs configuration for workshops' },
+          { id: `${facilityId}-workshop`, name: 'Workshop Pods', cap: capVal, available: true, desc: 'Collaborative group table arrangements' },
+          { id: `${facilityId}-banquet`, name: 'Banquet Dining', cap: capVal, available: true, desc: 'Round dining tables for official gatherings' }
+        ]
+      };
+    }
+  }
+
   const isDorm = Boolean(dormFloorData[facilityId]);
   const isHall = Boolean(hallLayoutData[facilityId]);
 

@@ -3,147 +3,17 @@
  * Multi-Facility Operational Calendar with Dual-Stage Reservation Statuses
  */
 
-// Calendar Database with real institutional reservation entries
-let calendarEvents = [
-  {
-    ref: 'R-2026-0888',
-    title: 'Q4 National Rice Assessment & Planning Workshop',
-    facility: 'serrano',
-    facilityName: 'Serrano Function Hall',
-    startDate: '2026-10-06',
-    endDate: '2026-10-07',
-    time: '08:00 AM - 05:00 PM',
-    applicant: 'Grace Valenzuela',
-    agency: 'DA - National Rice Program',
-    email: 'gvalenzuela@da.gov.ph',
-    phone: '+63 928 333 7788',
-    pax: 100,
-    status: 'cleared',
-    statusLabel: 'Stage 2 Cleared (Confirmed)',
-    colorClass: 'status-cleared',
-    stage1Reviewer: 'Recommending Officer (Endorsed)',
-    stage2Reviewer: 'Clearance Authority (Cleared)'
-  },
-  {
-    ref: 'R-2026-0893',
-    title: 'Administrative Adjudication Hearing',
-    facility: 'boardroom',
-    facilityName: 'Executive Boardroom',
-    startDate: '2026-10-08',
-    endDate: '2026-10-08',
-    time: '01:00 PM - 05:00 PM',
-    applicant: 'Atty. Bernardo Castro',
-    agency: 'DA - Legal Service Office',
-    email: 'bcastro@da.gov.ph',
-    phone: '+63 920 555 1212',
-    pax: 18,
-    status: 'pending_rec',
-    statusLabel: 'Stage 1 Pending Recommendation',
-    colorClass: 'status-pending-rec',
-    stage1Reviewer: 'Recommending Officer (Under Review)',
-    stage2Reviewer: 'Awaiting Stage 1 Recommendation'
-  },
-  {
-    ref: 'MAINT-2026-02',
-    title: 'Airconditioning Deep Cleaning & Fumigation',
-    facility: 'dormitory',
-    facilityName: 'Dormitory Suite B',
-    startDate: '2026-10-08',
-    endDate: '2026-10-09',
-    time: 'Full Day Out of Service',
-    applicant: 'General Services Unit',
-    agency: 'Administrative Services Unit',
-    email: 'gsu@ati.da.gov.ph',
-    phone: 'Loc 104',
-    pax: 0,
-    status: 'blackout',
-    statusLabel: 'Maintenance Hold',
-    colorClass: 'status-blackout',
-    stage1Reviewer: 'Approved Maintenance Hold',
-    stage2Reviewer: 'GSU Work Order #44'
-  },
-  {
-    ref: 'R-2026-0891',
-    title: 'National TOT on Climate-Resilient Agriculture',
-    facility: 'serrano',
-    facilityName: 'Serrano Function Hall',
-    startDate: '2026-10-12',
-    endDate: '2026-10-14',
-    time: '08:00 AM - 05:00 PM (3 Days)',
-    applicant: 'Engr. Juan Dela Cruz',
-    agency: 'ATI - Career Development Division (CDD)',
-    email: 'juan.delacruz@ati.da.gov.ph',
-    phone: '+63 917 123 4567',
-    pax: 85,
-    status: 'pending_rec',
-    statusLabel: 'Stage 1 Pending Recommendation',
-    colorClass: 'status-pending-rec',
-    stage1Reviewer: 'Recommending Officer (Queue #1)',
-    stage2Reviewer: 'Awaiting Stage 1 Recommendation'
-  },
-  {
-    ref: 'R-2026-0892',
-    title: 'Inter-Agency Seed Inspection Workshop',
-    facility: 'dormitory',
-    facilityName: 'Dormitory Suite A & B',
-    startDate: '2026-10-15',
-    endDate: '2026-10-18',
-    time: 'Check-in: 02:00 PM (4 Days)',
-    applicant: 'Dr. Maria Santos',
-    agency: 'Bureau of Plant Industry (BPI)',
-    email: 'maria.santos@bpi.gov.ph',
-    phone: '+63 918 987 6543',
-    pax: 32,
-    status: 'pending_clear',
-    statusLabel: 'Stage 2 Pending Clearance',
-    colorClass: 'status-pending-clear',
-    stage1Reviewer: 'Recommending Officer (Endorsed)',
-    stage2Reviewer: 'Clearance Authority (Under Review)'
-  },
-  {
-    ref: 'R-2026-0894',
-    title: 'Digital Agriculture & Rice Crop Manager Training',
-    facility: 'four_h',
-    facilityName: '4-H Learning Center',
-    startDate: '2026-10-20',
-    endDate: '2026-10-22',
-    time: '08:30 AM - 04:30 PM (3 Days)',
-    applicant: 'Ramon Pascual',
-    agency: 'PhilRice - Extension Division',
-    email: 'rpascual@philrice.gov.ph',
-    phone: '+63 922 444 3322',
-    pax: 60,
-    status: 'pending_clear',
-    statusLabel: 'Stage 2 Pending Clearance',
-    colorClass: 'status-pending-clear',
-    stage1Reviewer: 'Recommending Officer (Endorsed)',
-    stage2Reviewer: 'Clearance Authority (Under Review)'
-  },
-  {
-    ref: 'HOLD-2026-01',
-    title: 'National Agricultural Extension Summit Setup',
-    facility: 'all',
-    facilityName: 'All ATI Facilities (Blackout)',
-    startDate: '2026-10-26',
-    endDate: '2026-10-28',
-    time: 'Full Institutional Blackout',
-    applicant: 'Directorate Office',
-    agency: 'Office of the Director IV',
-    email: 'od@ati.da.gov.ph',
-    phone: 'Loc 101',
-    pax: 350,
-    status: 'blackout',
-    statusLabel: 'Institutional Blackout Hold',
-    colorClass: 'status-blackout',
-    stage1Reviewer: 'Memo Circular #2026-18',
-    stage2Reviewer: 'Direct Executive Reservation'
-  }
-];
+// Calendar Database initialized from database or fallback
+let calendarEvents = (typeof initialDbCalendarEvents !== 'undefined' && Array.isArray(initialDbCalendarEvents))
+  ? initialDbCalendarEvents
+  : [];
 
 const _adminNow = new Date();
 let currentYear = _adminNow.getFullYear();
 let currentMonth = _adminNow.getMonth(); // 0-indexed
 let activeFacilityFilter = 'all';
+let activeStatusFilter = 'all';
+let isOpenBookingHighlighted = false;
 
 document.addEventListener('DOMContentLoaded', function () {
   initDateDisplay();
@@ -210,6 +80,56 @@ const monthNames = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+/**
+ * Checks whether a specific date (YYYY-MM-DD) is available for reservation
+ * strictly excluding past days and confirmed/blackout dates.
+ */
+function isDateAvailableForBooking(dateStr) {
+  const today = new Date();
+  const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+  // Past dates cannot be booked
+  if (dateStr < todayDateStr) {
+    return false;
+  }
+
+  if (activeFacilityFilter !== 'all') {
+    // Selected venue: unavailable if confirmed or administrative hold is on this facility
+    const isBooked = calendarEvents.some(ev => {
+      if (ev.status !== 'cleared' && ev.status !== 'blackout') return false;
+      const facStr = String(ev.facility).toLowerCase();
+      const activeStr = String(activeFacilityFilter).toLowerCase();
+      const match = (facStr === 'all' || facStr === activeStr || (ev.facilityName && ev.facilityName.toLowerCase().includes(activeStr)));
+      if (!match) return false;
+      return dateStr >= ev.startDate && dateStr <= ev.endDate;
+    });
+    return !isBooked;
+  } else {
+    // All facilities view: unavailable if institution-wide blackout is in place
+    const hasGlobalHold = calendarEvents.some(ev => {
+      return ev.status === 'blackout' && String(ev.facility) === 'all' && dateStr >= ev.startDate && dateStr <= ev.endDate;
+    });
+    if (hasGlobalHold) return false;
+    return true;
+  }
+}
+
+/**
+ * Applies or removes glowing highlights on all calendar day cells
+ */
+function applyOpenBookingHighlights() {
+  const cells = document.querySelectorAll('.calendar-day-cell:not(.inactive-month)');
+  cells.forEach(cell => {
+    cell.classList.remove('open-date-highlight');
+    if (!isOpenBookingHighlighted) return;
+
+    const dateStr = cell.getAttribute('data-date');
+    if (dateStr && isDateAvailableForBooking(dateStr)) {
+      cell.classList.add('open-date-highlight');
+    }
+  });
+}
+
 function renderCalendar() {
   const monthDisplay = document.getElementById('currentMonthDisplay');
   if (monthDisplay) {
@@ -224,14 +144,17 @@ function renderCalendar() {
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
 
+  // Update KPI counters dynamically for current month
+  updateMonthKPIs(daysInMonth);
+
   const today = new Date();
-  const isCurrentMonthActual = (today.getFullYear() === currentYear && today.getMonth() === currentMonth);
+  const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
   // 1. Previous Month Spillover Days
   for (let i = firstDay - 1; i >= 0; i--) {
     const prevDayNum = daysInPrevMonth - i;
     const cell = document.createElement('div');
-    cell.className = 'calendar-day-cell inactive-month';
+    cell.className = 'calendar-day-cell inactive-month past-day-cell';
     cell.innerHTML = `
       <div class="day-cell-top">
         <span class="day-number">${prevDayNum}</span>
@@ -244,16 +167,30 @@ function renderCalendar() {
   // 2. Current Month Active Days
   for (let day = 1; day <= daysInMonth; day++) {
     const cell = document.createElement('div');
-    const isToday = isCurrentMonthActual && (today.getDate() === day);
-    cell.className = `calendar-day-cell ${isToday ? 'today-cell' : ''}`;
-
     const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isPast = (dateStr < todayDateStr);
+    const isToday = (dateStr === todayDateStr);
+    const isAvailable = (!isPast && isDateAvailableForBooking(dateStr));
+
+    cell.className = `calendar-day-cell ${isToday ? 'today-cell' : ''} ${isPast ? 'past-day-cell' : ''}`;
+    cell.setAttribute('data-date', dateStr);
 
     // Get matching events
     const matchingEvents = calendarEvents.filter(ev => {
-      // Facility Filter
-      if (activeFacilityFilter !== 'all' && ev.facility !== 'all' && ev.facility !== activeFacilityFilter) {
-        return false;
+      // Status Filter
+      if (activeStatusFilter === 'pending') {
+        if (ev.status !== 'pending_rec' && ev.status !== 'pending_clear') return false;
+      } else if (activeStatusFilter === 'cleared') {
+        if (ev.status !== 'cleared') return false;
+      }
+
+      // Facility Filter (supports both ID and key match)
+      if (activeFacilityFilter !== 'all' && ev.facility !== 'all') {
+        const facStr = String(ev.facility).toLowerCase();
+        const activeStr = String(activeFacilityFilter).toLowerCase();
+        if (facStr !== activeStr && !(ev.facilityName && ev.facilityName.toLowerCase().includes(activeStr))) {
+          return false;
+        }
       }
 
       // Date range check
@@ -262,17 +199,19 @@ function renderCalendar() {
 
     let eventsHtml = '';
     matchingEvents.forEach(ev => {
-      let venueCode = 'HALL';
-      if (ev.facility === 'serrano') venueCode = 'SERRANO';
-      else if (ev.facility === 'four_h') venueCode = '4-H';
-      else if (ev.facility === 'boardroom') venueCode = 'BOARD';
-      else if (ev.facility === 'dormitory') venueCode = 'DORM';
-      else if (ev.facility === 'mess_hall') venueCode = 'MESS';
-      else if (ev.facility === 'all') venueCode = 'BLACKOUT';
+      let venueCode = 'VENUE';
+      if (ev.status === 'blackout' || ev.facility === 'all') {
+        venueCode = 'HOLD';
+      } else if (ev.facilityName) {
+        const parts = ev.facilityName.trim().split(/\s+/);
+        venueCode = parts[0].toUpperCase();
+      }
+
+      const timeSnippet = ev.time ? ev.time.split(' ')[0] : 'ALL-DAY';
 
       eventsHtml += `
         <div class="calendar-event-chip ${ev.colorClass}" onclick="openAdminEventDetailsModal('${ev.ref}')" title="${ev.ref}: ${ev.title} (${ev.statusLabel})">
-          <span class="chip-venue-tag">${venueCode} &bull; ${ev.time.split(' ')[0]}</span>
+          <span class="chip-venue-tag">${venueCode} &bull; ${timeSnippet}</span>
           <span class="chip-title-text">${ev.title}</span>
         </div>
       `;
@@ -281,7 +220,8 @@ function renderCalendar() {
     cell.innerHTML = `
       <div class="day-cell-top">
         <span class="day-number">${day}</span>
-        <span class="day-badge-quick-add" onclick="openDateBlockModal('${dateStr}')" title="Hold / Block this Date">+ Hold</span>
+        ${isAvailable ? '<span class="open-date-indicator">Open</span>' : ''}
+        ${!isPast ? `<span class="day-badge-quick-add" onclick="openDateBlockModal('${dateStr}')" title="Hold / Block this Date">+ Hold</span>` : ''}
       </div>
       <div class="day-events-container">
         ${eventsHtml}
@@ -304,6 +244,93 @@ function renderCalendar() {
     `;
     grid.appendChild(cell);
   }
+
+  // Apply open booking highlights if toggled on
+  if (isOpenBookingHighlighted) {
+    applyOpenBookingHighlights();
+  }
+}
+
+function updateMonthKPIs(daysInMonth) {
+  const monthStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`;
+  const monthStart = `${monthStr}-01`;
+  const monthEnd = `${monthStr}-${String(daysInMonth).padStart(2, '0')}`;
+
+  const today = new Date();
+  const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+  // Filter events in current month respecting facility filter
+  const monthEvents = calendarEvents.filter(ev => {
+    if (activeFacilityFilter !== 'all' && ev.facility !== 'all') {
+      const facStr = String(ev.facility).toLowerCase();
+      const activeStr = String(activeFacilityFilter).toLowerCase();
+      if (facStr !== activeStr && !(ev.facilityName && ev.facilityName.toLowerCase().includes(activeStr))) {
+        return false;
+      }
+    }
+    return ev.startDate <= monthEnd && ev.endDate >= monthStart;
+  });
+
+  const confirmed = monthEvents.filter(e => e.status === 'cleared').length;
+  const pending = monthEvents.filter(e => e.status === 'pending_rec' || e.status === 'pending_clear').length;
+  const holds = monthEvents.filter(e => e.status === 'blackout').length;
+
+  // Calculate booked days for occupancy
+  const bookedDays = new Set();
+  monthEvents.filter(e => e.status === 'cleared' || e.status === 'blackout').forEach(e => {
+    const s = e.startDate > monthStart ? e.startDate : monthStart;
+    const end = e.endDate < monthEnd ? e.endDate : monthEnd;
+    const startParts = s.split('-').map(Number);
+    const endParts = end.split('-').map(Number);
+    const cur = new Date(startParts[0], startParts[1] - 1, startParts[2]);
+    const last = new Date(endParts[0], endParts[1] - 1, endParts[2]);
+    while (cur <= last) {
+      const curStr = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-${String(cur.getDate()).padStart(2, '0')}`;
+      bookedDays.add(curStr);
+      cur.setDate(cur.getDate() + 1);
+    }
+  });
+
+  const occupancy = daysInMonth > 0 ? Math.round((bookedDays.size / daysInMonth) * 100) : 0;
+
+  // Accurately count available bookable dates (excluding past and booked/held)
+  let openDaysCount = 0;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    if (isDateAvailableForBooking(dStr)) {
+      openDaysCount++;
+    }
+  }
+
+  const kpiConf = document.getElementById('kpiConfirmedMonth');
+  if (kpiConf) kpiConf.textContent = `${confirmed} Event${confirmed === 1 ? '' : 's'}`;
+
+  const kpiPend = document.getElementById('kpiPendingMonth');
+  if (kpiPend) kpiPend.textContent = `${pending} Pending`;
+
+  const kpiOcc = document.getElementById('kpiOccupancyRate');
+  if (kpiOcc) kpiOcc.textContent = `${occupancy}%`;
+
+  const kpiOpen = document.getElementById('kpiOpenDays');
+  if (kpiOpen) kpiOpen.textContent = `${openDaysCount} Day${openDaysCount === 1 ? '' : 's'}`;
+
+  const kpiOpenTrend = document.getElementById('kpiOpenTrend');
+  const isPastMonth = (currentYear < today.getFullYear()) || (currentYear === today.getFullYear() && currentMonth < today.getMonth());
+  if (kpiOpenTrend) {
+    if (isPastMonth) {
+      kpiOpenTrend.textContent = 'Past Month';
+      kpiOpenTrend.className = 'stat-trend neutral';
+    } else if (openDaysCount === 0) {
+      kpiOpenTrend.textContent = 'Fully Booked';
+      kpiOpenTrend.className = 'stat-trend negative';
+    } else {
+      kpiOpenTrend.textContent = 'Available';
+      kpiOpenTrend.className = 'stat-trend positive';
+    }
+  }
+
+  const kpiHolds = document.getElementById('kpiActiveHoldsCount');
+  if (kpiHolds) kpiHolds.textContent = `${holds} Hold${holds === 1 ? '' : 's'}`;
 }
 
 /* ==========================================================================
@@ -335,6 +362,69 @@ function filterCalendarByFacility(facilityKey, btnEl) {
   }
   activeFacilityFilter = facilityKey;
   renderCalendar();
+}
+
+/**
+ * Filter calendar chips by dual-stage status
+ */
+function filterCalendarByStatus(statusKey, cardEl) {
+  // If clicking currently active filter, toggle back to 'all'
+  if (activeStatusFilter === statusKey && statusKey !== 'all') {
+    activeStatusFilter = 'all';
+  } else {
+    activeStatusFilter = statusKey;
+  }
+
+  // Clear open booking highlights
+  isOpenBookingHighlighted = false;
+  document.querySelectorAll('.calendar-day-cell').forEach(c => c.classList.remove('open-date-highlight'));
+
+  document.querySelectorAll('.admin-kpi-grid .my-res-stat-card').forEach(c => c.classList.remove('active-filter'));
+
+  if (activeStatusFilter === 'all') {
+    const allCard = document.querySelector(".admin-kpi-grid .my-res-stat-card[onclick*=\"'all'\"]");
+    if (allCard) allCard.classList.add('active-filter');
+    showAdminToast('Showing all calendar reservations & holds.', 'info');
+  } else {
+    if (cardEl) cardEl.classList.add('active-filter');
+    if (activeStatusFilter === 'pending') {
+      showAdminToast('Filtered calendar: Showing pending reservation holds only.', 'info');
+    } else if (activeStatusFilter === 'cleared') {
+      showAdminToast('Filtered calendar: Showing confirmed & cleared bookings only.', 'info');
+    }
+  }
+
+  renderCalendar();
+}
+
+/**
+ * Toggle open booking dates highlight mode
+ */
+function highlightOpenBookingDates(cardEl) {
+  isOpenBookingHighlighted = !isOpenBookingHighlighted;
+
+  document.querySelectorAll('.admin-kpi-grid .my-res-stat-card').forEach(c => c.classList.remove('active-filter'));
+
+  if (isOpenBookingHighlighted) {
+    const card = cardEl || document.getElementById('cardOpenBookingDates');
+    if (card) card.classList.add('active-filter');
+
+    activeStatusFilter = 'all';
+    renderCalendar();
+
+    const highlightedCells = document.querySelectorAll('.calendar-day-cell.open-date-highlight');
+    if (highlightedCells.length > 0) {
+      highlightedCells[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      showAdminToast(`Found ${highlightedCells.length} open booking date(s). Highlighted in green on the calendar.`, 'info');
+    } else {
+      showAdminToast('No open booking dates available for this facility in the selected month.', 'decline');
+    }
+  } else {
+    renderCalendar();
+    const allCard = document.querySelector(".admin-kpi-grid .my-res-stat-card[onclick*=\"'all'\"]");
+    if (allCard) allCard.classList.add('active-filter');
+    showAdminToast('Open booking dates highlight cleared.', 'info');
+  }
 }
 
 /* ==========================================================================
@@ -404,15 +494,31 @@ function liftHoldByRef(refId) {
   if (targetIndex === -1) return;
 
   const holdTitle = calendarEvents[targetIndex].title;
-  calendarEvents.splice(targetIndex, 1);
 
-  renderCalendar();
-  updateHoldsKPICounter();
+  const formData = new FormData();
+  formData.append('action', 'lift_block');
+  formData.append('ref', refId);
 
-  // If manage holds modal is open, refresh its list
-  renderActiveHoldsList();
-
-  showAdminToast(`Administrative block "${holdTitle}" lifted. Dates are now open.`, 'success');
+  fetch('ajax/schedule_actions.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      calendarEvents.splice(targetIndex, 1);
+      renderCalendar();
+      updateHoldsKPICounter();
+      renderActiveHoldsList();
+      showAdminToast(`Administrative block "${holdTitle}" lifted. Dates are now open.`, 'success');
+    } else {
+      showAdminToast(data.message || 'Failed to lift block.', 'decline');
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    showAdminToast('Network error while lifting block.', 'decline');
+  });
 }
 
 /* ==========================================================================
@@ -489,11 +595,21 @@ function openDateBlockModal(defaultDate = '') {
   const form = document.getElementById('dateBlockForm');
   if (form) form.reset();
 
+  const todayObj = new Date();
+  const todayStr = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+
+  const startInput = document.getElementById('blockStartDate');
+  const endInput = document.getElementById('blockEndDate');
+  if (startInput) startInput.min = todayStr;
+  if (endInput) endInput.min = todayStr;
+
   if (defaultDate) {
-    const startInput = document.getElementById('blockStartDate');
-    const endInput = document.getElementById('blockEndDate');
+    if (defaultDate < todayStr) defaultDate = todayStr;
     if (startInput) startInput.value = defaultDate;
     if (endInput) endInput.value = defaultDate;
+  } else {
+    if (startInput) startInput.value = todayStr;
+    if (endInput) endInput.value = todayStr;
   }
 
   const modal = document.getElementById('adminDateBlockModal');
@@ -517,40 +633,35 @@ function handleSaveDateBlock(e) {
 
   if (!title || !startDate) return;
 
-  const newRef = 'HOLD-' + Math.floor(1000 + Math.random() * 9000);
+  const formData = new FormData();
+  formData.append('action', 'save_block');
+  formData.append('title', title);
+  formData.append('facility', facility);
+  formData.append('start_date', startDate);
+  formData.append('end_date', endDate);
+  formData.append('reason', reason);
+  formData.append('memo_ref', memoRef);
 
-  let facName = 'All ATI Facilities (Blackout)';
-  if (facility === 'serrano') facName = 'Serrano Function Hall';
-  else if (facility === 'four_h') facName = '4-H Learning Center';
-  else if (facility === 'boardroom') facName = 'Executive Boardroom';
-  else if (facility === 'mess_hall') facName = 'ATI Mess Hall & Dining Area';
-  else if (facility === 'dormitory') facName = 'Dormitory Suites (All Wings)';
-
-  const newBlockItem = {
-    ref: newRef,
-    title: title,
-    facility: facility,
-    facilityName: facName,
-    startDate: startDate,
-    endDate: endDate,
-    time: 'Full Day Administrative Hold',
-    applicant: 'Executive Directorate',
-    agency: 'Office of the Director / Admin Services',
-    email: 'admin@ati.da.gov.ph',
-    phone: 'Loc 101',
-    pax: 0,
-    status: 'blackout',
-    statusLabel: `Administrative Hold (${reason})`,
-    colorClass: 'status-blackout',
-    stage1Reviewer: memoRef ? `Memo: ${memoRef}` : 'Executive Administrative Order',
-    stage2Reviewer: 'Official Calendar Blackout'
-  };
-
-  calendarEvents.unshift(newBlockItem);
-  renderCalendar();
-  updateHoldsKPICounter();
-  closeDateBlockModal();
-  showAdminToast(`Administrative blackout hold applied for ${title}.`, 'decline');
+  fetch('ajax/schedule_actions.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success && data.block) {
+      calendarEvents.unshift(data.block);
+      renderCalendar();
+      updateHoldsKPICounter();
+      closeDateBlockModal();
+      showAdminToast(data.message || `Administrative blackout hold applied for ${title}.`, 'decline');
+    } else {
+      showAdminToast(data.message || 'Failed to save date block.', 'decline');
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    showAdminToast('Network error while saving date block.', 'decline');
+  });
 }
 
 /* ==========================================================================

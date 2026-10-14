@@ -7,6 +7,165 @@ require_once __DIR__ . '/includes/admin_guard.php';
  */
 $currentRole = isset($_GET['role']) && $_GET['role'] === 'recommendation' ? 'recommendation' : 'clearance';
 $isRecommendation = ($currentRole === 'recommendation');
+
+$db = (new Database())->getConnection();
+
+// Ensure schedule_blocks table exists
+$db->exec("CREATE TABLE IF NOT EXISTS schedule_blocks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ref VARCHAR(50) NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    facility_id VARCHAR(50) NOT NULL,
+    facility_name VARCHAR(150) NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    reason VARCHAR(255) NULL,
+    memo_ref VARCHAR(100) NULL,
+    created_by INT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)");
+
+// Dynamic sidebar counts
+$pendingStmt = $db->query("SELECT COUNT(*) FROM reservations WHERE status IN ('Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance', 'Awaiting Endorsement', 'Awaiting Recommendation', 'Awaiting Clearance')");
+$pendingCount = (int)$pendingStmt->fetchColumn();
+
+$userCountStmt = $db->query("SELECT COUNT(*) FROM users");
+$totalUsersCount = (int)$userCountStmt->fetchColumn();
+
+// Fetch facilities
+$facStmt = $db->query("SELECT id, name, type, status, maintenance_reason, est_resume_date FROM facilities ORDER BY id ASC");
+$facilitiesList = $facStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch all reservations
+$resQuery = "SELECT r.*, 
+                    f.name AS facility_name, 
+                    f.type AS facility_type,
+                    rm.room_number,
+                    u.full_name AS applicant_name,
+                    u.email AS applicant_email,
+                    u.contact_number AS applicant_phone,
+                    u.office_agency AS applicant_agency,
+                    end_u.full_name AS endorsed_by_name,
+                    rec_u.full_name AS recommended_by_name,
+                    clr_u.full_name AS cleared_by_name
+             FROM reservations r
+             LEFT JOIN facilities f ON r.facility_id = f.id
+             LEFT JOIN rooms rm ON r.room_id = rm.id
+             LEFT JOIN users u ON r.user_id = u.id
+             LEFT JOIN users end_u ON r.endorsed_by = end_u.id
+             LEFT JOIN users rec_u ON r.recommended_by = rec_u.id
+             LEFT JOIN users clr_u ON r.cleared_by = clr_u.id
+             WHERE r.status NOT IN ('Rejected', 'Cancelled')
+             ORDER BY r.start_date ASC";
+
+$stmt = $db->query($resQuery);
+$dbReservations = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+// Fetch schedule blocks
+$blockStmt = $db->query("SELECT * FROM schedule_blocks ORDER BY start_date ASC");
+$dbBlocks = $blockStmt ? $blockStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+$calendarEvents = [];
+
+// 1. Process reservations
+foreach ($dbReservations as $row) {
+    $st = $row['status'] ?? 'Pending';
+    
+    $colorClass = 'status-pending-rec';
+    $statusKey = 'pending_rec';
+    $statusLabel = 'Stage 1 Pending Recommendation';
+
+    if (in_array($st, ['Approved', 'Completed'])) {
+        $colorClass = 'status-cleared';
+        $statusKey = 'cleared';
+        $statusLabel = 'Stage 2 Cleared (Confirmed)';
+    } elseif (in_array($st, ['Pending Clearance', 'Awaiting Clearance'])) {
+        $colorClass = 'status-pending-clear';
+        $statusKey = 'pending_clear';
+        $statusLabel = 'Stage 2 Pending Final Clearance';
+    } else {
+        $colorClass = 'status-pending-rec';
+        $statusKey = 'pending_rec';
+        $statusLabel = 'Stage 1 Pending Recommendation';
+    }
+
+    $facName = $row['facility_name'] ?: 'General Facility';
+    if (!empty($row['room_number'])) {
+        $facName .= " (Room {$row['room_number']})";
+    }
+
+    $timeSlot = !empty($row['time_slot']) ? $row['time_slot'] : '08:00 AM - 05:00 PM';
+    $applicantName = $row['applicant_name'] ?: 'Official Applicant';
+    $agency = $row['applicant_agency'] ?: 'Department of Agriculture';
+
+    $calendarEvents[] = [
+        'ref' => $row['reference_no'],
+        'title' => !empty($row['event_title']) ? $row['event_title'] : 'Official Activity',
+        'facility' => (string)$row['facility_id'],
+        'facilityName' => $facName,
+        'startDate' => $row['start_date'],
+        'endDate' => !empty($row['end_date']) ? $row['end_date'] : $row['start_date'],
+        'time' => $timeSlot,
+        'applicant' => $applicantName,
+        'agency' => $agency,
+        'email' => $row['applicant_email'] ?: '',
+        'phone' => $row['applicant_phone'] ?: '',
+        'pax' => (int)($row['pax_count'] ?? 0),
+        'status' => $statusKey,
+        'statusLabel' => $statusLabel,
+        'colorClass' => $colorClass,
+        'stage1Reviewer' => !empty($row['endorsed_by_name']) ? "Endorsed: {$row['endorsed_by_name']}" : (!empty($row['recommended_by_name']) ? "Recommended: {$row['recommended_by_name']}" : 'Pending Review'),
+        'stage2Reviewer' => !empty($row['cleared_by_name']) ? "Cleared: {$row['cleared_by_name']}" : 'Pending Clearance'
+    ];
+}
+
+// 2. Process administrative blocks
+foreach ($dbBlocks as $blk) {
+    $calendarEvents[] = [
+        'ref' => $blk['ref'],
+        'title' => $blk['title'],
+        'facility' => (string)$blk['facility_id'],
+        'facilityName' => $blk['facility_name'] ?: 'All ATI Facilities (Blackout)',
+        'startDate' => $blk['start_date'],
+        'endDate' => !empty($blk['end_date']) ? $blk['end_date'] : $blk['start_date'],
+        'time' => 'Full Day Administrative Hold',
+        'applicant' => 'Executive Directorate',
+        'agency' => 'Office of the Director / Admin Services',
+        'email' => 'admin@ati.da.gov.ph',
+        'phone' => 'Loc 101',
+        'pax' => 0,
+        'status' => 'blackout',
+        'statusLabel' => 'Administrative Hold (' . ($blk['reason'] ?: 'Hold') . ')',
+        'colorClass' => 'status-blackout',
+        'stage1Reviewer' => !empty($blk['memo_ref']) ? "Memo: {$blk['memo_ref']}" : 'Executive Administrative Order',
+        'stage2Reviewer' => 'Official Calendar Blackout'
+    ];
+}
+
+// 3. Process facilities with active maintenance hold
+foreach ($facilitiesList as $fac) {
+    if ($fac['status'] === 'maintenance') {
+        $calendarEvents[] = [
+            'ref' => 'MAINT-FAC-' . $fac['id'],
+            'title' => 'Maintenance Hold: ' . $fac['name'],
+            'facility' => (string)$fac['id'],
+            'facilityName' => $fac['name'],
+            'startDate' => date('Y-m-01'),
+            'endDate' => !empty($fac['est_resume_date']) ? $fac['est_resume_date'] : date('Y-m-t'),
+            'time' => 'Facility Under Maintenance',
+            'applicant' => 'General Services Unit',
+            'agency' => 'Administrative Services',
+            'email' => 'gsu@ati.da.gov.ph',
+            'phone' => 'Loc 104',
+            'pax' => 0,
+            'status' => 'blackout',
+            'statusLabel' => 'Facility Maintenance Hold (' . ($fac['maintenance_reason'] ?: 'Scheduled Servicing') . ')',
+            'colorClass' => 'status-blackout',
+            'stage1Reviewer' => 'Facility Maintenance Directive',
+            'stage2Reviewer' => 'General Services Unit'
+        ];
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -85,7 +244,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </svg>
           </div>
           <span class="menu-label">Approvals Queue</span>
-          <span class="sidebar-count-badge amber" id="sidebarPendingCount">5</span>
+          <span class="sidebar-count-badge amber" id="sidebarPendingCount"><?= $pendingCount ?></span>
         </a>
 
         <a href="admin_reservations.php" class="sidebar-menu-item">
@@ -114,7 +273,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </svg>
           </div>
           <span class="menu-label">User & Role Access</span>
-          <span class="sidebar-count-badge green">18</span>
+          <span class="sidebar-count-badge green"><?= $totalUsersCount ?></span>
         </a>
 
         <div class="sidebar-section-title">FACILITY MANAGEMENT</div>
@@ -176,18 +335,16 @@ $isRecommendation = ($currentRole === 'recommendation');
             <p><?= $isRecommendation ? 'Chief, Admin Services (Stage 1)' : 'Director IV &bull; Super Admin (Stage 2)' ?></p>
           </div>
         </div>
-        <a href="index.php" class="sidebar-signout-btn" title=""Sign Out">
+        <a href="index.php" class="sidebar-signout-btn" title="Sign Out">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>line>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
           </svg>
           <span>Sign Out</span>
         </a>
       </div>
     </aside>
-  </span>
-</polyline>"
 
     <!-- Overlay for Mobile Sidebar -->
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
@@ -232,7 +389,7 @@ $isRecommendation = ($currentRole === 'recommendation');
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <span id="currentDateDisplay">Monday, Oct 05, 2026</span>
+            <span id="currentDateDisplay"><?= date('l, M d, Y') ?></span>
           </div>
         </div>
       </header>
@@ -281,7 +438,7 @@ $isRecommendation = ($currentRole === 'recommendation');
              ========================================================================== -->
         <section class="my-res-stats-grid admin-kpi-grid" aria-label="Schedule Statistics">
           <!-- Total Confirmed Events -->
-          <div class="my-res-stat-card active-filter">
+          <div class="my-res-stat-card" onclick="filterCalendarByStatus('cleared', this)" style="cursor: pointer;" title="Show confirmed & cleared bookings (Click again to show all)">
             <div class="stat-icon-box green">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -289,7 +446,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value">18 Events</span>
+                <span class="stat-value" id="kpiConfirmedMonth">0 Events</span>
                 <span class="stat-trend positive">Fully Cleared</span>
               </div>
               <span class="stat-label">Confirmed this Month</span>
@@ -297,7 +454,7 @@ $isRecommendation = ($currentRole === 'recommendation');
           </div>
 
           <!-- Dual-Approval Queue in Calendar -->
-          <div class="my-res-stat-card">
+          <div class="my-res-stat-card" onclick="filterCalendarByStatus('pending', this)" style="cursor: pointer;" title="Show tentative pending holds (Click again to show all)">
             <div class="stat-icon-box amber">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -306,7 +463,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value">5 Pending</span>
+                <span class="stat-value" id="kpiPendingMonth">0 Pending</span>
                 <span class="stat-trend neutral">Review Queue</span>
               </div>
               <span class="stat-label">Tentative Hold in Calendar</span>
@@ -314,7 +471,7 @@ $isRecommendation = ($currentRole === 'recommendation');
           </div>
 
           <!-- Monthly Facility Occupancy -->
-          <div class="my-res-stat-card">
+          <div class="my-res-stat-card active-filter" onclick="filterCalendarByStatus('all', this)" style="cursor: pointer;" title="Show all calendar entries & occupancy rate">
             <div class="stat-icon-box blue">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -325,15 +482,15 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value">72%</span>
-                <span class="stat-trend positive">High Demand</span>
+                <span class="stat-value" id="kpiOccupancyRate">0%</span>
+                <span class="stat-trend positive">Demand Index</span>
               </div>
               <span class="stat-label">Average Venue Occupancy</span>
             </div>
           </div>
 
           <!-- Open Booking Windows -->
-          <div class="my-res-stat-card">
+          <div class="my-res-stat-card" id="cardOpenBookingDates" onclick="highlightOpenBookingDates(this)" style="cursor: pointer;" title="Highlight available open booking dates on the calendar">
             <div class="stat-icon-box purple">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -343,8 +500,8 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value">12 Days</span>
-                <span class="stat-trend positive">Available</span>
+                <span class="stat-value" id="kpiOpenDays">0 Days</span>
+                <span class="stat-trend positive" id="kpiOpenTrend">Available</span>
               </div>
               <span class="stat-label">Open Booking Dates</span>
             </div>
@@ -361,7 +518,7 @@ $isRecommendation = ($currentRole === 'recommendation');
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiActiveHoldsCount">2 Holds</span>
+                <span class="stat-value" id="kpiActiveHoldsCount">0 Holds</span>
                 <span class="stat-trend negative" style="cursor: pointer;">Manage & Lift &rsaquo;</span>
               </div>
               <span class="stat-label">Administrative Holds</span>
@@ -403,13 +560,11 @@ $isRecommendation = ($currentRole === 'recommendation');
 
         <!-- Facility Filter Pills Row -->
         <div class="admin-calendar-filter-row">
-          <div class="facility-filter-pills">
+          <div class="facility-filter-pills" id="facilityFilterPills">
             <button type="button" class="fac-pill active" onclick="filterCalendarByFacility('all', this)">All Facilities</button>
-            <button type="button" class="fac-pill" onclick="filterCalendarByFacility('serrano', this)">Serrano Function Hall</button>
-            <button type="button" class="fac-pill" onclick="filterCalendarByFacility('four_h', this)">4-H Learning Center</button>
-            <button type="button" class="fac-pill" onclick="filterCalendarByFacility('boardroom', this)">Executive Boardroom</button>
-            <button type="button" class="fac-pill" onclick="filterCalendarByFacility('mess_hall', this)">Mess Hall & Dining</button>
-            <button type="button" class="fac-pill" onclick="filterCalendarByFacility('dormitory', this)">Dormitory Suites</button>
+            <?php foreach ($facilitiesList as $f): ?>
+              <button type="button" class="fac-pill" onclick="filterCalendarByFacility('<?= htmlspecialchars($f['id']) ?>', this)"><?= htmlspecialchars($f['name']) ?></button>
+            <?php endforeach; ?>
           </div>
         </div>
 
@@ -557,23 +712,21 @@ $isRecommendation = ($currentRole === 'recommendation');
             <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Target Facility / Scope</label>
             <select id="blockFacilitySelect" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
               <option value="all">All ATI Facilities (Institution-Wide Blackout)</option>
-              <option value="serrano">Serrano Function Hall</option>
-              <option value="four_h">4-H Learning Center</option>
-              <option value="boardroom">Executive Boardroom</option>
-              <option value="mess_hall">ATI Mess Hall & Dining Area</option>
-              <option value="dormitory">Dormitory Suites (All Wings)</option>
+              <?php foreach ($facilitiesList as $f): ?>
+                <option value="<?= htmlspecialchars($f['id']) ?>"><?= htmlspecialchars($f['name']) ?></option>
+              <?php endforeach; ?>
             </select>
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
             <div class="form-group-decline">
               <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Start Date</label>
-              <input type="date" id="blockStartDate" required style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
+              <input type="date" id="blockStartDate" min="<?= date('Y-m-d') ?>" required style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
             </div>
 
             <div class="form-group-decline">
               <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">End Date</label>
-              <input type="date" id="blockEndDate" required style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
+              <input type="date" id="blockEndDate" min="<?= date('Y-m-d') ?>" required style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
             </div>
           </div>
 
@@ -605,6 +758,9 @@ $isRecommendation = ($currentRole === 'recommendation');
   <div class="admin-toast-container" id="adminToastContainer"></div>
 
   <!-- Scripts -->
+  <script>
+    const initialDbCalendarEvents = <?= json_encode($calendarEvents, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+  </script>
   <script src="js/admin_schedule.js?v=<?php echo time(); ?>"></script>
 </body>
 
