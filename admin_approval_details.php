@@ -17,6 +17,7 @@ if (empty($ref)) {
 $query = "SELECT r.*, 
                  f.name AS facility_name, 
                  f.type AS facility_type,
+                 f.image AS facility_image,
                  rm.room_number,
                  rm.floor AS room_floor,
                  u.full_name AS applicant_name,
@@ -372,7 +373,12 @@ if (!empty($res['room_number'])) {
             <div class="review-grid-2" style="margin-bottom: 1.25rem;">
               <div class="review-field-unit">
                 <label>Reserved Facility / Room</label>
-                <div class="val" style="color: #174d2f;"><?= htmlspecialchars($venueDisplay) ?></div>
+                <div class="val" style="color: #174d2f; display: flex; align-items: center; gap: 0.65rem;">
+                  <?php if (!empty($res['facility_image'])): ?>
+                    <img src="<?= htmlspecialchars($res['facility_image']) ?>" alt="Facility" style="width: 38px; height: 38px; border-radius: 8px; object-fit: cover; border: 1.5px solid #c8dcd0;" onerror="this.style.display='none'">
+                  <?php endif; ?>
+                  <span><?= htmlspecialchars($venueDisplay) ?></span>
+                </div>
               </div>
               <div class="review-field-unit">
                 <label>Expected Attendees</label>
@@ -485,35 +491,56 @@ if (!empty($res['room_number'])) {
 
         <!-- Section 4: Action Decision Banner -->
         <?php if ($stage === 'stage1'): ?>
-          <div class="review-action-banner" style="border-color: #d97706; background: #fffdfa;">
-            <h3 class="action-prompt-title" style="color: #b45309;">Action: Step 1 (Division Endorsement)</h3>
-            <p class="action-prompt-desc">Verify that this activity is official and has valid justification before endorsing.</p>
-            <textarea id="pageRemarksInput" class="review-textarea" rows="2" placeholder="Add remarks or instructions (optional)..."></textarea>
-            <div class="review-buttons-row">
-              <button type="button" class="btn-act-large decline" onclick="openDeclineModal()">Decline / Return Request</button>
-              <button type="button" class="btn-act-large approve" style="background: #d97706;" onclick="submitPageAction('stage1')">Endorse Booking &rarr;</button>
+          <?php if ($currentAdminRole === 'endorsement' || $currentAdminRole === 'super_admin'): ?>
+            <div class="review-action-banner" style="border-color: #d97706; background: #fffdfa;">
+              <h3 class="action-prompt-title" style="color: #b45309;">Action: Endorsement Desk</h3>
+              <p class="action-prompt-desc">Verify that this activity is official, room/hall is available, and has valid justification before endorsing.</p>
+              <textarea id="pageRemarksInput" class="review-textarea" rows="2" placeholder="Add remarks or instructions (optional)..."></textarea>
+              <div class="review-buttons-row">
+                <button type="button" class="btn-act-large decline" onclick="openDeclineModal()">Decline / Return Request</button>
+                <button type="button" class="btn-act-large approve" style="background: #d97706;" onclick="submitPageAction('stage1')">Endorse Booking &rarr;</button>
+              </div>
             </div>
-          </div>
+          <?php else: ?>
+            <div class="review-action-banner" style="background: #fbf8f2; border-color: #f0dcbc;">
+              <h3 class="action-prompt-title" style="color: #b45309;">Awaiting Endorsement</h3>
+              <p class="action-prompt-desc">This application is currently waiting for review and endorsement by an <strong>Endorsement Officer</strong>.</p>
+            </div>
+          <?php endif; ?>
         <?php elseif ($stage === 'stage2'): ?>
-          <div class="review-action-banner" style="border-color: #2563eb; background: #f8faff;">
-            <h3 class="action-prompt-title" style="color: #1d4ed8;">Action: Step 2 (Logistics Recommendation)</h3>
-            <p class="action-prompt-desc">Confirm that the room is available, capacity is adequate, and equipment is ready.</p>
-            <textarea id="pageRemarksInput" class="review-textarea" rows="2" placeholder="Add logistics verification notes (optional)..."></textarea>
-            <div class="review-buttons-row">
-              <button type="button" class="btn-act-large decline" onclick="openDeclineModal()">Decline / Return Request</button>
-              <button type="button" class="btn-act-large approve" style="background: #2563eb;" onclick="submitPageAction('stage2')">Recommend Booking &rarr;</button>
+          <?php if ($currentAdminRole === 'recommendation' || $currentAdminRole === 'super_admin'): ?>
+            <div class="review-action-banner" style="border-color: #2563eb; background: #f8faff;">
+              <h3 class="action-prompt-title" style="color: #1d4ed8;">Action: Recommendation Desk</h3>
+              <p class="action-prompt-desc">Confirm that the room is available, capacity is adequate, and equipment is ready.</p>
+              <textarea id="pageRemarksInput" class="review-textarea" rows="2" placeholder="Add logistics verification notes (optional)..."></textarea>
+              <div class="review-buttons-row">
+                <button type="button" class="btn-act-large decline" onclick="openDeclineModal()">Decline / Return Request</button>
+                <button type="button" class="btn-act-large approve" style="background: #2563eb;" onclick="submitPageAction('stage2')">Recommend Booking &rarr;</button>
+              </div>
             </div>
-          </div>
+          <?php else: ?>
+            <div class="review-action-banner" style="background: #f2f7fd; border-color: #bcd4f5;">
+              <h3 class="action-prompt-title" style="color: #1d4ed8;">Awaiting Recommendation</h3>
+              <p class="action-prompt-desc">This application has been endorsed and is currently awaiting action by a <strong>Recommending Officer</strong>.</p>
+            </div>
+          <?php endif; ?>
         <?php elseif ($stage === 'stage3'): ?>
-          <div class="review-action-banner" style="border-color: #10b981; background: #f7fdf9;">
-            <h3 class="action-prompt-title" style="color: #047857;">Action: Step 3 (Director Final Approval)</h3>
-            <p class="action-prompt-desc">Endorsed and verified. Click approve to authorize the booking and generate the official permit.</p>
-            <textarea id="pageRemarksInput" class="review-textarea" rows="2" placeholder="Final approval remarks or permit conditions (optional)..."></textarea>
-            <div class="review-buttons-row">
-              <button type="button" class="btn-act-large decline" onclick="openDeclineModal()">Decline / Return Request</button>
-              <button type="button" class="btn-act-large approve" style="background: #10b981;" onclick="submitPageAction('stage3')">Approve Reservation &check;</button>
+          <?php if ($currentAdminRole === 'clearance' || $currentAdminRole === 'super_admin'): ?>
+            <div class="review-action-banner" style="border-color: #10b981; background: #f7fdf9;">
+              <h3 class="action-prompt-title" style="color: #047857;">Action: Director Final Clearance</h3>
+              <p class="action-prompt-desc">Endorsed and verified. Click approve to authorize the booking and generate the official permit.</p>
+              <textarea id="pageRemarksInput" class="review-textarea" rows="2" placeholder="Final approval remarks or permit conditions (optional)..."></textarea>
+              <div class="review-buttons-row">
+                <button type="button" class="btn-act-large decline" onclick="openDeclineModal()">Decline / Return Request</button>
+                <button type="button" class="btn-act-large approve" style="background: #10b981;" onclick="submitPageAction('stage3')">Approve Reservation &check;</button>
+              </div>
             </div>
-          </div>
+          <?php else: ?>
+            <div class="review-action-banner" style="background: #f0faf4; border-color: #bbf0ce;">
+              <h3 class="action-prompt-title" style="color: #047857;">Awaiting Director Clearance</h3>
+              <p class="action-prompt-desc">This application is awaiting final directorial clearance and permit issuance by the <strong>Clearance Authority</strong>.</p>
+            </div>
+          <?php endif; ?>
         <?php else: ?>
           <div class="review-action-banner" style="background: #f8faf8; border-color: #c9e0d1;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">

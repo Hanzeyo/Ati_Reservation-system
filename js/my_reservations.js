@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initKpiFilters();
   initCustomFacilityDropdown();
   initSearch();
+  initResetFilters();
   initViewModeToggle();
   initCardModals();
   initCancellationWorkflow();
@@ -121,8 +122,11 @@ function initCategorySwitcher() {
   }
 
   segmentBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      setCategory(btn.dataset.categoryType);
+    btn.addEventListener('click', (e) => {
+      if (btn.dataset.categoryType) {
+        e.preventDefault();
+        setCategory(btn.dataset.categoryType);
+      }
     });
   });
 
@@ -138,12 +142,65 @@ function initCategorySwitcher() {
   }
 }
 
+function initResetFilters() {
+  const resetBtns = [
+    document.getElementById('btnResetResFilters'),
+    document.getElementById('btnResetFilters')
+  ];
+
+  resetBtns.forEach(btn => {
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const searchInput = document.getElementById('resSearchInput');
+      const clearBtn = document.getElementById('btnClearSearch');
+      if (searchInput) searchInput.value = '';
+      if (clearBtn) clearBtn.style.display = 'none';
+      activeSearchQuery = '';
+
+      // Reset facility dropdown to 'all'
+      const allOption = document.querySelector('.facility-option[data-value="all"]');
+      if (allOption) {
+        allOption.click();
+      } else {
+        activeVenueFilter = 'all';
+      }
+
+      // Reset KPI filter to 'all'
+      const allKpi = document.querySelector('.my-res-stat-card[data-filter="all"]');
+      if (allKpi) {
+        allKpi.click();
+      } else {
+        activeStatusFilter = 'all';
+        applyAllFilters();
+      }
+    });
+  });
+}
+
 function applyAllFilters() {
   const cards = document.querySelectorAll('.res-card');
   const tableRows = document.querySelectorAll('.res-table-row');
   const tableWrap = document.getElementById('reservationsTableWrap');
-  const emptyState = document.getElementById('emptyResState') || document.getElementById('emptyReservationsState');
+  const emptyFilterState = document.getElementById('emptyResState') || document.getElementById('emptyReservationsState');
+  const zeroState = document.getElementById('zeroReservationsState');
   let visibleCount = 0;
+
+  // If there are zero reservations overall (initial empty state from database)
+  if (cards.length === 0) {
+    if (emptyFilterState) {
+      emptyFilterState.style.display = 'none';
+    }
+    if (zeroState) {
+      zeroState.style.display = 'block';
+    }
+    updateKpiCounts();
+    return;
+  }
+
+  // Hide the zero state since user has reservations in the database
+  if (zeroState) {
+    zeroState.style.display = 'none';
+  }
 
   cards.forEach(card => {
     const cardStatus = card.dataset.status;
@@ -209,8 +266,8 @@ function applyAllFilters() {
     tableWrap.style.display = currentViewMode === 'table' ? 'block' : 'none';
   }
 
-  if (emptyState) {
-    emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+  if (emptyFilterState) {
+    emptyFilterState.style.display = visibleCount === 0 ? 'block' : 'none';
   }
 
   updateKpiCounts();

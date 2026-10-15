@@ -80,7 +80,7 @@ if (!empty($_SESSION['full_name'])) {
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
           <span>My Reservations</span>
-          <span class="nav-badge-count">4</span>
+          <span class="nav-badge-count"><?= $currentUserResCount ?></span>
         </a>
 
         <!-- Master Schedule (Active) -->
@@ -222,7 +222,7 @@ if (!empty($_SESSION['full_name'])) {
               </svg>
             </div>
             <span class="drawer-link-text">My Reservations</span>
-            <span class="drawer-badge-count">4</span>
+            <span class="drawer-badge-count"><?= $currentUserResCount ?></span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>

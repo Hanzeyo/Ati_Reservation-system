@@ -132,151 +132,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
     <!-- ==========================================================================
          1. LEFT SIDEBAR NAVIGATION (TERNO ATI BRAND THEME)
          ========================================================================== -->
-    <aside class="admin-sidebar" id="adminSidebar">
-      <!-- Sidebar Brand Header -->
-      <div class="admin-sidebar-header">
-        <a href="admin_dashboard.php<?= $isRecommendation ? '?role=recommendation' : '' ?>" class="admin-sidebar-brand">
-          <div class="admin-sidebar-logo-box">
-            <img src="assets/images/ATI_Logo.png" alt="Agricultural Training Institute Logo" class="admin-sidebar-logo">
-          </div>
-          <div class="admin-sidebar-brand-text">
-            <h3>ATI Portal</h3>
-            <p>Central Office</p>
-          </div>
-        </a>
-        <div class="admin-badge-executive">
-          <span class="executive-dot"></span>
-          Super Admin
-        </div>
-      </div>
-
-      <!-- Navigation Section -->
-      <nav class="admin-sidebar-menu" aria-label="Admin Navigation">
-        <div class="sidebar-section-title">CORE COMMAND</div>
-
-        <a href="admin_dashboard.php<?= $isRecommendation ? '?role=recommendation' : '' ?>" class="sidebar-menu-item">
-          <div class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-          </div>
-          <span class="menu-label">Dashboard</span>
-        </a>
-
-        <a href="admin_approvals.php<?= $isRecommendation ? '?role=recommendation' : '' ?>" class="sidebar-menu-item">
-          <div class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-            </svg>
-          </div>
-          <span class="menu-label">Approvals Queue</span>
-          <span class="sidebar-count-badge amber" id="sidebarPendingCount"><?= $pendingCount ?></span>
-        </a>
-
-        <a href="admin_reservations.php" class="sidebar-menu-item">
-          <div class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="8" y1="6" x2="21" y2="6"></line>
-              <line x1="8" y1="12" x2="21" y2="12"></line>
-              <line x1="8" y1="18" x2="21" y2="18"></line>
-              <line x1="3" y1="6" x2="3.01" y2="6"></line>
-              <line x1="3" y1="12" x2="3.01" y2="12"></line>
-              <line x1="3" y1="18" x2="3.01" y2="18"></line>
-            </svg>
-          </div>
-          <span class="menu-label">All Reservations</span>
-        </a>
-
-        <div class="sidebar-section-title">ACCESS & GOVERNANCE</div>
-
-        <a href="admin_users.php<?= $isRecommendation ? '?role=recommendation' : '' ?>" class="sidebar-menu-item">
-          <div class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </div>
-          <span class="menu-label">User & Role Access</span>
-          <span class="sidebar-count-badge green"><?= $totalUsersCount ?></span>
-        </a>
-
-        <div class="sidebar-section-title">FACILITY MANAGEMENT</div>
-
-        <a href="admin_facilities.php<?= $isRecommendation ? '?role=recommendation' : '' ?>" class="sidebar-menu-item active">
-          <div class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-          </div>
-          <span class="menu-label">Facilities & Dorms</span>
-        </a>
-
-        <a href="admin_schedule.php<?= $isRecommendation ? '?role=recommendation' : '' ?>" class="sidebar-menu-item">
-          <div class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-          </div>
-          <span class="menu-label">Master Schedule</span>
-        </a>
-
-        <a href="admin_audit.php<?= $isRecommendation ? '?role=recommendation' : '' ?>" class="sidebar-menu-item">
-          <div class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 20h9"></path>
-              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-            </svg>
-          </div>
-          <span class="menu-label">Audit Trail Log</span>
-        </a>
-
-        <div class="sidebar-section-title">PORTAL SWITCH</div>
-
-        <a href="home.php" class="sidebar-menu-item client-switch">
-          <div class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-              <polyline points="10 17 15 12 10 7"></polyline>
-              <line x1="15" y1="12" x2="3" y2="12"></line>
-            </svg>
-          </div>
-          <span class="menu-label">Client / Staff Portal</span>
-        </a>
-      </nav>
-
-      <!-- Sidebar User Profile Footer -->
-      <div class="admin-sidebar-footer">
-        <div class="sidebar-user-card">
-          <div class="sidebar-avatar <?= $isRecommendation ? 'rec' : 'clear' ?>">
-            <?= $isRecommendation ? 'RO' : 'DIR' ?>
-          </div>
-          <div class="sidebar-user-info">
-            <h5><?= $isRecommendation ? 'Recommending Officer' : 'Clearance Authority' ?></h5>
-            <p><?= $isRecommendation ? 'Chief, Admin Services (Stage 1)' : 'Director IV &bull; Super Admin (Stage 2)' ?></p>
-          </div>
-        </div>
-        <a href="index.php" class="sidebar-signout-btn" title="Sign Out">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
-          <span>Sign Out</span>
-        </a>
-      </div>
-    </aside>
+    <?php include __DIR__ . '/includes/admin_sidebar.php'; ?>
 
     <!-- Overlay for Mobile Sidebar -->
     <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar(false)"></div>
@@ -553,6 +409,12 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                     <span>Maintenance</span>
                   </div>
                   <div class="card-action-btns">
+                    <?php if ($item['category'] === 'dorms'): ?>
+                      <button type="button" class="btn-card-action btn-manage-rooms" onclick="openManageRoomsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Manage Individual Dormitory Rooms">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        <span>Rooms</span>
+                      </button>
+                    <?php endif; ?>
                     <button type="button" class="btn-card-action" onclick="openEditFacilityModal('<?= htmlspecialchars($fid) ?>')">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                       <span>Edit</span>
@@ -646,6 +508,9 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                         <?php endif; ?>
                       </td>
                       <td style="text-align: right;">
+                        <?php if ($item['category'] === 'dorms'): ?>
+                          <button type="button" class="btn-card-action btn-manage-rooms" style="margin-right: 0.35rem;" onclick="openManageRoomsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')">Rooms</button>
+                        <?php endif; ?>
                         <button type="button" class="btn-card-action" onclick="openEditFacilityModal('<?= htmlspecialchars($fid) ?>')">Configure</button>
                       </td>
                     </tr>
@@ -854,6 +719,81 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
             <button type="submit" class="btn-system-primary">Register Asset</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: DORMITORY ROOMS MANAGEMENT
+       ========================================================================== -->
+  <div class="admin-modal-overlay" id="manageRoomsModal" style="display: none;">
+    <div class="admin-modal-card rooms-modal">
+      <div class="admin-modal-header">
+        <div class="modal-title-wrap">
+          <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #174d2f; letter-spacing: 0.5px;">Institutional Dormitory Inventory</span>
+          <h4 id="manageRoomsFacilityName" style="color: #153321; margin: 0.15rem 0 0 0;">Manage Dormitory Rooms</h4>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeManageRoomsModal()">&times;</button>
+      </div>
+
+      <div class="admin-modal-body" style="padding: 1.25rem 1.75rem;">
+        <input type="hidden" id="currentManageFacilityId">
+
+        <!-- KPI Status Summary -->
+        <div class="rooms-kpi-summary">
+          <div class="room-kpi-pill total">
+            <span class="kpi-num" id="roomKpiTotal">0</span>
+            <span class="kpi-lbl">Total Rooms</span>
+          </div>
+          <div class="room-kpi-pill available">
+            <span class="kpi-num" id="roomKpiAvailable">0</span>
+            <span class="kpi-lbl">Available</span>
+          </div>
+          <div class="room-kpi-pill occupied">
+            <span class="kpi-num" id="roomKpiOccupied">0</span>
+            <span class="kpi-lbl">Occupied Today</span>
+          </div>
+          <div class="room-kpi-pill maint">
+            <span class="kpi-num" id="roomKpiMaintenance">0</span>
+            <span class="kpi-lbl">Maintenance</span>
+          </div>
+        </div>
+
+        <!-- Quick Add Room Form -->
+        <div class="room-quick-add-box">
+          <div class="room-quick-add-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Quick Register New Room</span>
+          </div>
+          <form id="quickAddRoomForm" onsubmit="handleQuickAddRoom(event)" class="room-quick-add-fields">
+            <input type="text" id="newRoomNumber" placeholder="Room No. (e.g. 107)" required style="width: 140px;">
+            <select id="newRoomFloor" style="flex: 1; min-width: 150px;">
+              <option value="1st Floor">1st Floor</option>
+              <option value="2nd Floor">2nd Floor</option>
+              <option value="3rd Floor">3rd Floor</option>
+              <option value="Executive Wing">Executive Wing</option>
+              <option value="Annex Wing">Annex Wing</option>
+            </select>
+            <button type="submit" class="btn-add-room-submit" id="btnSubmitAddRoom">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Add Room</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Rooms List Grid -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem;">
+          <h5 style="margin: 0; font-size: 0.85rem; font-weight: 700; color: #2e4738;">Registered Rooms & Live Status</h5>
+          <span style="font-size: 0.74rem; color: #637f6f;">Toggle switch to put room on Maintenance Hold</span>
+        </div>
+
+        <div class="room-tiles-grid" id="manageRoomsGrid">
+          <!-- Dynamically populated via loadFacilityRooms() -->
+        </div>
+
+        <div class="admin-modal-footer" style="padding: 1.25rem 0 0 0; margin-top: 1rem; background: none; border-top: 1px solid #edf3ef; display: flex; justify-content: flex-end;">
+          <button type="button" class="btn-system-secondary" onclick="closeManageRoomsModal()">Close</button>
+        </div>
       </div>
     </div>
   </div>

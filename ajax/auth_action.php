@@ -39,7 +39,8 @@ if ($action == 'register') {
         $_SESSION['role'] = $user->role;
 
         // Determine redirect URL based on role
-        $redirectUrl = ($user->role == 'admin' || $user->role == 'super_admin') ? 'admin_dashboard.php' : 'home.php';
+        $adminRoles = ['admin', 'super_admin', 'director', 'division_chief', 'clearance', 'recommendation', 'endorsement', 'recommender', 'endorser'];
+        $redirectUrl = in_array(strtolower($user->role), $adminRoles) ? 'admin_dashboard.php' : 'home.php';
 
         echo json_encode(['status' => 'success', 'message' => 'Login successful!', 'redirect' => $redirectUrl, 'user' => [
             'id' => $user->id,

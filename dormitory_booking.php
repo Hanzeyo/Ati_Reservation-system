@@ -120,7 +120,7 @@ $dormCount = count($dbDorms);
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
           <span>My Reservations</span>
-          <span class="nav-badge-count">4</span>
+          <span class="nav-badge-count"><?= $currentUserResCount ?></span>
         </a>
 
         <!-- Master Schedule -->
@@ -284,7 +284,7 @@ $dormCount = count($dbDorms);
               </svg>
             </div>
             <span class="drawer-link-text">My Reservations</span>
-            <span class="drawer-badge-count">4</span>
+            <span class="drawer-badge-count"><?= $currentUserResCount ?></span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -460,89 +460,118 @@ $dormCount = count($dbDorms);
 
       <!-- Facility Cards Grid (Dynamically rendered from MySQL facilities database) -->
       <div class="facility-selection-grid" id="facilitySelectionGrid">
-        <?php 
-        $hasSelected = false;
-        foreach ($dbDorms as $idx => $f): 
-          $isSelected = false;
-          if ($selectedFacilityId > 0 && $f['id'] == $selectedFacilityId) {
-            $isSelected = true;
-            $hasSelected = true;
-          } elseif (!$hasSelected) {
-            $isSelected = true;
-            $hasSelected = true;
-          }
-          
-          $cardSlug = 'dorm-facility-' . $f['id'];
-          $lower = strtolower($f['name']);
-          if (strpos($lower, 'sampaguita') !== false || strpos($lower, '1st') !== false) {
-            $cardSlug = 'dorm-floor-1';
-          } elseif (strpos($lower, 'ilang-ilang') !== false || strpos($lower, '2nd') !== false) {
-            $cardSlug = 'dorm-floor-2';
-          } elseif (strpos($lower, 'gumamela') !== false || strpos($lower, '3rd') !== false) {
-            $cardSlug = 'dorm-floor-3';
-          } elseif (strpos($lower, 'rosas') !== false || strpos($lower, 'rosal') !== false || strpos($lower, '4th') !== false) {
-            $cardSlug = 'dorm-floor-4';
-          } elseif (strpos($lower, 'waling') !== false || strpos($lower, '5th') !== false) {
-            $cardSlug = 'dorm-floor-5';
-          } elseif (strpos($lower, 'tayabak') !== false || strpos($lower, '6th') !== false) {
-            $cardSlug = 'dorm-floor-6';
-          }
-
-          $imgSrc = !empty($f['image']) ? $f['image'] : 'assets/images/dormitory.jpg';
-          $capDisplay = $f['capacity'] . ' PAX / ' . ($f['beds'] ?? 0) . ' BEDS';
-          if (stripos($f['capacity'], 'PAX') !== false || stripos($f['capacity'], 'BED') !== false) {
-            $capDisplay = $f['capacity'];
-          }
-          
-          $featuresList = [];
-          if (!empty($f['features'])) {
-            $featuresList = array_map('trim', explode(',', $f['features']));
-          } else {
-            $featuresList = ['Aircon Rooms', 'Single Bunk Beds', 'Individual Lockers', 'Study Desks & Lounge'];
-          }
-        ?>
-        <article class="facility-choice-card dorm-suite-card <?= $isSelected ? 'selected' : '' ?>"
-          data-id="<?= $cardSlug ?>"
-          data-facility-db-id="<?= $f['id'] ?>"
-          data-name="<?= htmlspecialchars($f['name']) ?>"
-          data-rate="<?= htmlspecialchars($f['rate']) ?>"
-          data-capacity="<?= htmlspecialchars($capDisplay) ?>"
-          data-facility-type="dormitories"
-          data-status="<?= htmlspecialchars($f['status']) ?>">
-          <div class="facility-card-image">
-            <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($f['name']) ?>" loading="lazy">
-            <span class="facility-cap-badge"><?= htmlspecialchars($capDisplay) ?></span>
-            <?php if ($f['status'] === 'maintenance'): ?>
-              <span class="facility-maint-badge" style="position:absolute; top:10px; left:10px; background:#b45309; color:#fff; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(0,0,0,0.25);">UNDER MAINTENANCE</span>
-            <?php endif; ?>
-          </div>
-          <div class="facility-card-content">
-            <span class="facility-category-tag"><?= htmlspecialchars(strtoupper($f['name'])) ?></span>
-            <h3 class="facility-title"><?= htmlspecialchars($f['name']) ?></h3>
-            <div class="facility-rate-tag">Standard Rate: <?= htmlspecialchars($f['rate']) ?></div>
-            <div class="facility-amenities-tags">
-              <?php foreach (array_slice($featuresList, 0, 4) as $feat): ?>
-                <span class="amenity-pill"><?= htmlspecialchars($feat) ?></span>
-              <?php endforeach; ?>
-            </div>
-            <div class="dorm-card-selected-room-badge" style="<?= $isSelected ? 'display:flex;' : 'display:none;' ?>">
-              <span class="d-room-text">✓ Room Selected</span>
-            </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
+        <?php if ($dormCount === 0): ?>
+          <div class="booking-empty-state" id="dormEmptyState" style="display: block;">
+            <div class="booking-empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M2 4v16"></path>
+                <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                <path d="M2 17h20"></path>
+                <path d="M6 8v9"></path>
               </svg>
-              Select Room &amp; View Floor Plan
-            </button>
+            </div>
+            <h3 class="booking-empty-title">No Dormitories Available</h3>
+            <p class="booking-empty-desc">There are currently no active dormitory floors or lodging facilities open for booking. Please check back later or browse available facility venues.</p>
+            <a href="booking.php?category=halls" class="btn-empty-reset" style="text-decoration: none;">
+              <span>Browse Facility Venues</span>
+            </a>
           </div>
-        </article>
-        <?php endforeach; ?>
+        <?php else: ?>
+          <?php 
+          $hasSelected = false;
+          foreach ($dbDorms as $idx => $f): 
+            $isMaint = ($f['status'] === 'maintenance');
+            $isSelected = false;
+            if ($selectedFacilityId > 0 && $f['id'] == $selectedFacilityId && !$isMaint) {
+              $isSelected = true;
+              $hasSelected = true;
+            } elseif (!$hasSelected && !$isMaint) {
+              $isSelected = true;
+              $hasSelected = true;
+            }
+            
+            $cardSlug = 'dorm-facility-' . $f['id'];
+            $lower = strtolower($f['name']);
+            if (strpos($lower, 'sampaguita') !== false || strpos($lower, '1st') !== false) {
+              $cardSlug = 'dorm-floor-1';
+            } elseif (strpos($lower, 'ilang-ilang') !== false || strpos($lower, '2nd') !== false) {
+              $cardSlug = 'dorm-floor-2';
+            } elseif (strpos($lower, 'gumamela') !== false || strpos($lower, '3rd') !== false) {
+              $cardSlug = 'dorm-floor-3';
+            } elseif (strpos($lower, 'rosas') !== false || strpos($lower, 'rosal') !== false || strpos($lower, '4th') !== false) {
+              $cardSlug = 'dorm-floor-4';
+            } elseif (strpos($lower, 'waling') !== false || strpos($lower, '5th') !== false) {
+              $cardSlug = 'dorm-floor-5';
+            } elseif (strpos($lower, 'tayabak') !== false || strpos($lower, '6th') !== false) {
+              $cardSlug = 'dorm-floor-6';
+            }
+
+            $imgSrc = !empty($f['image']) ? $f['image'] : 'assets/images/dormitory.jpg';
+            $capDisplay = $f['capacity'] . ' PAX / ' . ($f['beds'] ?? 0) . ' BEDS';
+            if (stripos($f['capacity'], 'PAX') !== false || stripos($f['capacity'], 'BED') !== false) {
+              $capDisplay = $f['capacity'];
+            }
+            
+            $featuresList = [];
+            if (!empty($f['features'])) {
+              $featuresList = array_map('trim', explode(',', $f['features']));
+            } else {
+              $featuresList = ['Aircon Rooms', 'Single Bunk Beds', 'Individual Lockers', 'Study Desks & Lounge'];
+            }
+          ?>
+          <article class="facility-choice-card dorm-suite-card <?= $isMaint ? 'under-maintenance' : ($isSelected ? 'selected' : '') ?>"
+            data-id="<?= $cardSlug ?>"
+            data-facility-db-id="<?= $f['id'] ?>"
+            data-name="<?= htmlspecialchars($f['name']) ?>"
+            data-rate="<?= htmlspecialchars($f['rate']) ?>"
+            data-capacity="<?= htmlspecialchars($capDisplay) ?>"
+            data-facility-type="dormitories"
+            data-status="<?= htmlspecialchars($f['status']) ?>">
+            <div class="facility-card-image">
+              <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($f['name']) ?>" loading="lazy">
+              <span class="facility-cap-badge"><?= htmlspecialchars($capDisplay) ?></span>
+              <?php if ($isMaint): ?>
+                <span class="facility-maint-badge" style="position:absolute; top:10px; left:10px; background:#b45309; color:#fff; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(0,0,0,0.25);">UNDER MAINTENANCE</span>
+              <?php endif; ?>
+            </div>
+            <div class="facility-card-content">
+              <span class="facility-category-tag"><?= htmlspecialchars(strtoupper($f['name'])) ?></span>
+              <h3 class="facility-title"><?= htmlspecialchars($f['name']) ?></h3>
+              <div class="facility-rate-tag">Standard Rate: <?= htmlspecialchars($f['rate']) ?></div>
+              <div class="facility-amenities-tags">
+                <?php foreach (array_slice($featuresList, 0, 4) as $feat): ?>
+                  <span class="amenity-pill"><?= htmlspecialchars($feat) ?></span>
+                <?php endforeach; ?>
+              </div>
+              <div class="dorm-card-selected-room-badge" style="<?= $isSelected ? 'display:flex;' : 'display:none;' ?>">
+                <span class="d-room-text">✓ Room Selected</span>
+              </div>
+              <?php if ($isMaint): ?>
+                <button type="button" class="btn-select-facility" disabled title="This dormitory is under maintenance">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                  </svg>
+                  <span>Unavailable (Under Maintenance)</span>
+                </button>
+              <?php else: ?>
+                <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="9" y1="21" x2="9" y2="9"></line>
+                  </svg>
+                  Select Room &amp; View Floor Plan
+                </button>
+              <?php endif; ?>
+            </div>
+          </article>
+          <?php endforeach; ?>
+        <?php endif; ?>
       </div>
 
       <!-- Selection Summary Preview -->
-      <div class="step1-selection-summary-card" id="step1SummaryCard">
+      <div class="step1-selection-summary-card" id="step1SummaryCard" style="<?= $dormCount === 0 ? 'display: none;' : '' ?>">
         <div class="summary-card-header">
           <div class="sch-left">
             <span class="sch-badge">SELECTED DORMITORY FLOOR</span>
@@ -621,11 +650,15 @@ $dormCount = count($dbDorms);
               </div>
             </div>
 
-            <!-- Legend with Available, Reserved, Suspended, Selected -->
+            <!-- Legend with Available, Pending, Reserved, Suspended, Selected -->
             <div class="slot-legend-row">
               <div class="slot-legend-tag">
                 <span class="legend-circle available"></span>
                 <span>Available</span>
+              </div>
+              <div class="slot-legend-tag" title="A reservation request has been submitted and is currently undergoing administrative review">
+                <span class="legend-circle pending"></span>
+                <span>Pending</span>
               </div>
               <div class="slot-legend-tag">
                 <span class="legend-circle reserved"></span>
@@ -909,7 +942,7 @@ $dormCount = count($dbDorms);
             style="background: #dcfce7; color: #166534; padding: 0.4rem 0.85rem; border-radius: 999px; font-weight: 700; font-size: 0.82rem;">VERIFICATION
             READY</span>
           <span style="font-size: 0.85rem; color: #5b7566;">Reference: <strong
-              id="dormRefPreview">ATI-BK-2026-1088</strong></span>
+              id="dormRefPreview">ATI-BK-<?= date('Y') ?>-<?= rand(1000, 9999) ?></strong></span>
         </div>
 
         <h3 style="font-size: 1.45rem; font-weight: 800; color: #10331f; margin-bottom: 1.25rem;" id="dormReviewTitle">
@@ -972,7 +1005,7 @@ $dormCount = count($dbDorms);
         <span>Back</span>
       </button>
 
-      <button type="button" class="btn-proceed-step" id="btnProceedStep">
+      <button type="button" class="btn-proceed-step" id="btnProceedStep" style="<?= $dormCount === 0 ? 'display: none;' : '' ?>">
         <span>Proceed to Stay Dates</span>
         <svg viewBox="0 0 24 24" fill="none">
           <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -1033,6 +1066,93 @@ $dormCount = count($dbDorms);
       </div>
     </div>
 
+    <!-- ==========================================================================
+         VALIDATION WARNING MODAL (ATI Government Clean UI Alert)
+         ========================================================================== -->
+    <div class="room-modal-overlay" id="validationWarningModal" style="display: none; z-index: 10000;">
+      <div class="room-modal-dialog" style="max-width: 480px; border-radius: 18px; text-align: center; padding: 2rem 1.75rem;">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: #fef2f2; border: 2px solid #fecaca; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <h3 id="valModalTitle" style="font-size: 1.3rem; font-weight: 800; color: #1f2937; margin-bottom: 0.5rem;">Requirement Missing</h3>
+        <p id="valModalMessage" style="font-size: 0.92rem; color: #4b5563; line-height: 1.55; margin-bottom: 1.5rem;">
+          Please complete all required fields before proceeding.
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center;">
+          <button type="button" id="btnDismissValModal" style="background: #175432; color: #ffffff; font-weight: 700; font-size: 0.9rem; padding: 0.7rem 2rem; border-radius: 9999px; border: none; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(23, 84, 50, 0.25);">
+            Understood
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         RESERVATION SUCCESS POPUP MODAL (Official Receipt & Confirmation)
+         ========================================================================== -->
+    <div class="room-modal-overlay" id="reservationSuccessModal" style="display: none; z-index: 10000;">
+      <div class="room-modal-dialog" style="max-width: 540px; border-radius: 20px; text-align: center; padding: 2.25rem 2rem; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);">
+        <!-- Animated Success Checkmark Icon -->
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: #ecfdf5; border: 2.5px solid #a7f3d0; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+
+        <span style="display: inline-block; background: #e0f2fe; color: #0284c7; font-size: 0.75rem; font-weight: 800; padding: 3px 12px; border-radius: 9999px; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.5rem;">
+          REQUEST TRANSMITTED
+        </span>
+
+        <h3 style="font-size: 1.45rem; font-weight: 800; color: #142e1f; margin-bottom: 0.35rem;">
+          Reservation Submitted Successfully!
+        </h3>
+        
+        <p style="font-size: 0.88rem; color: #526f5e; line-height: 1.5; margin-bottom: 1.25rem;">
+          Your official reservation request has been registered and queued for Administrative Review and Approval.
+        </p>
+
+        <!-- Summary Receipt Card -->
+        <div style="background: #f8faf9; border: 1.5px solid #e1ece4; border-radius: 12px; padding: 1.15rem; text-align: left; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.85rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #d5e3da; padding-bottom: 0.5rem;">
+            <span style="color: #637f70; font-weight: 600;">Reference No.:</span>
+            <strong style="color: #175432; font-size: 0.95rem; font-family: monospace; letter-spacing: 0.05em;" id="succModalRef">ATI-BK-2026-XXXX</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #637f70; font-weight: 600;">Facility / Venue:</span>
+            <strong style="color: #1f2937;" id="succModalFacility">1st Floor: Sampaguita Dormitory</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #637f70; font-weight: 600;">Schedule Dates:</span>
+            <strong style="color: #1f2937;" id="succModalSchedule">Selected Dates</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #637f70; font-weight: 600;">Time Slot:</span>
+            <strong style="color: #1f2937;" id="succModalTime">Overnight Stay</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #637f70; font-weight: 600;">Status:</span>
+            <span style="background: #fef3c7; color: #92400e; font-weight: 800; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px;">Pending Approval</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <a href="my_reservations.php" style="background: #175432; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 0.88rem; padding: 0.75rem 1.65rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 4px 12px rgba(23, 84, 50, 0.25);">
+            <span>View My Reservations</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+          <a href="home.php" style="background: #edf5ef; color: #175432; text-decoration: none; font-weight: 700; font-size: 0.88rem; padding: 0.75rem 1.5rem; border-radius: 9999px; border: 1.5px solid #cce0d2;">
+            Return to Home
+          </a>
+        </div>
+      </div>
+    </div>
   </main>
 
   <script src="js/booking.js?v=<?php echo time(); ?>"></script>

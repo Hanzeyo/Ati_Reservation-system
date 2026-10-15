@@ -785,3 +785,249 @@ function showAdminToast(message, type = 'success') {
     setTimeout(() => toast.remove(), 320);
   }, 4000);
 }
+
+/* ==========================================================================
+   DORMITORY ROOMS MANAGEMENT CONTROLLER (AJAX TO ajax/room_actions.php)
+   ========================================================================== */
+function openManageRoomsModal(facilityId, facilityName) {
+  const hiddenId = document.getElementById('currentManageFacilityId');
+  const titleEl = document.getElementById('manageRoomsFacilityName');
+  const modal = document.getElementById('manageRoomsModal');
+
+  if (hiddenId) hiddenId.value = facilityId;
+  if (titleEl) titleEl.textContent = `Manage Rooms: ${facilityName || 'Dormitory'}`;
+  if (modal) modal.style.display = 'flex';
+
+  loadFacilityRooms(facilityId);
+}
+
+function closeManageRoomsModal() {
+  const modal = document.getElementById('manageRoomsModal');
+  if (modal) modal.style.display = 'none';
+  const quickInput = document.getElementById('newRoomNumber');
+  if (quickInput) quickInput.value = '';
+}
+
+function loadFacilityRooms(facilityId) {
+  const grid = document.getElementById('manageRoomsGrid');
+  if (!grid) return;
+
+  grid.innerHTML = `
+    <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; color: #637f6f;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; margin-bottom: 0.5rem;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
+      <div>Loading rooms inventory...</div>
+    </div>
+  `;
+
+  fetch(`ajax/room_actions.php?action=get_rooms&facility_id=${encodeURIComponent(facilityId)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!data.success) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; color: #dc2626;">
+            ${data.message || 'Failed to load rooms.'}
+          </div>
+        `;
+        return;
+      }
+
+      const rooms = data.rooms || [];
+
+      // Update KPI Badges
+      const kpiTotal = document.getElementById('roomKpiTotal');
+      const kpiAvail = document.getElementById('roomKpiAvailable');
+      const kpiOcc = document.getElementById('roomKpiOccupied');
+      const kpiMaint = document.getElementById('roomKpiMaintenance');
+
+      let availCount = 0;
+      let occCount = 0;
+      let maintCount = 0;
+
+      rooms.forEach(r => {
+        if (r.status === 'maintenance') maintCount++;
+        else if (r.status === 'occupied') occCount++;
+        else availCount++;
+      });
+
+      if (kpiTotal) kpiTotal.textContent = rooms.length;
+      if (kpiAvail) kpiAvail.textContent = availCount;
+      if (kpiOcc) kpiOcc.textContent = occCount;
+      if (kpiMaint) kpiMaint.textContent = maintCount;
+
+      if (rooms.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; background: #fbfdfc; border: 1.5px dashed #cde2d5; border-radius: 12px; color: #637f6f;">
+            <p style="margin: 0 0 0.5rem 0; font-weight: 700; color: #174d2f;">Walang nakatalang kuwarto para sa dormitoryong ito.</p>
+            <p style="margin: 0; font-size: 0.82rem;">Gamitin ang form sa itaas upang magdagdag ng unang kuwarto.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = '';
+      rooms.forEach(r => {
+        const tile = document.createElement('div');
+        const isMaint = r.status === 'maintenance';
+        const isOcc = r.status === 'occupied';
+
+        tile.className = `room-admin-tile ${isMaint ? 'is-maintenance' : (isOcc ? 'is-occupied' : '')}`;
+
+        let statusBadgeHtml = '<span class="room-tile-status-pill avail">Available</span>';
+        if (isMaint) {
+          statusBadgeHtml = '<span class="room-tile-status-pill maint">Maintenance</span>';
+        } else if (isOcc) {
+          const refText = r.booking_ref ? ` • #${r.booking_ref}` : '';
+          statusBadgeHtml = `<span class="room-tile-status-pill occ">Occupied${refText}</span>`;
+        }
+
+        tile.innerHTML = `
+          <div class="room-tile-top">
+            <div>
+              <div class="room-tile-number">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/></svg>
+                <span>Room ${r.room_number}</span>
+              </div>
+              <div class="room-tile-floor">${r.floor}</div>
+            </div>
+            ${statusBadgeHtml}
+          </div>
+
+          <div class="room-tile-actions">
+            <label class="room-maint-toggle-wrap" title="Toggle Maintenance Hold">
+              <label class="switch-toggle" style="margin: 0;">
+                <input type="checkbox" ${isMaint ? 'checked' : ''} onchange="toggleRoomMaintenance(${r.id}, this.checked)">
+                <span class="slider-round"></span>
+              </label>
+              <span>${isMaint ? 'Under Maintenance' : 'Operational'}</span>
+            </label>
+
+            <button type="button" class="btn-room-delete" onclick="handleDeleteRoom(${r.id}, '${r.room_number}')" title="Delete Room ${r.room_number}">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        `;
+
+        grid.appendChild(tile);
+      });
+    })
+    .catch(err => {
+      console.error('Error fetching rooms:', err);
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; color: #dc2626;">
+          Nagkaroon ng network error habang kinukuha ang mga kuwarto.
+        </div>
+      `;
+    });
+}
+
+function handleQuickAddRoom(event) {
+  event.preventDefault();
+  const facilityId = document.getElementById('currentManageFacilityId').value;
+  const numInput = document.getElementById('newRoomNumber');
+  const floorSelect = document.getElementById('newRoomFloor');
+  const submitBtn = document.getElementById('btnSubmitAddRoom');
+
+  const roomNum = numInput ? numInput.value.trim() : '';
+  const floor = floorSelect ? floorSelect.value : '1st Floor';
+
+  if (!roomNum) {
+    alert('Pakilagay ang Room Number.');
+    return;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span>Adding...</span>`;
+  }
+
+  const formData = new FormData();
+  formData.append('action', 'add_room');
+  formData.append('facility_id', facilityId);
+  formData.append('room_number', roomNum);
+  formData.append('floor', floor);
+
+  fetch('ajax/room_actions.php', {
+    method: 'POST',
+    body: formData
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>Add Room</span>
+        `;
+      }
+
+      if (data.success) {
+        showAdminToast(data.message || `Room ${roomNum} added successfully.`, 'success');
+        if (numInput) numInput.value = '';
+        loadFacilityRooms(facilityId);
+      } else {
+        showAdminToast(data.message || 'Hindi maidadagdag ang kuwarto.', 'decline');
+      }
+    })
+    .catch(err => {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<span>Add Room</span>`;
+      }
+      showAdminToast('Network error while adding room.', 'decline');
+    });
+}
+
+function toggleRoomMaintenance(roomId, isMaintenance) {
+  const facilityId = document.getElementById('currentManageFacilityId').value;
+  const formData = new FormData();
+  formData.append('action', 'toggle_maintenance');
+  formData.append('room_id', roomId);
+  formData.append('maintenance', isMaintenance ? '1' : '0');
+
+  fetch('ajax/room_actions.php', {
+    method: 'POST',
+    body: formData
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        showAdminToast(data.message, isMaintenance ? 'decline' : 'success');
+        loadFacilityRooms(facilityId);
+      } else {
+        showAdminToast(data.message || 'Failed to update maintenance state.', 'decline');
+        loadFacilityRooms(facilityId);
+      }
+    })
+    .catch(err => {
+      showAdminToast('Network error updating room.', 'decline');
+      loadFacilityRooms(facilityId);
+    });
+}
+
+function handleDeleteRoom(roomId, roomNumber) {
+  const confirmed = confirm(`Sigurado ka bang nais mong burahin ang Room ${roomNumber}?`);
+  if (!confirmed) return;
+
+  const facilityId = document.getElementById('currentManageFacilityId').value;
+  const formData = new FormData();
+  formData.append('action', 'delete_room');
+  formData.append('room_id', roomId);
+
+  fetch('ajax/room_actions.php', {
+    method: 'POST',
+    body: formData
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        showAdminToast(data.message || `Room ${roomNumber} deleted.`, 'success');
+        loadFacilityRooms(facilityId);
+      } else {
+        showAdminToast(data.message || 'Hindi maaaring burahin ang kuwarto.', 'decline');
+      }
+    })
+    .catch(err => {
+      showAdminToast('Network error deleting room.', 'decline');
+    });
+}
+

@@ -305,6 +305,12 @@ let modalTempSelectedItem = null;
 
 function selectFacilityCard(card, openModal = true) {
   if (!card) return;
+  if (card.dataset.status === 'maintenance' || card.classList.contains('under-maintenance')) {
+    if (typeof showToast === 'function') {
+      showToast('Ang pasilidad na ito ay kasalukuyang under maintenance at hindi maaaring piliin.', 'warning');
+    }
+    return;
+  }
   const cards = document.querySelectorAll('.facility-choice-card');
   const isDorm = card.dataset.facilityType === 'dormitories' || (card.dataset.id && card.dataset.id.startsWith('dorm-floor-'));
 
@@ -350,6 +356,7 @@ function selectFacilityCard(card, openModal = true) {
 
   bookingState.selectedFacility = {
     id: card.dataset.id,
+    dbId: card.dataset.facilityDbId || (card.dataset.id ? String(card.dataset.id).replace(/\D/g, '') : card.dataset.id),
     name: card.dataset.name,
     rate: card.dataset.rate,
     capacity: card.dataset.capacity,
@@ -362,7 +369,7 @@ function selectFacilityCard(card, openModal = true) {
     setupCap: setupCap,
     location: location,
     setupRate: setupRate,
-    occupiedOnDefaultDate: bookingState.selectedFacility?.id === card.dataset.id ? Boolean(bookingState.selectedFacility?.occupiedOnDefaultDate) : false
+    occupiedOnDefaultDate: false
   };
 
   if (!isDorm && setupName) {
@@ -382,6 +389,9 @@ function selectFacilityCard(card, openModal = true) {
     openFacilityModal(card.dataset.id);
   } else {
     updateReviewSummary();
+    if (typeof window.refreshLiveAvailabilityForCurrentFacility === 'function') {
+      window.refreshLiveAvailabilityForCurrentFacility();
+    }
   }
 }
 
@@ -389,16 +399,29 @@ function initFacilitySelection() {
   const cards = document.querySelectorAll('.facility-choice-card');
 
   cards.forEach(card => {
+    const isMaint = card.dataset.status === 'maintenance' || card.classList.contains('under-maintenance');
     const selectBtn = card.querySelector('.btn-select-facility');
 
     if (selectBtn) {
       selectBtn.addEventListener('click', (e) => {
         e.stopPropagation();
+        if (isMaint) {
+          if (typeof showToast === 'function') {
+            showToast('Ang pasilidad na ito ay kasalukuyang under maintenance at hindi maaaring piliin.', 'warning');
+          }
+          return;
+        }
         selectFacilityCard(card, true);
       });
     }
 
     card.addEventListener('click', () => {
+      if (isMaint) {
+        if (typeof showToast === 'function') {
+          showToast('Ang pasilidad na ito ay kasalukuyang under maintenance at hindi maaaring piliin.', 'warning');
+        }
+        return;
+      }
       selectFacilityCard(card, true);
     });
   });
@@ -428,16 +451,135 @@ function initFacilitySelection() {
     }
   });
 
-  // Dynamically pre-initialize the currently selected card (or first visible card)
-  const initialCard = document.querySelector('.facility-choice-card.selected') || 
-                      document.querySelector('.facility-choice-card:not([style*="display: none"])');
+  // Dynamically pre-initialize the currently selected card (or first visible AVAILABLE card)
+  const initialCard = document.querySelector('.facility-choice-card.selected:not(.under-maintenance):not([data-status="maintenance"])') || 
+                      document.querySelector('.facility-choice-card:not([style*="display: none"]):not(.under-maintenance):not([data-status="maintenance"])');
   if (initialCard) {
     selectFacilityCard(initialCard, false);
+  } else {
+    const emptyState = document.getElementById('bookingEmptyState');
+    const step1Summary = document.getElementById('step1SummaryCard');
+    const proceedBtn = document.getElementById('btnProceedStep');
+    if (emptyState) emptyState.style.display = 'block';
+    if (step1Summary) step1Summary.style.display = 'none';
+    if (proceedBtn) proceedBtn.style.display = 'none';
   }
+}
+
+function renderDormRoomsInModal(facilityId, data, roomsList) {
+  const gridEl = document.getElementById('modalRoomsGrid');
+  const feedbackBar = document.getElementById('modalRoomFeedback');
+  if (!gridEl) return;
+
+  gridEl.className = 'modal-rooms-grid';
+  gridEl.innerHTML = '';
+
+  if (!roomsList || roomsList.length === 0) {
+    gridEl.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; background: #fbfdfc; border: 1.5px dashed #cde2d5; border-radius: 12px; color: #637f6f;">
+        <p style="margin: 0 0 0.4rem 0; font-weight: 700; color: #174d2f;">Walang nakatalang kuwarto para sa dormitoryong ito.</p>
+        <p style="margin: 0; font-size: 0.82rem;">Maaari itong i-configure ng Administrator sa Facilities Master Registry.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const bedIconSvg = `
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
+    </svg>
+  `;
+
+  roomsList.forEach(r => {
+    const isMaint = (r.status === 'maintenance') || (r.is_maintenance === true);
+    const isAvail = !isMaint && (r.available === true || r.status === 'available');
+    const isOcc = !isMaint && !isAvail;
+
+    const box = document.createElement('div');
+    const stateClass = isMaint ? 'maintenance' : (isAvail ? 'available' : 'reserved');
+    box.className = `dorm-room-box ${stateClass}`;
+    box.dataset.item = r.num;
+    box.dataset.available = isAvail ? 'true' : 'false';
+    box.dataset.maintenance = isMaint ? 'true' : 'false';
+
+    let statusText = 'AVAILABLE';
+    let hintText = 'Ready Today';
+    let hintClass = 'ready';
+
+    if (isMaint) {
+      statusText = 'MAINTENANCE';
+      hintText = 'Under Maintenance';
+      hintClass = 'maintenance-hold';
+    } else if (isOcc) {
+      statusText = 'RESERVED';
+      hintText = 'Book other date';
+      hintClass = 'alt-date';
+    }
+
+    box.innerHTML = `
+      <div class="dorm-bed-icon">${bedIconSvg}</div>
+      <div class="dorm-room-num">${r.num}</div>
+      <div class="dorm-room-status">${statusText}</div>
+      <div class="dorm-room-hint ${hintClass}">${hintText}</div>
+    `;
+
+    if (bookingState.selectedFacility?.id === facilityId && String(bookingState.selectedFacility?.roomNumber) === String(r.num)) {
+      box.classList.add('selected');
+      modalTempSelectedItem = r.num;
+    }
+
+    box.addEventListener('click', (e) => {
+      e.stopPropagation();
+
+      // BLOCK IF ROOM IS UNDER MAINTENANCE
+      if (isMaint) {
+        if (feedbackBar) {
+          feedbackBar.style.display = 'flex';
+          feedbackBar.className = 'modal-room-feedback-bar alternate-date';
+          const fTitle = document.getElementById('modalFeedbackTitle');
+          const fSub = document.getElementById('modalFeedbackSub');
+          const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
+          if (fTitle) fTitle.textContent = `Room ${r.num} is Under Maintenance`;
+          if (fSub) fSub.textContent = `This room is temporarily on maintenance hold. Please choose another available room.`;
+          if (badgeOk) badgeOk.textContent = '⛔ Unavailable';
+        }
+        return;
+      }
+
+      gridEl.querySelectorAll('.dorm-room-box.selected').forEach(b => b.classList.remove('selected'));
+      box.classList.add('selected');
+      modalTempSelectedItem = r.num;
+
+      if (feedbackBar) {
+        feedbackBar.style.display = 'flex';
+        feedbackBar.classList.toggle('alternate-date', isOcc);
+        const fTitle = document.getElementById('modalFeedbackTitle');
+        const fSub = document.getElementById('modalFeedbackSub');
+        const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
+
+        if (isOcc) {
+          if (fTitle) fTitle.textContent = `Room ${r.num} Selected (Occupied Today)`;
+          if (fSub) fSub.textContent = `${r.floor || data.floor} • Proceed to Step 2 to choose an available alternate date for this room.`;
+          if (badgeOk) badgeOk.textContent = '📅 Pick Alternate Date';
+        } else {
+          if (fTitle) fTitle.textContent = `Room ${r.num} Selected ✓`;
+          if (fSub) fSub.textContent = `${r.floor || data.floor} • ${data.title} (${data.rate}) • Room Assigned`;
+          if (badgeOk) badgeOk.textContent = '✓ Room Confirmed';
+        }
+      }
+
+      setTimeout(() => {
+        confirmFacilitySelection(isOcc);
+      }, 450);
+    });
+
+    gridEl.appendChild(box);
+  });
 }
 
 function openFacilityModal(facilityId) {
   const card = document.querySelector(`.facility-choice-card[data-id="${facilityId}"]`);
+  const dbFacilityId = card?.dataset.facilityDbId || String(facilityId).replace(/\D/g, '') || facilityId;
 
   // Auto-generate interactive modal layout/rooms for custom or newly registered facilities
   if (!dormFloorData[facilityId] && !hallLayoutData[facilityId] && card) {
@@ -449,14 +591,8 @@ function openFacilityModal(facilityId) {
         floor: 'Institutional Dormitory Wing',
         desc: 'Air-conditioned rooms with single beds, personal lockers, and comfortable amenities.',
         rate: card.dataset.rate || '₱500 / night',
-        rooms: [
-          { num: '101', available: true },
-          { num: '102', available: true },
-          { num: '103', available: true },
-          { num: '104', available: true },
-          { num: '105', available: false },
-          { num: '106', available: true }
-        ]
+        rooms: [],
+        isDbLoaded: false
       };
     } else {
       const hallName = card.dataset.name || 'Institutional Hall';
@@ -506,66 +642,52 @@ function openFacilityModal(facilityId) {
     if (legendAvail) legendAvail.innerHTML = '<strong>Available:</strong> Click to assign for your stay';
     if (legendRes) legendRes.innerHTML = '<strong>Reserved:</strong> Occupied by scheduled delegates';
 
+    // Show loading skeleton while fetching real room inventory from DB
     if (gridEl) {
       gridEl.className = 'modal-rooms-grid';
-      gridEl.innerHTML = '';
-      const bedIconSvg = `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 7v11M21 11v7M3 15h18M3 11h14a4 4 0 0 1 4 4v0M7 11V8a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3"/>
-        </svg>
+      gridEl.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #637f6f;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; margin-bottom: 0.5rem;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
+          <div style="font-size: 0.9rem; font-weight: 600;">Kinukuha ang availability ng mga kuwarto...</div>
+        </div>
       `;
-
-      data.rooms.forEach(r => {
-        const box = document.createElement('div');
-        box.className = `dorm-room-box ${r.available ? 'available' : 'reserved'}`;
-        box.dataset.item = r.num;
-        box.dataset.available = r.available ? 'true' : 'false';
-
-        box.innerHTML = `
-          <div class="dorm-bed-icon">${bedIconSvg}</div>
-          <div class="dorm-room-num">${r.num}</div>
-          <div class="dorm-room-status">${r.available ? 'AVAILABLE' : 'RESERVED'}</div>
-          <div class="dorm-room-hint ${r.available ? 'ready' : 'alt-date'}">${r.available ? 'Ready Today' : 'Book other date'}</div>
-        `;
-
-        if (bookingState.selectedFacility?.id === facilityId && String(bookingState.selectedFacility?.roomNumber) === String(r.num)) {
-          box.classList.add('selected');
-          modalTempSelectedItem = r.num;
-        }
-
-        box.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const isOcc = !r.available;
-          gridEl.querySelectorAll('.dorm-room-box.selected').forEach(b => b.classList.remove('selected'));
-          box.classList.add('selected');
-          modalTempSelectedItem = r.num;
-
-          if (feedbackBar) {
-            feedbackBar.style.display = 'flex';
-            feedbackBar.classList.toggle('alternate-date', isOcc);
-            const fTitle = document.getElementById('modalFeedbackTitle');
-            const fSub = document.getElementById('modalFeedbackSub');
-            const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
-
-            if (isOcc) {
-              if (fTitle) fTitle.textContent = `Room ${r.num} Selected (Occupied Today)`;
-              if (fSub) fSub.textContent = `${data.floor} • Proceed to Step 2 to choose an available alternate date for this room.`;
-              if (badgeOk) badgeOk.textContent = '📅 Pick Alternate Date';
-            } else {
-              if (fTitle) fTitle.textContent = `Room ${r.num} Selected ✓`;
-              if (fSub) fSub.textContent = `${data.floor} • ${data.title} (${data.rate}) • Room Assigned`;
-              if (badgeOk) badgeOk.textContent = '✓ Room Confirmed';
-            }
-          }
-
-          setTimeout(() => {
-            confirmFacilitySelection(isOcc);
-          }, 450);
-        });
-
-        gridEl.appendChild(box);
-      });
     }
+
+    // Fetch dynamic live rooms from MySQL Database
+    const dateParam = bookingState.date ? `&date=${encodeURIComponent(bookingState.date)}` : '';
+    fetch(`ajax/get_facility_rooms.php?facility_id=${encodeURIComponent(dbFacilityId)}${dateParam}`)
+      .then(res => res.json())
+      .then(resData => {
+        if (resData.success && Array.isArray(resData.rooms)) {
+          data.rooms = resData.rooms;
+          data.isDbLoaded = true;
+          if (resData.facility?.name) {
+            data.title = resData.facility.name;
+            if (titleEl) titleEl.textContent = data.title;
+          }
+          if (currentModalFacilityId === facilityId) {
+            renderDormRoomsInModal(facilityId, data, resData.rooms);
+          }
+        } else {
+          if (gridEl) {
+            gridEl.innerHTML = `
+              <div style="grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; color: #dc2626;">
+                ${resData.message || 'Hindi makuha ang mga kuwarto.'}
+              </div>
+            `;
+          }
+        }
+      })
+      .catch(e => {
+        console.warn('Live room fetch notice:', e);
+        if (gridEl) {
+          gridEl.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; color: #dc2626;">
+              Nagkaroon ng problema sa koneksyon. Pakisubukan muli.
+            </div>
+          `;
+        }
+      });
   } else if (isHall) {
     const data = hallLayoutData[facilityId];
     if (catPill) catPill.textContent = 'VENUE SETUP & FLOOR PLAN SELECTION';
@@ -690,11 +812,15 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
     const data = dormFloorData[currentModalFacilityId];
     if (!data) return;
 
+    const card = document.querySelector(`.facility-choice-card[data-id="${currentModalFacilityId}"]`);
+    const dbFacilityId = card?.dataset.facilityDbId || (currentModalFacilityId ? String(currentModalFacilityId).replace(/\D/g, '') : currentModalFacilityId);
+
     bookingState.selectedFacility = {
       id: currentModalFacilityId,
+      dbId: dbFacilityId,
       name: data.title,
       rate: data.rate,
-      capacity: document.querySelector(`.facility-choice-card[data-id="${currentModalFacilityId}"]`)?.dataset.capacity || '48 BEDS',
+      capacity: card?.dataset.capacity || '48 BEDS',
       type: 'dormitories',
       roomNumber: modalTempSelectedItem,
       floor: data.floor,
@@ -702,7 +828,6 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
       occupiedOnDefaultDate: Boolean(isOccupiedOnDefaultDate)
     };
 
-    const card = document.querySelector(`.facility-choice-card[data-id="${currentModalFacilityId}"]`);
     if (card) {
       document.querySelectorAll('.facility-choice-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
@@ -738,9 +863,12 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
     if (!data) return;
 
     const layout = data.layouts.find(l => l.id === modalTempSelectedItem) || data.layouts[0];
+    const card = document.querySelector(`.facility-choice-card[data-id="${currentModalFacilityId}"]`);
+    const dbFacilityId = card?.dataset.facilityDbId || (currentModalFacilityId ? String(currentModalFacilityId).replace(/\D/g, '') : currentModalFacilityId);
 
     bookingState.selectedFacility = {
       id: currentModalFacilityId,
+      dbId: dbFacilityId,
       name: data.title,
       rate: data.rate,
       capacity: layout.cap,
@@ -753,7 +881,6 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
       occupiedOnDefaultDate: Boolean(isOccupiedOnDefaultDate)
     };
 
-    const card = document.querySelector(`.facility-choice-card[data-id="${currentModalFacilityId}"]`);
     if (card) {
       document.querySelectorAll('.facility-choice-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
@@ -788,6 +915,9 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
 
   closeFacilityModal();
   updateReviewSummary();
+  if (typeof window.refreshLiveAvailabilityForCurrentFacility === 'function') {
+    window.refreshLiveAvailabilityForCurrentFacility();
+  }
 
   const summaryCard = document.getElementById('step1SummaryCard');
   if (summaryCard) {
@@ -851,6 +981,7 @@ function initFacilityFilters() {
     }
 
     // 4. Show/Hide Matching Facility Cards
+    let visibleCount = 0;
     let firstVisibleCard = null;
     let currentSelectedVisible = false;
 
@@ -860,12 +991,49 @@ function initFacilityFilters() {
       card.style.display = isVisible ? 'flex' : 'none';
 
       if (isVisible) {
+        visibleCount++;
         if (!firstVisibleCard) firstVisibleCard = card;
         if (card.classList.contains('selected')) {
           currentSelectedVisible = true;
         }
       }
     });
+
+    const emptyState = document.getElementById('bookingEmptyState');
+    const emptyTitle = document.getElementById('bookingEmptyTitle');
+    const emptyDesc = document.getElementById('bookingEmptyDesc');
+    const step1Summary = document.getElementById('step1SummaryCard');
+    const proceedBtn = document.getElementById('btnProceedStep');
+
+    if (emptyState) {
+      if (visibleCount === 0) {
+        emptyState.style.display = 'block';
+        if (emptyTitle) {
+          if (catName === 'halls') {
+            emptyTitle.textContent = 'No Halls or Venues Available';
+          } else if (catName === 'dormitories') {
+            emptyTitle.textContent = 'No Dormitory Suites Available';
+          } else {
+            emptyTitle.textContent = 'No Facilities Available';
+          }
+        }
+        if (emptyDesc) {
+          if (catName === 'halls') {
+            emptyDesc.textContent = 'There are currently no training halls or function venues available under this category. Try switching to Dormitories or Show All.';
+          } else if (catName === 'dormitories') {
+            emptyDesc.textContent = 'There are currently no dormitory suites or rooms available under this category. Try switching to Halls or Show All.';
+          } else {
+            emptyDesc.textContent = 'There are currently no active facilities or rooms listed in the system. Please check back later or contact administration.';
+          }
+        }
+        if (step1Summary) step1Summary.style.display = 'none';
+        if (proceedBtn) proceedBtn.style.display = 'none';
+      } else {
+        emptyState.style.display = 'none';
+        if (step1Summary) step1Summary.style.display = 'block';
+        if (proceedBtn) proceedBtn.style.display = 'inline-flex';
+      }
+    }
 
     // If current selected card is now hidden, select the first visible card quietly without opening the modal!
     if (!currentSelectedVisible && firstVisibleCard) {
@@ -901,6 +1069,19 @@ function initFacilityFilters() {
       switchCategory(cat, false);
     });
   });
+
+  // Bind Empty State Reset Button
+  const resetCategoryBtn = document.getElementById('btnEmptyResetCategory');
+  if (resetCategoryBtn) {
+    resetCategoryBtn.addEventListener('click', () => {
+      const allPill = document.querySelector('.filter-pill[data-category-filter="all"]');
+      if (allPill) {
+        allPill.click();
+      } else {
+        switchCategory('all', true);
+      }
+    });
+  }
 
   // Check URL query parameters for pre-selected category (e.g. ?category=dormitories)
   const urlParams = new URLSearchParams(window.location.search);
@@ -1035,14 +1216,13 @@ function initStepperNavigation() {
 
     // When advancing to Step 2 (Date & Time Selection)
     if (stepNumber === 2 && bookingState.currentStep === 1) {
+      if (typeof window.refreshLiveAvailabilityForCurrentFacility === 'function') {
+        window.refreshLiveAvailabilityForCurrentFacility();
+      }
       if (bookingState.selectedFacility?.occupiedOnDefaultDate) {
         if (typeof window.selectAlternateAvailableDateForRoom === 'function') {
           const itemLabel = isDorm ? `Room ${bookingState.selectedFacility?.roomNumber}` : bookingState.selectedFacility?.setupName;
           window.selectAlternateAvailableDateForRoom(itemLabel);
-        }
-      } else {
-        if (typeof window.selectCurrentDate === 'function') {
-          window.selectCurrentDate();
         }
       }
     }
@@ -1401,13 +1581,25 @@ function initStepperNavigation() {
   const btnSubmitDormitory = document.getElementById('btnSubmitDormitoryBooking');
   if (btnSubmitDormitory) {
     btnSubmitDormitory.addEventListener('click', () => {
-      const refNum = document.getElementById('dormRefPreview')?.textContent?.trim() || `ATI-BK-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      if (!validateStep3Inputs()) {
+        showValidationModal('Lodging Details Incomplete', 'Please complete all required fields (Lodging Purpose, Guests Count, Endorsing Division) before submitting.', () => {
+          goToStep(3);
+        });
+        return;
+      }
+
+      const refNum = `ATI-BK-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+      const refEl = document.getElementById('dormRefPreview');
+      if (refEl) refEl.textContent = refNum;
+
       const curTitle = document.getElementById('dormLodgingPurpose')?.value?.trim() || bookingState.eventTitle || 'Regional Agricultural Extension Trainees Accommodation';
       const curPax = document.getElementById('dormGuestCount')?.value?.trim() || bookingState.participants || '16';
       const curDivision = getEffectiveDivision();
+      const facId = bookingState.selectedFacility?.dbId || bookingState.selectedFacility?.facilityDbId || (bookingState.selectedFacility?.id ? String(bookingState.selectedFacility.id).replace(/\D/g, '') : '');
 
       const formData = new FormData();
       formData.append('reference_no', refNum);
+      formData.append('facility_id', facId);
       formData.append('facility_name', bookingState.selectedFacility?.name || '1st Floor: Sampaguita Dormitory');
       formData.append('facility_type', 'dormitories');
       formData.append('rate', bookingState.selectedFacility?.rate || '₱500/night');
@@ -1428,7 +1620,10 @@ function initStepperNavigation() {
 
       const timeSelect = document.getElementById('startTimeSelect');
       const endTimeSelect = document.getElementById('endTimeSelect');
-      const timeSlot = (timeSelect ? timeSelect.value : '') + ' - ' + (endTimeSelect ? endTimeSelect.value : '');
+      let timeSlot = (timeSelect && timeSelect.value ? timeSelect.value : '') + (endTimeSelect && endTimeSelect.value ? ' - ' + endTimeSelect.value : '');
+      if (!timeSlot || timeSlot.trim() === '-' || timeSlot.trim() === '') {
+        timeSlot = '02:00 PM Check-in - 12:00 PM Check-out';
+      }
       formData.append('time_slot', timeSlot);
 
       const specialNotes = document.getElementById('dormSpecialRequests')?.value || '';
@@ -1445,14 +1640,17 @@ function initStepperNavigation() {
       btnSubmitDormitory.disabled = true;
       btnSubmitDormitory.innerHTML = '<span>Submitting Lodging Request...</span>';
 
+      const dormFloorText = document.getElementById('dormReviewFloor')?.textContent?.trim() || (bookingState.selectedFacility?.name || '1st Floor: Sampaguita Dormitory');
+      const dormStayText = document.getElementById('dormReviewStay')?.textContent?.trim() || bookingState.date || 'Selected Dates';
+
       const submitData = {
         isDorm: true,
         refNum: refNum,
-        facilityName: bookingState.selectedFacility?.name || '1st Floor: Sampaguita Dormitory',
+        facilityName: dormFloorText,
         setup: bookingState.selectedFacility?.roomNumber ? `Room ${bookingState.selectedFacility.roomNumber}` : 'Standard Dorm Bed Assignment',
         rate: bookingState.selectedFacility?.rate || '₱500 / night',
-        schedule: bookingState.date || 'Selected Dates',
-        time: timeSlot || '02:00 PM Check-in - 12:00 PM Check-out',
+        schedule: dormStayText,
+        time: timeSlot,
         pax: curPax,
         purpose: curTitle,
         requestedBy: `Juan Dela Cruz (${curDivision})`
@@ -1467,7 +1665,11 @@ function initStepperNavigation() {
         btnSubmitDormitory.innerHTML = origText;
         btnSubmitDormitory.disabled = false;
         if (data && data.conflict) {
-          alert(`⚠️ Reservation Conflict Detected:\n\n${data.message}`);
+          showValidationModal('Reservation Conflict Detected', data.message);
+          return;
+        }
+        if (data && !data.success && data.message) {
+          showValidationModal('Submission Error', data.message);
           return;
         }
         window.showReservationSuccessModal(submitData);
@@ -1493,9 +1695,11 @@ function initStepperNavigation() {
       const refNum = `ATI-RES-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
       const isDorm = isDormitorySelected();
       const curDivision = getEffectiveDivision();
+      const facId = bookingState.selectedFacility?.dbId || bookingState.selectedFacility?.facilityDbId || (bookingState.selectedFacility?.id ? String(bookingState.selectedFacility.id).replace(/\D/g, '') : '');
 
       const formData = new FormData();
       formData.append('reference_no', refNum);
+      formData.append('facility_id', facId);
       formData.append('facility_name', bookingState.selectedFacility?.name || 'Function Hall');
       formData.append('facility_type', isDorm ? 'dormitories' : 'halls');
       formData.append('rate', bookingState.selectedFacility?.rate || 'N/A');
@@ -1792,43 +1996,70 @@ function initDateSlotInteractions() {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  // Helper to determine if date is occupied for selected room (today & tomorrow)
+  // Helper to determine if date is occupied for selected room
   function isOccupiedRoomDate(d) {
-    if (!bookingState.selectedFacility?.occupiedOnDefaultDate) return false;
-    const target = new Date(d.year, d.month, d.day).getTime();
-    const todayMs = new Date(TODAY.year, TODAY.month, TODAY.day).getTime();
-    const dayDiff = Math.round((target - todayMs) / (1000 * 60 * 60 * 24));
-    return dayDiff === 0 || dayDiff === 1;
+    return false;
   }
 
-  // Reserved & maintenance dates database for realistic simulation
-  const RESERVED_DATES = new Set([
-    '2026-10-06', '2026-10-12', '2026-10-19', '2026-10-27',
-    '2026-11-04', '2026-11-10', '2026-11-17', '2026-11-25',
-    '2026-12-08', '2026-12-15', '2026-12-22', '2026-12-29'
-  ]);
-  const SUSPENDED_DATES = new Set([
-    '2026-10-29', '2026-11-13', '2026-12-24', '2026-12-25'
-  ]);
+  // Live booked and suspended dates strictly driven by MySQL database
+  const RESERVED_DATES = new Set();
+  const SUSPENDED_DATES = new Set();
 
-  // Live booked dates from MySQL database
+  // Live booked, pending, and suspended dates from MySQL database
   const DB_BOOKED_DATES = new Set();
   const DB_BOOKED_DETAILS = {};
+  const DB_PENDING_DATES = new Set();
+  const DB_PENDING_DETAILS = {};
+  const DB_SUSPENDED_DATES = new Set();
+  const DB_SUSPENDED_DETAILS = {};
 
   function fetchLiveAvailabilityForViewMonth() {
-    const facName = bookingState.selectedFacility?.name || '';
+    const card = document.querySelector(`.facility-choice-card.selected`);
+    const facId = bookingState.selectedFacility?.dbId || bookingState.selectedFacility?.facilityDbId || card?.dataset.facilityDbId || (bookingState.selectedFacility?.id ? String(bookingState.selectedFacility.id).replace(/\D/g, '') : '');
+    const facName = bookingState.selectedFacility?.name || card?.dataset.name || '';
     const roomNum = bookingState.selectedFacility?.roomNumber || '';
-    const url = `ajax/check_availability.php?facility_name=${encodeURIComponent(facName)}&room_number=${encodeURIComponent(roomNum)}&year=${viewYear}&month=${viewMonth + 1}`;
+    const url = `ajax/check_availability.php?facility_id=${encodeURIComponent(facId)}&facility_name=${encodeURIComponent(facName)}&room_number=${encodeURIComponent(roomNum)}&year=${viewYear}&month=${viewMonth + 1}`;
 
     fetch(url)
       .then(res => res.json())
       .then(data => {
-        if (data && data.status === 'success' && Array.isArray(data.booked_dates)) {
+        if (data && data.status === 'success') {
           DB_BOOKED_DATES.clear();
-          data.booked_dates.forEach(d => DB_BOOKED_DATES.add(d));
+          (data.booked_dates || []).forEach(d => DB_BOOKED_DATES.add(d));
+          for (let k in DB_BOOKED_DETAILS) delete DB_BOOKED_DETAILS[k];
           Object.assign(DB_BOOKED_DETAILS, data.booked_details || {});
+
+          DB_PENDING_DATES.clear();
+          (data.pending_dates || []).forEach(d => DB_PENDING_DATES.add(d));
+          for (let k in DB_PENDING_DETAILS) delete DB_PENDING_DETAILS[k];
+          Object.assign(DB_PENDING_DETAILS, data.pending_details || {});
+
+          DB_SUSPENDED_DATES.clear();
+          (data.suspended_dates || []).forEach(d => DB_SUSPENDED_DATES.add(d));
+          for (let k in DB_SUSPENDED_DETAILS) delete DB_SUSPENDED_DETAILS[k];
+          Object.assign(DB_SUSPENDED_DETAILS, data.suspended_details || {});
+
+          // If current selected start date falls on a suspended or booked date, advance to first available date
+          const curStartKey = dateToKey(selectedStart.year, selectedStart.month, selectedStart.day);
+          if (DB_SUSPENDED_DATES.has(curStartKey) || DB_BOOKED_DATES.has(curStartKey)) {
+            const totalDaysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+            let nextAvail = null;
+            for (let day = TODAY.day; day <= totalDaysInMonth; day++) {
+              const testKey = dateToKey(viewYear, viewMonth, day);
+              if (!DB_SUSPENDED_DATES.has(testKey) && !DB_BOOKED_DATES.has(testKey)) {
+                nextAvail = day;
+                break;
+              }
+            }
+            if (nextAvail) {
+              selectedStart = { year: viewYear, month: viewMonth, day: nextAvail };
+              selectedEnd = { ...selectedStart };
+            }
+          }
+
           renderCalendarGrid();
           updateGridHighlights();
+          renderSelectionDetails();
         }
       })
       .catch(err => console.warn('Availability check fallback:', err));
@@ -1837,10 +2068,6 @@ function initDateSlotInteractions() {
   function dateToKey(y, m, d) {
     return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   }
-
-  // Ensure current date is never accidentally marked as reserved or suspended
-  RESERVED_DATES.delete(dateToKey(TODAY.year, TODAY.month, TODAY.day));
-  SUSPENDED_DATES.delete(dateToKey(TODAY.year, TODAY.month, TODAY.day));
 
   function compareDates(d1, d2) {
     if (d1.year !== d2.year) return d1.year - d2.year;
@@ -1897,23 +2124,34 @@ function initDateSlotInteractions() {
     bookingState.selectedStartDay = selectedStart.day;
     bookingState.selectedEndDay = selectedEnd.day;
 
-    if (statusTitle) {
-      if (bookingState.selectedFacility?.occupiedOnDefaultDate) {
-        statusTitle.textContent = `Room ${bookingState.selectedFacility?.roomNumber || ''} Available on Selected Date!`;
-      } else {
+    // Check if the selected date range intersects any pending requests
+    let hasPendingInRange = false;
+    let pendingFirstTitle = '';
+    let curP = new Date(selectedStart.year, selectedStart.month, selectedStart.day);
+    const endP = new Date(selectedEnd.year, selectedEnd.month, selectedEnd.day);
+    while (curP <= endP) {
+      const pKey = dateToKey(curP.getFullYear(), curP.getMonth(), curP.getDate());
+      if (DB_PENDING_DATES.has(pKey)) {
+        hasPendingInRange = true;
+        const pArr = DB_PENDING_DETAILS[pKey] || [];
+        if (pArr.length > 0 && !pendingFirstTitle) pendingFirstTitle = pArr[0].title;
+      }
+      curP.setDate(curP.getDate() + 1);
+    }
+
+    if (hasPendingInRange) {
+      if (statusTitle) {
+        statusTitle.innerHTML = `<span style="color: #b45309; display: inline-flex; align-items: center; gap: 0.4rem;">⚠️ Pending Request (Under Review)</span>`;
+      }
+      if (statusDesc) {
+        const titleNote = pendingFirstTitle ? ` ("${pendingFirstTitle}")` : '';
+        statusDesc.innerHTML = `<strong style="color: #92400e;">Notice:</strong> An earlier reservation request${titleNote} has been submitted for the selected date and is currently under administrative review. You may still proceed with your submission, subject to official evaluation and approval by the Administrator.`;
+      }
+    } else {
+      if (statusTitle) {
         statusTitle.textContent = 'Selected Slot Available!';
       }
-    }
-    if (statusDesc) {
-      const roomNum = bookingState.selectedFacility?.roomNumber;
-      const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
-      if (isOcc && roomNum) {
-        if (durationDays === 1) {
-          statusDesc.textContent = `Room ${roomNum} is confirmed available on ${formatDisplayDate(selectedStart)} (occupied today and tomorrow).`;
-        } else {
-          statusDesc.textContent = `Room ${roomNum} is confirmed available for ${durationDays} days duration (${formatDisplayDate(selectedStart)} – ${formatDisplayDate(selectedEnd)}).`;
-        }
-      } else {
+      if (statusDesc) {
         if (durationDays === 1) {
           statusDesc.textContent = `No venue conflicts detected for 1 day duration (${formatDisplayDate(selectedStart)}).`;
         } else {
@@ -1934,12 +2172,21 @@ function initDateSlotInteractions() {
       if (b.classList.contains('reserved') || b.classList.contains('suspended') || b.classList.contains('past-date')) return;
 
       const inRange = isDateInRange({ year: y, month: m, day: d }, selectedStart, selectedEnd);
+      const key = dateToKey(y, m, d);
+      const isPending = DB_PENDING_DATES.has(key);
+
       if (inRange) {
         b.classList.add('selected');
         b.classList.remove('available');
       } else {
         b.classList.remove('selected');
-        b.classList.add('available');
+        if (isPending) {
+          b.classList.add('has-pending');
+          b.classList.remove('available');
+        } else {
+          b.classList.remove('has-pending');
+          b.classList.add('available');
+        }
       }
     });
   }
@@ -1951,8 +2198,11 @@ function initDateSlotInteractions() {
       return;
     }
 
-    if (btn.classList.contains('suspended') || SUSPENDED_DATES.has(key)) {
-      alert(`${formatDisplayDate(dateObj)} is currently suspended for scheduled facility maintenance.`);
+    const isSuspendedDate = btn.classList.contains('suspended') || DB_SUSPENDED_DATES.has(key) || SUSPENDED_DATES.has(key);
+    if (isSuspendedDate) {
+      const suspInfo = DB_SUSPENDED_DETAILS[key];
+      const suspReason = suspInfo?.reason || suspInfo?.title || 'Scheduled Facility Maintenance';
+      alert(`${formatDisplayDate(dateObj)} is currently suspended (${suspReason}).\n\nPlease select an available green slot.`);
       return;
     }
 
@@ -2029,15 +2279,16 @@ function initDateSlotInteractions() {
             conflict = `${formatDisplayDate({ year: cY, month: cM, day: cD })} has already passed`;
             break;
           }
-          const isRoomOccupiedRangeDate = isOccupiedRoomDate({ year: cY, month: cM, day: cD });
-          if (RESERVED_DATES.has(cKey) || isRoomOccupiedRangeDate) {
-            conflict = isRoomOccupiedRangeDate
-              ? `Room ${bookingState.selectedFacility?.roomNumber || ''} is occupied on ${formatDisplayDate({ year: cY, month: cM, day: cD })}`
-              : `${formatDisplayDate({ year: cY, month: cM, day: cD })} is reserved for another event`;
+          if (DB_BOOKED_DATES.has(cKey) || RESERVED_DATES.has(cKey)) {
+            const details = DB_BOOKED_DETAILS[cKey] || [];
+            const evTitle = details.length > 0 ? ` (${details[0].title})` : '';
+            conflict = `${formatDisplayDate({ year: cY, month: cM, day: cD })} is already reserved${evTitle}`;
             break;
           }
-          if (SUSPENDED_DATES.has(cKey)) {
-            conflict = `${formatDisplayDate({ year: cY, month: cM, day: cD })} is suspended for facility maintenance`;
+          if (DB_SUSPENDED_DATES.has(cKey) || SUSPENDED_DATES.has(cKey)) {
+            const suspInfo = DB_SUSPENDED_DETAILS[cKey];
+            const suspReason = suspInfo?.reason || suspInfo?.title || 'facility maintenance';
+            conflict = `${formatDisplayDate({ year: cY, month: cM, day: cD })} is suspended (${suspReason})`;
             break;
           }
           cur.setDate(cur.getDate() + 1);
@@ -2089,10 +2340,11 @@ function initDateSlotInteractions() {
       const key = dateToKey(viewYear, viewMonth, day);
       const isPast = isPastDate(viewYear, viewMonth, day);
       const isToday = isTodayDate(viewYear, viewMonth, day);
-      const isSuspended = SUSPENDED_DATES.has(key);
+      const isSuspended = DB_SUSPENDED_DATES.has(key) || SUSPENDED_DATES.has(key);
       const isRoomOccupiedThisDate = isOccupiedRoomDate(dateObj);
       const isDbBooked = DB_BOOKED_DATES.has(key);
       const isReserved = RESERVED_DATES.has(key) || isRoomOccupiedThisDate || isDbBooked;
+      const isPending = !isPast && !isSuspended && !isReserved && DB_PENDING_DATES.has(key);
       const isSelected = isDateInRange(dateObj, selectedStart, selectedEnd);
 
       if (isPast) {
@@ -2101,7 +2353,9 @@ function initDateSlotInteractions() {
         btn.title = 'Unavailable';
       } else if (isSuspended) {
         btn.className = 'slot-day-btn suspended';
-        btn.title = 'Suspended: Scheduled Facility Maintenance';
+        const suspInfo = DB_SUSPENDED_DETAILS[key];
+        const suspReason = suspInfo?.reason || suspInfo?.title || 'Scheduled Facility Maintenance';
+        btn.title = `Suspended: ${suspReason}`;
       } else if (isReserved) {
         btn.className = 'slot-day-btn reserved';
         if (isRoomOccupiedThisDate) {
@@ -2111,6 +2365,15 @@ function initDateSlotInteractions() {
           btn.title = details.length > 0 ? `Booked: ${details[0].title}` : 'Reserved for Official Event';
         } else {
           btn.title = 'Reserved for Official Event';
+        }
+      } else if (isPending) {
+        const pDetails = DB_PENDING_DETAILS[key] || [];
+        const pTitle = pDetails.length > 0 ? ` ("${pDetails[0].title}")` : '';
+        btn.title = `Pending Request: A reservation request${pTitle} is currently awaiting administrative review for this date`;
+        if (isSelected) {
+          btn.className = 'slot-day-btn selected has-pending';
+        } else {
+          btn.className = 'slot-day-btn has-pending';
         }
       } else {
         if (isSelected) {
@@ -2173,6 +2436,77 @@ function initDateSlotInteractions() {
   window.refreshLiveAvailabilityForCurrentFacility = function () {
     fetchLiveAvailabilityForViewMonth();
   };
+
+  // Single Day / Multi-Day Range Mode Handlers
+  if (btnModeSingle) {
+    btnModeSingle.addEventListener('click', () => {
+      mode = 'single';
+      rangeWaitingForEnd = false;
+      btnModeSingle.classList.add('active');
+      if (btnModeRange) btnModeRange.classList.remove('active');
+      if (endDateWrap) {
+        endDateWrap.classList.remove('active-focus');
+        endDateWrap.style.boxShadow = '';
+        endDateWrap.style.borderColor = '';
+      }
+      selectedEnd = { ...selectedStart };
+      renderSelectionDetails();
+      updateGridHighlights();
+    });
+  }
+
+  if (btnModeRange) {
+    btnModeRange.addEventListener('click', () => {
+      mode = 'range';
+      rangeWaitingForEnd = true;
+      btnModeRange.classList.add('active');
+      if (btnModeSingle) btnModeSingle.classList.remove('active');
+      if (endDateWrap) {
+        endDateWrap.classList.add('active-focus');
+        endDateWrap.style.boxShadow = '0 0 0 3px rgba(23, 84, 50, 0.18)';
+        endDateWrap.style.borderColor = '#175432';
+      }
+      if (statusDesc) {
+        statusDesc.textContent = `Range Mode: Start Date is ${formatDisplayDate(selectedStart)}. Please click your desired End Date on the calendar.`;
+      }
+      renderSelectionDetails();
+      updateGridHighlights();
+    });
+  }
+
+  if (endDateWrap || endInput) {
+    (endDateWrap || endInput).addEventListener('click', () => {
+      if (mode !== 'range' && btnModeRange) {
+        btnModeRange.click();
+      } else {
+        rangeWaitingForEnd = true;
+        if (endDateWrap) {
+          endDateWrap.classList.add('active-focus');
+          endDateWrap.style.boxShadow = '0 0 0 3px rgba(23, 84, 50, 0.18)';
+          endDateWrap.style.borderColor = '#175432';
+        }
+        if (statusDesc) {
+          statusDesc.textContent = `Click your desired End Date on the calendar.`;
+        }
+      }
+    });
+  }
+
+  if (startInput) {
+    startInput.addEventListener('click', () => {
+      if (mode === 'range') {
+        rangeWaitingForEnd = false;
+        if (endDateWrap) {
+          endDateWrap.classList.remove('active-focus');
+          endDateWrap.style.boxShadow = '';
+          endDateWrap.style.borderColor = '';
+        }
+        if (statusDesc) {
+          statusDesc.textContent = `Click a new Start Date on the calendar.`;
+        }
+      }
+    });
+  }
 
   // Initial Calendar Setup
   updateMonthHeader();

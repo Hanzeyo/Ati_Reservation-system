@@ -21,17 +21,40 @@ $facility_name = $_POST['facility_name'] ?? 'Unknown Facility';
 $facility_type = $_POST['facility_type'] ?? 'halls';
 $room_number = $_POST['room_number'] ?? null;
 
-// Temporary auto-seed facility if it doesn't exist in the DB to prevent foreign key errors
-$stmt = $conn->prepare("SELECT id FROM facilities WHERE name = ? LIMIT 1");
-$stmt->execute([$facility_name]);
-$fac = $stmt->fetch(PDO::FETCH_ASSOC);
+$rawFacId = $_POST['facility_id'] ?? 0;
+$facility_id = 0;
+if (is_numeric($rawFacId) && (int)$rawFacId > 0) {
+    $facility_id = (int)$rawFacId;
+} elseif (is_string($rawFacId) && preg_match('/(\d+)/', $rawFacId, $m)) {
+    $facility_id = (int)$m[1];
+}
+
+$fac = null;
+if ($facility_id > 0) {
+    $stmt = $conn->prepare("SELECT id, name, status FROM facilities WHERE id = ? LIMIT 1");
+    $stmt->execute([$facility_id]);
+    $fac = $stmt->fetch(PDO::FETCH_ASSOC);
+}
+if (!$fac && !empty($facility_name)) {
+    $stmt = $conn->prepare("SELECT id, name, status FROM facilities WHERE name = ? LIMIT 1");
+    $stmt->execute([$facility_name]);
+    $fac = $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+if ($fac && $fac['status'] === 'maintenance') {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Hindi maaaring i-book ang pasilidad na ito dahil ito ay kasalukuyang under maintenance.'
+    ]);
+    exit;
+}
 
 if (!$fac) {
     $stmt = $conn->prepare("INSERT INTO facilities (name, type, rate, capacity) VALUES (?, ?, ?, ?)");
     $stmt->execute([$facility_name, $facility_type, $_POST['rate'] ?? 'N/A', $_POST['capacity'] ?? 'N/A']);
-    $facility_id = $conn->lastInsertId();
+    $facility_id = (int)$conn->lastInsertId();
 } else {
-    $facility_id = $fac['id'];
+    $facility_id = (int)$fac['id'];
 }
 
 $room_id = null;
@@ -42,9 +65,9 @@ if ($room_number && $room_number !== 'null') {
     if (!$room) {
         $stmt = $conn->prepare("INSERT INTO rooms (facility_id, room_number) VALUES (?, ?)");
         $stmt->execute([$facility_id, $room_number]);
-        $room_id = $conn->lastInsertId();
+        $room_id = (int)$conn->lastInsertId();
     } else {
-        $room_id = $room['id'];
+        $room_id = (int)$room['id'];
     }
 }
 
@@ -67,8 +90,23 @@ if ($pax_count <= 0) {
     exit;
 }
 
+// Generate / verify truly unique reference_no
+$rawRef = trim($_POST['reference_no'] ?? '');
+$prefix = (isset($_POST['facility_type']) && in_array(strtolower($_POST['facility_type']), ['dormitories', 'dorms'])) ? 'ATI-BK' : 'ATI-RES';
+
+$checkStmt = $conn->prepare("SELECT id FROM reservations WHERE reference_no = ? LIMIT 1");
+$checkStmt->execute([$rawRef]);
+if (empty($rawRef) || $checkStmt->fetch()) {
+    do {
+        $refNum = $prefix . '-' . date('Y') . '-' . mt_rand(1000, 9999);
+        $checkStmt->execute([$refNum]);
+    } while ($checkStmt->fetch());
+} else {
+    $refNum = $rawRef;
+}
+
 $reservation = new Reservation($conn);
-$reservation->reference_no = $_POST['reference_no'];
+$reservation->reference_no = $refNum;
 $reservation->user_id = $_SESSION['user_id'];
 $reservation->facility_id = $facility_id;
 $reservation->room_id = $room_id;
@@ -134,8 +172,23 @@ if (move_uploaded_file($_FILES['document']['tmp_name'], $targetPath)) {
     exit;
 }
 
-if ($reservation->create()) {
-    echo json_encode(['success' => true, 'message' => 'Reservation created successfully']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Failed to insert reservation into database']);
+try {
+    if ($reservation->create()) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Reservation created successfully',
+            'reference_no' => $refNum
+        ]);
+    } else {
+        $err = $conn->errorInfo();
+        echo json_encode([
+            'success' => false,
+            'message' => 'Failed to insert reservation into database: ' . ($err[2] ?? 'Unknown error')
+        ]);
+    }
+} catch (Exception $e) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Database error: ' . $e->getMessage()
+    ]);
 }

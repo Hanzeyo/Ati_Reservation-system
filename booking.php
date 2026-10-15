@@ -100,7 +100,7 @@ $totalCount = count($dbFacilities);
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
           <span>My Reservations</span>
-          <span class="nav-badge-count">4</span>
+          <span class="nav-badge-count"><?= $currentUserResCount ?></span>
         </a>
 
         <!-- Master Schedule -->
@@ -255,7 +255,7 @@ $totalCount = count($dbFacilities);
               </svg>
             </div>
             <span class="drawer-link-text">My Reservations</span>
-            <span class="drawer-badge-count">4</span>
+            <span class="drawer-badge-count"><?= $currentUserResCount ?></span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -499,11 +499,12 @@ $totalCount = count($dbFacilities);
             $displayStyle = 'display: none;';
           }
           
+          $isMaint = ($f['status'] === 'maintenance');
           $isSelected = false;
-          if ($selectedFacilityId > 0 && $f['id'] == $selectedFacilityId) {
+          if ($selectedFacilityId > 0 && $f['id'] == $selectedFacilityId && !$isMaint) {
             $isSelected = true;
             $hasSelectedCard = true;
-          } elseif (!$hasSelectedCard && $displayStyle === '') {
+          } elseif (!$hasSelectedCard && $displayStyle === '' && !$isMaint) {
             $isSelected = true;
             $hasSelectedCard = true;
           }
@@ -535,7 +536,7 @@ $totalCount = count($dbFacilities);
           
           $categoryTag = strtoupper($f['type']) . ($isDorm ? ' &bull; DORMITORY SUITE' : ' &bull; VENUE & HALLS');
         ?>
-        <article class="facility-choice-card <?= $isDorm ? 'dorm-suite-card' : '' ?> <?= $isSelected ? 'selected' : '' ?>"
+        <article class="facility-choice-card <?= $isDorm ? 'dorm-suite-card' : '' ?> <?= $isMaint ? 'under-maintenance' : ($isSelected ? 'selected' : '') ?>"
           data-id="<?= $cardSlug ?>"
           data-facility-db-id="<?= $f['id'] ?>"
           data-name="<?= htmlspecialchars($f['name']) ?>"
@@ -547,7 +548,7 @@ $totalCount = count($dbFacilities);
           <div class="facility-card-image">
             <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($f['name']) ?>" loading="lazy">
             <span class="facility-cap-badge"><?= htmlspecialchars($capDisplay) ?></span>
-            <?php if ($f['status'] === 'maintenance'): ?>
+            <?php if ($isMaint): ?>
               <span class="facility-maint-badge" style="position:absolute; top:10px; left:10px; background:#b45309; color:#fff; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(0,0,0,0.25);">UNDER MAINTENANCE</span>
             <?php endif; ?>
           </div>
@@ -563,21 +564,67 @@ $totalCount = count($dbFacilities);
             <div class="dorm-card-selected-room-badge <?= !$isDorm ? 'hall-selected-setup-badge' : '' ?>" style="<?= $isSelected ? 'display:flex;' : 'display:none;' ?>">
               <span class="d-room-text"><?= $isDorm ? '✓ Room Assigned' : '✓ Standard Configuration Selected' ?></span>
             </div>
-            <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="3" y1="9" x2="21" y2="9"></line>
-                <line x1="9" y1="21" x2="9" y2="9"></line>
-              </svg>
-              <?= $isDorm ? 'Select Room &amp; View Floor Plan' : 'Select Setup &amp; View Floor Plan' ?>
-            </button>
+            <?php if ($isMaint): ?>
+              <button type="button" class="btn-select-facility" disabled title="This facility is under maintenance">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                </svg>
+                <span>Unavailable (Under Maintenance)</span>
+              </button>
+            <?php else: ?>
+              <button type="button" class="btn-select-facility btn-dorm-modal-trigger">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="3" y1="9" x2="21" y2="9"></line>
+                  <line x1="9" y1="21" x2="9" y2="9"></line>
+                </svg>
+                <?= $isDorm ? 'Select Room &amp; View Floor Plan' : 'Select Setup &amp; View Floor Plan' ?>
+              </button>
+            <?php endif; ?>
           </div>
         </article>
         <?php endforeach; ?>
+
+        <?php
+        $initialEmpty = false;
+        $initialEmptyTitle = "No Facilities Available";
+        $initialEmptyDesc = "There are currently no active facilities listed under this category. Please check back later or try selecting another category.";
+        if ($reqCategory === 'halls' && $hallsCount === 0) {
+          $initialEmpty = true;
+          $initialEmptyTitle = "No Halls or Venues Available";
+          $initialEmptyDesc = "There are currently no training halls or function venues available in this category. You may switch to Dormitories or browse other options.";
+        } elseif ($reqCategory === 'dormitories' && $dormsCount === 0) {
+          $initialEmpty = true;
+          $initialEmptyTitle = "No Dormitory Suites Available";
+          $initialEmptyDesc = "There are currently no dormitory suites or rooms available in this category. You may switch to Halls or browse other options.";
+        } elseif ($totalCount === 0) {
+          $initialEmpty = true;
+          $initialEmptyTitle = "No Facilities Available";
+          $initialEmptyDesc = "There are currently no active facilities or rooms registered in the system. Please check back later.";
+        }
+        ?>
+
+        <!-- Empty State Container (Displayed when no halls or dorms are available or match filter) -->
+        <div class="booking-empty-state" id="bookingEmptyState" style="<?= $initialEmpty ? 'display: block;' : 'display: none;' ?>">
+          <div class="booking-empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <h3 class="booking-empty-title" id="bookingEmptyTitle"><?= htmlspecialchars($initialEmptyTitle) ?></h3>
+          <p class="booking-empty-desc" id="bookingEmptyDesc"><?= htmlspecialchars($initialEmptyDesc) ?></p>
+          <button type="button" class="btn-empty-reset" id="btnEmptyResetCategory">
+            <span>Show All Facilities</span>
+          </button>
+        </div>
       </div>
 
       <!-- Step 1 Reservation Summary Preview (Visible before proceeding) -->
-      <div class="step1-selection-summary-card" id="step1SummaryCard">
+      <div class="step1-selection-summary-card" id="step1SummaryCard" style="<?= $initialEmpty ? 'display: none;' : '' ?>">
         <div class="summary-card-header">
           <div class="sch-left">
             <span class="sch-badge" id="summaryPreviewBadge">SELECTED VENUE</span>
@@ -701,11 +748,15 @@ $totalCount = count($dbFacilities);
               </div>
             </div>
 
-            <!-- Legend with Available, Reserved, Suspended, Selected (Past Date text removed per request) -->
+            <!-- Legend with Available, Pending, Reserved, Suspended, Selected -->
             <div class="slot-legend-row">
               <div class="slot-legend-tag">
                 <span class="legend-circle available"></span>
                 <span>Available</span>
+              </div>
+              <div class="slot-legend-tag" title="A reservation request has been submitted and is currently undergoing administrative review">
+                <span class="legend-circle pending"></span>
+                <span>Pending</span>
               </div>
               <div class="slot-legend-tag">
                 <span class="legend-circle reserved"></span>
@@ -1052,7 +1103,7 @@ $totalCount = count($dbFacilities);
         <span>Back</span>
       </button>
 
-      <button type="button" class="btn-proceed-step" id="btnProceedStep">
+      <button type="button" class="btn-proceed-step" id="btnProceedStep" style="<?= $initialEmpty ? 'display: none;' : '' ?>">
         <span>Proceed to Date & Time Selection</span>
         <svg viewBox="0 0 24 24" fill="none">
           <line x1="5" y1="12" x2="19" y2="12"></line>

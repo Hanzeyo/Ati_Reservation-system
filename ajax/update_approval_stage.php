@@ -16,6 +16,18 @@ if (!isset($_SESSION['user_id']) || !isAdmin()) {
 
 $adminUserId = (int)$_SESSION['user_id'];
 $adminFullName = $_SESSION['full_name'] ?? 'Authorized Officer';
+$rawUserRole = strtolower($_SESSION['role'] ?? '');
+
+// Normalize Role
+if (in_array($rawUserRole, ['endorsement', 'endorser'])) {
+    $normalizedRole = 'endorsement';
+} elseif (in_array($rawUserRole, ['recommendation', 'recommender', 'division_chief'])) {
+    $normalizedRole = 'recommendation';
+} elseif (in_array($rawUserRole, ['clearance', 'director'])) {
+    $normalizedRole = 'clearance';
+} else {
+    $normalizedRole = 'super_admin';
+}
 
 $action = trim($_POST['action'] ?? '');
 $ref = trim($_POST['ref'] ?? '');
@@ -24,6 +36,22 @@ $reason = trim($_POST['reason'] ?? '');
 $rawRefs = $_POST['refs'] ?? [];
 
 $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+
+// Strict Role-Based Permission Validation
+if (($action === 'stage1' || $action === 'endorse' || $action === 'bulk_endorse') && !in_array($normalizedRole, ['endorsement', 'super_admin'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Stage 1 Endorsement can only be performed by an Endorsement Officer.']);
+    exit;
+}
+
+if (($action === 'stage2' || $action === 'recommend' || $action === 'bulk_recommend') && !in_array($normalizedRole, ['recommendation', 'super_admin'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Stage 2 Recommendation can only be performed by a Recommending Officer.']);
+    exit;
+}
+
+if (($action === 'stage3' || $action === 'clearance' || $action === 'approve' || $action === 'bulk_clearance') && !in_array($normalizedRole, ['clearance', 'super_admin'])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized. Final Clearance can only be granted by the Clearance Authority.']);
+    exit;
+}
 
 // Ensure audit log helper is ready
 $auditLog = new AuditLog($db);
@@ -85,6 +113,19 @@ try {
             exit;
         }
 
+        // Sequence Validation: Must be endorsed first
+        $chkStmt = $db->prepare("SELECT status FROM reservations WHERE reference_no = :ref LIMIT 1");
+        $chkStmt->execute([':ref' => $ref]);
+        $currSt = $chkStmt->fetchColumn();
+        if (!$currSt) {
+            echo json_encode(['success' => false, 'message' => "Reservation {$ref} not found."]);
+            exit;
+        }
+        if (in_array($currSt, ['Pending', 'Pending Endorsement', 'Awaiting Endorsement'])) {
+            echo json_encode(['success' => false, 'message' => 'Hindi pa maaaring i-recommend ang reservation na ito dahil kailangan muna itong i-endorse ng Endorsement Officer (Stage 1).']);
+            exit;
+        }
+
         $defaultRemarks = 'Verified equipment, schedules, and logistical feasibility. Recommended for Stage 3 final clearance.';
         $finalRemarks = !empty($remarks) ? $remarks : $defaultRemarks;
 
@@ -130,6 +171,23 @@ try {
             exit;
         }
 
+        // Sequence Validation: Must be endorsed AND recommended before final clearance
+        $chkStmt = $db->prepare("SELECT status FROM reservations WHERE reference_no = :ref LIMIT 1");
+        $chkStmt->execute([':ref' => $ref]);
+        $currSt = $chkStmt->fetchColumn();
+        if (!$currSt) {
+            echo json_encode(['success' => false, 'message' => "Reservation {$ref} not found."]);
+            exit;
+        }
+        if (in_array($currSt, ['Pending', 'Pending Endorsement', 'Awaiting Endorsement'])) {
+            echo json_encode(['success' => false, 'message' => 'Hindi pa maaaring aprubahan ang reservation na ito dahil kailangan muna itong i-endorse ng Endorsement Officer (Stage 1).']);
+            exit;
+        }
+        if (in_array($currSt, ['Pending Recommendation', 'Awaiting Recommendation'])) {
+            echo json_encode(['success' => false, 'message' => 'Hindi pa maaaring aprubahan ang reservation na ito dahil kailangan muna itong suriin at i-recommend ng Recommending Officer (Stage 2).']);
+            exit;
+        }
+
         $defaultRemarks = 'Final institutional clearance granted. Official permit and venue gate pass authorized.';
         $finalRemarks = !empty($remarks) ? $remarks : $defaultRemarks;
 
@@ -172,6 +230,41 @@ try {
     if ($action === 'reject' || $action === 'disapprove') {
         if (empty($ref)) {
             echo json_encode(['success' => false, 'message' => 'Reference number is required.']);
+            exit;
+        }
+
+        // Verify current status and ensure only authorized role for this stage (or super_admin) can decline
+        $chkStmt = $db->prepare("SELECT status FROM reservations WHERE reference_no = :ref LIMIT 1");
+        $chkStmt->execute([':ref' => $ref]);
+        $currSt = $chkStmt->fetchColumn();
+        if (!$currSt) {
+            echo json_encode(['success' => false, 'message' => "Reservation {$ref} not found."]);
+            exit;
+        }
+
+        if (in_array($currSt, ['Approved', 'Completed'])) {
+            echo json_encode(['success' => false, 'message' => "Hindi na maaaring i-decline ang reservation na ito dahil opisyal na itong aprubado."]);
+            exit;
+        }
+        if (in_array($currSt, ['Rejected', 'Cancelled'])) {
+            echo json_encode(['success' => false, 'message' => "Ang reservation na ito ay declined / cancelled na."]);
+            exit;
+        }
+
+        $isStage1 = in_array($currSt, ['Pending', 'Pending Endorsement', 'Awaiting Endorsement']);
+        $isStage2 = in_array($currSt, ['Pending Recommendation', 'Awaiting Recommendation']);
+        $isStage3 = in_array($currSt, ['Pending Clearance', 'Awaiting Clearance']);
+
+        if ($isStage1 && !in_array($normalizedRole, ['endorsement', 'super_admin'])) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized. Tanging Endorsement Officer o Super Admin lamang ang maaaring mag-decline habang nasa Stage 1 (Awaiting Endorsement).']);
+            exit;
+        }
+        if ($isStage2 && !in_array($normalizedRole, ['recommendation', 'super_admin'])) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized. Tanging Recommending Officer o Super Admin lamang ang maaaring mag-decline habang nasa Stage 2 (Awaiting Recommendation).']);
+            exit;
+        }
+        if ($isStage3 && !in_array($normalizedRole, ['clearance', 'super_admin'])) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized. Tanging Clearance Authority o Super Admin lamang ang maaaring mag-decline habang nasa Stage 3 (Awaiting Clearance).']);
             exit;
         }
 
@@ -228,7 +321,8 @@ try {
             endorsed_by = ?,
             endorsed_at = NOW(),
             endorsement_remarks = ?
-            WHERE reference_no IN ($placeholders)";
+            WHERE reference_no IN ($placeholders)
+              AND status IN ('Pending', 'Pending Endorsement', 'Awaiting Endorsement')";
         
         $stmt = $db->prepare($sql);
         $params = array_merge([$adminUserId, $finalRemarks], $refs);
@@ -269,7 +363,8 @@ try {
             recommended_by = ?,
             recommended_at = NOW(),
             recommendation_remarks = ?
-            WHERE reference_no IN ($placeholders)";
+            WHERE reference_no IN ($placeholders)
+              AND status IN ('Pending Recommendation', 'Awaiting Recommendation')";
         
         $stmt = $db->prepare($sql);
         $params = array_merge([$adminUserId, $finalRemarks], $refs);
@@ -310,7 +405,8 @@ try {
             cleared_by = ?,
             cleared_at = NOW(),
             clearance_remarks = ?
-            WHERE reference_no IN ($placeholders)";
+            WHERE reference_no IN ($placeholders)
+              AND status IN ('Pending Clearance', 'Awaiting Clearance')";
         
         $stmt = $db->prepare($sql);
         $params = array_merge([$adminUserId, $finalRemarks], $refs);

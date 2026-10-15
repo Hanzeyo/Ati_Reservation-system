@@ -881,6 +881,78 @@ body.booking-body {
   margin-bottom: 3rem;
 }
 
+/* ==========================================================================
+   Booking Empty State (When no halls or dorms are available or match filter)
+   ========================================================================== */
+.booking-empty-state {
+  grid-column: 1 / -1;
+  background: #ffffff;
+  border: 2px dashed #cfe0d5;
+  border-radius: 18px;
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.25s ease;
+}
+
+.booking-empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #edf7f0;
+  color: #175432;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+}
+
+.booking-empty-icon svg {
+  width: 32px;
+  height: 32px;
+  stroke: #175432;
+}
+
+.booking-empty-title {
+  font-family: var(--font-serif, inherit);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #173822;
+  margin: 0 0 0.45rem 0;
+}
+
+.booking-empty-desc {
+  font-size: 0.92rem;
+  color: #557262;
+  max-width: 480px;
+  margin: 0 auto 1.5rem;
+  line-height: 1.5;
+}
+
+.btn-empty-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #175432;
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 0.65rem 1.5rem;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(23, 84, 50, 0.2);
+  text-decoration: none;
+}
+
+.btn-empty-reset:hover {
+  background: #0f3820;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(23, 84, 50, 0.3);
+}
+
 .facility-choice-card {
   background: #ffffff;
   border-radius: 16px;
@@ -1299,6 +1371,50 @@ body.booking-body {
   border-color: #175432;
 }
 
+/* Pending Request Status - Warm Amber with Top-Right Indicator */
+.slot-day-btn.has-pending {
+  background-color: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+  position: relative;
+  font-weight: 700;
+}
+
+.slot-day-btn.has-pending:hover {
+  background-color: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+.slot-day-btn.has-pending::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #f59e0b;
+  box-shadow: 0 0 0 1px #fffbeb;
+}
+
+.slot-day-btn.today.has-pending::after {
+  top: 5px;
+  right: 5px;
+  background-color: #f59e0b;
+}
+
+.slot-day-btn.selected.has-pending {
+  background-color: #175432 !important;
+  border-color: #175432 !important;
+  color: #ffffff !important;
+}
+
+.slot-day-btn.selected.has-pending::after {
+  background-color: #fbbf24;
+  box-shadow: 0 0 0 1.5px #175432;
+}
+
 /* Reserved Status */
 .slot-day-btn.reserved {
   background-color: #fef2f2;
@@ -1306,20 +1422,20 @@ body.booking-body {
   color: #e11d48;
 }
 
-/* Suspended Status - Yellow / Amber */
+/* Suspended Status - Neutral Slate Gray */
 .slot-day-btn.suspended {
-  background-color: #fef9c3;
-  border-color: #facc15;
-  color: #854d0e;
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
   cursor: not-allowed;
   position: relative;
   font-weight: 700;
 }
 
 .slot-day-btn.suspended:hover {
-  background-color: #fef08a;
-  border-color: #eab308;
-  color: #713f12;
+  background-color: #e2e8f0;
+  border-color: #94a3b8;
+  color: #334155;
 }
 
 .slot-day-btn.suspended::after {
@@ -1330,8 +1446,8 @@ body.booking-body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background-color: #eab308;
-  box-shadow: 0 0 0 1px #fef9c3;
+  background-color: #64748b;
+  box-shadow: 0 0 0 1px #f1f5f9;
 }
 
 /* Past Date Status - Muted Gray / Disabled */
@@ -1443,12 +1559,16 @@ body.booking-body {
   background-color: #38a169;
 }
 
+.legend-circle.pending {
+  background-color: #f59e0b;
+}
+
 .legend-circle.reserved {
   background-color: #e53e3e;
 }
 
 .legend-circle.suspended {
-  background-color: #eab308;
+  background-color: #64748b;
 }
 
 .legend-circle.selected {
@@ -2480,6 +2600,33 @@ body.booking-body {
   justify-content: center;
 }
 
+/* MAINTENANCE HOLD STATE (Blocked - not selectable) */
+.dorm-room-box.maintenance {
+  background: #f8fafc;
+  border: 1.5px dashed #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  opacity: 0.65;
+  filter: grayscale(0.5);
+}
+
+.dorm-room-box.maintenance:hover {
+  transform: none;
+  box-shadow: none;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.dorm-room-box.maintenance .dorm-room-status {
+  color: #b91c1c;
+  font-weight: 800;
+}
+
+.dorm-room-hint.maintenance-hold {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
 .dorm-room-hint {
   font-size: 0.62rem;
   font-weight: 600;
@@ -3020,3 +3167,38 @@ body.booking-body {
 .dept-options-scroll::-webkit-scrollbar-thumb:hover {
   background: #89aa96;
 }
+
+/* ==========================================================================
+   UNDER MAINTENANCE FACILITY CARD STYLES
+   ========================================================================== */
+.facility-choice-card.under-maintenance {
+  opacity: 0.65;
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  position: relative;
+}
+
+.facility-choice-card.under-maintenance:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: #cbd5e1 !important;
+}
+
+.facility-choice-card.under-maintenance .facility-card-image img {
+  filter: grayscale(60%);
+}
+
+.facility-choice-card.under-maintenance .facility-title {
+  color: #64748b;
+}
+
+.facility-choice-card.under-maintenance .btn-select-facility {
+  background: #94a3b8 !important;
+  border-color: #94a3b8 !important;
+  color: #ffffff !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  pointer-events: none !important;
+}

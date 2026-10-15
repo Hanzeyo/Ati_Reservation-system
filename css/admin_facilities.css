@@ -466,3 +466,244 @@
 .peso-input-field::placeholder {
   color: #94a3b8;
 }
+
+/* ==========================================================================
+   DORMITORY ROOMS MANAGEMENT MODAL & CONTROLS
+   ========================================================================== */
+.admin-modal-card.rooms-modal {
+  max-width: 760px;
+}
+
+.btn-manage-rooms {
+  background: #eef7f2 !important;
+  color: #174d2f !important;
+  border-color: #c4ded0 !important;
+  font-weight: 700 !important;
+}
+
+.btn-manage-rooms:hover {
+  background: #174d2f !important;
+  color: #ffffff !important;
+  border-color: #174d2f !important;
+}
+
+.rooms-kpi-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.15rem;
+}
+
+.room-kpi-pill {
+  background: #f8faf9;
+  border: 1px solid #e2ede6;
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.room-kpi-pill .kpi-num {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.room-kpi-pill .kpi-lbl {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #637f6f;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.room-kpi-pill.total .kpi-num { color: #174d2f; }
+.room-kpi-pill.available .kpi-num { color: #16a34a; }
+.room-kpi-pill.occupied .kpi-num { color: #d97706; }
+.room-kpi-pill.maint .kpi-num { color: #dc2626; }
+
+/* Quick Add Room Form */
+.room-quick-add-box {
+  background: #f4f9f6;
+  border: 1.5px dashed #b9dec7;
+  border-radius: 12px;
+  padding: 0.85rem 1.15rem;
+  margin-bottom: 1.25rem;
+}
+
+.room-quick-add-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #174d2f;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.room-quick-add-fields {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.room-quick-add-fields input,
+.room-quick-add-fields select {
+  padding: 0.55rem 0.75rem;
+  border: 1.5px solid #cce2d4;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  background: #ffffff;
+  color: #172c1f;
+  outline: none;
+}
+
+.room-quick-add-fields input:focus,
+.room-quick-add-fields select:focus {
+  border-color: #174d2f;
+  box-shadow: 0 0 0 2px rgba(23, 77, 47, 0.12);
+}
+
+.btn-add-room-submit {
+  background: #174d2f;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-add-room-submit:hover {
+  background: #0f3621;
+}
+
+/* Rooms Grid & Tiles */
+.room-tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0.85rem;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.room-admin-tile {
+  background: #ffffff;
+  border: 1.5px solid #dce8e0;
+  border-radius: 12px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.room-admin-tile:hover {
+  border-color: #b5d5c0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.room-admin-tile.is-maintenance {
+  background: #fff8f8;
+  border-color: #fca5a5;
+}
+
+.room-admin-tile.is-occupied {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.room-tile-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.room-tile-number {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #172c1f;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.room-tile-floor {
+  font-size: 0.72rem;
+  color: #637f6f;
+  font-weight: 500;
+}
+
+.room-tile-status-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.room-tile-status-pill.avail {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.room-tile-status-pill.occ {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.room-tile-status-pill.maint {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.room-tile-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e5ede8;
+}
+
+.room-maint-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #4b6354;
+}
+
+.btn-room-delete {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.btn-room-delete:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+

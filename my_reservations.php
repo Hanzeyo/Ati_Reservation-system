@@ -20,6 +20,7 @@ $userId = $_SESSION['user_id'] ?? 1;
 $query = "SELECT r.*, 
                  f.name AS facility_name, 
                  f.type AS facility_type,
+                 f.image AS facility_image,
                  rm.room_number,
                  rm.floor AS room_floor,
                  u.full_name,
@@ -634,9 +635,9 @@ foreach ($reservationsList as $resItem) {
 
       <?php if (empty($reservationsList)): ?>
         <!-- Shown if user has zero total reservations in database -->
-        <div class="empty-res-state" style="display: block; width: 100%; text-align: center; padding: 3.5rem 1.5rem; background: #fff; border-radius: 14px; border: 1.5px dashed #d0ded4;">
+        <div class="empty-res-state" id="zeroReservationsState" style="display: block; width: 100%; text-align: center; padding: 3.5rem 1.5rem; background: #fff; border-radius: 14px; border: 1.5px dashed #d0ded4;">
           <div class="empty-res-icon" style="margin: 0 auto 1.25rem;">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#175432" width="48" height="48">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#175432" width="48" height="48" stroke-width="1.8">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
               <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -661,20 +662,50 @@ foreach ($reservationsList as $resItem) {
           $category = $isDorm ? 'dormitory' : 'facility';
           
           $venueName = $item['facility_name'] ?? 'Facility';
+          $facilityImgRaw = trim($item['facility_image'] ?? '');
+          
           $slug = 'function-hall';
-          $venueThumb = 'assets/images/function_hall.jpg';
           if (stripos($venueName, 'boardroom') !== false) {
               $slug = 'boardroom';
-              $venueThumb = 'assets/images/boardroom.jpg';
           } elseif (stripos($venueName, 'training') !== false) {
               $slug = 'training-hall';
-              $venueThumb = 'assets/images/training_hall.jpg';
           } elseif (stripos($venueName, 'mess') !== false) {
               $slug = 'mess-hall';
-              $venueThumb = 'assets/images/mess_hall.jpg';
+          } elseif (stripos($venueName, 'serrano') !== false) {
+              $slug = 'serrano-hall';
           } elseif ($isDorm) {
               $slug = 'dormitory';
-              $venueThumb = 'assets/images/dormitory.jpg';
+          }
+
+          // Prioritize actual facility image from database
+          $venueThumb = '';
+          if (!empty($facilityImgRaw)) {
+              if (file_exists(__DIR__ . '/' . ltrim($facilityImgRaw, '/\\'))) {
+                  $venueThumb = ltrim($facilityImgRaw, '/\\');
+              } elseif (file_exists(__DIR__ . '/assets/images/' . ltrim($facilityImgRaw, '/\\'))) {
+                  $venueThumb = 'assets/images/' . ltrim($facilityImgRaw, '/\\');
+              } elseif (str_starts_with($facilityImgRaw, 'http://') || str_starts_with($facilityImgRaw, 'https://')) {
+                  $venueThumb = $facilityImgRaw;
+              } else {
+                  $venueThumb = $facilityImgRaw;
+              }
+          }
+
+          // Fallback if no uploaded or custom image exists
+          if (empty($venueThumb)) {
+              if (stripos($venueName, 'boardroom') !== false) {
+                  $venueThumb = 'assets/images/boardroom.jpg';
+              } elseif (stripos($venueName, 'training') !== false) {
+                  $venueThumb = 'assets/images/training_hall.jpg';
+              } elseif (stripos($venueName, 'mess') !== false) {
+                  $venueThumb = 'assets/images/mess_hall.jpg';
+              } elseif (stripos($venueName, 'serrano') !== false) {
+                  $venueThumb = 'assets/images/serrano_hall.jpg';
+              } elseif ($isDorm) {
+                  $venueThumb = 'assets/images/dormitory.jpg';
+              } else {
+                  $venueThumb = 'assets/images/function_hall.jpg';
+              }
           }
 
           $startTs = strtotime($item['start_date']);
@@ -732,6 +763,7 @@ foreach ($reservationsList as $resItem) {
           data-venue="<?= htmlspecialchars($slug) ?>"
           data-ref="<?= htmlspecialchars($item['reference_no']) ?>" 
           data-venue-title="<?= htmlspecialchars($venueName . (!empty($item['room_number']) ? ' - Room ' . $item['room_number'] : '')) ?>" 
+          data-venue-image="<?= htmlspecialchars($venueThumb) ?>"
           data-dates="<?= htmlspecialchars($formattedDates) ?>"
           data-time="<?= htmlspecialchars($timeSlotText) ?>" 
           data-pax="<?= htmlspecialchars($paxText) ?>"
@@ -742,7 +774,7 @@ foreach ($reservationsList as $resItem) {
           data-remarks="<?= htmlspecialchars($item['admin_remarks'] ?? '') ?>">
 
           <div class="res-card-media">
-            <img src="<?= htmlspecialchars($venueThumb) ?>" alt="<?= htmlspecialchars($venueName) ?>">
+            <img src="<?= htmlspecialchars($venueThumb) ?>" alt="<?= htmlspecialchars($venueName) ?>" onerror="this.onerror=null; this.src='<?= $isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg' ?>';">
             <span class="venue-thumb-pill <?= $isDorm ? 'dorm-pill' : '' ?>"><?= htmlspecialchars($venueName) ?></span>
           </div>
 
@@ -972,22 +1004,17 @@ foreach ($reservationsList as $resItem) {
       </div>
     </section>
 
-    <!-- Empty State Result -->
-    <div class="empty-res-state" id="emptyResState">
+    <!-- Empty State Result (Filters / Search) -->
+    <div class="empty-res-state" id="emptyResState" style="display: none;">
       <div class="empty-res-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2">
-            </line>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
       </div>
       <h3>No Reservations Found</h3>
-      <p>We couldn't find any reservation requests matching your selected filter criteria. Try adjusting your search
-        query or venue selection.</p>
-      <button type="button" class="btn-new-res-action"
-        onclick="document.getElementById('resSearchInput').value=''; document.getElementById('resVenueFilter').value='all'; document.querySelector('.filter-tab-btn[data-filter=\'all\']').click();">
+      <p>We couldn't find any reservation requests matching your selected filter criteria. Try adjusting your search query or venue selection.</p>
+      <button type="button" class="btn-new-res-action" id="btnResetResFilters">
         <span>Reset Filters</span>
       </button>
     </div>

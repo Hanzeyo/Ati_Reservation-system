@@ -31,17 +31,26 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function initRoleFromURL() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roleParam = urlParams.get('role');
-  if (['endorsement', 'recommendation', 'clearance', 'all'].includes(roleParam)) {
-    activeRole = roleParam;
+  const userRole = window.currentUserRole || 'super_admin';
+  if (userRole !== 'super_admin') {
+    activeRole = userRole;
   } else {
-    activeRole = 'all';
+    const urlParams = new URLSearchParams(window.location.search);
+    const roleParam = urlParams.get('role');
+    if (['endorsement', 'recommendation', 'clearance', 'all'].includes(roleParam)) {
+      activeRole = roleParam;
+    } else {
+      activeRole = 'all';
+    }
   }
   updatePersonaBannerUI();
 }
 
 function switchAdminRole(role) {
+  const userRole = window.currentUserRole || 'super_admin';
+  if (userRole !== 'super_admin') {
+    return; // Role switching is restricted to super administrators
+  }
   activeRole = role;
   const url = new URL(window.location.href);
   url.searchParams.set('role', role);
@@ -248,10 +257,12 @@ function renderApprovalsTable() {
       step3Class += ' rejected';
     }
 
-    // Action buttons based on current stage and activeRole
+    // Action buttons based on current stage and activeRole / userRole
+    const userRole = window.currentUserRole || 'super_admin';
     let actionButtonsHtml = '';
     if (item.stage === 'stage1') {
-      if (activeRole === 'endorsement' || activeRole === 'all') {
+      const canEndorse = (userRole === 'super_admin' || userRole === 'endorsement');
+      if (canEndorse && (activeRole === 'endorsement' || activeRole === 'all')) {
         actionButtonsHtml = `
           <button type="button" class="btn-card-action" style="background:#d97706; color:#fff;" onclick="quickEndorseStage1('${item.ref}')" title="Issue Official Endorsement">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -265,7 +276,8 @@ function renderApprovalsTable() {
         actionButtonsHtml = `<span style="font-size:0.75rem; color:#d97706; font-weight:700;">Awaiting Endorsement</span>`;
       }
     } else if (item.stage === 'stage2') {
-      if (activeRole === 'recommendation' || activeRole === 'all') {
+      const canRecommend = (userRole === 'super_admin' || userRole === 'recommendation');
+      if (canRecommend && (activeRole === 'recommendation' || activeRole === 'all')) {
         actionButtonsHtml = `
           <button type="button" class="btn-card-action" style="background:#2563eb; color:#fff;" onclick="quickRecommendStage2('${item.ref}')" title="Issue Logistics Recommendation">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -279,7 +291,8 @@ function renderApprovalsTable() {
         actionButtonsHtml = `<span style="font-size:0.75rem; color:#2563eb; font-weight:700;">Awaiting Recommendation</span>`;
       }
     } else if (item.stage === 'stage3') {
-      if (activeRole === 'clearance' || activeRole === 'all') {
+      const canClear = (userRole === 'super_admin' || userRole === 'clearance');
+      if (canClear && (activeRole === 'clearance' || activeRole === 'all')) {
         actionButtonsHtml = `
           <button type="button" class="btn-card-action" style="background:#10b981; color:#fff;" onclick="quickGrantClearanceStage3('${item.ref}')" title="Grant Directorial Clearance & Permit">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>

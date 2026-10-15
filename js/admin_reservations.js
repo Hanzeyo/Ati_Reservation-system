@@ -86,9 +86,157 @@ function initDateDisplay() {
 }
 
 /* ==========================================================================
-   APPROVE RESERVATION ACTION
+   STAGE 1: ENDORSE RESERVATION ACTION
    ========================================================================== */
-async function approveReservation(refId, applicantName, venueName) {
+async function endorseReservation(refId, applicantName) {
+  const row = document.querySelector(`tr[data-ref="${refId}"]`);
+  if (!row) return;
+
+  const btnEndorse = row.querySelector('.btn-table-action.endorse');
+  if (btnEndorse) {
+    btnEndorse.disabled = true;
+    btnEndorse.innerHTML = `<span>Endorsing...</span>`;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'stage1');
+    formData.append('ref', refId);
+    formData.append('remarks', 'Official endorsement issued via All Reservations desk.');
+
+    const res = await fetch('ajax/update_approval_stage.php', {
+      method: 'POST',
+      body: formData
+    });
+    const result = await res.json();
+
+    if (!result.success) {
+      showAdminToast(result.message || 'Endorsement failed.', 'decline');
+      if (btnEndorse) {
+        btnEndorse.disabled = false;
+        btnEndorse.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Endorse</span>`;
+      }
+      return;
+    }
+
+    row.setAttribute('data-stage', 'stage2');
+    const statusCell = row.querySelector('td:nth-child(6)');
+    if (statusCell) {
+      statusCell.innerHTML = `
+        <span class="status-pill status-stage2">
+          <span class="status-dot"></span>
+          Awaiting Recommendation
+        </span>
+      `;
+    }
+
+    const actionsCell = row.querySelector('td:nth-child(7)');
+    if (actionsCell) {
+      actionsCell.innerHTML = `
+        <div class="action-buttons-wrap">
+          <button type="button" class="btn-table-action recommend" onclick="recommendReservation('${refId}', '${applicantName}')" title="Recommend Request (Stage 2)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Recommend</span>
+          </button>
+          <button type="button" class="btn-table-action decline" onclick="openDeclineModal('${refId}', '${applicantName}')" title="Decline Request">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+          <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')" title="View Booking Form">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
+      `;
+    }
+
+    showAdminToast(result.message || `Reservation ${refId} officially endorsed!`, 'success');
+  } catch (err) {
+    console.error('Endorsement error:', err);
+    showAdminToast('Network error while processing endorsement.', 'decline');
+    if (btnEndorse) {
+      btnEndorse.disabled = false;
+      btnEndorse.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Endorse</span>`;
+    }
+  }
+}
+
+/* ==========================================================================
+   STAGE 2: RECOMMEND RESERVATION ACTION
+   ========================================================================== */
+async function recommendReservation(refId, applicantName) {
+  const row = document.querySelector(`tr[data-ref="${refId}"]`);
+  if (!row) return;
+
+  const btnRecommend = row.querySelector('.btn-table-action.recommend');
+  if (btnRecommend) {
+    btnRecommend.disabled = true;
+    btnRecommend.innerHTML = `<span>Recommending...</span>`;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'stage2');
+    formData.append('ref', refId);
+    formData.append('remarks', 'Verified logistics and recommended via All Reservations desk.');
+
+    const res = await fetch('ajax/update_approval_stage.php', {
+      method: 'POST',
+      body: formData
+    });
+    const result = await res.json();
+
+    if (!result.success) {
+      showAdminToast(result.message || 'Recommendation failed.', 'decline');
+      if (btnRecommend) {
+        btnRecommend.disabled = false;
+        btnRecommend.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Recommend</span>`;
+      }
+      return;
+    }
+
+    row.setAttribute('data-stage', 'stage3');
+    const statusCell = row.querySelector('td:nth-child(6)');
+    if (statusCell) {
+      statusCell.innerHTML = `
+        <span class="status-pill status-stage3">
+          <span class="status-dot"></span>
+          Awaiting Clearance
+        </span>
+      `;
+    }
+
+    const actionsCell = row.querySelector('td:nth-child(7)');
+    if (actionsCell) {
+      actionsCell.innerHTML = `
+        <div class="action-buttons-wrap">
+          <button type="button" class="btn-table-action approve" onclick="clearanceReservation('${refId}', '${applicantName}')" title="Grant Director Clearance (Stage 3)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span>Approve</span>
+          </button>
+          <button type="button" class="btn-table-action decline" onclick="openDeclineModal('${refId}', '${applicantName}')" title="Decline Request">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+          <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')" title="View Booking Form">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </div>
+      `;
+    }
+
+    showAdminToast(result.message || `Reservation ${refId} recommended for final clearance!`, 'success');
+  } catch (err) {
+    console.error('Recommendation error:', err);
+    showAdminToast('Network error while processing recommendation.', 'decline');
+    if (btnRecommend) {
+      btnRecommend.disabled = false;
+      btnRecommend.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Recommend</span>`;
+    }
+  }
+}
+
+/* ==========================================================================
+   STAGE 3: CLEARANCE & FINAL APPROVAL
+   ========================================================================== */
+async function clearanceReservation(refId, applicantName, venueName) {
   const row = document.querySelector(`tr[data-ref="${refId}"]`);
   if (!row) return;
 
@@ -100,7 +248,7 @@ async function approveReservation(refId, applicantName, venueName) {
 
   try {
     const formData = new FormData();
-    formData.append('action', 'approve');
+    formData.append('action', 'stage3');
     formData.append('ref', refId);
     formData.append('remarks', 'Directly approved by Administrator via All Reservations desk.');
 
@@ -114,16 +262,18 @@ async function approveReservation(refId, applicantName, venueName) {
       showAdminToast(result.message || 'Approval failed.', 'decline');
       if (btnApprove) {
         btnApprove.disabled = false;
-        btnApprove.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Approve</span>`;
+        btnApprove.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg><span>Approve</span>`;
       }
       return;
     }
 
     if (reservationsData[refId]) {
       reservationsData[refId].status = 'approved';
+      reservationsData[refId].stage = 'approved';
     }
 
     row.setAttribute('data-status', 'approved');
+    row.setAttribute('data-stage', 'approved');
     const statusCell = row.querySelector('td:nth-child(6)');
     if (statusCell) {
       statusCell.innerHTML = `
@@ -153,10 +303,13 @@ async function approveReservation(refId, applicantName, venueName) {
     showAdminToast('Network error while processing approval.', 'decline');
     if (btnApprove) {
       btnApprove.disabled = false;
-      btnApprove.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Approve</span>`;
+      btnApprove.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg><span>Approve</span>`;
     }
   }
 }
+
+// Backwards compatibility alias
+const approveReservation = clearanceReservation;
 
 /* ==========================================================================
    DECLINE MODAL & ACTION
