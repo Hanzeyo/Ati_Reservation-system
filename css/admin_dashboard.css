@@ -1436,6 +1436,85 @@ body.admin-app-body {
   border-color: #174d2f;
 }
 
+.btn-table-action.delete-res {
+  background: #fff5f5;
+  color: #dc2626;
+  border-color: #fecaca;
+  padding: 0.28rem 0.45rem;
+}
+
+.btn-table-action.delete-res:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+  transform: translateY(-1px);
+}
+
+.btn-table-action.restore {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.btn-table-action.restore:hover {
+  background: #047857;
+  color: #ffffff;
+  border-color: #047857;
+  transform: translateY(-1px);
+}
+
+.btn-table-action.purge {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.btn-table-action.purge:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+  transform: translateY(-1px);
+}
+
+.filter-tab-btn.tab-archived {
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.filter-tab-btn.tab-archived:hover,
+.filter-tab-btn.tab-archived.active {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
+
+.filter-tab-btn.tab-archived.active .tab-count-pill {
+  background: #ffffff !important;
+  color: #dc2626 !important;
+}
+
+.row-reservation-archived {
+  background: #fffdfd;
+}
+
+.row-reservation-archived:hover {
+  background: #fef2f2 !important;
+}
+
+.admin-data-table th:last-child,
+.admin-data-table td:last-child {
+  overflow: visible !important;
+}
+
+.action-buttons-wrap {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 0.35rem !important;
+  white-space: nowrap !important;
+  flex-wrap: nowrap !important;
+}
+
 .badge-approved-note {
   font-size: 0.72rem;
   font-weight: 700;

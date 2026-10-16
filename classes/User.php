@@ -13,7 +13,7 @@ class User extends BaseModel {
     public $status;
 
     public function emailExists() {
-        $query = "SELECT id, full_name, password_hash, role, status FROM " . $this->table_name . " WHERE email = ? LIMIT 0,1";
+        $query = "SELECT id, full_name, password_hash, role, status FROM " . $this->table_name . " WHERE email = ? AND (deleted_at IS NULL) LIMIT 0,1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $this->email);
         $stmt->execute();

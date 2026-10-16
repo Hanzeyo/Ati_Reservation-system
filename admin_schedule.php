@@ -26,10 +26,10 @@ $db->exec("CREATE TABLE IF NOT EXISTS schedule_blocks (
 )");
 
 // Dynamic sidebar counts
-$pendingStmt = $db->query("SELECT COUNT(*) FROM reservations WHERE status IN ('Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance', 'Awaiting Endorsement', 'Awaiting Recommendation', 'Awaiting Clearance')");
+$pendingStmt = $db->query("SELECT COUNT(*) FROM reservations WHERE status IN ('Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance', 'Awaiting Endorsement', 'Awaiting Recommendation', 'Awaiting Clearance') AND deleted_at IS NULL");
 $pendingCount = (int)$pendingStmt->fetchColumn();
 
-$userCountStmt = $db->query("SELECT COUNT(*) FROM users");
+$userCountStmt = $db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
 $totalUsersCount = (int)$userCountStmt->fetchColumn();
 
 // Fetch facilities
@@ -56,6 +56,7 @@ $resQuery = "SELECT r.*,
              LEFT JOIN users rec_u ON r.recommended_by = rec_u.id
              LEFT JOIN users clr_u ON r.cleared_by = clr_u.id
              WHERE r.status NOT IN ('Rejected', 'Cancelled')
+               AND r.deleted_at IS NULL
              ORDER BY r.start_date ASC";
 
 $stmt = $db->query($resQuery);

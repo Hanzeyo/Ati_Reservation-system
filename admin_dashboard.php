@@ -23,6 +23,7 @@ $resQuery = "SELECT r.*,
              LEFT JOIN facilities f ON r.facility_id = f.id
              LEFT JOIN rooms rm ON r.room_id = rm.id
              LEFT JOIN users u ON r.user_id = u.id
+             WHERE r.deleted_at IS NULL
              ORDER BY r.id DESC";
 
 $stmt = $db->query($resQuery);
@@ -88,7 +89,7 @@ foreach ($allReservations as $row) {
 }
 
 // 2. Fetch User count
-$userCountStmt = $db->query("SELECT COUNT(*) FROM users");
+$userCountStmt = $db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
 $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
 
 // 3. Fetch Facilities
@@ -193,7 +194,7 @@ $estimatedUtilization = number_format(max($totalPaxServed * 850, 45000));
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
               </svg>
-              <span>Director IV Executive Administration</span>
+              <span>Admin Portal</span>
             </div>
             <h2>Facility & Dormitory Reservation Overview</h2>
             <p>Review and act on pending institutional requests, oversee auditorium & dormitory occupancy, and maintain live facility schedules for ATI Central Office.</p>

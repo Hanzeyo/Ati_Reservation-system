@@ -308,10 +308,29 @@
 }
 
 /* User management table actions */
+#usersTable {
+  table-layout: auto !important;
+}
+
+#usersTable thead th,
+#usersTable tbody td {
+  overflow: visible !important;
+}
+
+#usersTable thead th:last-child,
+#usersTable tbody td:last-child {
+  width: auto !important;
+  min-width: 200px !important;
+  text-align: right !important;
+  white-space: nowrap !important;
+}
+
 .user-action-btns {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 0.4rem !important;
+  white-space: nowrap !important;
 }
 
 .btn-user-action {
@@ -325,6 +344,8 @@
   cursor: pointer;
   transition: all 0.18s ease;
   border: 1px solid transparent;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 .btn-user-action.edit {
@@ -355,4 +376,60 @@
   background: #dcfce7;
   color: #15803d;
   border-color: #86efac;
+}
+
+/* Soft Delete / Trash Styles */
+.user-filter-pill.tab-archived {
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.user-filter-pill.tab-archived:hover,
+.user-filter-pill.tab-archived.active {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+}
+
+.user-filter-pill.tab-archived.active .tab-count-pill {
+  background: #ffffff !important;
+  color: #dc2626 !important;
+}
+
+.user-avatar-badge.archived {
+  background: #f3f4f6 !important;
+  color: #9ca3af !important;
+  border-color: #d1d5db !important;
+}
+
+.row-user-archived {
+  background: #fffcfc;
+}
+
+.row-user-archived:hover {
+  background: #fef2f2 !important;
+}
+
+.btn-user-action.restore {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #a7f3d0;
+}
+
+.btn-user-action.restore:hover {
+  background: #047857;
+  color: #ffffff;
+  border-color: #047857;
+}
+
+.btn-user-action.purge {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.btn-user-action.purge:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
 }

@@ -29,6 +29,7 @@ try {
               LEFT JOIN rooms rm ON r.room_id = rm.id
               LEFT JOIN users u ON r.user_id = u.id
               WHERE r.status = 'Approved'
+                AND r.deleted_at IS NULL
               ORDER BY r.start_date ASC";
 
     $stmt = $conn->prepare($query);

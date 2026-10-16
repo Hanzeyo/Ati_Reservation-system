@@ -16,19 +16,25 @@ $pendingStmt = $db->query("SELECT COUNT(*) FROM reservations WHERE status IN ('P
 $sidebarPendingCount = (int)($pendingStmt ? $pendingStmt->fetchColumn() : 0);
 
 // Fetch dynamic users from MySQL database
-$stmt = $db->query("SELECT id, full_name, email, contact_number, office_agency, category, role, status, created_at FROM users ORDER BY id ASC");
+$stmt = $db->query("SELECT id, full_name, email, contact_number, office_agency, category, role, status, created_at, deleted_at FROM users ORDER BY id ASC");
 $usersList = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
 // Dynamic KPI metrics for 3-Stage Governance
-$totalUsers = count($usersList);
+$totalActiveUsers = 0;
 $activeUsers = 0;
 $endorsementCount = 0;
 $recommendationCount = 0;
 $clearanceCount = 0;
 $superAdminCount = 0;
 $requestorCount = 0;
+$archivedCount = 0;
 
 foreach ($usersList as $u) {
+    if (!empty($u['deleted_at'])) {
+        $archivedCount++;
+        continue;
+    }
+    $totalActiveUsers++;
     if ($u['status'] === 'active') $activeUsers++;
     
     $r = strtolower($u['role']);
@@ -314,7 +320,7 @@ function getRolePresentation($role) {
           <div class="filter-tabs-group" role="tablist">
             <button type="button" class="user-filter-pill active" data-role="all" onclick="filterUsersByRole('all')">
               <span>All Accounts</span>
-              <span class="tab-count-pill" id="pillCountAll"><?= $totalUsers ?></span>
+              <span class="tab-count-pill" id="pillCountAll"><?= $totalActiveUsers ?></span>
             </button>
             <button type="button" class="user-filter-pill" data-role="endorsement" onclick="filterUsersByRole('endorsement')">
               <span>Endorsement</span>
@@ -335,6 +341,11 @@ function getRolePresentation($role) {
             <button type="button" class="user-filter-pill" data-role="user" onclick="filterUsersByRole('user')">
               <span>Requestors / Staff</span>
               <span class="tab-count-pill" id="pillCountStaff"><?= $requestorCount ?></span>
+            </button>
+            <button type="button" class="user-filter-pill tab-archived" data-role="archived" onclick="filterUsersByRole('archived')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <span>Archived / Trash</span>
+              <span class="tab-count-pill" id="pillCountArchived" style="background: #fee2e2; color: #991b1b;"><?= $archivedCount ?></span>
             </button>
           </div>
 
@@ -385,12 +396,12 @@ function getRolePresentation($role) {
             <table class="admin-data-table" id="usersTable">
               <thead>
                 <tr>
-                  <th style="width: 25%;">User & Official Email</th>
-                  <th style="width: 20%;">Office / Division</th>
-                  <th style="width: 22%;">Assigned Clearance Role</th>
-                  <th style="width: 17%;">Privilege Scope</th>
+                  <th style="width: 22%;">User & Official Email</th>
+                  <th style="width: 18%;">Office / Division</th>
+                  <th style="width: 20%;">Assigned Clearance Role</th>
+                  <th style="width: 16%;">Privilege Scope</th>
                   <th style="width: 8%;">Status</th>
-                  <th style="width: 8%; text-align: right;">Action</th>
+                  <th style="width: 16%; min-width: 200px; text-align: right;">Action</th>
                 </tr>
               </thead>
               <tbody id="usersTableBody">
@@ -414,19 +425,30 @@ function getRolePresentation($role) {
                     $pres = getRolePresentation($u['role']);
                     $initials = getUserInitials($u['full_name']);
                     $isActive = ($u['status'] === 'active');
+                    $isArchived = !empty($u['deleted_at']);
                 ?>
                 <tr data-user-id="<?= $u['id'] ?>" 
                     data-user-role="<?= htmlspecialchars($pres['filterKey']) ?>" 
-                    data-user-status="<?= htmlspecialchars($u['status']) ?>">
+                    data-user-status="<?= htmlspecialchars($u['status']) ?>"
+                    data-user-archived="<?= $isArchived ? '1' : '0' ?>"
+                    class="<?= $isArchived ? 'row-user-archived' : '' ?>"
+                    style="<?= $isArchived ? 'display: none;' : '' ?>">
                   <td>
                     <div class="user-avatar-cell">
-                      <div class="user-avatar-badge <?= $pres['avatarClass'] ?>">
+                      <div class="user-avatar-badge <?= $isArchived ? 'archived' : $pres['avatarClass'] ?>">
                         <?= htmlspecialchars($initials) ?>
-                        <span class="user-online-dot <?= $isActive ? '' : 'offline' ?>"></span>
+                        <span class="user-online-dot <?= ($isActive && !$isArchived) ? '' : 'offline' ?>"></span>
                       </div>
                       <div>
-                        <div class="user-name-title"><?= htmlspecialchars($u['full_name']) ?></div>
+                        <div class="user-name-title" style="<?= $isArchived ? 'text-decoration: line-through; color: #6b7280;' : '' ?>">
+                          <?= htmlspecialchars($u['full_name']) ?>
+                        </div>
                         <span class="user-email-text"><?= htmlspecialchars($u['email']) ?></span>
+                        <?php if ($isArchived): ?>
+                          <span style="display: block; font-size: 0.72rem; color: #dc2626; font-weight: 600; margin-top: 2px;">
+                            Archived on <?= date('M d, Y h:i A', strtotime($u['deleted_at'])) ?>
+                          </span>
+                        <?php endif; ?>
                       </div>
                     </div>
                   </td>
@@ -444,27 +466,46 @@ function getRolePresentation($role) {
                     <span class="privilege-summary-tag"><?= $pres['privilege'] ?></span>
                   </td>
                   <td>
-                    <span class="status-badge-chip <?= $isActive ? 'active' : 'suspended' ?>">
-                      <span class="chip-status-dot"></span>
-                      <?= ucfirst($u['status']) ?>
-                    </span>
+                    <?php if ($isArchived): ?>
+                      <span class="status-badge-chip archived" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;">
+                        <span class="chip-status-dot" style="background: #dc2626;"></span>
+                        Archived
+                      </span>
+                    <?php else: ?>
+                      <span class="status-badge-chip <?= $isActive ? 'active' : 'suspended' ?>">
+                        <span class="chip-status-dot"></span>
+                        <?= ucfirst($u['status']) ?>
+                      </span>
+                    <?php endif; ?>
                   </td>
                   <td style="text-align: right;">
                     <div class="user-action-btns">
-                      <button type="button" class="btn-user-action edit" onclick="openEditRoleModal(<?= $u['id'] ?>, '<?= addslashes(htmlspecialchars($u['full_name'])) ?>', '<?= addslashes(htmlspecialchars($u['email'])) ?>', '<?= addslashes(htmlspecialchars($pres['filterKey'])) ?>', '<?= addslashes(htmlspecialchars($u['office_agency'] ?: '')) ?>')" title="Configure clearance role">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                        <span>Role</span>
-                      </button>
-                      <button type="button" class="btn-user-action status-toggle <?= $isActive ? '' : 'activate' ?>" onclick="toggleUserStatus(<?= $u['id'] ?>)" title="<?= $isActive ? 'Suspend access' : 'Reactivate access' ?>">
-                        <?= $isActive 
-                          ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg><span>Suspend</span>'
-                          : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Activate</span>'
-                        ?>
-                      </button>
-                      <?php if ($u['id'] != ($_SESSION['user_id'] ?? 0)): ?>
-                        <button type="button" class="btn-user-action" style="color: #dc2626; border-color: #fecaca; background: #fef2f2;" onclick="confirmDeleteUser(<?= $u['id'] ?>, '<?= addslashes(htmlspecialchars($u['full_name'])) ?>')" title="Remove user account">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      <?php if ($isArchived): ?>
+                        <button type="button" class="btn-user-action restore" onclick="confirmRestoreUser(<?= $u['id'] ?>, '<?= addslashes(htmlspecialchars($u['full_name'])) ?>')" title="Restore user to Active list">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                          <span>Restore</span>
                         </button>
+                        <button type="button" class="btn-user-action purge" onclick="confirmPermanentDeleteUser(<?= $u['id'] ?>, '<?= addslashes(htmlspecialchars($u['full_name'])) ?>')" title="Permanently delete from database">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                          <span>Purge</span>
+                        </button>
+                      <?php else: ?>
+                        <button type="button" class="btn-user-action edit" onclick="openEditRoleModal(<?= $u['id'] ?>, '<?= addslashes(htmlspecialchars($u['full_name'])) ?>', '<?= addslashes(htmlspecialchars($u['email'])) ?>', '<?= addslashes(htmlspecialchars($pres['filterKey'])) ?>', '<?= addslashes(htmlspecialchars($u['office_agency'] ?: '')) ?>')" title="Configure clearance role">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                          <span>Role</span>
+                        </button>
+                        <button type="button" class="btn-user-action status-toggle <?= $isActive ? '' : 'activate' ?>" onclick="toggleUserStatus(<?= $u['id'] ?>)" title="<?= $isActive ? 'Suspend access' : 'Reactivate access' ?>">
+                          <?= $isActive 
+                            ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg><span>Suspend</span>'
+                            : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Activate</span>'
+                          ?>
+                        </button>
+                        <?php if ($u['id'] != ($_SESSION['user_id'] ?? 0)): ?>
+                          <button type="button" class="btn-user-action purge" onclick="confirmDeleteUser(<?= $u['id'] ?>, '<?= addslashes(htmlspecialchars($u['full_name'])) ?>')" title="Delete user account (Move to Trash)">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            <span>Delete</span>
+                          </button>
+                        <?php endif; ?>
                       <?php endif; ?>
                     </div>
                   </td>

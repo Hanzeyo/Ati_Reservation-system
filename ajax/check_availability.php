@@ -69,6 +69,7 @@ try {
               LEFT JOIN facilities f ON r.facility_id = f.id
               LEFT JOIN rooms rm ON r.room_id = rm.id
               WHERE r.status IN ('Approved', 'Completed')
+                AND r.deleted_at IS NULL
                 AND (r.start_date <= :monthEnd AND r.end_date >= :monthStart)";
 
     $params = [
@@ -132,6 +133,7 @@ try {
                LEFT JOIN facilities f ON r.facility_id = f.id
                LEFT JOIN rooms rm ON r.room_id = rm.id
                WHERE r.status IN ('Pending', 'Pending Review', 'Under Review', 'Endorsed', 'Recommended')
+                 AND r.deleted_at IS NULL
                  AND (r.start_date <= :pMonthEnd AND r.end_date >= :pMonthStart)";
 
     $pParams = [

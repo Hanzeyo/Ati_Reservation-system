@@ -27,7 +27,7 @@ if (!isset($sidebarPendingCount)) {
 // Fetch total users count for super_admin
 if (!isset($sidebarUsersCount) && !empty($canManageUsers)) {
     try {
-        $usersStmt = $db->query("SELECT COUNT(*) FROM users");
+        $usersStmt = $db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
         $sidebarUsersCount = (int)$usersStmt->fetchColumn();
     } catch (Exception $e) {
         $sidebarUsersCount = 0;
