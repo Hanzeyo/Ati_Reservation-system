@@ -548,8 +548,12 @@ if (!empty($res['room_number'])) {
                 <h3 class="action-prompt-title" style="color: #174d2f;">Review Completed (Status: <?= htmlspecialchars(strtoupper($st)) ?>)</h3>
                 <p class="action-prompt-desc">This reservation has already been processed in the system.</p>
               </div>
-              <a href="download_form.php?ref=<?= urlencode($ref) ?>" target="_blank" class="btn-act-large approve" style="text-decoration: none;">
-                Download Official Form (PDF)
+              <?php 
+                $isDormRes = (($res['facility_type'] ?? '') === 'dorms');
+                $formTarget = $isDormRes ? "download_dormitory_form.php?ref=" . urlencode($ref) : "download_form.php?ref=" . urlencode($ref);
+              ?>
+              <a href="<?= $formTarget ?>" target="_blank" class="btn-act-large approve" style="text-decoration: none;">
+                Download Official <?= $isDormRes ? 'Dormitory' : 'Facility' ?> Form (PDF)
               </a>
             </div>
           </div>

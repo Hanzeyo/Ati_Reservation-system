@@ -1,3 +1,26 @@
+<?php
+require_once __DIR__ . '/includes/init.php';
+
+$type = isset($_GET['type']) ? strtolower(trim($_GET['type'])) : '';
+$ref = isset($_GET['ref']) ? trim($_GET['ref']) : '';
+
+if ($type === 'dorm' || $type === 'dormitory' || $type === 'dorms') {
+  header('Location: download_dormitory_form.php' . (!empty($ref) ? '?ref=' . urlencode($ref) : ''));
+  exit;
+}
+
+if (!empty($ref)) {
+  try {
+    $stmt = $db->prepare("SELECT f.type FROM reservations r LEFT JOIN facilities f ON r.facility_id = f.id WHERE r.reference_no = ? LIMIT 1");
+    $stmt->execute([$ref]);
+    $resType = $stmt->fetchColumn();
+    if ($resType === 'dorms') {
+      header('Location: download_dormitory_form.php?ref=' . urlencode($ref));
+      exit;
+    }
+  } catch (Exception $e) {}
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -375,11 +398,10 @@
     <div style="font-weight: 700; font-size: 9.5pt; margin: 10px 0 4px 0;">DURATION OF USE:</div>
     <div class="field-row" style="padding-left: 14px;">
       <span class="field-label" style="font-weight: 600;">Starting Date and Time:</span>
-      <div class="field-line" style="flex: 0 0 220px;"></div>div>
+      <div class="field-line" style="flex: 0 0 220px;"></div>
       <span class="field-label" style="font-weight: 600; margin-left: 18px;">Ending Date and Time:</span>
       <div class="field-line"></div>
     </div>
-  </div>
 
     <div class="field-row">
       <span class="field-label">INTENDED USERS:</span>
