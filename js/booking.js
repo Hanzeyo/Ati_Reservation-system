@@ -959,28 +959,7 @@ function initFacilityFilters() {
       pill.classList.toggle('active', pill.dataset.categoryFilter === catName);
     });
 
-    // 3. Update Heading & Badge Indicator
-    if (activeCategoryName) {
-      if (catName === 'halls') {
-        activeCategoryName.textContent = 'Halls (4 Available)';
-      } else if (catName === 'dormitories') {
-        activeCategoryName.textContent = isDormPage ? 'Dormitories (6 Floors Available)' : 'Dormitories (6 Floors)';
-      } else {
-        activeCategoryName.textContent = 'All Facilities (10 Total)';
-      }
-    }
-
-    if (sectionHeading) {
-      if (catName === 'halls') {
-        sectionHeading.textContent = 'AVAILABLE HALLS & VENUES (4):';
-      } else if (catName === 'dormitories') {
-        sectionHeading.textContent = 'AVAILABLE DORMITORY FLOORS (6):';
-      } else {
-        sectionHeading.textContent = 'ALL AVAILABLE FACILITIES & ROOMS (10):';
-      }
-    }
-
-    // 4. Show/Hide Matching Facility Cards
+    // 3. Show/Hide Matching Facility Cards and count visible
     let visibleCount = 0;
     let firstVisibleCard = null;
     let currentSelectedVisible = false;
@@ -998,6 +977,27 @@ function initFacilityFilters() {
         }
       }
     });
+
+    // 4. Update Heading & Badge Indicator (Dynamic counts)
+    if (activeCategoryName) {
+      if (catName === 'halls') {
+        activeCategoryName.textContent = `Halls (${visibleCount} Available)`;
+      } else if (catName === 'dormitories') {
+        activeCategoryName.textContent = isDormPage ? `Dormitories (${visibleCount} Suites Available)` : `Dormitories (${visibleCount} Suites)`;
+      } else {
+        activeCategoryName.textContent = `All Facilities (${visibleCount} Total)`;
+      }
+    }
+
+    if (sectionHeading) {
+      if (catName === 'halls') {
+        sectionHeading.textContent = `AVAILABLE HALLS & VENUES (${visibleCount}):`;
+      } else if (catName === 'dormitories') {
+        sectionHeading.textContent = `AVAILABLE DORMITORY SUITES (${visibleCount}):`;
+      } else {
+        sectionHeading.textContent = `ALL AVAILABLE FACILITIES & ROOMS (${visibleCount}):`;
+      }
+    }
 
     const emptyState = document.getElementById('bookingEmptyState');
     const emptyTitle = document.getElementById('bookingEmptyTitle');

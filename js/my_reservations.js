@@ -563,6 +563,28 @@ function initCardModals() {
         if (remarks && remarks.trim() !== '') {
           remarksContent.textContent = remarks;
           remarksSection.style.display = 'block';
+
+          if (statusClass === 'rejected') {
+            remarksSection.style.background = '#fff5f5';
+            remarksSection.style.borderLeft = '3.5px solid #dc2626';
+            const titleEl = remarksSection.querySelector('div:first-child');
+            if (titleEl) {
+              titleEl.textContent = 'Reason for Disapproval / Instructions for Applicant';
+              titleEl.style.color = '#991b1b';
+            }
+            remarksContent.style.color = '#7f1d1d';
+            remarksContent.style.fontWeight = '600';
+          } else {
+            remarksSection.style.background = '#fefce8';
+            remarksSection.style.borderLeft = '3px solid #eab308';
+            const titleEl = remarksSection.querySelector('div:first-child');
+            if (titleEl) {
+              titleEl.textContent = 'Admin Remarks & Feedback';
+              titleEl.style.color = '#854d0e';
+            }
+            remarksContent.style.color = '#713f12';
+            remarksContent.style.fontWeight = 'normal';
+          }
         } else {
           remarksSection.style.display = 'none';
         }
@@ -654,6 +676,30 @@ function initCardModals() {
                 <h5 style="color: #166534;">4. Turnover, Checkout & Permanent Archive</h5>
                 <p>Premises inspected, keys returned, attendance logs recorded. Permanently archived.</p>
                 <span class="routing-timestamp" style="color: #16a34a; font-weight: 700;">Concluded &amp; Archived</span>
+              </div>
+            </div>
+          `;
+        } else if (statusClass === 'rejected') {
+          const rejectMsg = remarks && remarks.trim() !== '' ? remarks : 'Returned on official administrative or operational grounds.';
+          routingList.innerHTML = `
+            <div class="routing-item">
+              <div class="routing-icon-badge done">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5>1. Request Created & Submitted</h5>
+                <p>Initial reservation application was submitted to the ATI reservation desk.</p>
+                <span class="routing-timestamp">Booking reference generated</span>
+              </div>
+            </div>
+            <div class="routing-item">
+              <div class="routing-icon-badge" style="background: #fee2e2; border-color: #fca5a5;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5 style="color: #991b1b;">2. Disapproved / Returned by Administration</h5>
+                <p style="color: #7f1d1d; font-weight: 600; line-height: 1.45;">${rejectMsg}</p>
+                <span class="routing-timestamp" style="color: #dc2626; font-weight: 700;">Status: Action Required / Returned for Revision</span>
               </div>
             </div>
           `;
