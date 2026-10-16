@@ -1383,10 +1383,10 @@ button {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  width: 34px;
-  height: 34px;
-  min-width: 34px;
-  min-height: 34px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
   padding: 0 !important;
   margin: 0 !important;
   border-radius: 50%;
@@ -1397,9 +1397,7 @@ button {
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  font-family: Arial, sans-serif !important;
-  font-size: 22px !important;
-  line-height: 1 !important;
+  line-height: 0 !important;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 30;
@@ -1417,10 +1415,12 @@ button {
   pointer-events: none;
   flex-shrink: 0;
   margin: auto;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.25s ease;
 }
 
-.modal-close-btn:not(:has(svg)) {
-  padding-bottom: 2px !important;
+.modal-close-btn svg line {
+  stroke: currentColor !important;
+  transition: stroke 0.25s ease;
 }
 
 .modal-close-btn:hover {
@@ -1429,6 +1429,15 @@ button {
   color: #dc2626 !important;
   transform: rotate(90deg) scale(1.08);
   box-shadow: 0 4px 14px rgba(220, 38, 38, 0.28) !important;
+}
+
+.modal-close-btn:hover svg line {
+  stroke: #dc2626 !important;
+}
+
+.modal-close-btn:active {
+  transform: rotate(90deg) scale(0.94);
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2) !important;
 }
 
 .modal-header-banner {
@@ -2902,7 +2911,7 @@ button {
 
 .drawer-close-btn {
   background: rgba(255, 255, 255, 0.18);
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.25);
   color: #ffffff;
   width: 34px;
   height: 34px;
@@ -2911,15 +2920,13 @@ button {
   padding: 0 !important;
   margin: 0 !important;
   border-radius: 50%;
-  font-family: Arial, sans-serif !important;
-  font-size: 22px !important;
-  line-height: 1 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
+  line-height: 0 !important;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box !important;
   overflow: hidden;
 }
@@ -2933,15 +2940,28 @@ button {
   pointer-events: none;
   flex-shrink: 0;
   margin: auto;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.2s ease;
 }
 
-.drawer-close-btn:not(:has(svg)) {
-  padding-bottom: 2px !important;
+.drawer-close-btn svg line {
+  stroke: currentColor !important;
+  transition: stroke 0.2s ease;
 }
 
 .drawer-close-btn:hover {
-  background: rgba(255, 255, 255, 0.32);
-  transform: rotate(90deg);
+  background: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+  color: #dc2626 !important;
+  transform: rotate(90deg) scale(1.08);
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.28);
+}
+
+.drawer-close-btn:hover svg line {
+  stroke: #dc2626 !important;
+}
+
+.drawer-close-btn:active {
+  transform: rotate(90deg) scale(0.94);
 }
 
 /* Drawer Body */

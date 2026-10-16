@@ -69,7 +69,7 @@ foreach ($facilitiesList as $row) {
 
     $categoryLabel = 'Training & Function Hall';
     if ($row['type'] === 'dorms') {
-        $categoryLabel = 'Institutional Dormitory';
+        $categoryLabel = 'Dormitory Suite';
     } elseif ($row['type'] === 'dining') {
         $categoryLabel = 'Dining Facility';
     }
@@ -365,7 +365,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
             <?php foreach ($facilitiesData as $fid => $item): 
               $isMaint = $item['maintenance'];
               $statusClass = $item['status'] === 'maintenance' ? 'state-maintenance' : ($item['status'] === 'occupied' ? 'state-occupied' : 'state-available');
-              $typeBadge = $item['category'] === 'dorms' ? 'Institutional Dormitory' : ($item['category'] === 'dining' ? 'Dining Pavilion' : 'Function & Training Hall');
+              $typeBadge = $item['category'] === 'dorms' ? 'Dormitory Suite' : ($item['category'] === 'dining' ? 'Dining Pavilion' : 'Function & Training Hall');
               $capDisplay = $item['pax'] . ' Participants';
               if ($item['beds'] > 0) {
                 $capDisplay = $item['pax'] . ' PAX (' . $item['beds'] . ' Beds)';
@@ -542,8 +542,8 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
         </button>
       </div>
 
-      <div class="admin-modal-body">
-        <form id="editFacilityForm" onsubmit="saveFacilityChanges(event)">
+      <form id="editFacilityForm" onsubmit="saveFacilityChanges(event)" style="display: flex; flex-direction: column; flex: 1; min-height: 0; margin: 0; overflow: hidden;">
+        <div class="admin-modal-body" style="padding: 1.5rem 1.75rem; overflow-y: auto; flex: 1;">
           <input type="hidden" id="editFacilityId">
 
           <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
@@ -602,7 +602,10 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                     <option value="assets/images/rdec_training_2.jpg">RDEC Training Hall 2</option>
                     <option value="assets/images/function_hall.jpg">Function Hall</option>
                     <option value="assets/images/serrano_hall.jpg">Serrano Hall</option>
-                    <option value="assets/images/dormitory.jpg">1st Floor: Sampaguita Dormitory</option>
+                    <option value="assets/images/dorm_suite_1.png">Suite 1 (2nd Floor)</option>
+                    <option value="assets/images/dorm_suite_2.png">Suite 2 (3rd Floor)</option>
+                    <option value="assets/images/dorm_vip_suite.jpg">VIP Suite (4th Floor)</option>
+                    <option value="assets/images/dormitory.jpg">Dormitory Suites (Overview)</option>
                     <option value="assets/images/ATI_building.jpg">ATI Main Building Facade</option>
                   </select>
                 </div>
@@ -621,17 +624,20 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
             <input type="text" id="editFacilityFeatures" placeholder="Airconditioned, Projector, Sound System, Wi-Fi" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
           </div>
 
-          <div class="form-group-decline" style="margin-bottom: 1.25rem;">
+          <div class="form-group-decline" style="margin-bottom: 0.5rem;">
             <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Administrative Operational Notes</label>
             <textarea id="editFacilityNotes" rows="2" placeholder="Special restrictions, key custodians, or technical equipment remarks..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;"></textarea>
           </div>
+        </div>
 
-          <div class="admin-modal-footer" style="padding: 1rem 0 0 0; background: none; border-top: 1px solid #edf3ef;">
-            <button type="button" class="btn-system-secondary" onclick="closeEditFacilityModal()">Cancel</button>
-            <button type="submit" class="btn-system-primary">Save Specifications</button>
-          </div>
-        </form>
-      </div>
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-system-secondary" onclick="closeEditFacilityModal()">Cancel</button>
+          <button type="submit" class="btn-system-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            <span>Save Specifications</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -652,8 +658,8 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
         </button>
       </div>
 
-      <div class="admin-modal-body">
-        <form id="addFacilityForm" onsubmit="handleAddNewFacility(event)">
+      <form id="addFacilityForm" onsubmit="handleAddNewFacility(event)" style="display: flex; flex-direction: column; flex: 1; min-height: 0; margin: 0; overflow: hidden;">
+        <div class="admin-modal-body" style="padding: 1.5rem 1.75rem; overflow-y: auto; flex: 1;">
           <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
             <div class="form-group-decline">
               <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Venue / Room Title</label>
@@ -709,7 +715,10 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                     <option value="assets/images/rdec_training_2.jpg">RDEC Training Hall 2</option>
                     <option value="assets/images/function_hall.jpg">Function Hall</option>
                     <option value="assets/images/serrano_hall.jpg">Serrano Hall</option>
-                    <option value="assets/images/dormitory.jpg">1st Floor: Sampaguita Dormitory</option>
+                    <option value="assets/images/dorm_suite_1.png">Suite 1 (2nd Floor)</option>
+                    <option value="assets/images/dorm_suite_2.png">Suite 2 (3rd Floor)</option>
+                    <option value="assets/images/dorm_vip_suite.jpg">VIP Suite (4th Floor)</option>
+                    <option value="assets/images/dormitory.jpg">Dormitory Suites (Overview)</option>
                     <option value="assets/images/ATI_building.jpg">ATI Main Building Facade</option>
                   </select>
                 </div>
@@ -723,17 +732,20 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
             <input type="text" id="addFacilityLocation" placeholder="e.g. Training Annex Building, 2nd Floor" required style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
           </div>
 
-          <div class="form-group-decline" style="margin-bottom: 1.25rem;">
+          <div class="form-group-decline" style="margin-bottom: 0.5rem;">
             <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Included Equipment (Comma-separated)</label>
             <input type="text" id="addFacilityFeatures" placeholder="Airconditioned, Smart TV, Whiteboard, High-speed Wi-Fi" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
           </div>
+        </div>
 
-          <div class="admin-modal-footer" style="padding: 1rem 0 0 0; background: none; border-top: 1px solid #edf3ef;">
-            <button type="button" class="btn-system-secondary" onclick="closeAddFacilityModal()">Cancel</button>
-            <button type="submit" class="btn-system-primary">Register Asset</button>
-          </div>
-        </form>
-      </div>
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-system-secondary" onclick="closeAddFacilityModal()">Cancel</button>
+          <button type="submit" class="btn-system-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Register Asset</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -755,7 +767,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
         </button>
       </div>
 
-      <div class="admin-modal-body" style="padding: 1.25rem 1.75rem;">
+      <div class="admin-modal-body" style="padding: 1.25rem 1.75rem 1.75rem 1.75rem;">
         <input type="hidden" id="currentManageFacilityId">
 
         <!-- KPI Status Summary -->
@@ -809,10 +821,6 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
         <div class="room-tiles-grid" id="manageRoomsGrid">
           <!-- Dynamically populated via loadFacilityRooms() -->
         </div>
-
-        <div class="admin-modal-footer" style="padding: 1.25rem 0 0 0; margin-top: 1rem; background: none; border-top: 1px solid #edf3ef; display: flex; justify-content: flex-end;">
-          <button type="button" class="btn-system-secondary" onclick="closeManageRoomsModal()">Close</button>
-        </div>
       </div>
     </div>
   </div>
@@ -862,15 +870,15 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
           <input type="date" id="maintEstResumeDate" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
         </div>
 
-        <div class="form-group-decline" style="margin-bottom: 1.25rem;">
+        <div class="form-group-decline" style="margin-bottom: 0.5rem;">
           <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Work Order Remarks (Optional)</label>
           <textarea id="maintRemarksInput" rows="2" placeholder="e.g. Work Order #2026-44 issued to General Services Unit..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;"></textarea>
         </div>
+      </div>
 
-        <div class="admin-modal-footer" style="padding: 1rem 0 0 0; background: none; border-top: 1px solid #edf3ef;">
-          <button type="button" class="btn-system-secondary" onclick="closeMaintenanceModal()">Cancel</button>
-          <button type="button" class="btn-confirm-decline" onclick="confirmMaintenanceHold()">Activate Maintenance Hold</button>
-        </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-system-secondary" onclick="closeMaintenanceModal()">Cancel</button>
+        <button type="button" class="btn-confirm-decline" onclick="confirmMaintenanceHold()">Activate Maintenance Hold</button>
       </div>
     </div>
   </div>

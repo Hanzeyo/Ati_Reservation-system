@@ -1219,6 +1219,11 @@ body.is-editing .field-locked-note {
   stroke: #dc2626 !important;
 }
 
+.profile-modal-close-btn:active {
+  transform: rotate(90deg) scale(0.94);
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2) !important;
+}
+
 .profile-modal-body {
   padding: 1.75rem;
 }

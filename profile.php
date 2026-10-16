@@ -841,7 +841,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
         <h3 id="pwdModalTitle">Change Account Password</h3>
         <p>Ensure your account remains protected with a secure password.</p>
         <button type="button" class="profile-modal-close-btn" id="btnClosePasswordModal" aria-label="Close dialog">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -887,7 +887,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
         <h3 id="saveModalTitle">Save Profile Updates?</h3>
         <p>Confirm changes before committing to your official staff profile</p>
         <button type="button" class="profile-modal-close-btn" id="btnCloseSaveModal" aria-label="Close dialog">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -924,7 +924,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
         <h3 id="discardModalTitle">Discard Unsaved Changes?</h3>
         <p>You have unsaved edits on your profile</p>
         <button type="button" class="profile-modal-close-btn" id="btnCloseDiscardModal" aria-label="Close dialog">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -955,7 +955,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
         <h3 id="statModalTitle">Staff Reservation Activity</h3>
         <p id="statModalSubtitle">Official ATI staff reservation activity details</p>
         <button type="button" class="profile-modal-close-btn" id="btnCloseStatModal" aria-label="Close dialog">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>

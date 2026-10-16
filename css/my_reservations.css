@@ -1652,6 +1652,11 @@ body.my-res-body {
   stroke: #dc2626 !important;
 }
 
+.modal-close-btn:active {
+  transform: rotate(90deg) scale(0.94);
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2) !important;
+}
+
 .modal-header-banner {
   background: linear-gradient(135deg, #174d2f, #2e7d32);
   color: #ffffff;

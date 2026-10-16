@@ -347,7 +347,12 @@ function getRolePresentation($role) {
               </svg>
               <input type="text" id="userSearchInput" class="search-input" placeholder="Search by name, email, or division..."
                 oninput="handleUserSearch(this.value)" autocomplete="off">
-              <button type="button" class="search-clear-btn" id="userSearchClear" onclick="clearUserSearch()" title="Clear search" style="display: none;">&times;</button>
+              <button type="button" class="search-clear-btn" id="userSearchClear" onclick="clearUserSearch()" title="Clear search" style="display: none;" aria-label="Clear search">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
             </div>
 
             <div class="select-filter-wrap">
