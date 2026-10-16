@@ -12,7 +12,8 @@ CREATE TABLE users (
     role ENUM('user', 'admin', 'super_admin') DEFAULT 'user',
     status ENUM('pending', 'active', 'inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL
 );
 
 CREATE TABLE facilities (
@@ -52,6 +53,7 @@ CREATE TABLE reservations (
     admin_remarks TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (facility_id) REFERENCES facilities(id),
     FOREIGN KEY (room_id) REFERENCES rooms(id)

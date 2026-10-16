@@ -148,11 +148,25 @@ function applyUserFilters() {
   rows.forEach(row => {
     const role = (row.getAttribute('data-user-role') || '').toLowerCase();
     const status = (row.getAttribute('data-user-status') || '').toLowerCase();
+    const isArchived = (row.getAttribute('data-user-archived') === '1');
     const text = row.innerText.toLowerCase();
+
+    // Archive isolation: if viewing 'archived', show only archived. Otherwise, show only non-archived.
+    if (rbacFilterState.role === 'archived') {
+      if (!isArchived) {
+        row.style.display = 'none';
+        return;
+      }
+    } else {
+      if (isArchived) {
+        row.style.display = 'none';
+        return;
+      }
+    }
 
     // 1. Role Filter Match
     let matchesRole = false;
-    if (rbacFilterState.role === 'all') {
+    if (rbacFilterState.role === 'all' || rbacFilterState.role === 'archived') {
       matchesRole = true;
     } else if (rbacFilterState.role === 'endorsement') {
       matchesRole = (role === 'endorsement' || role === 'endorser' || role === 'division_chief');
@@ -168,7 +182,7 @@ function applyUserFilters() {
 
     // 2. Status Filter Match
     let matchesStatus = false;
-    if (rbacFilterState.status === 'all') {
+    if (rbacFilterState.status === 'all' || rbacFilterState.role === 'archived') {
       matchesStatus = true;
     } else if (rbacFilterState.status === 'active') {
       matchesStatus = (status === 'active');
@@ -199,15 +213,23 @@ function applyUserFilters() {
 
 function updateUserCounts() {
   const rows = document.querySelectorAll('#usersTableBody tr[data-user-id]');
-  let total = rows.length;
+  let totalActive = 0;
   let active = 0;
   let endorsement = 0;
   let recommendation = 0;
   let clearance = 0;
   let superAdmin = 0;
   let requestors = 0;
+  let archived = 0;
 
   rows.forEach(row => {
+    const isArchived = (row.getAttribute('data-user-archived') === '1');
+    if (isArchived) {
+      archived++;
+      return;
+    }
+
+    totalActive++;
     const role = (row.getAttribute('data-user-role') || '').toLowerCase();
     const status = (row.getAttribute('data-user-status') || '').toLowerCase();
 
@@ -234,7 +256,7 @@ function updateUserCounts() {
   const kpiClear = document.getElementById('kpiClearanceCount');
   const kpiStaff = document.getElementById('kpiStaffCount');
 
-  if (kpiTotal) kpiTotal.textContent = total;
+  if (kpiTotal) kpiTotal.textContent = totalActive;
   if (kpiAct) kpiAct.textContent = `${active} Active`;
   if (kpiEndorse) kpiEndorse.textContent = endorsement;
   if (kpiRec) kpiRec.textContent = recommendation;
@@ -248,17 +270,19 @@ function updateUserCounts() {
   const pillClear = document.getElementById('pillCountClear');
   const pillSuper = document.getElementById('pillCountSuper');
   const pillStaff = document.getElementById('pillCountStaff');
+  const pillArchived = document.getElementById('pillCountArchived');
 
-  if (pillTotal) pillTotal.textContent = total;
+  if (pillTotal) pillTotal.textContent = totalActive;
   if (pillEndorse) pillEndorse.textContent = endorsement;
   if (pillRec) pillRec.textContent = recommendation;
   if (pillClear) pillClear.textContent = clearance;
   if (pillSuper) pillSuper.textContent = superAdmin;
   if (pillStaff) pillStaff.textContent = requestors;
+  if (pillArchived) pillArchived.textContent = archived;
 
   // Sidebar count badge
   const sidebarCount = document.getElementById('sidebarUsersCount');
-  if (sidebarCount) sidebarCount.textContent = total;
+  if (sidebarCount) sidebarCount.textContent = totalActive;
 }
 
 /* ==========================================================================
@@ -531,16 +555,169 @@ async function toggleUserStatus(userId) {
 }
 
 /* ==========================================================================
-   DELETE USER ACCOUNT (VIA REAL AJAX)
+   SOFT DELETE USER ACCOUNT (MOVE TO TRASH)
    ========================================================================== */
 async function confirmDeleteUser(userId, name) {
-  if (!confirm(`Are you sure you want to remove user "${name}" from the system? This action cannot be undone.`)) {
+  if (!confirm(`Are you sure you want to archive user "${name}" and move this account to Trash? The user's historical records will be preserved.`)) {
     return;
   }
 
   try {
     const formData = new FormData();
-    formData.append('action', 'delete_user');
+    formData.append('action', 'soft_delete_user');
+    formData.append('user_id', userId);
+
+    const response = await fetch('ajax/user_actions.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+      if (row) {
+        row.setAttribute('data-user-archived', '1');
+        row.setAttribute('data-user-status', 'inactive');
+        row.classList.add('row-user-archived');
+
+        // Update actions cell
+        const actionCell = row.querySelector('.user-action-btns');
+        if (actionCell) {
+          actionCell.innerHTML = `
+            <button type="button" class="btn-user-action restore" onclick="confirmRestoreUser(${userId}, '${name.replace(/'/g, "\\'")}')" title="Restore user to Active list">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+              <span>Restore</span>
+            </button>
+            <button type="button" class="btn-user-action purge" onclick="confirmPermanentDeleteUser(${userId}, '${name.replace(/'/g, "\\'")}')" title="Permanently delete from database">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <span>Purge</span>
+            </button>
+          `;
+        }
+
+        // Update status badge
+        const statusCell = row.cells[4];
+        if (statusCell) {
+          statusCell.innerHTML = `
+            <span class="status-badge-chip archived" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;">
+              <span class="chip-status-dot" style="background: #dc2626;"></span>
+              Archived
+            </span>
+          `;
+        }
+
+        // Animate row transition
+        row.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(20px)';
+        setTimeout(() => {
+          row.style.display = 'none';
+          row.style.opacity = '1';
+          row.style.transform = '';
+          updateUserCounts();
+          applyUserFilters();
+        }, 260);
+      }
+      showUserToast(result.message || `User ${name} moved to Trash.`, 'decline');
+    } else {
+      showUserToast(result.message || 'Failed to archive user.', 'decline');
+    }
+  } catch (err) {
+    showUserToast('Server error while archiving user.', 'decline');
+  }
+}
+
+/* ==========================================================================
+   RESTORE USER ACCOUNT FROM TRASH
+   ========================================================================== */
+async function confirmRestoreUser(userId, name) {
+  if (!confirm(`Restore user "${name}" back to the active personnel directory?`)) {
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'restore_user');
+    formData.append('user_id', userId);
+
+    const response = await fetch('ajax/user_actions.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      const row = document.querySelector(`tr[data-user-id="${userId}"]`);
+      if (row) {
+        row.setAttribute('data-user-archived', '0');
+        row.setAttribute('data-user-status', 'active');
+        row.classList.remove('row-user-archived');
+
+        // Restore action cell
+        const actionCell = row.querySelector('.user-action-btns');
+        const role = row.getAttribute('data-user-role') || 'user';
+        if (actionCell) {
+          actionCell.innerHTML = `
+            <button type="button" class="btn-user-action edit" onclick="openEditRoleModal(${userId}, '${name.replace(/'/g, "\\'")}', '', '${role}', '')" title="Configure clearance role">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+              <span>Role</span>
+            </button>
+            <button type="button" class="btn-user-action status-toggle" onclick="toggleUserStatus(${userId})" title="Suspend access">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+              <span>Suspend</span>
+            </button>
+            <button type="button" class="btn-user-action purge" onclick="confirmDeleteUser(${userId}, '${name.replace(/'/g, "\\'")}')" title="Delete user account (Move to Trash)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <span>Delete</span>
+            </button>
+          `;
+        }
+
+        // Update status badge
+        const statusCell = row.cells[4];
+        if (statusCell) {
+          statusCell.innerHTML = `
+            <span class="status-badge-chip active">
+              <span class="chip-status-dot"></span>
+              Active
+            </span>
+          `;
+        }
+
+        // Animate row transition
+        row.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(-20px)';
+        setTimeout(() => {
+          row.style.display = 'none';
+          row.style.opacity = '1';
+          row.style.transform = '';
+          updateUserCounts();
+          applyUserFilters();
+        }, 260);
+      }
+      showUserToast(result.message || `User ${name} has been restored.`, 'success');
+    } else {
+      showUserToast(result.message || 'Failed to restore user.', 'decline');
+    }
+  } catch (err) {
+    showUserToast('Server error while restoring user.', 'decline');
+  }
+}
+
+/* ==========================================================================
+   PERMANENTLY PURGE USER ACCOUNT (HARD DELETE)
+   ========================================================================== */
+async function confirmPermanentDeleteUser(userId, name) {
+  if (!confirm(`CAUTION: Are you sure you want to PERMANENTLY purge "${name}" from the MySQL database?\n\nThis will completely delete this record. This cannot be undone.`)) {
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'permanent_delete_user');
     formData.append('user_id', userId);
 
     const response = await fetch('ajax/user_actions.php', {
@@ -555,19 +732,19 @@ async function confirmDeleteUser(userId, name) {
       if (row) {
         row.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
         row.style.opacity = '0';
-        row.style.transform = 'translateX(20px)';
+        row.style.transform = 'scale(0.9)';
         setTimeout(() => {
           row.remove();
           updateUserCounts();
           applyUserFilters();
         }, 260);
       }
-      showUserToast(result.message || `User ${name} removed.`, 'decline');
+      showUserToast(result.message || `User ${name} permanently purged.`, 'decline');
     } else {
-      showUserToast(result.message || 'Failed to delete user.', 'decline');
+      showUserToast(result.message || 'Failed to purge user.', 'decline');
     }
   } catch (err) {
-    showUserToast('Server error while deleting user.', 'decline');
+    showUserToast('Server error while purging user.', 'decline');
   }
 }
 

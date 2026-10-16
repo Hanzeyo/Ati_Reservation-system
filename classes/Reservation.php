@@ -17,6 +17,7 @@ class Reservation extends BaseModel
     public $status;
     public $admin_remarks;
     public $document_path;
+    public $deleted_at;
 
     public function create()
     {
@@ -50,7 +51,7 @@ class Reservation extends BaseModel
     {
         $query = "SELECT r.*, f.name as facility_name FROM " . $this->table_name . " r 
                   LEFT JOIN facilities f ON r.facility_id = f.id 
-                  WHERE r.user_id = :user_id ORDER BY r.created_at DESC";
+                  WHERE r.user_id = :user_id AND r.deleted_at IS NULL ORDER BY r.created_at DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':user_id', $user_id);
         $stmt->execute();
@@ -62,7 +63,7 @@ class Reservation extends BaseModel
         $query = "SELECT r.*, f.name as facility_name, u.full_name as user_name FROM " . $this->table_name . " r 
                   LEFT JOIN facilities f ON r.facility_id = f.id 
                   LEFT JOIN users u ON r.user_id = u.id 
-                  WHERE r.status = 'Pending' ORDER BY r.created_at ASC";
+                  WHERE r.status = 'Pending' AND r.deleted_at IS NULL ORDER BY r.created_at ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;
@@ -86,6 +87,7 @@ class Reservation extends BaseModel
         if ($room_id) {
             $query = "SELECT id, event_title, start_date, end_date FROM " . $this->table_name . " 
                       WHERE facility_id = ? AND room_id = ? AND status IN ('Approved', 'Completed') 
+                      AND deleted_at IS NULL 
                       AND (start_date <= ? AND end_date >= ?)";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(1, $facility_id);
@@ -95,6 +97,7 @@ class Reservation extends BaseModel
         } else {
             $query = "SELECT id, event_title, start_date, end_date FROM " . $this->table_name . " 
                       WHERE facility_id = ? AND (room_id IS NULL OR room_id = 0) AND status IN ('Approved', 'Completed') 
+                      AND deleted_at IS NULL 
                       AND (start_date <= ? AND end_date >= ?)";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(1, $facility_id);

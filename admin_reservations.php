@@ -27,28 +27,35 @@ $resQuery = "SELECT r.*,
 $stmt = $db->query($resQuery);
 $allReservations = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
-$totalReservations = count($allReservations);
+$totalActiveReservations = 0;
 $pendingReservations = 0;
 $approvedReservations = 0;
 $hallsCount = 0;
 $dormsCount = 0;
+$archivedReservationsCount = 0;
 
 $reservationsData = [];
 
 foreach ($allReservations as $row) {
+    $isArchived = !empty($row['deleted_at']);
     $st = $row['status'] ?? 'Pending';
     $isPending = in_array($st, ['Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance']);
     $isApproved = in_array($st, ['Approved', 'Completed']);
     $isRejected = in_array($st, ['Rejected', 'Cancelled']);
 
-    if ($isPending) $pendingReservations++;
-    if ($isApproved) $approvedReservations++;
-
     $isDorm = (($row['facility_type'] ?? '') === 'dormitories' || !empty($row['room_number']));
-    if ($isDorm) {
-        $dormsCount++;
+
+    if ($isArchived) {
+        $archivedReservationsCount++;
     } else {
-        $hallsCount++;
+        $totalActiveReservations++;
+        if ($isPending) $pendingReservations++;
+        if ($isApproved) $approvedReservations++;
+        if ($isDorm) {
+            $dormsCount++;
+        } else {
+            $hallsCount++;
+        }
     }
 
     $ref = $row['reference_no'];
@@ -92,12 +99,15 @@ foreach ($allReservations as $row) {
         'stage' => $stageKey,
         'rawStatus' => $st,
         'category' => $isDorm ? 'dorms' : 'halls',
-        'dateFiled' => !empty($row['created_at']) ? date('M d, Y • h:i A', strtotime($row['created_at'])) : date('M d, Y • h:i A')
+        'dateFiled' => !empty($row['created_at']) ? date('M d, Y • h:i A', strtotime($row['created_at'])) : date('M d, Y • h:i A'),
+        'isArchived' => $isArchived,
+        'deletedAt' => $row['deleted_at'] ? date('M d, Y • h:i A', strtotime($row['deleted_at'])) : null
     ];
 }
+$totalReservations = $totalActiveReservations;
 
 // Fetch User count for sidebar
-$userCountStmt = $db->query("SELECT COUNT(*) FROM users");
+$userCountStmt = $db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
 $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
 
 // Fetch unique facilities for filter
@@ -229,6 +239,11 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
               <span>Dormitories</span>
               <span class="tab-count-pill" id="tabCountDorms"><?= $dormsCount ?></span>
             </button>
+            <button type="button" class="filter-tab-btn tab-archived" data-filter="archived" onclick="applyTabFilter('archived')">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <span>Archived / Trash</span>
+              <span class="tab-count-pill tab-count-archived" id="tabCountArchived"><?= $archivedReservationsCount ?></span>
+            </button>
           </div>
 
           <!-- Controls Right -->
@@ -273,13 +288,13 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
             <table class="admin-data-table" id="adminReservationsTable">
               <thead>
                 <tr>
-                  <th>Reference & Date</th>
-                  <th>Applicant & Organization</th>
-                  <th>Requested Facility</th>
-                  <th>Schedule / Duration</th>
-                  <th>Attendees (PAX)</th>
-                  <th>Current Status</th>
-                  <th style="text-align: right;">Executive Actions</th>
+                  <th style="width: 14%;">Reference & Date</th>
+                  <th style="width: 18%;">Applicant & Organization</th>
+                  <th style="width: 16%;">Requested Facility</th>
+                  <th style="width: 15%;">Schedule / Duration</th>
+                  <th style="width: 9%;">Attendees (PAX)</th>
+                  <th style="width: 12%;">Current Status</th>
+                  <th style="width: 16%; min-width: 180px; text-align: right;">Executive Actions</th>
                 </tr>
               </thead>
               <tbody id="adminTableBody">
@@ -316,8 +331,17 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
                 <?php endif; ?>
                 <?php foreach ($reservationsData as $item): 
                   $initials = getUserInitials($item['applicant']);
+                  $isArchived = !empty($item['isArchived']);
                 ?>
-                <tr data-stage="<?=$item['stage']?>" data-ref="<?= htmlspecialchars($item['ref']) ?>" data-status="<?= htmlspecialchars($item['status']) ?>" data-category="<?= htmlspecialchars($item['category']) ?>" data-venue="<?= htmlspecialchars($item['venue']) ?>">
+                <tr data-stage="<?=$item['stage']?>" 
+                    data-ref="<?= htmlspecialchars($item['ref']) ?>" 
+                    data-res-id="<?= $item['id'] ?>"
+                    data-status="<?= htmlspecialchars($item['status']) ?>" 
+                    data-category="<?= htmlspecialchars($item['category']) ?>" 
+                    data-venue="<?= htmlspecialchars($item['venue']) ?>"
+                    data-archived="<?= $isArchived ? '1' : '0' ?>"
+                    class="<?= $isArchived ? 'row-reservation-archived' : '' ?>"
+                    style="<?= $isArchived ? 'display: none;' : '' ?>">
                   <td>
                     <div class="td-ref-group">
                       <span class="td-ref-id"><?= htmlspecialchars($item['ref']) ?></span>
@@ -356,7 +380,17 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
                     </div>
                   </td>
                   <td>
-                    <?php if ($item['stage'] === 'approved'): ?>
+                    <?php if ($isArchived): ?>
+                      <span class="status-pill status-archived" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;">
+                        <span class="status-dot" style="background: #dc2626;"></span>
+                        Archived / Trash
+                      </span>
+                      <?php if (!empty($item['deletedAt'])): ?>
+                        <span style="display: block; font-size: 0.71rem; color: #dc2626; font-weight: 600; margin-top: 3px;">
+                          Archived: <?= $item['deletedAt'] ?>
+                        </span>
+                      <?php endif; ?>
+                    <?php elseif ($item['stage'] === 'approved'): ?>
                       <span class="status-pill status-approved">
                         <span class="status-dot"></span>
                         Confirmed &amp; Approved
@@ -390,50 +424,71 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
                   </td>
                   <td style="text-align: right;">
                     <div class="action-buttons-wrap">
-                      <?php if ($item['stage'] === 'stage1'): ?>
-                        <?php if ($currentAdminRole === 'endorsement' || $currentAdminRole === 'super_admin'): ?>
-                          <button type="button" class="btn-table-action endorse" onclick="endorseReservation('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Endorse Request (Stage 1)">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>Endorse</span>
+                      <?php if ($isArchived): ?>
+                        <button type="button" class="btn-table-action restore" onclick="confirmRestoreReservation('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Restore Reservation to Active Queue">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                          <span>Restore</span>
+                        </button>
+                        <?php if ($currentAdminRole === 'super_admin'): ?>
+                          <button type="button" class="btn-table-action purge" onclick="confirmPermanentDeleteReservation('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Permanently delete reservation from database">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            <span>Purge</span>
                           </button>
-                          <button type="button" class="btn-table-action decline" onclick="openDeclineModal('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Decline Request (Stage 1)">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                          </button>
-                        <?php else: ?>
-                          <span style="font-size:0.75rem; font-weight:700; color:#b45309; background:#fffbeb; padding:0.25rem 0.55rem; border-radius:9999px; border:1px solid #fde68a;">Awaiting Endorsement</span>
                         <?php endif; ?>
-                      <?php elseif ($item['stage'] === 'stage2'): ?>
-                        <?php if ($currentAdminRole === 'recommendation' || $currentAdminRole === 'super_admin'): ?>
-                          <button type="button" class="btn-table-action recommend" onclick="recommendReservation('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Recommend Request (Stage 2)">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                            <span>Recommend</span>
-                          </button>
-                          <button type="button" class="btn-table-action decline" onclick="openDeclineModal('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Decline Request (Stage 2)">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                          </button>
-                        <?php else: ?>
-                          <span style="font-size:0.75rem; font-weight:700; color:#1d4ed8; background:#eff6ff; padding:0.25rem 0.55rem; border-radius:9999px; border:1px solid #bfdbfe;">Awaiting Recommendation</span>
-                        <?php endif; ?>
-                      <?php elseif ($item['stage'] === 'stage3'): ?>
-                        <?php if ($currentAdminRole === 'clearance' || $currentAdminRole === 'super_admin'): ?>
-                          <button type="button" class="btn-table-action approve" onclick="clearanceReservation('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Grant Director Clearance (Stage 3)">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                            <span>Approve</span>
-                          </button>
-                          <button type="button" class="btn-table-action decline" onclick="openDeclineModal('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Decline Request (Stage 3)">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                          </button>
-                        <?php else: ?>
-                          <span style="font-size:0.75rem; font-weight:700; color:#047857; background:#ecfdf5; padding:0.25rem 0.55rem; border-radius:9999px; border:1px solid #a7f3d0;">Awaiting Clearance</span>
-                        <?php endif; ?>
-                      <?php elseif ($item['stage'] === 'approved'): ?>
-                        <span class="badge-approved-note">Approved by Director</span>
+                        <button type="button" class="btn-table-action view" onclick="viewReservationDetails('<?= htmlspecialchars($item['ref']) ?>')" title="View Booking Form">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </button>
                       <?php else: ?>
-                        <span class="badge-declined-note">Declined</span>
+                        <?php if ($item['stage'] === 'stage1'): ?>
+                          <?php if ($currentAdminRole === 'endorsement' || $currentAdminRole === 'super_admin'): ?>
+                            <button type="button" class="btn-table-action endorse" onclick="endorseReservation('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Endorse Request (Stage 1)">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                              <span>Endorse</span>
+                            </button>
+                            <button type="button" class="btn-table-action decline" onclick="openDeclineModal('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Decline Request (Stage 1)">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                          <?php else: ?>
+                            <span style="font-size:0.75rem; font-weight:700; color:#b45309; background:#fffbeb; padding:0.25rem 0.55rem; border-radius:9999px; border:1px solid #fde68a;">Awaiting Endorsement</span>
+                          <?php endif; ?>
+                        <?php elseif ($item['stage'] === 'stage2'): ?>
+                          <?php if ($currentAdminRole === 'recommendation' || $currentAdminRole === 'super_admin'): ?>
+                            <button type="button" class="btn-table-action recommend" onclick="recommendReservation('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Recommend Request (Stage 2)">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                              <span>Recommend</span>
+                            </button>
+                            <button type="button" class="btn-table-action decline" onclick="openDeclineModal('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Decline Request (Stage 2)">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                          <?php else: ?>
+                            <span style="font-size:0.75rem; font-weight:700; color:#1d4ed8; background:#eff6ff; padding:0.25rem 0.55rem; border-radius:9999px; border:1px solid #bfdbfe;">Awaiting Recommendation</span>
+                          <?php endif; ?>
+                        <?php elseif ($item['stage'] === 'stage3'): ?>
+                          <?php if ($currentAdminRole === 'clearance' || $currentAdminRole === 'super_admin'): ?>
+                            <button type="button" class="btn-table-action approve" onclick="clearanceReservation('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Grant Director Clearance (Stage 3)">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                              <span>Approve</span>
+                            </button>
+                            <button type="button" class="btn-table-action decline" onclick="openDeclineModal('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Decline Request (Stage 3)">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                          <?php else: ?>
+                            <span style="font-size:0.75rem; font-weight:700; color:#047857; background:#ecfdf5; padding:0.25rem 0.55rem; border-radius:9999px; border:1px solid #a7f3d0;">Awaiting Clearance</span>
+                          <?php endif; ?>
+                        <?php elseif ($item['stage'] === 'approved'): ?>
+                          <span class="badge-approved-note">Approved by Director</span>
+                        <?php else: ?>
+                          <span class="badge-declined-note">Declined</span>
+                        <?php endif; ?>
+
+                        <button type="button" class="btn-table-action view" onclick="viewReservationDetails('<?= htmlspecialchars($item['ref']) ?>')" title="View Booking Form">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </button>
+
+                        <button type="button" class="btn-table-action delete-res" onclick="confirmDeleteReservation('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Move Reservation to Trash (Soft Delete)">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
                       <?php endif; ?>
-                      <button type="button" class="btn-table-action view" onclick="viewReservationDetails('<?= htmlspecialchars($item['ref']) ?>')" title="View Booking Form">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                      </button>
                     </div>
                   </td>
                 </tr>

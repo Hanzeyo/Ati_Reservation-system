@@ -586,6 +586,7 @@ function applyCombinedAdminFilters() {
   let visibleCount = 0;
 
   rows.forEach(row => {
+    const isArchived = (row.getAttribute('data-archived') === '1');
     const status = row.getAttribute('data-status') || '';
     const category = row.getAttribute('data-category') || '';
     const rowVenue = (row.getAttribute('data-venue') || '').toLowerCase();
@@ -593,16 +594,22 @@ function applyCombinedAdminFilters() {
 
     // 1. Check Tab Filter
     let matchesTab = false;
-    if (adminFilterState.tab === 'all') {
-      matchesTab = true;
-    } else if (adminFilterState.tab === 'pending') {
-      matchesTab = (status === 'pending');
-    } else if (adminFilterState.tab === 'approved') {
-      matchesTab = (status === 'approved');
-    } else if (adminFilterState.tab === 'halls') {
-      matchesTab = (category === 'halls');
-    } else if (adminFilterState.tab === 'dorms') {
-      matchesTab = (category === 'dorms');
+    if (adminFilterState.tab === 'archived') {
+      matchesTab = isArchived;
+    } else {
+      if (isArchived) {
+        matchesTab = false; // Exclude archived rows from regular tabs
+      } else if (adminFilterState.tab === 'all') {
+        matchesTab = true;
+      } else if (adminFilterState.tab === 'pending') {
+        matchesTab = (status === 'pending');
+      } else if (adminFilterState.tab === 'approved') {
+        matchesTab = (status === 'approved');
+      } else if (adminFilterState.tab === 'halls') {
+        matchesTab = (category === 'halls');
+      } else if (adminFilterState.tab === 'dorms') {
+        matchesTab = (category === 'dorms');
+      }
     }
 
     // 2. Check Venue Dropdown Filter
@@ -693,13 +700,21 @@ function addAuditLogEntry(messageHtml, dotColor = 'green') {
 
 function updateKPIBadges() {
   const rows = document.querySelectorAll('#adminTableBody tr[data-status]');
-  let allCount = rows.length;
+  let allCount = 0;
   let pendingCount = 0;
   let approvedCount = 0;
   let hallsCount = 0;
   let dormsCount = 0;
+  let archivedCount = 0;
 
   rows.forEach(row => {
+    const isArchived = (row.getAttribute('data-archived') === '1');
+    if (isArchived) {
+      archivedCount++;
+      return;
+    }
+
+    allCount++;
     const st = row.getAttribute('data-status');
     const cat = row.getAttribute('data-category');
     if (st === 'pending') pendingCount++;
@@ -713,6 +728,7 @@ function updateKPIBadges() {
   const tabApproved = document.getElementById('tabCountApproved');
   const tabHalls = document.getElementById('tabCountHalls');
   const tabDorms = document.getElementById('tabCountDorms');
+  const tabArchived = document.getElementById('tabCountArchived');
   const sidebarBadge = document.getElementById('sidebarPendingCount');
 
   if (tabAll) tabAll.textContent = allCount;
@@ -720,6 +736,7 @@ function updateKPIBadges() {
   if (tabApproved) tabApproved.textContent = approvedCount;
   if (tabHalls) tabHalls.textContent = hallsCount;
   if (tabDorms) tabDorms.textContent = dormsCount;
+  if (tabArchived) tabArchived.textContent = archivedCount;
 
   if (sidebarBadge) {
     sidebarBadge.textContent = pendingCount;
@@ -981,5 +998,222 @@ function handleAddNewUser(e) {
   addAuditLogEntry(`New institutional account created for <strong>${name}</strong> (${dept}).`, 'green');
   showAdminToast(`Account successfully registered for ${name}.`, 'success');
   closeAddUserModal();
+}
+
+/* ==========================================================================
+   RESERVATION SOFT DELETE, RESTORE & PERMANENT PURGE HANDLERS
+   ========================================================================== */
+
+/**
+ * Move reservation to Trash (Soft Delete)
+ */
+async function confirmDeleteReservation(refId, applicantName) {
+  if (!confirm(`Are you sure you want to move reservation "${refId}" (${applicantName}) to Trash / Archived?`)) {
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'delete_reservation');
+    formData.append('ref', refId);
+
+    const response = await fetch('ajax/reservation_actions.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      const row = document.querySelector(`tr[data-ref="${refId}"]`);
+      if (row) {
+        row.setAttribute('data-archived', '1');
+        row.classList.add('row-reservation-archived');
+
+        // Update status cell (column 6)
+        const statusCell = row.cells[5];
+        if (statusCell) {
+          statusCell.innerHTML = `
+            <span class="status-pill status-archived" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5;">
+              <span class="status-dot" style="background: #dc2626;"></span>
+              Archived / Trash
+            </span>
+            <span style="display: block; font-size: 0.71rem; color: #dc2626; font-weight: 600; margin-top: 3px;">
+              Archived: Just now
+            </span>
+          `;
+        }
+
+        // Update action buttons wrap (column 7)
+        const actionsWrap = row.querySelector('.action-buttons-wrap');
+        if (actionsWrap) {
+          actionsWrap.innerHTML = `
+            <button type="button" class="btn-table-action restore" onclick="confirmRestoreReservation('${refId}', '${applicantName.replace(/'/g, "\\'")}')" title="Restore Reservation to Active Queue">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+              <span>Restore</span>
+            </button>
+            <button type="button" class="btn-table-action purge" onclick="confirmPermanentDeleteReservation('${refId}', '${applicantName.replace(/'/g, "\\'")}')" title="Permanently delete reservation from database">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <span>Purge</span>
+            </button>
+            <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')" title="View Booking Form">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+          `;
+        }
+      }
+
+      showAdminToast(result.message || `Reservation ${refId} moved to Trash.`, 'success');
+      updateKPIBadges();
+      applyCombinedAdminFilters();
+    } else {
+      showAdminToast(result.message || 'Failed to archive reservation.', 'decline');
+    }
+  } catch (err) {
+    showAdminToast('Server error while moving reservation to Trash.', 'decline');
+  }
+}
+
+/**
+ * Restore reservation from Trash back to Active Queue
+ */
+async function confirmRestoreReservation(refId, applicantName) {
+  if (!confirm(`Restore reservation "${refId}" (${applicantName}) back to the Active Reservation list?`)) {
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'restore_reservation');
+    formData.append('ref', refId);
+
+    const response = await fetch('ajax/reservation_actions.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      const row = document.querySelector(`tr[data-ref="${refId}"]`);
+      if (row) {
+        row.setAttribute('data-archived', '0');
+        row.classList.remove('row-reservation-archived');
+
+        const stage = row.getAttribute('data-stage') || 'stage1';
+        const statusCell = row.cells[5];
+        if (statusCell) {
+          if (stage === 'approved') {
+            statusCell.innerHTML = `<span class="status-pill status-approved"><span class="status-dot"></span>Confirmed & Approved</span>`;
+          } else if (stage === 'rejected') {
+            statusCell.innerHTML = `<span class="status-pill status-cancelled"><span class="status-dot"></span>Declined</span>`;
+          } else if (stage === 'stage1') {
+            statusCell.innerHTML = `<span class="status-pill status-stage1"><span class="status-dot"></span>Awaiting Endorsement</span>`;
+          } else if (stage === 'stage2') {
+            statusCell.innerHTML = `<span class="status-pill status-stage2"><span class="status-dot"></span>Awaiting Recommendation</span>`;
+          } else if (stage === 'stage3') {
+            statusCell.innerHTML = `<span class="status-pill status-stage3"><span class="status-dot"></span>Awaiting Clearance</span>`;
+          } else {
+            statusCell.innerHTML = `<span class="status-pill status-pending"><span class="status-dot"></span>Pending Review</span>`;
+          }
+        }
+
+        const actionsWrap = row.querySelector('.action-buttons-wrap');
+        if (actionsWrap) {
+          let routingButtons = '';
+          if (stage === 'stage1') {
+            routingButtons = `
+              <button type="button" class="btn-table-action endorse" onclick="endorseReservation('${refId}', '${applicantName.replace(/'/g, "\\'")}')" title="Endorse Request (Stage 1)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Endorse</span>
+              </button>
+              <button type="button" class="btn-table-action decline" onclick="openDeclineModal('${refId}', '${applicantName.replace(/'/g, "\\'")}')" title="Decline Request (Stage 1)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            `;
+          } else if (stage === 'stage2') {
+            routingButtons = `
+              <button type="button" class="btn-table-action recommend" onclick="recommendReservation('${refId}', '${applicantName.replace(/'/g, "\\'")}')" title="Recommend Request (Stage 2)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span>Recommend</span>
+              </button>
+              <button type="button" class="btn-table-action decline" onclick="openDeclineModal('${refId}', '${applicantName.replace(/'/g, "\\'")}')" title="Decline Request (Stage 2)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            `;
+          } else if (stage === 'stage3') {
+            routingButtons = `
+              <button type="button" class="btn-table-action approve" onclick="clearanceReservation('${refId}', '${applicantName.replace(/'/g, "\\'")}')" title="Grant Director Clearance (Stage 3)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                <span>Approve</span>
+              </button>
+              <button type="button" class="btn-table-action decline" onclick="openDeclineModal('${refId}', '${applicantName.replace(/'/g, "\\'")}')" title="Decline Request (Stage 3)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            `;
+          } else if (stage === 'approved') {
+            routingButtons = `<span class="badge-approved-note">Approved by Director</span>`;
+          } else {
+            routingButtons = `<span class="badge-declined-note">Declined</span>`;
+          }
+
+          actionsWrap.innerHTML = `
+            ${routingButtons}
+            <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')" title="View Booking Form">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+            <button type="button" class="btn-table-action delete-res" onclick="confirmDeleteReservation('${refId}', '${applicantName.replace(/'/g, "\\'")}')" title="Move Reservation to Trash (Soft Delete)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          `;
+        }
+      }
+
+      showAdminToast(result.message || `Reservation ${refId} restored.`, 'success');
+      updateKPIBadges();
+      applyCombinedAdminFilters();
+    } else {
+      showAdminToast(result.message || 'Failed to restore reservation.', 'decline');
+    }
+  } catch (err) {
+    showAdminToast('Server error while restoring reservation.', 'decline');
+  }
+}
+
+/**
+ * Permanently Purge Reservation (Hard Delete - Super Admin Only)
+ */
+async function confirmPermanentDeleteReservation(refId, applicantName) {
+  if (!confirm(`PERMANENT DELETE WARNING:\n\nAre you sure you want to permanently purge reservation "${refId}" (${applicantName}) from the database? This action is irreversible.`)) {
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'permanent_delete_reservation');
+    formData.append('ref', refId);
+
+    const response = await fetch('ajax/reservation_actions.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      const row = document.querySelector(`tr[data-ref="${refId}"]`);
+      if (row) {
+        row.remove();
+      }
+
+      showAdminToast(result.message || `Reservation ${refId} permanently purged.`, 'success');
+      updateKPIBadges();
+      applyCombinedAdminFilters();
+    } else {
+      showAdminToast(result.message || 'Failed to delete reservation.', 'decline');
+    }
+  } catch (err) {
+    showAdminToast('Server error while permanently deleting reservation.', 'decline');
+  }
 }
 

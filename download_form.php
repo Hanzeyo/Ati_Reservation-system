@@ -375,10 +375,11 @@
     <div style="font-weight: 700; font-size: 9.5pt; margin: 10px 0 4px 0;">DURATION OF USE:</div>
     <div class="field-row" style="padding-left: 14px;">
       <span class="field-label" style="font-weight: 600;">Starting Date and Time:</span>
-      <div class="field-line" style="flex: 0 0 220px;"></div>
+      <div class="field-line" style="flex: 0 0 220px;"></div>div>
       <span class="field-label" style="font-weight: 600; margin-left: 18px;">Ending Date and Time:</span>
       <div class="field-line"></div>
     </div>
+  </div>
 
     <div class="field-row">
       <span class="field-label">INTENDED USERS:</span>

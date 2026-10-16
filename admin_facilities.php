@@ -14,7 +14,7 @@ $db = (new Database())->getConnection();
 $pendingStmt = $db->query("SELECT COUNT(*) FROM reservations WHERE status IN ('Pending', 'Awaiting Endorsement', 'Awaiting Recommendation', 'Awaiting Clearance')");
 $pendingCount = (int)$pendingStmt->fetchColumn();
 
-$userCountStmt = $db->query("SELECT COUNT(*) FROM users");
+$userCountStmt = $db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
 $totalUsersCount = (int)$userCountStmt->fetchColumn();
 
 // Fetch all facilities from DB

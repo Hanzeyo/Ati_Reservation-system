@@ -34,6 +34,7 @@ $query = "SELECT r.*,
           LEFT JOIN users end_u ON r.endorsed_by = end_u.id
           LEFT JOIN users rec_u ON r.recommended_by = rec_u.id
           LEFT JOIN users clr_u ON r.cleared_by = clr_u.id
+          WHERE r.deleted_at IS NULL
           ORDER BY r.id DESC";
 
 $stmt = $db->query($query);
@@ -139,7 +140,7 @@ if ($currentRole === 'endorsement') {
 }
 $sidebarPendingCount = $kpiStage1 + $kpiStage2 + $kpiStage3;
 
-$userCountStmt = $db->query("SELECT COUNT(*) FROM users");
+$userCountStmt = $db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
 $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
 ?>
 <!DOCTYPE html>
