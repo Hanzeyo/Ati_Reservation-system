@@ -487,6 +487,19 @@
   border-color: #174d2f !important;
 }
 
+.btn-manage-setups {
+  background: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border-color: #bfdbfe !important;
+  font-weight: 700 !important;
+}
+
+.btn-manage-setups:hover {
+  background: #1d4ed8 !important;
+  color: #ffffff !important;
+  border-color: #1d4ed8 !important;
+}
+
 .rooms-kpi-summary {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -705,6 +718,121 @@
 .btn-room-delete:hover {
   background: #fee2e2;
   color: #dc2626;
+}
+
+/* ==========================================================================
+   HALL SETUPS & FLOOR PLANS MANAGEMENT STYLES
+   ========================================================================== */
+.setups-tiles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 0.85rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.setup-admin-tile {
+  background: #ffffff;
+  border: 1.5px solid #dce8e0;
+  border-radius: 12px;
+  padding: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.setup-admin-tile:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.06);
+}
+
+.setup-admin-tile.is-available {
+  background: #ffffff;
+  border-color: #bbf7d0;
+}
+
+.setup-admin-tile.is-reserved {
+  background: #fff8f8;
+  border-color: #fca5a5;
+  opacity: 0.9;
+}
+
+.setup-tile-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.setup-tile-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eff6ff;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.setup-admin-tile.is-reserved .setup-tile-icon-wrap {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.setup-tile-name {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0.15rem 0 0 0;
+}
+
+.setup-tile-cap-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  background: #dbeafe;
+  color: #1e40af;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+
+.setup-tile-desc {
+  font-size: 0.76rem;
+  color: #64748b;
+  line-height: 1.45;
+  flex: 1;
+  margin: 0.2rem 0 0.5rem 0;
+}
+
+.setup-tile-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.setup-status-toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.setup-status-toggle-wrap.avail {
+  color: #15803d;
+}
+
+.setup-status-toggle-wrap.res {
+  color: #b91c1c;
 }
 
 /* Ensure modal close buttons are centered with smooth rotation animation */

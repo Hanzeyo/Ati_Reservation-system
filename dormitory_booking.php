@@ -389,8 +389,9 @@ $dormCount = count($dbDorms);
             </svg>
             <span>Change Category (Halls / Dorms)</span>
           </a>
-          <span class="active-category-indicator" id="activeCategoryBadge">
+          <span class="active-category-indicator" id="activeCategoryBadge" title="Current category view">
             <span class="indicator-dot"></span>
+            <span class="indicator-prefix">Viewing:</span>
             <span id="activeCategoryName">Dormitories (<?= $dormCount ?> Suites Available)</span>
           </span>
         </div>

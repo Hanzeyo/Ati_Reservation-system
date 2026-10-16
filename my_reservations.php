@@ -861,6 +861,28 @@ foreach ($reservationsList as $resItem) {
                 <?php endif; ?>
               </div>
             </div>
+
+            <?php if ($rawStatus === 'Rejected'): ?>
+              <!-- Prominent Decline / Return Notice Alert Box -->
+              <div class="res-decline-card-alert">
+                <div class="decline-alert-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                  </svg>
+                </div>
+                <div class="decline-alert-body">
+                  <div class="decline-alert-header">
+                    <strong class="decline-alert-title">Notice of Disapproval / Return:</strong>
+                    <span class="decline-alert-badge">Action Required</span>
+                  </div>
+                  <p class="decline-alert-text">
+                    <?= !empty($item['admin_remarks']) ? nl2br(htmlspecialchars($item['admin_remarks'])) : 'This reservation request was returned or disapproved on official administrative grounds. Please view details or contact administration.' ?>
+                  </p>
+                </div>
+              </div>
+            <?php endif; ?>
           </div>
 
           <div class="res-card-side-actions">
@@ -986,6 +1008,12 @@ foreach ($reservationsList as $resItem) {
                   <span class="status-dot-pulse"></span>
                   <span><?= htmlspecialchars($statusBadgeText) ?></span>
                 </span>
+                <?php if ($rawStatus === 'Rejected' && !empty($item['admin_remarks'])): ?>
+                  <div class="table-decline-note" title="<?= htmlspecialchars($item['admin_remarks']) ?>">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <span><?= htmlspecialchars($item['admin_remarks']) ?></span>
+                  </div>
+                <?php endif; ?>
               </td>
               <td style="text-align: right;">
                 <div style="display: inline-flex; gap: 0.4rem;">

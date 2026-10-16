@@ -1031,3 +1031,317 @@ function handleDeleteRoom(roomId, roomNumber) {
     });
 }
 
+/* ==========================================================================
+   VENUE SETUPS & FLOOR PLANS MANAGEMENT CONTROLLER (ajax/facility_actions.php)
+   ========================================================================== */
+let currentLoadedFacilitySetups = [];
+let currentFacilityMeta = null;
+
+const setupPresetLibrary = {
+  theater: { name: 'Theater Setup', desc: 'Row seating facing main presentation screen' },
+  classroom: { name: 'Classroom Setup', desc: 'Desks and chairs configuration for workshops' },
+  workshop: { name: 'Workshop Pods', desc: 'Collaborative group table arrangements' },
+  banquet: { name: 'Banquet Dining', desc: 'Round dining tables for official gatherings' },
+  ushape: { name: 'U-Shape Workshop', desc: 'Open U-configuration facing facilitator screen' },
+  conference: { name: 'Conference Setup', desc: 'Central aisle with wide projection clearance' },
+  roundtable: { name: 'Round Table Discussion', desc: 'Circular discussions and panel breakout tables' },
+  videoconf: { name: 'Hybrid Video-Conference', desc: 'Camera-optimized setup with mic clearance' },
+  exhibition: { name: 'Open Exhibition Booths', desc: 'Open space for display booths and agricultural showcases' }
+};
+
+function onSetupPresetChange(presetKey) {
+  const nameInput = document.getElementById('newSetupName');
+  const descInput = document.getElementById('newSetupDesc');
+  const capInput = document.getElementById('newSetupCap');
+
+  if (presetKey && setupPresetLibrary[presetKey]) {
+    const item = setupPresetLibrary[presetKey];
+    if (nameInput) nameInput.value = item.name;
+    if (descInput) descInput.value = item.desc;
+    if (capInput && (!capInput.value || capInput.value.trim() === '')) {
+      const defCap = currentFacilityMeta?.capacity ? (currentFacilityMeta.capacity.includes('PAX') ? currentFacilityMeta.capacity : currentFacilityMeta.capacity + ' PAX') : '50 PAX';
+      capInput.value = defCap;
+    }
+  }
+}
+
+function openManageSetupsModal(facilityId, facilityName) {
+  const hiddenId = document.getElementById('currentManageSetupsFacilityId');
+  const titleEl = document.getElementById('manageSetupsFacilityName');
+  const modal = document.getElementById('manageSetupsModal');
+
+  if (hiddenId) hiddenId.value = facilityId;
+  if (titleEl) titleEl.textContent = `Manage Setups: ${facilityName || 'Venue'}`;
+  if (modal) modal.style.display = 'flex';
+
+  loadFacilitySetups(facilityId);
+}
+
+function closeManageSetupsModal() {
+  const modal = document.getElementById('manageSetupsModal');
+  if (modal) modal.style.display = 'none';
+  const quickForm = document.getElementById('quickAddSetupForm');
+  if (quickForm) quickForm.reset();
+}
+
+function loadFacilitySetups(facilityId) {
+  const grid = document.getElementById('manageSetupsGrid');
+  if (!grid) return;
+
+  grid.innerHTML = `
+    <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; color: #637f6f;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; margin-bottom: 0.5rem;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
+      <div>Loading venue setups & layouts...</div>
+    </div>
+  `;
+
+  fetch(`ajax/facility_actions.php?action=get_layouts&facility_id=${encodeURIComponent(facilityId)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (!data.success) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; color: #dc2626;">
+            ${data.message || 'Failed to load setups.'}
+          </div>
+        `;
+        return;
+      }
+
+      currentFacilityMeta = data.facility;
+      currentLoadedFacilitySetups = data.layouts || [];
+
+      // Update max cap badge in header
+      const capPill = document.getElementById('setupKpiMaxCap');
+      if (capPill && currentFacilityMeta) {
+        const c = currentFacilityMeta.capacity || '50';
+        capPill.textContent = c.includes('PAX') ? c : c + ' PAX';
+      }
+
+      // Prefill default cap in add form
+      const capInput = document.getElementById('newSetupCap');
+      if (capInput && currentFacilityMeta) {
+        const c = currentFacilityMeta.capacity || '50';
+        capInput.value = c.includes('PAX') ? c : c + ' PAX';
+      }
+
+      renderSetupsGrid();
+    })
+    .catch(err => {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; color: #dc2626;">
+          Network error loading setups.
+        </div>
+      `;
+    });
+}
+
+function renderSetupsGrid() {
+  const grid = document.getElementById('manageSetupsGrid');
+  if (!grid) return;
+
+  let totalCount = currentLoadedFacilitySetups.length;
+  let availCount = 0;
+  let resCount = 0;
+
+  currentLoadedFacilitySetups.forEach(s => {
+    if (s.available) availCount++;
+    else resCount++;
+  });
+
+  const kpiTotal = document.getElementById('setupKpiTotal');
+  const kpiAvail = document.getElementById('setupKpiAvailable');
+  const kpiRes = document.getElementById('setupKpiReserved');
+
+  if (kpiTotal) kpiTotal.textContent = totalCount;
+  if (kpiAvail) kpiAvail.textContent = availCount;
+  if (kpiRes) kpiRes.textContent = resCount;
+
+  if (totalCount === 0) {
+    grid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; background: #fbfdfc; border: 1.5px dashed #cde2d5; border-radius: 12px; color: #637f6f;">
+        <p style="margin: 0 0 0.5rem 0; font-weight: 700; color: #174d2f;">Walang naka-set na layout para sa venue na ito.</p>
+        <span style="font-size: 0.8rem;">Magdagdag sa itaas o pindutin ang "Reset to Standard 4 Presets" sa ibaba.</span>
+      </div>
+    `;
+    return;
+  }
+
+  const iconSvgs = {
+    'theater': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M7 18h10M3 21h18"/></svg>',
+    'classroom': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M7 20h10M12 16v4"/></svg>',
+    'workshop': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>',
+    'banquet': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>',
+    'ushape': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4v11a5 5 0 0 0 10 0V4"/><rect x="3" y="3" width="4" height="3"/><rect x="13" y="3" width="4" height="3"/></svg>',
+    'conference': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="6" width="16" height="12" rx="2"/><circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/></svg>',
+    'roundtable': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>',
+    'videoconf': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>',
+    'exhibition': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+    'default': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>'
+  };
+
+  grid.innerHTML = '';
+  currentLoadedFacilitySetups.forEach((setup, index) => {
+    const isAvail = Boolean(setup.available);
+    const key = setup.id ? setup.id.toLowerCase() : '';
+    let iconKey = 'default';
+    for (const k in iconSvgs) {
+      if (key.includes(k)) {
+        iconKey = k;
+        break;
+      }
+    }
+    const iconSvg = iconSvgs[iconKey] || iconSvgs['default'];
+
+    const tile = document.createElement('div');
+    tile.className = `setup-admin-tile ${isAvail ? 'is-available' : 'is-reserved'}`;
+    tile.innerHTML = `
+      <div class="setup-tile-top">
+        <div class="setup-tile-icon-wrap">${iconSvg}</div>
+        <button type="button" class="btn-room-delete" onclick="deleteSetupItem(${index})" title="Remove this setup layout">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+      </div>
+      <div class="setup-tile-name">${setup.name}</div>
+      <div class="setup-tile-cap-badge">${setup.cap || 'Standard PAX'}</div>
+      <div class="setup-tile-desc">${setup.desc || 'Standard venue arrangement'}</div>
+      <div class="setup-tile-actions">
+        <div class="setup-status-toggle-wrap ${isAvail ? 'avail' : 'res'}">
+          <label class="switch-toggle" style="margin: 0;" title="Toggle setup availability">
+            <input type="checkbox" ${isAvail ? 'checked' : ''} onchange="toggleSetupStatus(${index}, this.checked)">
+            <span class="slider-round"></span>
+          </label>
+          <span>${isAvail ? 'Available' : 'Reserved / Closed'}</span>
+        </div>
+        <span style="font-size: 0.68rem; font-weight: 700; color: #94a3b8;">#${index + 1}</span>
+      </div>
+    `;
+    grid.appendChild(tile);
+  });
+}
+
+function toggleSetupStatus(index, newAvailable) {
+  if (currentLoadedFacilitySetups[index]) {
+    currentLoadedFacilitySetups[index].available = Boolean(newAvailable);
+    renderSetupsGrid();
+  }
+}
+
+function handleQuickAddSetup(e) {
+  e.preventDefault();
+  const nameInput = document.getElementById('newSetupName');
+  const capInput = document.getElementById('newSetupCap');
+  const descInput = document.getElementById('newSetupDesc');
+  const presetSelect = document.getElementById('newSetupPresetSelect');
+
+  const name = nameInput ? nameInput.value.trim() : '';
+  let cap = capInput ? capInput.value.trim() : '';
+  const desc = descInput ? descInput.value.trim() : '';
+  const presetKey = presetSelect ? presetSelect.value : 'custom';
+
+  if (!name) {
+    showAdminToast('Ilagay ang pangalan ng layout setup.', 'warning');
+    return;
+  }
+
+  if (cap && !cap.toLowerCase().includes('pax')) {
+    cap += ' PAX';
+  } else if (!cap) {
+    cap = currentFacilityMeta?.capacity ? (currentFacilityMeta.capacity.includes('PAX') ? currentFacilityMeta.capacity : currentFacilityMeta.capacity + ' PAX') : '50 PAX';
+  }
+
+  const idSlug = (presetKey !== 'custom' ? presetKey : name.toLowerCase().replace(/[^a-z0-9]/g, '-')) + '-' + Date.now();
+
+  currentLoadedFacilitySetups.push({
+    id: idSlug,
+    name: name,
+    cap: cap,
+    available: true,
+    desc: desc || `${name} arrangement for delegates`
+  });
+
+  if (nameInput) nameInput.value = '';
+  if (descInput) descInput.value = '';
+  if (presetSelect) presetSelect.value = 'custom';
+
+  showAdminToast(`Layout "${name}" added to list. I-click ang "Save Setups Changes" para ma-save.`, 'success');
+  renderSetupsGrid();
+}
+
+function deleteSetupItem(index) {
+  if (currentLoadedFacilitySetups[index]) {
+    const item = currentLoadedFacilitySetups[index];
+    const ok = confirm(`Sigurado ka bang nais mong tanggalin ang "${item.name}"?`);
+    if (!ok) return;
+    currentLoadedFacilitySetups.splice(index, 1);
+    renderSetupsGrid();
+  }
+}
+
+function resetSetupsToDefaults() {
+  const ok = confirm('Nais mo bang ibalik ang setups sa 4 standard defaults (Theater, Classroom, Workshop, Banquet)?');
+  if (!ok) return;
+
+  const capVal = currentFacilityMeta?.capacity ? (currentFacilityMeta.capacity.includes('PAX') ? currentFacilityMeta.capacity : currentFacilityMeta.capacity + ' PAX') : '50 PAX';
+
+  currentLoadedFacilitySetups = [
+    { id: 'theater', name: 'Theater Setup', cap: capVal, available: true, desc: 'Row seating facing main presentation screen' },
+    { id: 'classroom', name: 'Classroom Setup', cap: capVal, available: true, desc: 'Desks and chairs configuration for workshops' },
+    { id: 'workshop', name: 'Workshop Pods', cap: capVal, available: true, desc: 'Collaborative group table arrangements' },
+    { id: 'banquet', name: 'Banquet Dining', cap: capVal, available: true, desc: 'Round dining tables for official gatherings' }
+  ];
+
+  renderSetupsGrid();
+  showAdminToast('Naibalik sa 4 standard layout presets. I-click ang "Save Setups Changes" para ma-save.', 'info');
+}
+
+function saveFacilitySetups() {
+  const facilityId = document.getElementById('currentManageSetupsFacilityId').value;
+  const saveBtn = document.getElementById('btnSaveSetupsSubmit');
+
+  if (!facilityId) {
+    showAdminToast('Walang napiling pasilidad.', 'decline');
+    return;
+  }
+
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = `<span>Saving setups...</span>`;
+  }
+
+  const formData = new FormData();
+  formData.append('action', 'save_layouts');
+  formData.append('facility_id', facilityId);
+  formData.append('layouts', JSON.stringify(currentLoadedFacilitySetups));
+
+  fetch('ajax/facility_actions.php', {
+    method: 'POST',
+    body: formData
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span>Save Setups Changes</span>`;
+      }
+      if (data.success) {
+        showAdminToast('Matagumpay na na-save ang Venue Setups! Live na ito sa booking portal.', 'success');
+        if (window.initialFacilitiesData && window.initialFacilitiesData[facilityId]) {
+          window.initialFacilitiesData[facilityId].layouts = JSON.stringify(currentLoadedFacilitySetups);
+        }
+        setTimeout(() => {
+          closeManageSetupsModal();
+        }, 600);
+      } else {
+        showAdminToast(data.message || 'Hindi na-save ang setups.', 'decline');
+      }
+    })
+    .catch(err => {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span>Save Setups Changes</span>`;
+      }
+      showAdminToast('Network error saving setups.', 'decline');
+    });
+}
+
+

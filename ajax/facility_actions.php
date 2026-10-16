@@ -284,6 +284,88 @@ try {
         exit;
     }
 
+    if ($action === 'get_layouts') {
+        $id = (int)($_GET['facility_id'] ?? $_POST['facility_id'] ?? 0);
+        if ($id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid facility ID.']);
+            exit;
+        }
+
+        $stmt = $db->prepare("SELECT id, name, type, capacity, rate, layouts FROM facilities WHERE id = ?");
+        $stmt->execute([$id]);
+        $fac = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$fac) {
+            echo json_encode(['success' => false, 'message' => 'Facility not found.']);
+            exit;
+        }
+
+        $layouts = [];
+        if (!empty($fac['layouts'])) {
+            $decoded = json_decode($fac['layouts'], true);
+            if (is_array($decoded)) {
+                $layouts = $decoded;
+            }
+        }
+
+        if (empty($layouts)) {
+            $capVal = $fac['capacity'] ?: '50 PAX';
+            if (stripos($capVal, 'PAX') === false) $capVal .= ' PAX';
+            $layouts = [
+                ['id' => 'theater', 'name' => 'Theater Setup', 'cap' => $capVal, 'available' => true, 'desc' => 'Row seating facing main presentation screen'],
+                ['id' => 'classroom', 'name' => 'Classroom Setup', 'cap' => $capVal, 'available' => true, 'desc' => 'Desks and chairs configuration for workshops'],
+                ['id' => 'workshop', 'name' => 'Workshop Pods', 'cap' => $capVal, 'available' => true, 'desc' => 'Collaborative group table arrangements'],
+                ['id' => 'banquet', 'name' => 'Banquet Dining', 'cap' => $capVal, 'available' => true, 'desc' => 'Round dining tables for official gatherings']
+            ];
+        }
+
+        echo json_encode([
+            'success' => true,
+            'facility' => [
+                'id' => (int)$fac['id'],
+                'name' => $fac['name'],
+                'type' => $fac['type'],
+                'capacity' => $fac['capacity'],
+                'rate' => $fac['rate']
+            ],
+            'layouts' => $layouts
+        ]);
+        exit;
+    }
+
+    if ($action === 'save_layouts') {
+        $id = (int)($_POST['facility_id'] ?? 0);
+        $rawLayouts = $_POST['layouts'] ?? '[]';
+        $layoutsArray = is_array($rawLayouts) ? $rawLayouts : json_decode($rawLayouts, true);
+
+        if ($id <= 0 || !is_array($layoutsArray)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid parameters.']);
+            exit;
+        }
+
+        $jsonString = json_encode(array_values($layoutsArray), JSON_UNESCAPED_UNICODE);
+        $stmt = $db->prepare("UPDATE facilities SET layouts = ? WHERE id = ?");
+        $stmt->execute([$jsonString, $id]);
+
+        // Audit Log
+        try {
+            $logStmt = $db->prepare("INSERT INTO audit_logs (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)");
+            $logStmt->execute([
+                $userId,
+                'UPDATE_FACILITY_LAYOUTS',
+                "Updated venue layout setups for facility #{$id}",
+                $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'
+            ]);
+        } catch (Exception $e) {}
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Venue layout setups saved successfully.',
+            'layouts' => $layoutsArray
+        ]);
+        exit;
+    }
+
     echo json_encode(['success' => false, 'message' => 'Unknown action.']);
 } catch (Exception $e) {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);

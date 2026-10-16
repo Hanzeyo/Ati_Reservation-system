@@ -443,11 +443,12 @@ $totalCount = count($dbFacilities);
             </svg>
             <span>Change Category (Halls / Dorms)</span>
           </a>
-          <span class="active-category-indicator" id="activeCategoryBadge">
+          <span class="active-category-indicator" id="activeCategoryBadge" title="Current category view">
             <span class="indicator-dot"></span>
+            <span class="indicator-prefix">Viewing:</span>
             <span id="activeCategoryName"><?php
             if ($reqCategory === 'dormitories')
-              echo 'Dormitories (' . $dormsCount . ' Suites)';
+              echo 'Halls & Dormitories (' . $dormsCount . ' Suites)';
             elseif ($reqCategory === 'halls')
               echo 'Halls (' . $hallsCount . ' Available)';
             else
@@ -547,6 +548,7 @@ $totalCount = count($dbFacilities);
           data-capacity="<?= htmlspecialchars($capDisplay) ?>"
           data-facility-type="<?= $cardCategory ?>"
           data-status="<?= htmlspecialchars($f['status']) ?>"
+          data-layouts="<?= htmlspecialchars($f['layouts'] ?? '') ?>"
           style="<?= $displayStyle ?>">
           <div class="facility-card-image">
             <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($f['name']) ?>" loading="lazy">
