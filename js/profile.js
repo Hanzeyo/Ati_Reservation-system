@@ -180,6 +180,14 @@ function loadSavedProfile() {
       if (inp) inp.value = profile.desk;
     }
 
+    if (profile.showGovService !== undefined) {
+      const card = document.getElementById('statBoxGovService');
+      const toggle = document.getElementById('prefShowGovService');
+      const isVisible = Boolean(Number(profile.showGovService));
+      if (card) card.style.display = isVisible ? 'flex' : 'none';
+      if (toggle) toggle.checked = isVisible;
+    }
+
     // Update initials if no image
     if (!localStorage.getItem('ati_user_avatar') && profile.fullName) {
       const initials = getInitials(profile.fullName);
@@ -573,6 +581,11 @@ function saveProfileEdits() {
   }
 
   // Persist to localStorage
+  const showGovService = document.getElementById('prefShowGovService')?.checked ? 1 : 0;
+  const prefSms = document.getElementById('prefSmsUpdates')?.checked ? 1 : 0;
+  const prefEmailPass = document.getElementById('prefEmailPass')?.checked ? 1 : 0;
+  const prefSupervisorCc = document.getElementById('prefSupervisorCc')?.checked ? 1 : 0;
+
   const profileObject = {
     fullName,
     employeeId,
@@ -589,7 +602,11 @@ function saveProfileEdits() {
     landline,
     extension,
     building,
-    desk
+    desk,
+    showGovService,
+    prefSms,
+    prefEmailPass,
+    prefSupervisorCc
   };
   localStorage.setItem('ati_user_profile', JSON.stringify(profileObject));
 
@@ -598,8 +615,75 @@ function saveProfileEdits() {
   const indicator = document.getElementById('editModeIndicator');
   if (indicator) indicator.classList.remove('show');
 
-  showToast('Profile information safely saved to your record!');
+  // Persist to MySQL database via AJAX
+  const formData = new FormData();
+  formData.append('fullName', fullName);
+  formData.append('employeeId', employeeId);
+  formData.append('position', position);
+  formData.append('division', division);
+  formData.append('dateHired', dateHired);
+  formData.append('empStatus', empStatus);
+  formData.append('supervisor', supervisor);
+  formData.append('station', station);
+  formData.append('email', email);
+  formData.append('altEmail', altEmail);
+  formData.append('phone', phone);
+  formData.append('emergencyContact', emergencyContact);
+  formData.append('landline', landline);
+  formData.append('extension', extension);
+  formData.append('building', building);
+  formData.append('desk', desk);
+  formData.append('showGovService', showGovService ? '1' : '0');
+  formData.append('prefSms', prefSms ? '1' : '0');
+  formData.append('prefEmailPass', prefEmailPass ? '1' : '0');
+  formData.append('prefSupervisorCc', prefSupervisorCc ? '1' : '0');
+
+  fetch('ajax/update_profile.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      showToast('Profile and workstation details saved successfully!');
+    } else {
+      showToast(data.message || 'Profile saved in browser.');
+    }
+  })
+  .catch(err => {
+    console.error('Profile AJAX save error:', err);
+    showToast('Profile information saved locally!');
+  });
 }
+
+/**
+ * Toggle visibility of Government Service Tenure card
+ */
+function toggleGovServiceCard(show) {
+  const card = document.getElementById('statBoxGovService');
+  if (card) {
+    card.style.display = show ? 'flex' : 'none';
+  }
+
+  const formData = new FormData();
+  formData.append('showGovService', show ? '1' : '0');
+  fetch('ajax/update_profile.php', {
+    method: 'POST',
+    body: formData
+  }).catch(() => {});
+
+  const savedData = localStorage.getItem('ati_user_profile');
+  if (savedData) {
+    try {
+      const p = JSON.parse(savedData);
+      p.showGovService = show ? 1 : 0;
+      localStorage.setItem('ati_user_profile', JSON.stringify(p));
+    } catch (e) {}
+  }
+
+  showToast(show ? 'Government Service Tenure is now visible on profile.' : 'Government Service Tenure hidden from profile.');
+}
+window.toggleGovServiceCard = toggleGovServiceCard;
 
 /* ==========================================================================
    5. Interactive Stat Card Modals (KPI Detail View)

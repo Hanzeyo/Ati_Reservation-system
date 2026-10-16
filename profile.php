@@ -1,6 +1,64 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/auth_guard.php';
+
+$userId = $_SESSION['user_id'] ?? null;
+$db = (new Database())->getConnection();
+
+$userStmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+$userStmt->execute([$userId]);
+$userData = $userStmt->fetch(PDO::FETCH_ASSOC) ?: [];
+
+// User profile values with fallback defaults
+$userFullName = !empty($userData['full_name']) ? $userData['full_name'] : ($_SESSION['full_name'] ?? 'Juan Dela Cruz');
+$userEmail = !empty($userData['email']) ? $userData['email'] : ($_SESSION['email'] ?? 'juan.delacruz@ati.da.gov.ph');
+$userPhone = !empty($userData['contact_number']) ? $userData['contact_number'] : '+63 917 842 5901';
+$userEmpId = !empty($userData['employee_id']) ? $userData['employee_id'] : 'ATI-EMP-2024-0891';
+$userPosition = !empty($userData['position']) ? $userData['position'] : 'Training Specialist III';
+$userDivision = !empty($userData['division']) ? $userData['division'] : 'Career Development Division (CDD)';
+$userDateHired = !empty($userData['date_hired']) ? $userData['date_hired'] : 'March 15, 2018';
+$userEmpStatus = !empty($userData['employment_status']) ? $userData['employment_status'] : 'Permanent Regular Staff';
+$userSupervisor = !empty($userData['immediate_supervisor']) ? $userData['immediate_supervisor'] : 'Dr. Ma. Cecilia Villacorta';
+$userStation = !empty($userData['station']) ? $userData['station'] : 'ATI Central Office • Diliman, QC';
+
+$userAltEmail = !empty($userData['alt_email']) ? $userData['alt_email'] : 'jdelacruz.ati@gmail.com';
+$userEmergencyContact = !empty($userData['emergency_contact']) ? $userData['emergency_contact'] : 'Maria Dela Cruz (Spouse) • 0918 123 4567';
+$userLandline = !empty($userData['landline']) ? $userData['landline'] : '(02) 8929-8541';
+$userExtension = !empty($userData['extension']) ? $userData['extension'] : 'Local Ext. 214';
+$userBuilding = !empty($userData['building']) ? $userData['building'] : 'ATI Central Bldg • 2nd Floor';
+$userDesk = !empty($userData['desk']) ? $userData['desk'] : 'CDD Wing • Desk 204';
+
+$showGovService = isset($userData['show_gov_service']) ? (bool)$userData['show_gov_service'] : true;
+$prefSms = isset($userData['pref_sms']) ? (bool)$userData['pref_sms'] : true;
+$prefEmailPass = isset($userData['pref_email_pass']) ? (bool)$userData['pref_email_pass'] : true;
+$prefSupervisorCc = isset($userData['pref_supervisor_cc']) ? (bool)$userData['pref_supervisor_cc'] : true;
+
+// Reservation statistics for current user
+$userResCountStmt = $db->prepare("SELECT COUNT(*) FROM reservations WHERE user_id = ? AND deleted_at IS NULL");
+$userResCountStmt->execute([$userId]);
+$totalUserRes = (int)$userResCountStmt->fetchColumn();
+
+$userApprCountStmt = $db->prepare("SELECT COUNT(*) FROM reservations WHERE user_id = ? AND status IN ('Approved', 'Completed') AND deleted_at IS NULL");
+$userApprCountStmt->execute([$userId]);
+$approvedUserRes = (int)$userApprCountStmt->fetchColumn();
+
+$userPendingCountStmt = $db->prepare("SELECT COUNT(*) FROM reservations WHERE user_id = ? AND status IN ('Pending', 'Awaiting Endorsement', 'Awaiting Recommendation', 'Awaiting Clearance', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance') AND deleted_at IS NULL");
+$userPendingCountStmt->execute([$userId]);
+$pendingUserRes = (int)$userPendingCountStmt->fetchColumn();
+
+// Compute tenure from date hired
+$tenureText = '8 Yrs, 7 Mos';
+try {
+    $hiredTime = strtotime($userDateHired);
+    if ($hiredTime) {
+        $hireDateObj = new DateTime(date('Y-m-d', $hiredTime));
+        $nowObj = new DateTime();
+        $diff = $hireDateObj->diff($nowObj);
+        $tenureText = "{$diff->y} Yrs, {$diff->m} Mos";
+    }
+} catch (Exception $e) {}
+
+$userInitials = getUserInitials($userFullName);
 /**
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Staff Profile Management Page
@@ -328,7 +386,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
             <div class="profile-avatar-inner" id="heroAvatarContainer">
               <img src="" alt="Juan Dela Cruz Profile Picture" class="profile-avatar-img" id="heroAvatarImg"
                 style="display: none;">
-              <span class="profile-avatar-initials" id="heroAvatarInitials">JD</span>
+              <span class="profile-avatar-initials" id="heroAvatarInitials"><?= htmlspecialchars($userInitials) ?></span>
             </div>
             <button type="button" class="btn-upload-photo" id="btnTriggerPhotoUpload"
               title="Upload or change profile photo" aria-label="Upload or change profile photo">
@@ -373,7 +431,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
         <!-- Identity Information - Completely situated on the white card background for maximum readability -->
         <div class="profile-hero-identity">
           <div class="profile-name-row">
-            <h1 class="profile-name-display" id="displayFullName">Juan Dela Cruz</h1>
+            <h1 class="profile-name-display" id="displayFullName"><?= htmlspecialchars($userFullName) ?></h1>
             <span class="profile-verified-badge">
               <svg viewBox="0 0 24 24" fill="none">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -386,8 +444,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
             </span>
           </div>
 
-          <p class="profile-role-subtitle" id="displayRoleSubtitle">Training Specialist III &bull; Career Development
-            Division (CDD)</p>
+          <p class="profile-role-subtitle" id="displayRoleSubtitle"><?= htmlspecialchars($userPosition) ?> &bull; <?= htmlspecialchars($userDivision) ?></p>
 
           <div class="profile-tag-ribbon">
             <span class="profile-tag-pill">
@@ -410,7 +467,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
                 <line x1="8" y1="2" x2="8" y2="6"></line>
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
-              <span id="displayHiredTag">Hired: March 15, 2018</span>
+              <span id="displayHiredTag">Hired: <?= htmlspecialchars($userDateHired) ?></span>
             </span>
             <button type="button" class="btn-profile-danger-text" id="btnRemovePhoto" style="display: none;"
               title="Remove current photo and restore initials">
@@ -467,10 +524,10 @@ require_once __DIR__ . '/includes/auth_guard.php';
           </svg>
         </div>
         <div class="profile-stat-info">
-          <span class="profile-stat-val">5</span>
+          <span class="profile-stat-val"><?= $totalUserRes ?></span>
           <span class="profile-stat-lbl">Total Reservations Filed</span>
           <a href="my_reservations.php" class="stat-click-hint" onclick="event.stopPropagation();"
-            title="View all 5 bookings in Booking History">View all 5 bookings &rarr;</a>
+            title="View all bookings in Booking History">View all bookings &rarr;</a>
         </div>
       </div>
 
@@ -484,10 +541,10 @@ require_once __DIR__ . '/includes/auth_guard.php';
           </svg>
         </div>
         <div class="profile-stat-info">
-          <span class="profile-stat-val">2</span>
+          <span class="profile-stat-val"><?= $approvedUserRes ?></span>
           <span class="profile-stat-lbl">Confirmed &amp; Approved</span>
           <a href="my_reservations.php?filter=approved" class="stat-click-hint" onclick="event.stopPropagation();"
-            title="View approved bookings in Booking History">View 2 approved &rarr;</a>
+            title="View approved bookings in Booking History">View approved &rarr;</a>
         </div>
       </div>
 
@@ -500,16 +557,16 @@ require_once __DIR__ . '/includes/auth_guard.php';
           </svg>
         </div>
         <div class="profile-stat-info">
-          <span class="profile-stat-val">2</span>
+          <span class="profile-stat-val"><?= $pendingUserRes ?></span>
           <span class="profile-stat-lbl">Under Admin Review</span>
           <a href="my_reservations.php?filter=pending" class="stat-click-hint" onclick="event.stopPropagation();"
-            title="View pending bookings in Booking History">View 2 pending &rarr;</a>
+            title="View pending bookings in Booking History">View pending &rarr;</a>
         </div>
       </div>
 
       <!-- 4. Government Service Tenure (Sensible Civil Service Medal Icon + Exact Hired Detail) -->
-      <div class="profile-stat-box" data-kpi="service" title="Click to view official Civil Service hiring record"
-        tabindex="0" role="button">
+      <div class="profile-stat-box" id="statBoxGovService" data-kpi="service" title="Click to view official Civil Service hiring record"
+        tabindex="0" role="button" style="<?= $showGovService ? '' : 'display: none;' ?>">
         <div class="profile-stat-icon gold">
           <!-- Official Public Service Ribbon / Civil Service Medal Icon -->
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -518,13 +575,13 @@ require_once __DIR__ . '/includes/auth_guard.php';
           </svg>
         </div>
         <div class="profile-stat-info">
-          <span class="profile-stat-val">8 Yrs, 7 Mos</span>
+          <span class="profile-stat-val" id="statTenureVal"><?= htmlspecialchars($tenureText) ?></span>
           <span class="profile-stat-lbl">ATI Government Service</span>
           <span class="stat-hired-detail">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
-            <span id="statHiredText">Hired: March 15, 2018</span>
+            <span id="statHiredText">Hired: <?= htmlspecialchars($userDateHired) ?></span>
           </span>
         </div>
       </div>
@@ -552,8 +609,8 @@ require_once __DIR__ . '/includes/auth_guard.php';
           <!-- Full Name -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpFullName">Full Legal Name</label>
-            <div class="profile-value-display" id="valFullName">Juan Dela Cruz</div>
-            <input type="text" id="inpFullName" class="profile-input-control" value="Juan Dela Cruz"
+            <div class="profile-value-display" id="valFullName"><?= htmlspecialchars($userFullName) ?></div>
+            <input type="text" id="inpFullName" class="profile-input-control" value="<?= htmlspecialchars($userFullName) ?>"
               placeholder="First Name Last Name">
           </div>
 
@@ -564,7 +621,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
               <span class="badge-hr-pill" title="Protected Civil Service item">HR Locked</span>
             </label>
             <div class="profile-value-display profile-copyable-val">
-              <span id="valEmployeeId">ATI-EMP-2024-0891</span>
+              <span id="valEmployeeId"><?= htmlspecialchars($userEmpId) ?></span>
               <button type="button" class="btn-mini-copy" id="btnCopyEmpId" title="Copy Employee ID">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -573,7 +630,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
               </button>
             </div>
             <input type="text" id="inpEmployeeId" class="profile-input-control profile-input-readonly"
-              value="ATI-EMP-2024-0891" readonly placeholder="ATI-EMP-YYYY-XXXX">
+              value="<?= htmlspecialchars($userEmpId) ?>" readonly placeholder="ATI-EMP-YYYY-XXXX">
             <div class="field-locked-note">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -586,23 +643,22 @@ require_once __DIR__ . '/includes/auth_guard.php';
           <!-- Position / Job Title -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpPosition">Official Designation / Position</label>
-            <div class="profile-value-display" id="valPosition">Training Specialist III</div>
-            <input type="text" id="inpPosition" class="profile-input-control" value="Training Specialist III"
+            <div class="profile-value-display" id="valPosition"><?= htmlspecialchars($userPosition) ?></div>
+            <input type="text" id="inpPosition" class="profile-input-control" value="<?= htmlspecialchars($userPosition) ?>"
               placeholder="e.g. Training Specialist III">
           </div>
 
           <!-- Division / Unit -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpDivision">Division / Operating Unit</label>
-            <div class="profile-value-display" id="valDivision">Career Development Division (CDD)</div>
+            <div class="profile-value-display" id="valDivision"><?= htmlspecialchars($userDivision) ?></div>
             <select id="inpDivision" class="profile-input-control profile-select-control">
-              <option value="Career Development Division (CDD)" selected>Career Development Division (CDD)</option>
-              <option value="Partnership & Accreditation Division (PAD)">Partnership & Accreditation Division (PAD)
-              </option>
-              <option value="Information Services Division (ISD)">Information Services Division (ISD)</option>
-              <option value="Administrative & Finance Unit (AFU)">Administrative & Finance Unit (AFU)</option>
-              <option value="Policy & Planning Division (PPD)">Policy & Planning Division (PPD)</option>
-              <option value="Office of the Director (OD)">Office of the Director (OD)</option>
+              <option value="Career Development Division (CDD)" <?= strpos($userDivision, 'CDD') !== false ? 'selected' : '' ?>>Career Development Division (CDD)</option>
+              <option value="Partnership & Accreditation Division (PAD)" <?= strpos($userDivision, 'PAD') !== false ? 'selected' : '' ?>>Partnership & Accreditation Division (PAD)</option>
+              <option value="Information Services Division (ISD)" <?= strpos($userDivision, 'ISD') !== false ? 'selected' : '' ?>>Information Services Division (ISD)</option>
+              <option value="Administrative & Finance Unit (AFU)" <?= strpos($userDivision, 'AFU') !== false || strpos($userDivision, 'AFD') !== false ? 'selected' : '' ?>>Administrative & Finance Unit (AFU)</option>
+              <option value="Policy & Planning Division (PPD)" <?= strpos($userDivision, 'PPD') !== false ? 'selected' : '' ?>>Policy & Planning Division (PPD)</option>
+              <option value="Office of the Director (OD)" <?= strpos($userDivision, 'OD') !== false ? 'selected' : '' ?>>Office of the Director (OD)</option>
             </select>
           </div>
 
@@ -612,9 +668,9 @@ require_once __DIR__ . '/includes/auth_guard.php';
               <span>Date Originally Appointed / Hired</span>
               <span class="badge-hr-pill" title="Official Appointment Record">Civil Service</span>
             </label>
-            <div class="profile-value-display" id="valDateHired">March 15, 2018 (Regular)</div>
+            <div class="profile-value-display" id="valDateHired"><?= htmlspecialchars($userDateHired) ?> (Regular)</div>
             <input type="text" id="inpDateHired" class="profile-input-control profile-input-readonly"
-              value="March 15, 2018" readonly placeholder="March 15, 2018">
+              value="<?= htmlspecialchars($userDateHired) ?>" readonly placeholder="March 15, 2018">
             <div class="field-locked-note">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <circle cx="12" cy="8" r="6"></circle>
@@ -627,28 +683,28 @@ require_once __DIR__ . '/includes/auth_guard.php';
           <!-- Employment Status -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpEmpStatus">Employment Status</label>
-            <div class="profile-value-display" id="valEmpStatus">Permanent Regular Staff</div>
+            <div class="profile-value-display" id="valEmpStatus"><?= htmlspecialchars($userEmpStatus) ?></div>
             <select id="inpEmpStatus" class="profile-input-control profile-select-control">
-              <option value="Permanent Regular Staff" selected>Permanent Regular Staff</option>
-              <option value="Contract of Service (COS)">Contract of Service (COS)</option>
-              <option value="Co-Terminus Personnel">Co-Terminus Personnel</option>
-              <option value="Special Detail / Seconded">Special Detail / Seconded</option>
+              <option value="Permanent Regular Staff" <?= $userEmpStatus === 'Permanent Regular Staff' ? 'selected' : '' ?>>Permanent Regular Staff</option>
+              <option value="Contract of Service (COS)" <?= $userEmpStatus === 'Contract of Service (COS)' ? 'selected' : '' ?>>Contract of Service (COS)</option>
+              <option value="Co-Terminus Personnel" <?= $userEmpStatus === 'Co-Terminus Personnel' ? 'selected' : '' ?>>Co-Terminus Personnel</option>
+              <option value="Special Detail / Seconded" <?= $userEmpStatus === 'Special Detail / Seconded' ? 'selected' : '' ?>>Special Detail / Seconded</option>
             </select>
           </div>
 
           <!-- Immediate Supervisor -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpSupervisor">Immediate Division Chief</label>
-            <div class="profile-value-display" id="valSupervisor">Dr. Ma. Cecilia Villacorta</div>
-            <input type="text" id="inpSupervisor" class="profile-input-control" value="Dr. Ma. Cecilia Villacorta"
+            <div class="profile-value-display" id="valSupervisor"><?= htmlspecialchars($userSupervisor) ?></div>
+            <input type="text" id="inpSupervisor" class="profile-input-control" value="<?= htmlspecialchars($userSupervisor) ?>"
               placeholder="Division Chief Name">
           </div>
 
           <!-- Station / Location -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpStation">Office Station / Assignment</label>
-            <div class="profile-value-display" id="valStation">ATI Central Office &bull; Diliman, QC</div>
-            <input type="text" id="inpStation" class="profile-input-control" value="ATI Central Office • Diliman, QC"
+            <div class="profile-value-display" id="valStation"><?= htmlspecialchars($userStation) ?></div>
+            <input type="text" id="inpStation" class="profile-input-control" value="<?= htmlspecialchars($userStation) ?>"
               placeholder="Office Location">
           </div>
         </div>
@@ -672,65 +728,64 @@ require_once __DIR__ . '/includes/auth_guard.php';
           <!-- Official Gov Email -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpEmail">Official Gov Email Address</label>
-            <div class="profile-value-display" id="valEmail">juan.delacruz@ati.da.gov.ph</div>
-            <input type="email" id="inpEmail" class="profile-input-control" value="juan.delacruz@ati.da.gov.ph"
+            <div class="profile-value-display" id="valEmail"><?= htmlspecialchars($userEmail) ?></div>
+            <input type="email" id="inpEmail" class="profile-input-control" value="<?= htmlspecialchars($userEmail) ?>"
               placeholder="username@ati.da.gov.ph">
           </div>
 
           <!-- Alternate / Recovery Email -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpAltEmail">Alternate / Personal Email</label>
-            <div class="profile-value-display" id="valAltEmail">jdelacruz.ati@gmail.com</div>
-            <input type="email" id="inpAltEmail" class="profile-input-control" value="jdelacruz.ati@gmail.com"
+            <div class="profile-value-display" id="valAltEmail"><?= htmlspecialchars($userAltEmail) ?></div>
+            <input type="email" id="inpAltEmail" class="profile-input-control" value="<?= htmlspecialchars($userAltEmail) ?>"
               placeholder="personal.email@domain.com">
           </div>
 
           <!-- Mobile Phone -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpPhone">Mobile / SMS Contact</label>
-            <div class="profile-value-display" id="valPhone">+63 917 842 5901</div>
-            <input type="tel" id="inpPhone" class="profile-input-control" value="+63 917 842 5901"
+            <div class="profile-value-display" id="valPhone"><?= htmlspecialchars($userPhone) ?></div>
+            <input type="tel" id="inpPhone" class="profile-input-control" value="<?= htmlspecialchars($userPhone) ?>"
               placeholder="+63 9XX XXX XXXX">
           </div>
 
           <!-- Emergency Contact -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpEmergencyContact">Emergency Contact &amp; Phone</label>
-            <div class="profile-value-display" id="valEmergencyContact">Maria Dela Cruz (Spouse) &bull; 0918 123 4567
-            </div>
+            <div class="profile-value-display" id="valEmergencyContact"><?= htmlspecialchars($userEmergencyContact) ?></div>
             <input type="text" id="inpEmergencyContact" class="profile-input-control"
-              value="Maria Dela Cruz (Spouse) • 0918 123 4567" placeholder="Name (Relation) • Contact No.">
+              value="<?= htmlspecialchars($userEmergencyContact) ?>" placeholder="Name (Relation) • Contact No.">
           </div>
 
           <!-- Landline Trunk -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpLandline">Office Trunkline</label>
-            <div class="profile-value-display" id="valLandline">(02) 8929-8541</div>
-            <input type="text" id="inpLandline" class="profile-input-control" value="(02) 8929-8541"
+            <div class="profile-value-display" id="valLandline"><?= htmlspecialchars($userLandline) ?></div>
+            <input type="text" id="inpLandline" class="profile-input-control" value="<?= htmlspecialchars($userLandline) ?>"
               placeholder="(02) 8XXX-XXXX">
           </div>
 
           <!-- Local Extension -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpExtension">Local Extension</label>
-            <div class="profile-value-display" id="valExtension">Local Ext. 214</div>
-            <input type="text" id="inpExtension" class="profile-input-control" value="Local Ext. 214"
+            <div class="profile-value-display" id="valExtension"><?= htmlspecialchars($userExtension) ?></div>
+            <input type="text" id="inpExtension" class="profile-input-control" value="<?= htmlspecialchars($userExtension) ?>"
               placeholder="Ext. XXX">
           </div>
 
           <!-- Office Building & Station -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpBuilding">Office Building &amp; Floor</label>
-            <div class="profile-value-display" id="valBuilding">ATI Central Bldg &bull; 2nd Floor</div>
-            <input type="text" id="inpBuilding" class="profile-input-control" value="ATI Central Bldg • 2nd Floor"
+            <div class="profile-value-display" id="valBuilding"><?= htmlspecialchars($userBuilding) ?></div>
+            <input type="text" id="inpBuilding" class="profile-input-control" value="<?= htmlspecialchars($userBuilding) ?>"
               placeholder="Building & Floor">
           </div>
 
           <!-- Room / Desk -->
           <div class="profile-field-group">
             <label class="profile-label" for="inpDesk">Office Room &amp; Desk</label>
-            <div class="profile-value-display" id="valDesk">CDD Wing &bull; Desk 204</div>
-            <input type="text" id="inpDesk" class="profile-input-control" value="CDD Wing • Desk 204"
+            <div class="profile-value-display" id="valDesk"><?= htmlspecialchars($userDesk) ?></div>
+            <input type="text" id="inpDesk" class="profile-input-control" value="<?= htmlspecialchars($userDesk) ?>"
               placeholder="Room / Desk Designation">
           </div>
         </div>
@@ -750,6 +805,18 @@ require_once __DIR__ . '/includes/auth_guard.php';
         </div>
 
         <div class="pref-toggle-list">
+          <!-- Toggle 0: Show Government Service Tenure (Optional for User) -->
+          <div class="pref-toggle-item">
+            <div class="pref-toggle-text">
+              <h5>Display Government Service Tenure</h5>
+              <p>Show or hide the Civil Service tenure &amp; hiring anniversary badge in your profile overview header.</p>
+            </div>
+            <label class="switch-control" aria-label="Toggle Show Government Service Tenure">
+              <input type="checkbox" id="prefShowGovService" <?= $showGovService ? 'checked' : '' ?> onchange="toggleGovServiceCard(this.checked)">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
           <!-- Toggle 1: Routing Step SMS Alert -->
           <div class="pref-toggle-item">
             <div class="pref-toggle-text">
@@ -757,7 +824,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
               <p>Receive live text notifications whenever an administrative unit signs off or requests adjustments.</p>
             </div>
             <label class="switch-control" aria-label="Toggle SMS Approval Updates">
-              <input type="checkbox" id="prefSmsUpdates" checked>
+              <input type="checkbox" id="prefSmsUpdates" <?= $prefSms ? 'checked' : '' ?>>
               <span class="switch-slider"></span>
             </label>
           </div>
@@ -769,7 +836,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
               <p>Immediately receive an official QR-coded printable security gate pass once reservation is approved.</p>
             </div>
             <label class="switch-control" aria-label="Toggle Gate Pass Auto-Email">
-              <input type="checkbox" id="prefEmailPass" checked>
+              <input type="checkbox" id="prefEmailPass" <?= $prefEmailPass ? 'checked' : '' ?>>
               <span class="switch-slider"></span>
             </label>
           </div>
@@ -781,7 +848,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
               <p>Automatically forward a copy of newly filed reservation request slips to division chief's inbox.</p>
             </div>
             <label class="switch-control" aria-label="Toggle Supervisor CC">
-              <input type="checkbox" id="prefSupervisorCc" checked>
+              <input type="checkbox" id="prefSupervisorCc" <?= $prefSupervisorCc ? 'checked' : '' ?>>
               <span class="switch-slider"></span>
             </label>
           </div>
