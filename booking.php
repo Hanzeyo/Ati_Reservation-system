@@ -456,13 +456,16 @@ $totalCount = count($dbFacilities);
           </span>
         </div>
 
-        <div class="filter-pills-list">
-          <button type="button" class="filter-pill <?php echo $reqCategory === 'halls' ? 'active' : ''; ?>"
-            id="btnFilterHalls" data-category-filter="halls">Halls (<?= $hallsCount ?>)</button>
-          <button type="button" class="filter-pill <?php echo $reqCategory === 'dormitories' ? 'active' : ''; ?>"
-            id="btnFilterDormitories" data-category-filter="dormitories">Dormitories (<?= $dormsCount ?>)</button>
-          <button type="button" class="filter-pill <?php echo $reqCategory === 'all' ? 'active' : ''; ?>"
-            id="btnFilterAll" data-category-filter="all">Show All (<?= $totalCount ?>)</button>
+        <div class="category-nav-right">
+          <a href="dormitory_booking.php" class="btn-switch-portal" title="Switch to Dormitory Accommodations">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"></path>
+            </svg>
+            <span>Switch to Dormitories</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
         </div>
       </div>
 

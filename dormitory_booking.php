@@ -37,41 +37,6 @@ $dormCount = count($dbDorms);
     .dorm-hero-pill .pulse-dot {
       background: #2563eb;
     }
-
-    .booking-switch-banner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-      border: 1.5px solid #a7f3d0;
-      border-radius: 12px;
-      padding: 0.85rem 1.25rem;
-      margin-bottom: 1.75rem;
-      text-decoration: none;
-      color: #065f46;
-      transition: all 0.22s ease;
-    }
-
-    .booking-switch-banner:hover {
-      background: #d1fae5;
-      border-color: #059669;
-      transform: translateY(-2px);
-    }
-
-    .booking-switch-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: #ffffff;
-      color: #065f46;
-      font-weight: 700;
-      font-size: 0.8rem;
-      padding: 0.45rem 0.85rem;
-      border-radius: 8px;
-      border: 1px solid #a7f3d0;
-      flex-shrink: 0;
-    }
   </style>
 </head>
 
@@ -351,22 +316,6 @@ $dormCount = count($dbDorms);
        ========================================================================== -->
   <main class="booking-main-wrapper">
 
-    <!-- Switch Banner: Quick Jump to Facility Reservations -->
-    <a href="booking.php?category=halls" class="booking-switch-banner" title="Switch to Facility Reservation Portal">
-      <div>
-        <strong style="display: block; font-size: 0.92rem; color: #064e3b;">Looking to reserve a Function Hall or
-          Training Venue instead?</strong>
-        <span style="font-size: 0.8rem; color: #047857;">Submit requests for Function Hall, Training Hall A, Boardroom,
-          and Mess Hall</span>
-      </div>
-      <span class="booking-switch-btn">
-        <span>Go to Facility Reservations</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </span>
-    </a>
-
     <!-- Header Section -->
     <section class="booking-header-section">
       <div class="booking-assistant-pill dorm-hero-pill">
@@ -438,12 +387,28 @@ $dormCount = count($dbDorms);
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
-            <span>Back to Portal Home</span>
+            <span>Change Category (Halls / Dorms)</span>
           </a>
           <span class="active-category-indicator" id="activeCategoryBadge">
             <span class="indicator-dot"></span>
             <span id="activeCategoryName">Dormitories (<?= $dormCount ?> Suites Available)</span>
           </span>
+        </div>
+
+        <div class="category-nav-right">
+          <a href="booking.php?category=halls" class="btn-switch-portal to-halls" title="Switch to Function Halls & Venues">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+              <line x1="9" y1="22" x2="9" y2="12"></line>
+              <line x1="15" y1="22" x2="15" y2="12"></line>
+              <line x1="9" y1="6" x2="9.01" y2="6"></line>
+              <line x1="15" y1="6" x2="15.01" y2="6"></line>
+            </svg>
+            <span>Switch to Function Halls</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
         </div>
       </div>
 
