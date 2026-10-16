@@ -138,9 +138,9 @@ const dormFloorData = {
     ]
   },
   'dorm-floor-2': {
-    title: '2nd Floor: Ilang-Ilang Dormitory',
-    floor: '2nd Floor (Ilang-Ilang)',
-    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
+    title: 'Suite 1',
+    floor: '2nd Floor',
+    desc: 'Trainee dormitory suite located on the 2nd floor with 3 single beds, air conditioning, lockers, and study desk.',
     rate: '₱500 / night',
     rooms: [
       { num: '201', available: true },
@@ -158,9 +158,9 @@ const dormFloorData = {
     ]
   },
   'dorm-floor-3': {
-    title: '3rd Floor: Gumamela Dormitory',
-    floor: '3rd Floor (Gumamela)',
-    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
+    title: 'Suite 2',
+    floor: '3rd Floor',
+    desc: 'Trainee dormitory suite located on the 3rd floor with 4 single beds, air conditioning, lockers, and study desk.',
     rate: '₱500 / night',
     rooms: [
       { num: '301', available: false },
@@ -178,10 +178,10 @@ const dormFloorData = {
     ]
   },
   'dorm-floor-4': {
-    title: '4th Floor: Rosal Dormitory',
-    floor: '4th Floor (Rosal)',
-    desc: 'Standard trainee dormitory floor with 12 air-conditioned rooms, individual lockers, and study desks.',
-    rate: '₱500 / night',
+    title: 'VIP Suite',
+    floor: '4th Floor',
+    desc: 'Executive VIP Suite located on the 4th floor with Queen bed, wood panel accents, mini refrigerator, smart TV, and executive amenities.',
+    rate: '₱1,500 / night',
     rooms: [
       { num: '401', available: false },
       { num: '402', available: false },
@@ -1600,7 +1600,7 @@ function initStepperNavigation() {
       const formData = new FormData();
       formData.append('reference_no', refNum);
       formData.append('facility_id', facId);
-      formData.append('facility_name', bookingState.selectedFacility?.name || '1st Floor: Sampaguita Dormitory');
+      formData.append('facility_name', bookingState.selectedFacility?.name || 'Suite 1');
       formData.append('facility_type', 'dormitories');
       formData.append('rate', bookingState.selectedFacility?.rate || '₱500/night');
       formData.append('capacity', bookingState.selectedFacility?.capacity || '12 ROOMS (48 BEDS)');
@@ -1640,7 +1640,7 @@ function initStepperNavigation() {
       btnSubmitDormitory.disabled = true;
       btnSubmitDormitory.innerHTML = '<span>Submitting Lodging Request...</span>';
 
-      const dormFloorText = document.getElementById('dormReviewFloor')?.textContent?.trim() || (bookingState.selectedFacility?.name || '1st Floor: Sampaguita Dormitory');
+      const dormFloorText = document.getElementById('dormReviewFloor')?.textContent?.trim() || (bookingState.selectedFacility?.name || 'Suite 1');
       const dormStayText = document.getElementById('dormReviewStay')?.textContent?.trim() || bookingState.date || 'Selected Dates';
 
       const submitData = {
@@ -1736,7 +1736,7 @@ function initStepperNavigation() {
       const submitData = {
         isDorm: isDorm,
         refNum: refNum,
-        facilityName: bookingState.selectedFacility?.name || (isDorm ? '1st Floor: Sampaguita Dormitory' : 'Function Hall'),
+        facilityName: bookingState.selectedFacility?.name || (isDorm ? 'Suite 1' : 'Function Hall'),
         setup: isDorm 
           ? (bookingState.selectedFacility?.roomNumber ? `Room ${bookingState.selectedFacility.roomNumber}` : 'Standard Dormitory Beds')
           : (bookingState.selectedFacility?.setupName || 'Theater Setup (200 PAX)'),

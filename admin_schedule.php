@@ -458,7 +458,12 @@ foreach ($facilitiesList as $fac) {
           <span class="modal-badge-ref" id="modalEventRef">R-2026-0891</span>
           <h4 id="modalEventTitle">National TOT on Climate-Resilient Agriculture</h4>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeAdminEventDetailsModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeAdminEventDetailsModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body">
@@ -516,7 +521,12 @@ foreach ($facilitiesList as $fac) {
         <div class="modal-title-wrap">
           <h4 style="color: #991b1b;">Active Administrative Date Blocks & Holds</h4>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeManageHoldsModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeManageHoldsModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body">
@@ -527,10 +537,6 @@ foreach ($facilitiesList as $fac) {
         <div id="activeHoldsListContainer" style="display: flex; flex-direction: column; gap: 0.85rem; max-height: 380px; overflow-y: auto;">
           <!-- Dynamically populated by JS -->
         </div>
-      </div>
-
-      <div class="admin-modal-footer">
-        <button type="button" class="btn-system-secondary" onclick="closeManageHoldsModal()">Close</button>
       </div>
     </div>
   </div>
@@ -544,7 +550,12 @@ foreach ($facilitiesList as $fac) {
         <div class="modal-title-wrap">
           <h4 style="color: #991b1b;">Apply Administrative Date Blackout / Hold</h4>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeDateBlockModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeDateBlockModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body">

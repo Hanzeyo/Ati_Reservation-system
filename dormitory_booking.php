@@ -457,19 +457,15 @@ $dormCount = count($dbDorms);
             }
             
             $cardSlug = 'dorm-facility-' . $f['id'];
-            $lower = strtolower($f['name']);
-            if (strpos($lower, 'sampaguita') !== false || strpos($lower, '1st') !== false) {
-              $cardSlug = 'dorm-floor-1';
-            } elseif (strpos($lower, 'ilang-ilang') !== false || strpos($lower, '2nd') !== false) {
+            $lower = strtolower($f['name'] . ' ' . ($f['location'] ?? ''));
+            if (strpos($lower, 'suite 1') !== false || strpos($lower, 'sampaguita') !== false || strpos($lower, '2nd') !== false) {
               $cardSlug = 'dorm-floor-2';
-            } elseif (strpos($lower, 'gumamela') !== false || strpos($lower, '3rd') !== false) {
+            } elseif (strpos($lower, 'suite 2') !== false || strpos($lower, 'ilang-ilang') !== false || strpos($lower, 'gumamela') !== false || strpos($lower, '3rd') !== false) {
               $cardSlug = 'dorm-floor-3';
-            } elseif (strpos($lower, 'rosas') !== false || strpos($lower, 'rosal') !== false || strpos($lower, '4th') !== false) {
+            } elseif (strpos($lower, 'vip') !== false || strpos($lower, 'rosas') !== false || strpos($lower, 'rosal') !== false || strpos($lower, '4th') !== false) {
               $cardSlug = 'dorm-floor-4';
-            } elseif (strpos($lower, 'waling') !== false || strpos($lower, '5th') !== false) {
-              $cardSlug = 'dorm-floor-5';
-            } elseif (strpos($lower, 'tayabak') !== false || strpos($lower, '6th') !== false) {
-              $cardSlug = 'dorm-floor-6';
+            } elseif (strpos($lower, '1st') !== false) {
+              $cardSlug = 'dorm-floor-1';
             }
 
             $imgSrc = !empty($f['image']) ? $f['image'] : 'assets/images/dormitory.jpg';
@@ -540,8 +536,8 @@ $dormCount = count($dbDorms);
       <div class="step1-selection-summary-card" id="step1SummaryCard" style="<?= $dormCount === 0 ? 'display: none;' : '' ?>">
         <div class="summary-card-header">
           <div class="sch-left">
-            <span class="sch-badge">SELECTED DORMITORY FLOOR</span>
-            <h4 class="sch-title" id="summaryPreviewTitle">1st Floor: Sampaguita Dormitory</h4>
+            <span class="sch-badge">SELECTED DORMITORY SUITE</span>
+            <h4 class="sch-title" id="summaryPreviewTitle">Suite 1</h4>
           </div>
           <span class="sch-rate-pill" id="summaryPreviewRate">₱500 / night</span>
         </div>
@@ -920,7 +916,7 @@ $dormCount = count($dbDorms);
             <span style="font-size: 0.76rem; text-transform: uppercase; color: #526f5e; font-weight: 700;">Dormitory
               Floor &amp; Rooms</span>
             <strong style="display: block; font-size: 0.95rem; color: #143522; margin-top: 0.2rem;"
-              id="dormReviewFloor">1st Floor: Sampaguita (Rooms 101-104)</strong>
+              id="dormReviewFloor">Suite 1 (2nd Floor)</strong>
           </div>
           <div>
             <span style="font-size: 0.76rem; text-transform: uppercase; color: #526f5e; font-weight: 700;">Stay
@@ -989,11 +985,11 @@ $dormCount = count($dbDorms);
               <span class="modal-dorm-pill-tag" id="modalCategoryPill">DORMITORY ROOM PLAN</span>
               <span class="modal-dorm-rate-pill" id="modalDormRate">₱500 / night</span>
             </div>
-            <h3 class="modal-dorm-title" id="modalDormTitle">1st Floor: Sampaguita Dormitory</h3>
+            <h3 class="modal-dorm-title" id="modalDormTitle">Suite 1</h3>
             <p class="modal-dorm-desc" id="modalDormFloor">Select rooms to allocate for delegates and trainees.</p>
           </div>
-          <button type="button" class="room-modal-close-btn" id="btnModalClose" onclick="closeRoomModal()">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <button type="button" class="room-modal-close-btn" id="btnModalClose" onclick="closeRoomModal()" aria-label="Close dialog">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
@@ -1088,7 +1084,7 @@ $dormCount = count($dbDorms);
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: #637f70; font-weight: 600;">Facility / Venue:</span>
-            <strong style="color: #1f2937;" id="succModalFacility">1st Floor: Sampaguita Dormitory</strong>
+            <strong style="color: #1f2937;" id="succModalFacility">Suite 1</strong>
           </div>
           <div style="display: flex; justify-content: space-between;">
             <span style="color: #637f70; font-weight: 600;">Schedule Dates:</span>

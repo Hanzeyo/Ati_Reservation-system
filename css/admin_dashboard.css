@@ -566,7 +566,7 @@ body.admin-app-body {
   top: 50%;
   transform: translateY(-50%);
   background: #e2ede5;
-  border: none;
+  border: 1px solid #c9ded0;
   color: #2e593e;
   width: 22px;
   height: 22px;
@@ -579,22 +579,42 @@ body.admin-app-body {
   text-align: center !important;
   padding: 0 !important;
   margin: 0 !important;
-  line-height: 1 !important;
+  line-height: 0 !important;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box !important;
 }
 
 .search-clear-btn svg {
+  width: 10px;
+  height: 10px;
   display: block !important;
   margin: auto !important;
   flex-shrink: 0 !important;
   pointer-events: none;
+  stroke: currentColor;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.2s ease;
+}
+
+.search-clear-btn svg line {
+  stroke: currentColor !important;
+  transition: stroke 0.2s ease;
 }
 
 .search-clear-btn:hover {
-  background: #c7ded0;
-  color: #113c23;
+  background: #fee2e2 !important;
+  border-color: #fca5a5 !important;
+  color: #dc2626 !important;
+  transform: translateY(-50%) rotate(90deg) scale(1.1);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.28);
+}
+
+.search-clear-btn:hover svg line {
+  stroke: #dc2626 !important;
+}
+
+.search-clear-btn:active {
+  transform: translateY(-50%) rotate(90deg) scale(0.92);
 }
 
 .topbar-date-pill {
@@ -643,20 +663,74 @@ body.admin-app-body {
   gap: 0.85rem;
 }
 
+.btn-system-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #174d2f;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 1.35rem;
+  border-radius: 8px;
+  border: 1.5px solid #144429;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(23, 77, 47, 0.22);
+  line-height: 1;
+  box-sizing: border-box;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn-system-primary:hover {
+  background: #103822;
+  border-color: #0d2e1b;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(23, 77, 47, 0.32);
+}
+
+.btn-system-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(23, 77, 47, 0.2);
+}
+
+.btn-system-primary svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  flex-shrink: 0;
+  display: block;
+}
+
 .btn-system-secondary {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  justify-content: center;
+  gap: 0.5rem;
   background: #ffffff;
-  color: #1a3824;
-  font-size: 0.82rem;
+  color: #234533;
+  font-family: inherit;
+  font-size: 0.88rem;
   font-weight: 700;
-  padding: 0.45rem 1rem;
-  border-radius: 9999px;
-  border: 1.5px solid #d8e5dc;
+  height: 38px;
+  min-height: 38px;
+  padding: 0 1.25rem;
+  border-radius: 8px;
+  border: 1.5px solid #d5e5db;
   cursor: pointer;
-  transition: all 0.22s ease-in-out;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
+  line-height: 1;
+  box-sizing: border-box;
+  white-space: nowrap;
+  user-select: none;
 }
 
 .btn-system-secondary:hover {
@@ -664,6 +738,11 @@ body.admin-app-body {
   border-color: #174d2f;
   color: #174d2f;
   transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.btn-system-secondary:active {
+  transform: translateY(0);
 }
 
 /* KPI Stat Cards (Terno & Perfectly Aligned) */
@@ -1853,12 +1932,12 @@ body.admin-app-body {
 
 .admin-modal-close {
   background: #f1f8f3;
-  border: 1px solid #dce8e0;
-  color: #556c5e;
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  min-height: 32px;
+  border: 1.5px solid #dce8e0;
+  color: #4b6354;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
   border-radius: 50%;
   cursor: pointer;
   display: inline-flex !important;
@@ -1868,12 +1947,11 @@ body.admin-app-body {
   padding: 0 !important;
   margin: 0 !important;
   line-height: 0 !important;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
-  font-size: 20px !important;
-  transition: all 0.18s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-sizing: border-box !important;
   flex-shrink: 0 !important;
   vertical-align: middle;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .admin-modal-close svg {
@@ -1883,13 +1961,30 @@ body.admin-app-body {
   margin: 0 auto !important;
   flex-shrink: 0 !important;
   pointer-events: none;
+  stroke: currentColor;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.25s ease;
+}
+
+.admin-modal-close svg line {
+  stroke: currentColor !important;
+  transition: stroke 0.25s ease;
 }
 
 .admin-modal-close:hover {
-  background: #fee2e2;
-  color: #dc2626;
-  border-color: #fca5a5;
-  transform: scale(1.05);
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+  border-color: #fca5a5 !important;
+  transform: rotate(90deg) scale(1.08) !important;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.28) !important;
+}
+
+.admin-modal-close:hover svg line {
+  stroke: #dc2626 !important;
+}
+
+.admin-modal-close:active {
+  transform: rotate(90deg) scale(0.94) !important;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2) !important;
 }
 
 .admin-modal-body {
