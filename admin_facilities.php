@@ -534,7 +534,12 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
         <div class="modal-title-wrap">
           <h4>Configure Facility Specifications</h4>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeEditFacilityModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeEditFacilityModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body">
@@ -591,11 +596,13 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
 
                   <select id="editFacilityPresetSelect" onchange="applyPresetImage(this.value, 'editFacilityImgPreview', 'editFacilityImageSrc')" style="padding: 0.38rem 0.65rem; border: 1.2px solid #dce8e0; border-radius: 6px; font-family: inherit; font-size: 0.78rem; color: #2e4738;">
                     <option value="">-- Choose official photo preset --</option>
-                    <option value="assets/images/function_hall.jpg">Function Hall (Serrano)</option>
-                    <option value="assets/images/training_hall.jpg">Training Hall (4-H Center)</option>
-                    <option value="assets/images/boardroom.jpg">Executive Boardroom</option>
-                    <option value="assets/images/dormitory.jpg">Dormitory Suites</option>
-                    <option value="assets/images/mess_hall.jpg">Dining Pavilion / Mess Hall</option>
+                    <option value="assets/images/carandang_room.jpg">Carandang Room (Executive Boardroom)</option>
+                    <option value="assets/images/orosa_hall.jpg">Orosa Hall</option>
+                    <option value="assets/images/rdec_training_1.jpg">RDEC Training Hall 1</option>
+                    <option value="assets/images/rdec_training_2.jpg">RDEC Training Hall 2</option>
+                    <option value="assets/images/function_hall.jpg">Function Hall</option>
+                    <option value="assets/images/serrano_hall.jpg">Serrano Hall</option>
+                    <option value="assets/images/dormitory.jpg">1st Floor: Sampaguita Dormitory</option>
                     <option value="assets/images/ATI_building.jpg">ATI Main Building Facade</option>
                   </select>
                 </div>
@@ -637,7 +644,12 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
         <div class="modal-title-wrap">
           <h4>Register New Institutional Facility</h4>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeAddFacilityModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeAddFacilityModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body">
@@ -691,11 +703,13 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                   <input type="hidden" id="addFacilityImageSrc" value="assets/images/function_hall.jpg">
 
                   <select id="addFacilityPresetSelect" onchange="applyPresetImage(this.value, 'addFacilityImgPreview', 'addFacilityImageSrc')" style="padding: 0.38rem 0.65rem; border: 1.2px solid #dce8e0; border-radius: 6px; font-family: inherit; font-size: 0.78rem; color: #2e4738;">
-                    <option value="assets/images/function_hall.jpg">Function Hall (Serrano)</option>
-                    <option value="assets/images/training_hall.jpg">Training Hall (4-H Center)</option>
-                    <option value="assets/images/boardroom.jpg">Executive Boardroom</option>
-                    <option value="assets/images/dormitory.jpg">Dormitory Suites</option>
-                    <option value="assets/images/mess_hall.jpg">Dining Pavilion / Mess Hall</option>
+                    <option value="assets/images/carandang_room.jpg">Carandang Room (Executive Boardroom)</option>
+                    <option value="assets/images/orosa_hall.jpg">Orosa Hall</option>
+                    <option value="assets/images/rdec_training_1.jpg">RDEC Training Hall 1</option>
+                    <option value="assets/images/rdec_training_2.jpg">RDEC Training Hall 2</option>
+                    <option value="assets/images/function_hall.jpg">Function Hall</option>
+                    <option value="assets/images/serrano_hall.jpg">Serrano Hall</option>
+                    <option value="assets/images/dormitory.jpg">1st Floor: Sampaguita Dormitory</option>
                     <option value="assets/images/ATI_building.jpg">ATI Main Building Facade</option>
                   </select>
                 </div>
@@ -733,7 +747,12 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
           <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #174d2f; letter-spacing: 0.5px;">Institutional Dormitory Inventory</span>
           <h4 id="manageRoomsFacilityName" style="color: #153321; margin: 0.15rem 0 0 0;">Manage Dormitory Rooms</h4>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeManageRoomsModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeManageRoomsModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body" style="padding: 1.25rem 1.75rem;">
@@ -807,7 +826,12 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
         <div class="modal-title-wrap">
           <h4 style="color: #b91c1c;">Activate Administrative Maintenance Hold</h4>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeMaintenanceModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeMaintenanceModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body">

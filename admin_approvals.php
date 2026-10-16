@@ -481,7 +481,12 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
           <h4 style="font-size: 1.25rem;">Reservation No: <span id="dossierModalRef" style="font-family: monospace; color: #174d2f; font-weight: 800;">REF</span>
           </h4>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeDossierModal()" aria-label="Close modal">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeDossierModal()" aria-label="Close modal">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body" style="padding: 1.5rem 1.85rem;">
@@ -606,7 +611,12 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
           <h4 style="color: #b91c1c; font-size: 1.15rem; font-weight: 800;">Decline or Return Reservation</h4>
           <span style="font-size: 0.85rem; color: #4b6354;">Reference: <strong id="disapproveRef" style="font-family: monospace;">REF</strong></span>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeDisapproveModal()" aria-label="Close modal">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeDisapproveModal()" aria-label="Close modal">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body" style="padding: 1.4rem;">
@@ -648,7 +658,12 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
         <div class="modal-title-wrap">
           <h4>Official Reservation Permit & Campus Gate Pass</h4>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closePermitModal()">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closePermitModal()" aria-label="Close modal">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
 
       <div class="admin-modal-body">
