@@ -577,7 +577,12 @@ if (!empty($res['room_number'])) {
           <h4 style="color: #b91c1c; font-size: 1.15rem; font-weight: 800;">Decline or Return Reservation</h4>
           <span style="font-size: 0.85rem; color: #4b6354;">Reference: <strong style="font-family: monospace;"><?= htmlspecialchars($ref) ?></strong></span>
         </div>
-        <button type="button" class="admin-modal-close" onclick="closeDeclineModal()" aria-label="Close modal">&times;</button>
+        <button type="button" class="admin-modal-close" onclick="closeDeclineModal()" aria-label="Close modal">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
       </div>
       <div class="admin-modal-body" style="padding: 1.4rem;">
         <div class="form-group-decline" style="margin-bottom: 1rem;">
