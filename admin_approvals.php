@@ -427,10 +427,6 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
           <table class="approvals-table" id="approvalsTable">
             <thead>
               <tr>
-                <th style="width: 40px; text-align: center;">
-                  <input type="checkbox" id="selectAllRowsCb" onchange="toggleSelectAllRows(this.checked)"
-                    title="Select all visible">
-                </th>
                 <th>Request Ref & Urgency</th>
                 <th>Applicant & Agency</th>
                 <th>Facility & PAX</th>
@@ -442,7 +438,7 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
             <tbody id="approvalsTableBody">
               <!-- Dynamically rendered via renderApprovalsTable() -->
               <tr>
-                <td colspan="7" style="text-align: center; padding: 3.5rem 1rem; color: #637f6f;">
+                <td colspan="6" style="text-align: center; padding: 3.5rem 1rem; color: #637f6f;">
                   <div style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: #eef7f2; margin-bottom: 0.75rem;">
                     <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <circle cx="12" cy="12" r="10"></circle>
@@ -470,38 +466,6 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
           }
         </style>
       </main>
-    </div>
-  </div>
-
-  <!-- ==========================================================================
-       STICKY FLOATING BULK ACTIONS BAR
-       ========================================================================== -->
-  <div class="bulk-actions-floating-bar" id="bulkActionsBar">
-    <div class="bulk-selection-count">
-      <span class="bulk-selection-badge" id="bulkSelectedCount">0</span>
-      <span>Selected Requests</span>
-    </div>
-    <div class="bulk-action-buttons">
-      <button type="button" class="btn-bulk-action endorse" id="btnBulkEndorse" onclick="executeBulkEndorse()" style="background: #d97706; color: #fff;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-        <span>Batch Endorse (Stage 1)</span>
-      </button>
-      <button type="button" class="btn-bulk-action recommend" id="btnBulkRecommend" onclick="executeBulkRecommend()" style="background: #2563eb; color: #fff;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </svg>
-        <span>Batch Recommend (Stage 2)</span>
-      </button>
-      <button type="button" class="btn-bulk-action clearance" id="btnBulkClearance" onclick="executeBulkClearance()" style="background: #10b981; color: #fff;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-        </svg>
-        <span>Batch Issue Clearance (Stage 3)</span>
-      </button>
-      <button type="button" class="btn-bulk-action secondary" onclick="clearRowSelections()">Cancel</button>
     </div>
   </div>
 

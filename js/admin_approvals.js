@@ -196,7 +196,7 @@ function renderApprovalsTable() {
   if (rows.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" style="text-align: center; padding: 3.5rem 1rem; color: #637f6f;">
+        <td colspan="6" style="text-align: center; padding: 3.5rem 1rem; color: #637f6f;">
           <div style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: #eef7f2; margin-bottom: 0.75rem;">
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="10"></circle>
@@ -209,7 +209,6 @@ function renderApprovalsTable() {
         </td>
       </tr>
     `;
-    updateBulkActionBar();
     return;
   }
 
@@ -321,10 +320,7 @@ function renderApprovalsTable() {
     const applicantInitial = (item.applicant || 'ATI').split(' ').map(n=>n[0]).slice(0,2).join('');
 
     return `
-      <tr class="${isChecked ? 'row-selected' : ''}" data-ref="${item.ref}">
-        <td style="width: 40px; text-align: center;">
-          <input type="checkbox" class="row-selector-checkbox" value="${item.ref}" ${isChecked ? 'checked' : ''} onchange="toggleSelectRow('${item.ref}', this.checked)">
-        </td>
+      <tr data-ref="${item.ref}">
         <td>
           <div style="display: flex; flex-direction: column; gap: 0.2rem;">
             <strong style="color: #174d2f; font-family: monospace; font-size: 0.9rem;">${item.ref}</strong>
@@ -386,8 +382,6 @@ function renderApprovalsTable() {
       </tr>
     `;
   }).join('');
-
-  updateBulkActionBar();
 }
 
 function applyApprovalsFilterTab(tab) {
@@ -396,49 +390,12 @@ function applyApprovalsFilterTab(tab) {
 }
 
 /* ==========================================================================
-   MULTI-ROW SELECTION & BULK ACTIONS
+   MULTI-ROW SELECTION & BULK ACTIONS (SAFELY STUBBED)
    ========================================================================== */
-function toggleSelectAllRows(checked) {
-  const checkboxes = document.querySelectorAll('.row-selector-checkbox');
-  checkboxes.forEach(cb => {
-    cb.checked = checked;
-    if (checked) {
-      selectedRefIds.add(cb.value);
-    } else {
-      selectedRefIds.delete(cb.value);
-    }
-  });
-  renderApprovalsTable();
-}
-
-function toggleSelectRow(ref, checked) {
-  if (checked) {
-    selectedRefIds.add(ref);
-  } else {
-    selectedRefIds.delete(ref);
-  }
-  updateBulkActionBar();
-}
-
-function updateBulkActionBar() {
-  const bar = document.getElementById('bulkActionsBar');
-  const countBadge = document.getElementById('bulkSelectedCount');
-  const count = selectedRefIds.size;
-
-  if (count > 0) {
-    if (countBadge) countBadge.textContent = count;
-    if (bar) bar.classList.add('visible');
-  } else {
-    if (bar) bar.classList.remove('visible');
-  }
-}
-
-function clearRowSelections() {
-  selectedRefIds.clear();
-  const selectAllCb = document.getElementById('selectAllRowsCb');
-  if (selectAllCb) selectAllCb.checked = false;
-  renderApprovalsTable();
-}
+function toggleSelectAllRows(checked) {}
+function toggleSelectRow(ref, checked) {}
+function updateBulkActionBar() {}
+function clearRowSelections() {}
 
 /* ==========================================================================
    BACKEND API DISPATCHER (AJAX TO update_approval_stage.php)
