@@ -91,7 +91,8 @@ foreach ($facilitiesList as $row) {
         'maintenance' => $isMaint,
         'maintenanceReason' => $row['maintenance_reason'] ?? '',
         'estResumeDate' => $row['est_resume_date'] ?? '',
-        'notes' => $row['notes'] ?? $row['description'] ?? ''
+        'notes' => $row['notes'] ?? $row['description'] ?? '',
+        'layouts' => $row['layouts'] ?? ''
     ];
 }
 
@@ -414,6 +415,11 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                         <span>Rooms</span>
                       </button>
+                    <?php else: ?>
+                      <button type="button" class="btn-card-action btn-manage-setups" onclick="openManageSetupsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Manage Venue Setups & Floor Plans">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18M9 21V9"></path></svg>
+                        <span>Setups</span>
+                      </button>
                     <?php endif; ?>
                     <button type="button" class="btn-card-action" onclick="openEditFacilityModal('<?= htmlspecialchars($fid) ?>')">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
@@ -510,6 +516,8 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                       <td style="text-align: right;">
                         <?php if ($item['category'] === 'dorms'): ?>
                           <button type="button" class="btn-card-action btn-manage-rooms" style="margin-right: 0.35rem;" onclick="openManageRoomsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')">Rooms</button>
+                        <?php else: ?>
+                          <button type="button" class="btn-card-action btn-manage-setups" style="margin-right: 0.35rem;" onclick="openManageSetupsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')">Setups</button>
                         <?php endif; ?>
                         <button type="button" class="btn-card-action" onclick="openEditFacilityModal('<?= htmlspecialchars($fid) ?>')">Configure</button>
                       </td>
@@ -820,6 +828,104 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
 
         <div class="room-tiles-grid" id="manageRoomsGrid">
           <!-- Dynamically populated via loadFacilityRooms() -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: VENUE SETUPS & FLOOR PLANS MANAGEMENT
+       ========================================================================== -->
+  <div class="admin-modal-overlay" id="manageSetupsModal" style="display: none;">
+    <div class="admin-modal-card rooms-modal" style="max-width: 860px;">
+      <div class="admin-modal-header">
+        <div class="modal-title-wrap">
+          <span style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #1d4ed8; letter-spacing: 0.5px;">Institutional Floor Plans & Layouts</span>
+          <h4 id="manageSetupsFacilityName" style="color: #153321; margin: 0.15rem 0 0 0;">Manage Venue Setups</h4>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeManageSetupsModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="admin-modal-body" style="padding: 1.25rem 1.75rem 1.75rem 1.75rem;">
+        <input type="hidden" id="currentManageSetupsFacilityId">
+
+        <!-- KPI Status Summary -->
+        <div class="rooms-kpi-summary">
+          <div class="room-kpi-pill total">
+            <span class="kpi-num" id="setupKpiTotal" style="color: #1d4ed8;">0</span>
+            <span class="kpi-lbl">Total Setups</span>
+          </div>
+          <div class="room-kpi-pill available">
+            <span class="kpi-num" id="setupKpiAvailable" style="color: #16a34a;">0</span>
+            <span class="kpi-lbl">Available</span>
+          </div>
+          <div class="room-kpi-pill maint">
+            <span class="kpi-num" id="setupKpiReserved" style="color: #dc2626;">0</span>
+            <span class="kpi-lbl">Reserved / Closed</span>
+          </div>
+          <div class="room-kpi-pill" style="background: #f0fdf4; border-color: #bbf7d0;">
+            <span class="kpi-num" id="setupKpiMaxCap" style="color: #15803d; font-size: 1.1rem;">0 PAX</span>
+            <span class="kpi-lbl">Venue Standard Cap</span>
+          </div>
+        </div>
+
+        <!-- Quick Add Setup Form -->
+        <div class="room-quick-add-box" style="background: #f8fafc; border-color: #cbd5e1; margin-bottom: 1.25rem; padding: 0.85rem 1rem;">
+          <div class="room-quick-add-title" style="color: #0f172a; margin-bottom: 0.5rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span style="font-weight: 700;">Add New Layout Setup / Floor Plan</span>
+          </div>
+          <form id="quickAddSetupForm" onsubmit="handleQuickAddSetup(event)" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            <select id="newSetupPresetSelect" onchange="onSetupPresetChange(this.value)" style="padding: 0.55rem 0.65rem; border: 1.2px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem; font-family: inherit; background: #ffffff;">
+              <option value="custom">-- Custom Setup --</option>
+              <option value="theater">Theater Setup</option>
+              <option value="classroom">Classroom Setup</option>
+              <option value="workshop">Workshop Pods</option>
+              <option value="banquet">Banquet Dining</option>
+              <option value="ushape">U-Shape Workshop</option>
+              <option value="conference">Conference Setup</option>
+              <option value="roundtable">Round Table Discussion</option>
+              <option value="videoconf">Hybrid Video-Conference</option>
+              <option value="exhibition">Open Exhibition Booths</option>
+            </select>
+            <input type="text" id="newSetupName" placeholder="Setup Name (e.g. Theater Setup)" required style="flex: 1; min-width: 140px; padding: 0.55rem 0.75rem; border: 1.2px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem;">
+            <input type="text" id="newSetupCap" placeholder="Cap (e.g. 50 PAX)" style="width: 110px; padding: 0.55rem 0.75rem; border: 1.2px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem;">
+            <input type="text" id="newSetupDesc" placeholder="Description (e.g. Row seating facing main presentation screen)" style="flex: 2; min-width: 200px; padding: 0.55rem 0.75rem; border: 1.2px solid #cbd5e1; border-radius: 8px; font-size: 0.85rem;">
+            <button type="submit" class="btn-add-room-submit" style="background: #2563eb; padding: 0.55rem 0.95rem; border: none; border-radius: 8px; color: #fff; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Add Setup</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Setup Cards List Grid -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem;">
+          <h5 style="margin: 0; font-size: 0.85rem; font-weight: 700; color: #1e293b;">Active Floor Plans & Setups (Live on Public Portal)</h5>
+          <span style="font-size: 0.74rem; color: #64748b;">Toggle switch to set setup as Available or Reserved</span>
+        </div>
+
+        <div class="setups-tiles-grid" id="manageSetupsGrid">
+          <!-- Dynamically populated via loadFacilitySetups() -->
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; flex-wrap: wrap; gap: 0.75rem;">
+          <button type="button" class="btn-system-secondary" onclick="resetSetupsToDefaults()" style="font-size: 0.82rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span>Reset to Standard 4 Presets</span>
+          </button>
+          <div style="display: flex; gap: 0.5rem;">
+            <button type="button" class="btn-system-secondary" onclick="closeManageSetupsModal()">Cancel</button>
+            <button type="button" class="btn-system-primary" onclick="saveFacilitySetups()" id="btnSaveSetupsSubmit" style="background: #2563eb; border-color: #2563eb;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Save Setups Changes</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

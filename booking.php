@@ -548,6 +548,7 @@ $totalCount = count($dbFacilities);
           data-capacity="<?= htmlspecialchars($capDisplay) ?>"
           data-facility-type="<?= $cardCategory ?>"
           data-status="<?= htmlspecialchars($f['status']) ?>"
+          data-layouts="<?= htmlspecialchars($f['layouts'] ?? '') ?>"
           style="<?= $displayStyle ?>">
           <div class="facility-card-image">
             <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($f['name']) ?>" loading="lazy">

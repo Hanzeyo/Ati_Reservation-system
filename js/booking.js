@@ -581,7 +581,22 @@ function openFacilityModal(facilityId) {
   const card = document.querySelector(`.facility-choice-card[data-id="${facilityId}"]`);
   const dbFacilityId = card?.dataset.facilityDbId || String(facilityId).replace(/\D/g, '') || facilityId;
 
-  // Auto-generate interactive modal layout/rooms for custom or newly registered facilities
+  // Load admin-configured custom layouts or auto-generate for custom/newly registered facilities
+  if (card && card.dataset.facilityType !== 'dormitories' && card.dataset.layouts) {
+    try {
+      const parsed = JSON.parse(card.dataset.layouts);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        hallLayoutData[facilityId] = {
+          title: card.dataset.name || 'Institutional Hall',
+          location: 'ATI Campus Complex',
+          desc: `Institutional facility equipped for official events, seminars, and meetings. Capacity: ${card.dataset.capacity || '50 PAX'}.`,
+          rate: card.dataset.rate || '₱3,000 / day',
+          layouts: parsed
+        };
+      }
+    } catch (e) { }
+  }
+
   if (!dormFloorData[facilityId] && !hallLayoutData[facilityId] && card) {
     const isDormType = card.dataset.facilityType === 'dormitories';
     if (isDormType) {
