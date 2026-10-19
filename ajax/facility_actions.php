@@ -21,7 +21,12 @@ if (!$userId) {
     }
 }
 
-if (!$userId || !in_array($userRole, ['super_admin', 'admin', 'director', 'recommending_officer'])) {
+$isAllowedAdmin = isAdmin() || in_array($userRole, [
+    'super_admin', 'superadmin', 'admin', 'director', 'division_chief', 
+    'clearance', 'recommendation', 'endorsement', 'recommender', 'endorser', 'recommending_officer'
+]);
+
+if (!$userId || !$isAllowedAdmin) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized access. Administrator privileges required.']);
     exit;
 }

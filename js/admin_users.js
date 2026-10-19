@@ -410,7 +410,7 @@ async function saveRoleChanges(e) {
               </span>
             `;
           }
-          if (privCell) privCell.innerHTML = `<span class="privilege-summary-tag">Division Endorsement & Document Verification</span>`;
+          if (privCell) privCell.innerHTML = `<span class="privilege-summary-tag">Division Endorsement, Facilities & Venue Setups</span>`;
         } else if (newRole === 'recommendation') {
           if (avatarBadge) avatarBadge.className = 'user-avatar-badge recommending';
           if (roleCell) {

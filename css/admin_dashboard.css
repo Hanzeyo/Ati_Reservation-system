@@ -24,7 +24,8 @@ body.admin-app-body {
   background-color: var(--bg-page);
   font-family: var(--font-sans);
   color: var(--text-main);
-  overflow: hidden; /* Keep page fixed; inner workspace handles scroll */
+  overflow: hidden;
+  /* Keep page fixed; inner workspace handles scroll */
 }
 
 .admin-layout-container {
@@ -46,7 +47,8 @@ body.admin-app-body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  position: fixed; /* Permanently fixed so it never scrolls away */
+  position: fixed;
+  /* Permanently fixed so it never scrolls away */
   top: 0;
   left: 0;
   bottom: 0;
@@ -282,12 +284,15 @@ body.admin-app-body {
 .sidebar-avatar.endorsement {
   background: linear-gradient(135deg, #d97706, #b45309);
 }
+
 .sidebar-avatar.recommendation {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
+
 .sidebar-avatar.clearance {
   background: linear-gradient(135deg, #059669, #047857);
 }
+
 .sidebar-avatar.super_admin {
   background: linear-gradient(135deg, #16a34a, #15803d);
 }
@@ -297,16 +302,19 @@ body.admin-app-body {
   color: #fbbf24;
   border-color: rgba(217, 119, 6, 0.4);
 }
+
 .admin-badge-executive.recommendation {
   background: rgba(37, 99, 235, 0.2);
   color: #93c5fd;
   border-color: rgba(37, 99, 235, 0.4);
 }
+
 .admin-badge-executive.clearance {
   background: rgba(16, 185, 129, 0.2);
   color: #6ee7b7;
   border-color: rgba(16, 185, 129, 0.4);
 }
+
 .admin-badge-executive.super_admin {
   background: rgba(16, 185, 129, 0.18);
   color: #a7f3d0;
@@ -891,9 +899,20 @@ body.admin-app-body {
 }
 
 @keyframes pulseAmber {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); }
-  50% { transform: scale(1.06); box-shadow: 0 0 0 5px rgba(217, 119, 6, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4);
+  }
+
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 5px rgba(217, 119, 6, 0);
+  }
+
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0);
+  }
 }
 
 .admin-stat-highlight {
@@ -1057,8 +1076,15 @@ body.admin-app-body {
 }
 
 @keyframes liveBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
 }
 
 .count-tag-pill {
@@ -1087,13 +1113,41 @@ body.admin-app-body {
   table-layout: fixed !important;
 }
 
-.admin-data-table thead th:nth-child(1), .admin-data-table tbody td:nth-child(1) { width: 12%; }
-.admin-data-table thead th:nth-child(2), .admin-data-table tbody td:nth-child(2) { width: 21%; }
-.admin-data-table thead th:nth-child(3), .admin-data-table tbody td:nth-child(3) { width: 13%; }
-.admin-data-table thead th:nth-child(4), .admin-data-table tbody td:nth-child(4) { width: 16%; }
-.admin-data-table thead th:nth-child(5), .admin-data-table tbody td:nth-child(5) { width: 8%; }
-.admin-data-table thead th:nth-child(6), .admin-data-table tbody td:nth-child(6) { width: 11%; }
-.admin-data-table thead th:nth-child(7), .admin-data-table tbody td:nth-child(7) { width: 19%; text-align: right; }
+.admin-data-table thead th:nth-child(1),
+.admin-data-table tbody td:nth-child(1) {
+  width: 12%;
+}
+
+.admin-data-table thead th:nth-child(2),
+.admin-data-table tbody td:nth-child(2) {
+  width: 21%;
+}
+
+.admin-data-table thead th:nth-child(3),
+.admin-data-table tbody td:nth-child(3) {
+  width: 13%;
+}
+
+.admin-data-table thead th:nth-child(4),
+.admin-data-table tbody td:nth-child(4) {
+  width: 16%;
+}
+
+.admin-data-table thead th:nth-child(5),
+.admin-data-table tbody td:nth-child(5) {
+  width: 8%;
+}
+
+.admin-data-table thead th:nth-child(6),
+.admin-data-table tbody td:nth-child(6) {
+  width: 11%;
+}
+
+.admin-data-table thead th:nth-child(7),
+.admin-data-table tbody td:nth-child(7) {
+  width: 19%;
+  text-align: right;
+}
 
 .admin-data-table thead th {
   background: #f8faf8;
@@ -1697,7 +1751,10 @@ body.admin-app-body {
 .slider-round {
   position: absolute;
   cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: #d1ded6;
   transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 34px;
@@ -1713,14 +1770,14 @@ body.admin-app-body {
   background-color: white;
   transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
-.switch-toggle input:checked + .slider-round {
+.switch-toggle input:checked+.slider-round {
   background-color: #dc2626;
 }
 
-.switch-toggle input:checked + .slider-round:before {
+.switch-toggle input:checked+.slider-round:before {
   transform: translateX(16px);
 }
 
@@ -1825,9 +1882,17 @@ body.admin-app-body {
   z-index: 2;
 }
 
-.audit-dot.green { background: #16a34a; }
-.audit-dot.amber { background: #d97706; }
-.audit-dot.blue { background: #2563eb; }
+.audit-dot.green {
+  background: #16a34a;
+}
+
+.audit-dot.amber {
+  background: #d97706;
+}
+
+.audit-dot.blue {
+  background: #2563eb;
+}
 
 .audit-content {
   flex: 1;
@@ -1876,8 +1941,13 @@ body.admin-app-body {
 }
 
 @keyframes modalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .admin-modal-card {
@@ -1899,8 +1969,15 @@ body.admin-app-body {
 }
 
 @keyframes modalSlideUp {
-  from { transform: translateY(18px) scale(0.98); opacity: 0.7; }
-  to { transform: translateY(0) scale(1); opacity: 1; }
+  from {
+    transform: translateY(18px) scale(0.98);
+    opacity: 0.7;
+  }
+
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
 
 .admin-modal-header {
@@ -2196,8 +2273,15 @@ body.admin-app-body {
 }
 
 @keyframes toastSlide {
-  from { transform: translateX(40px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* Backdrop for mobile sidebar */
@@ -2284,6 +2368,7 @@ body.admin-app-body {
     grid-template-columns: 1fr;
   }
 }
+
 /* ==========================================================================
    USER MANAGEMENT & ROLE-BASED ACCESS CONTROL (RBAC)
    ========================================================================== */
@@ -2755,6 +2840,7 @@ body.admin-app-body {
   .occ-metrics-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .occ-graph-toolbar {
     flex-direction: column;
     align-items: stretch;
@@ -2768,6 +2854,7 @@ body.admin-app-body {
   .admin-data-table .btn-table-action span {
     display: none !important;
   }
+
   .admin-data-table .btn-table-action {
     padding: 0.36rem 0.52rem !important;
   }
@@ -2864,7 +2951,3 @@ body.admin-app-body {
     display: inline !important;
   }
 }
-
-
-
-
