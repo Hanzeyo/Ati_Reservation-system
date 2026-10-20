@@ -391,7 +391,7 @@ function updateKpiCounts() {
 }
 
 function initKpiFilters() {
-  const statCards = document.querySelectorAll('.my-res-stat-card');
+  const statCards = document.querySelectorAll('.my-res-stat-card[data-filter]');
 
   statCards.forEach(card => {
     card.addEventListener('click', () => {
@@ -583,15 +583,26 @@ function initCardModals() {
         modalBadge.innerHTML = `<span class="status-dot-pulse"></span><span>${statusText}</span>`;
       }
 
-      // Populate Document Attachment
+      // Populate Document Attachment (Prioritize Signed Documents if approved)
       const docLink = document.getElementById('modalDocLink');
       const docFileName = document.getElementById('modalDocFileName');
-      if (docPath) {
-        const parts = docPath.split('/');
-        if (docFileName) docFileName.textContent = parts[parts.length - 1];
+      const activeDoc = clearanceDoc || recommendationDoc || docPath;
+
+      if (activeDoc) {
+        const parts = activeDoc.split('/');
+        if (docFileName) {
+          if (clearanceDoc) {
+            docFileName.innerHTML = `<span style="color: #166534; font-weight: 700;">✓ Signed Clearance:</span> ${escapeHtml(parts[parts.length - 1])}`;
+          } else if (recommendationDoc) {
+            docFileName.innerHTML = `<span style="color: #2563eb; font-weight: 700;">✓ Signed Form:</span> ${escapeHtml(parts[parts.length - 1])}`;
+          } else {
+            docFileName.textContent = parts[parts.length - 1];
+          }
+        }
         if (docLink) {
-          docLink.href = docPath;
+          docLink.href = activeDoc;
           docLink.style.display = 'inline-flex';
+          docLink.textContent = (clearanceDoc || recommendationDoc) ? 'View Signed Document' : 'View Document';
         }
       } else {
         if (docFileName) docFileName.textContent = 'No document uploaded';

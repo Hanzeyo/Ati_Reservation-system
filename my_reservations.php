@@ -16,7 +16,7 @@ if (in_array($typeParam, ['dorm', 'dormitory', 'dorms', 'booking', 'bookings']))
 
 $userId = $_SESSION['user_id'] ?? 1;
 
-// Fetch reservations for the current user joined with facilities and rooms
+// Fetch active reservations for the current user (Completed/Cancelled/Rejected are routed to booking_history.php)
 $query = "SELECT r.*, 
                  f.name AS facility_name, 
                  f.type AS facility_type,
@@ -35,23 +35,28 @@ $query = "SELECT r.*,
           LEFT JOIN users u_end ON r.endorsed_by = u_end.id
           LEFT JOIN users u_rec ON r.recommended_by = u_rec.id
           LEFT JOIN users u_clr ON r.cleared_by = u_clr.id
-          WHERE r.user_id = :user_id AND r.deleted_at IS NULL
+          WHERE r.user_id = :user_id 
+            AND r.status NOT IN ('Completed', 'Cancelled', 'Rejected')
+            AND r.deleted_at IS NULL
           ORDER BY r.id DESC";
 
 $stmt = $db->prepare($query);
 $stmt->execute([':user_id' => $userId]);
 $reservationsList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Fetch count of Booking History (Completed, Cancelled, Rejected) for the tab switcher badge & shortcut card
+$historyCountStmt = $db->prepare("SELECT COUNT(*) FROM reservations WHERE user_id = :user_id AND status IN ('Completed', 'Cancelled', 'Rejected') AND deleted_at IS NULL");
+$historyCountStmt->execute([':user_id' => $userId]);
+$historyCount = (int)$historyCountStmt->fetchColumn();
+
 // Fetch active facilities from database for dynamic dropdown filter
 $facFilterStmt = $db->query("SELECT id, name, type FROM facilities WHERE status != 'inactive' AND deleted_at IS NULL ORDER BY name ASC");
 $filterFacilities = $facFilterStmt ? $facFilterStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
-// Calculate dynamic stats
+// Calculate dynamic stats for active reservations
 $statsTotal = count($reservationsList);
 $statsPending = 0;
 $statsApproved = 0;
-$statsCompleted = 0;
-$statsCancelled = 0;
 
 foreach ($reservationsList as $resItem) {
     $rawSt = $resItem['status'] ?? 'Pending';
@@ -59,10 +64,6 @@ foreach ($reservationsList as $resItem) {
         $statsPending++;
     } elseif ($rawSt === 'Approved') {
         $statsApproved++;
-    } elseif ($rawSt === 'Completed') {
-        $statsCompleted++;
-    } elseif ($rawSt === 'Cancelled') {
-        $statsCancelled++;
     }
 }
 ?>
@@ -421,7 +422,7 @@ foreach ($reservationsList as $resItem) {
             <span class="seg-title">Active Reservations</span>
             <span class="seg-subtitle">Pending Clearances &amp; Upcoming Confirmed Schedules</span>
           </div>
-          <span class="seg-count-badge"><?= $statsPending + $statsApproved ?></span>
+          <span class="seg-count-badge"><?= $statsTotal ?></span>
         </a>
 
         <!-- Tab 2: Booking History (Link to History Archive) -->
@@ -436,7 +437,7 @@ foreach ($reservationsList as $resItem) {
             <span class="seg-title">Booking History</span>
             <span class="seg-subtitle">Completed Activities &amp; Cancelled Requests Archive</span>
           </div>
-          <span class="seg-count-badge blue"><?= $statsCompleted + $statsCancelled ?></span>
+          <span class="seg-count-badge blue"><?= $historyCount ?></span>
         </a>
       </div>
     </div>
@@ -467,7 +468,7 @@ foreach ($reservationsList as $resItem) {
 
     <!-- Summary KPI Stat Cards -->
     <section class="my-res-stats-grid" aria-label="Reservation Summary Statistics">
-      <!-- Total -->
+      <!-- Total Active -->
       <div class="my-res-stat-card active-filter" data-filter="all">
         <div class="stat-icon-box green">
           <svg viewBox="0 0 24 24" fill="none">
@@ -479,7 +480,7 @@ foreach ($reservationsList as $resItem) {
         </div>
         <div class="stat-content">
           <span class="stat-value" id="kpiTotal"><?= $statsTotal ?></span>
-          <span class="stat-label">Total Reservations</span>
+          <span class="stat-label">Active Reservations</span>
         </div>
       </div>
 
@@ -511,18 +512,19 @@ foreach ($reservationsList as $resItem) {
         </div>
       </div>
 
-      <!-- Completed -->
-      <div class="my-res-stat-card" data-filter="completed">
+      <!-- Booking History (Concluded) -->
+      <a href="booking_history.php" class="my-res-stat-card history-shortcut-card" style="text-decoration: none;" title="Go to Booking History to view completed & concluded events">
         <div class="stat-icon-box slate">
-          <svg viewBox="0 0 24 24" fill="none">
-            <polyline points="20 6 9 17 4 12"></polyline>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiCompleted"><?= $statsCompleted ?></span>
-          <span class="stat-label">Completed Events</span>
+          <span class="stat-value" id="kpiHistory"><?= $historyCount ?></span>
+          <span class="stat-label">Concluded in History &rarr;</span>
         </div>
-      </div>
+      </a>
     </section>
 
     <!-- Filter & Search Toolbar (Cleaned, Non-Redundant, Custom Styled) -->
