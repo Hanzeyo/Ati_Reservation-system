@@ -1402,6 +1402,26 @@ body.admin-app-body {
   background: #ef4444;
 }
 
+.status-pill.status-completed {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.status-pill.status-completed .status-dot {
+  background: #2563eb;
+}
+
+.badge-completed-note {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  background: #eff6ff;
+  padding: 0.28rem 0.6rem;
+  border-radius: 9999px;
+  border: 1px solid #bfdbfe;
+}
+
 /* Action Buttons */
 .action-buttons-wrap {
   display: inline-flex;
@@ -1462,6 +1482,39 @@ body.admin-app-body {
 .btn-table-action.approve:hover {
   background: #059669;
   box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-table-action.complete {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0369a1;
+}
+
+.btn-table-action.complete:hover {
+  background: #0369a1;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-complete-modal {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #0284c7;
+  color: #ffffff;
+  border: 1px solid #0369a1;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  padding: 0.65rem 1.15rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-complete-modal:hover {
+  background: #0369a1;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
   transform: translateY(-1px);
 }
 

@@ -165,6 +165,48 @@ try {
         exit;
     }
 
+    // =========================================================================
+    // ACTION: COMPLETE RESERVATION (CONCLUDE ACTIVITY)
+    // =========================================================================
+    if ($action === 'complete_reservation' || $action === 'conclude_reservation') {
+        $ref = trim($_POST['ref'] ?? '');
+        $resId = (int)($_POST['reservation_id'] ?? 0);
+
+        if (empty($ref) && $resId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Reservation reference number or ID is required.']);
+            exit;
+        }
+
+        if (!empty($ref)) {
+            $stmt = $db->prepare("SELECT id, reference_no, event_title, user_id, status FROM reservations WHERE reference_no = ?");
+            $stmt->execute([$ref]);
+        } else {
+            $stmt = $db->prepare("SELECT id, reference_no, event_title, user_id, status FROM reservations WHERE id = ?");
+            $stmt->execute([$resId]);
+        }
+        $res = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$res) {
+            echo json_encode(['success' => false, 'message' => 'Reservation not found.']);
+            exit;
+        }
+
+        $updateStmt = $db->prepare("UPDATE reservations SET status = 'Completed', updated_at = NOW() WHERE id = ?");
+        $updateStmt->execute([$res['id']]);
+
+        $auditLog->action = 'RESERVATION_COMPLETED';
+        $auditLog->details = "Marked reservation {$res['reference_no']} ('{$res['event_title']}') as Completed & Concluded by {$currentAdminName}.";
+        $auditLog->log();
+
+        echo json_encode([
+            'success' => true,
+            'message' => "Reservation {$res['reference_no']} was successfully marked as Completed & Concluded.",
+            'reference_no' => $res['reference_no'],
+            'reservation_id' => (int)$res['id']
+        ]);
+        exit;
+    }
+
     echo json_encode(['success' => false, 'message' => "Unknown action '{$action}'."]);
 
 } catch (Exception $e) {
