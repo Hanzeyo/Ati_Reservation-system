@@ -459,8 +459,8 @@ $estimatedUtilization = number_format(max($totalPaxServed * 850, 45000));
               <thead>
                 <tr>
                   <th>Reference & Date</th>
-                  <th>Applicant & Organization</th>
-                  <th>Requested Facility</th>
+                  <th>Applicant &amp; Org</th>
+                  <th>Facility</th>
                   <th>Schedule / Duration</th>
                   <th>Attendees</th>
                   <th>Current Status</th>
@@ -548,7 +548,7 @@ $estimatedUtilization = number_format(max($totalPaxServed * 850, 45000));
                           </div>
                         </div>
                       </td>
-                      <td data-label="Requested Facility">
+                      <td data-label="Facility">
                         <div class="td-facility-pill <?= $categoryKey === 'dorms' ? 'dorm' : 'hall' ?>">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.2">

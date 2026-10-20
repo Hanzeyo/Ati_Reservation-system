@@ -324,8 +324,8 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
               <thead>
                 <tr>
                   <th>Reference & Date</th>
-                  <th>Applicant & Organization</th>
-                  <th>Requested Facility</th>
+                  <th>Applicant &amp; Org</th>
+                  <th>Facility</th>
                   <th>Schedule / Duration</th>
                   <th>Attendees</th>
                   <th>Current Status</th>
