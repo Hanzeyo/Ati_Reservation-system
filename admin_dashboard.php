@@ -462,7 +462,7 @@ $estimatedUtilization = number_format(max($totalPaxServed * 850, 45000));
                   <th>Applicant & Organization</th>
                   <th>Requested Facility</th>
                   <th>Schedule / Duration</th>
-                  <th>Attendees (PAX)</th>
+                  <th>Attendees</th>
                   <th>Current Status</th>
                   <th style="text-align: right;">Executive Actions</th>
                 </tr>
