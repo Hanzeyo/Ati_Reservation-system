@@ -403,7 +403,7 @@ function getRolePresentation($role) {
                   <th style="width: 20%;">Assigned Clearance Role</th>
                   <th style="width: 16%;">Privilege Scope</th>
                   <th style="width: 8%;">Status</th>
-                  <th style="width: 16%; min-width: 200px; text-align: right;">Action</th>
+                  <th style="width: 16%; text-align: right;">Action</th>
                 </tr>
               </thead>
               <tbody id="usersTableBody">

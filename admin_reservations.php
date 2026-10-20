@@ -12,6 +12,8 @@ $isRecommendation = ($currentRole === 'recommendation');
 $resQuery = "SELECT r.*, 
                     f.name AS facility_name, 
                     f.type AS facility_type,
+                    f.rate AS facility_rate,
+                    f.capacity AS facility_capacity,
                     rm.room_number,
                     rm.floor AS room_floor,
                     u.full_name AS applicant_name,
@@ -33,6 +35,41 @@ $resQuery = "SELECT r.*,
 $stmt = $db->query($resQuery);
 $allReservations = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
+if (!function_exists('calculateReservationUtilization')) {
+    /**
+     * Calculates dynamic estimated monetary utilization value for an ATI reservation
+     * based on official facility rates, booked duration, time slot factor, and headcount.
+     */
+    function calculateReservationUtilization(array $res): float {
+        $rawRate = $res['facility_rate'] ?? '';
+        $cleanRate = (float) preg_replace('/[^0-9.]/', '', (string)$rawRate);
+        
+        $isDorm = (($res['facility_type'] ?? '') === 'dormitories' || !empty($res['room_number']));
+        
+        // Institutional baseline standard fallback if rate is missing
+        if ($cleanRate <= 0) {
+            $cleanRate = $isDorm ? 500.0 : 5000.0;
+        }
+        
+        $startTs = !empty($res['start_date']) ? strtotime($res['start_date']) : time();
+        $endTs = !empty($res['end_date']) ? strtotime($res['end_date']) : $startTs;
+        $days = max(1, round(($endTs - $startTs) / 86400) + 1);
+        
+        if ($isDorm) {
+            $nights = max(1, $days - 1);
+            $pax = max(1, (int)($res['pax_count'] ?? 1));
+            // Per-bed dormitory (<= ₱1000/night) vs full VIP suite (> ₱1000/night)
+            return $cleanRate <= 1000 ? ($cleanRate * $nights * $pax) : ($cleanRate * $nights);
+        } else {
+            $slot = strtolower($res['time_slot'] ?? '');
+            $isHalfDay = (strpos($slot, 'half') !== false || strpos($slot, 'morning') !== false || strpos($slot, 'afternoon') !== false) 
+                         && (strpos($slot, 'full') === false);
+            $multiplier = $isHalfDay ? 0.5 : 1.0;
+            return round($cleanRate * $days * $multiplier, 2);
+        }
+    }
+}
+
 $totalActiveReservations = 0;
 $pendingReservations = 0;
 $approvedReservations = 0;
@@ -40,6 +77,9 @@ $completedReservations = 0;
 $hallsCount = 0;
 $dormsCount = 0;
 $archivedReservationsCount = 0;
+$totalEstimatedUtilization = 0;
+$confirmedUtilization = 0;
+$totalPaxServed = 0;
 
 $reservationsData = [];
 
@@ -52,14 +92,24 @@ foreach ($allReservations as $row) {
     $isRejected = in_array($st, ['Rejected', 'Cancelled']);
 
     $isDorm = (($row['facility_type'] ?? '') === 'dormitories' || !empty($row['room_number']));
+    $resUtil = calculateReservationUtilization($row);
 
     if ($isArchived) {
         $archivedReservationsCount++;
     } else {
         $totalActiveReservations++;
+        $totalEstimatedUtilization += $resUtil;
         if ($isPending) $pendingReservations++;
-        if ($isApproved) $approvedReservations++;
-        if ($isCompleted) $completedReservations++;
+        if ($isApproved) {
+            $approvedReservations++;
+            $confirmedUtilization += $resUtil;
+            $totalPaxServed += (int)($row['pax_count'] ?? 0);
+        }
+        if ($isCompleted) {
+            $completedReservations++;
+            $confirmedUtilization += $resUtil;
+            $totalPaxServed += (int)($row['pax_count'] ?? 0);
+        }
         if ($isDorm) {
             $dormsCount++;
         } else {
@@ -119,20 +169,230 @@ foreach ($allReservations as $row) {
         'stage' => $stageKey,
         'rawStatus' => $st,
         'category' => $isDorm ? 'dorms' : 'halls',
+        'facilityRate' => $row['facility_rate'] ?? 'N/A',
+        'estimatedValue' => $resUtil,
+        'estimatedValueFormatted' => '₱' . number_format($resUtil),
         'dateFiled' => !empty($row['created_at']) ? date('M d, Y • h:i A', strtotime($row['created_at'])) : date('M d, Y • h:i A'),
         'isArchived' => $isArchived,
         'deletedAt' => $row['deleted_at'] ? date('M d, Y • h:i A', strtotime($row['deleted_at'])) : null
     ];
 }
 $totalReservations = $totalActiveReservations;
+$occupancyRate = ($totalActiveReservations > 0) 
+    ? round((($approvedReservations + $completedReservations) / $totalActiveReservations) * 100, 1) 
+    : 0;
+$estimatedUtilization = number_format($totalEstimatedUtilization);
 
 // Fetch User count for sidebar
 $userCountStmt = $db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
 $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
 
-// Fetch unique facilities for filter
-$facStmt = $db->query("SELECT * FROM facilities ORDER BY name ASC");
-$facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+// Fetch unique facilities for filter and live monitoring
+$today = date('Y-m-d');
+$facStmt = $db->query("SELECT * FROM facilities WHERE deleted_at IS NULL ORDER BY id ASC");
+$monitoredFacilities = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+$facilitiesList = $monitoredFacilities;
+
+// Fetch approved reservations covering today
+$activeResStmt = $db->prepare("SELECT r.facility_id, r.room_id, r.reference_no, r.event_title, r.start_date, r.end_date, r.time_slot, u.full_name AS applicant_name 
+                               FROM reservations r
+                               LEFT JOIN users u ON r.user_id = u.id
+                               WHERE r.status IN ('Approved', 'Completed') 
+                                 AND r.start_date <= :today 
+                                 AND (r.end_date >= :today OR r.end_date IS NULL)
+                                 AND r.deleted_at IS NULL");
+$activeResStmt->execute([':today' => $today]);
+$activeTodayList = $activeResStmt->fetchAll(PDO::FETCH_ASSOC);
+
+$facilityActiveToday = [];
+foreach ($activeTodayList as $res) {
+    $fid = (int)$res['facility_id'];
+    if (!isset($facilityActiveToday[$fid])) {
+        $facilityActiveToday[$fid] = $res;
+    }
+}
+
+// Fetch upcoming approved reservations
+$upcResStmt = $db->prepare("SELECT r.facility_id, r.room_id, r.reference_no, r.event_title, r.start_date, r.end_date, r.time_slot, u.full_name AS applicant_name 
+                            FROM reservations r
+                            LEFT JOIN users u ON r.user_id = u.id
+                            WHERE r.status IN ('Approved', 'Completed') 
+                              AND r.start_date > :today 
+                              AND r.deleted_at IS NULL
+                            ORDER BY r.start_date ASC");
+$upcResStmt->execute([':today' => $today]);
+$upcomingList = $upcResStmt->fetchAll(PDO::FETCH_ASSOC);
+
+$facilityUpcoming = [];
+foreach ($upcomingList as $res) {
+    $fid = (int)$res['facility_id'];
+    if (!isset($facilityUpcoming[$fid])) {
+        $facilityUpcoming[$fid] = $res;
+    }
+}
+
+$processedFacilities = [];
+foreach ($monitoredFacilities as $fac) {
+    $fid = (int)$fac['id'];
+    $isMaint = ($fac['status'] === 'maintenance');
+    $isActiveToday = isset($facilityActiveToday[$fid]);
+    $hasUpcoming = isset($facilityUpcoming[$fid]);
+
+    if ($isMaint) {
+        $stateKey = 'maintenance';
+        $stateLabel = 'Maintenance Hold';
+    } elseif ($isActiveToday) {
+        $stateKey = 'occupied';
+        $todayRes = $facilityActiveToday[$fid];
+        $timeStr = !empty($todayRes['time_slot']) ? ' (' . $todayRes['time_slot'] . ')' : '';
+        $stateLabel = 'Occupied Today' . $timeStr;
+    } elseif ($hasUpcoming) {
+        $stateKey = 'reserved';
+        $upRes = $facilityUpcoming[$fid];
+        $upStart = date('M d', strtotime($upRes['start_date']));
+        $upEnd = (!empty($upRes['end_date']) && $upRes['end_date'] !== $upRes['start_date']) ? '–' . date('d', strtotime($upRes['end_date'])) : '';
+        $stateLabel = 'Reserved (' . $upStart . $upEnd . ')';
+    } else {
+        $stateKey = 'available';
+        $stateLabel = 'Available';
+    }
+
+    $processedFacilities[] = array_merge($fac, [
+        'stateKey' => $stateKey,
+        'stateLabel' => $stateLabel
+    ]);
+}
+
+// ============================================================================
+// REAL-TIME OCCUPANCY & UTILIZATION ANALYTICS
+// ============================================================================
+$totalInstitutionalCapacity = 0;
+$totalHallsCapacity = 0;
+$totalDormsCapacity = 0;
+
+$facilityOccupancyMap = [];
+foreach ($processedFacilities as $f) {
+    $fid = (int)$f['id'];
+    $isDorm = ($f['type'] === 'dorms');
+    $cap = (int)preg_replace('/[^0-9]/', '', (string)$f['capacity']);
+    if ($cap <= 0) {
+        $cap = $isDorm ? (int)($f['beds'] ?: 2) : 50;
+    }
+    
+    if ($isDorm) {
+        $totalDormsCapacity += $cap;
+    } else {
+        $totalHallsCapacity += $cap;
+    }
+    $totalInstitutionalCapacity += $cap;
+    
+    $shortName = $f['name'];
+    $shortName = preg_replace('/^(RDEC\s+)/i', 'RDEC ', $shortName);
+    $shortName = str_ireplace('Training Hall', 'Hall', $shortName);
+    $shortName = str_ireplace('Function Hall', 'Func Hall', $shortName);
+    $shortName = str_ireplace('Carandang Room', 'Carandang', $shortName);
+    $shortName = str_ireplace('Serrano Hall', 'Serrano', $shortName);
+    $shortName = str_ireplace('Orosa Hall', 'Orosa', $shortName);
+    $shortName = trim($shortName);
+
+    $facilityOccupancyMap[$fid] = [
+        'id' => $fid,
+        'name' => $f['name'],
+        'shortName' => $shortName,
+        'type' => $f['type'],
+        'capacity' => $cap,
+        'beds' => (int)($f['beds'] ?? 0),
+        'booked_pax' => 0,
+        'occupancy_pct' => 0.0,
+        'stateLabel' => $f['stateLabel'],
+        'stateKey' => $f['stateKey']
+    ];
+}
+
+$liveTotalBookedPax = 0;
+$liveHallsBookedPax = 0;
+$liveDormsBookedPax = 0;
+
+$startOfWeek = date('Y-m-d', strtotime('monday this week'));
+$endOfWeek = date('Y-m-d', strtotime('sunday this week'));
+$timelineLabel = 'Current Week (' . date('M j', strtotime($startOfWeek)) . ' – ' . date('M j, Y', strtotime($endOfWeek)) . ')';
+
+$dailyPaxTrend = [];
+for ($i = 0; $i < 7; $i++) {
+    $dDate = date('Y-m-d', strtotime("$startOfWeek +$i days"));
+    $dailyPaxTrend[$dDate] = [
+        'dayName' => date('D', strtotime($dDate)),
+        'dateStr' => date('M j', strtotime($dDate)),
+        'isToday' => ($dDate === date('Y-m-d')),
+        'pax' => 0,
+        'pct' => 0.0
+    ];
+}
+
+foreach ($allReservations as $res) {
+    if (!empty($res['deleted_at'])) continue;
+    $st = $res['status'] ?? 'Pending';
+    if (in_array($st, ['Rejected', 'Cancelled'])) continue;
+
+    $fid = (int)($res['facility_id'] ?? 0);
+    $pax = (int)($res['pax_count'] ?? 0);
+    $isDorm = (($res['facility_type'] ?? '') === 'dormitories' || ($res['facility_type'] ?? '') === 'dorms' || !empty($res['room_number']));
+
+    if (isset($facilityOccupancyMap[$fid])) {
+        $facilityOccupancyMap[$fid]['booked_pax'] += $pax;
+    }
+
+    $liveTotalBookedPax += $pax;
+    if ($isDorm) {
+        $liveDormsBookedPax += $pax;
+    } else {
+        $liveHallsBookedPax += $pax;
+    }
+
+    $rStart = !empty($res['start_date']) ? $res['start_date'] : date('Y-m-d');
+    $rEnd = !empty($res['end_date']) ? $res['end_date'] : $rStart;
+
+    foreach ($dailyPaxTrend as $dKey => &$dInfo) {
+        if ($dKey >= $rStart && $dKey <= $rEnd) {
+            $dInfo['pax'] += $pax;
+        }
+    }
+    unset($dInfo);
+}
+
+foreach ($facilityOccupancyMap as &$fItem) {
+    $fItem['occupancy_pct'] = $fItem['capacity'] > 0 
+        ? round(($fItem['booked_pax'] / $fItem['capacity']) * 100, 1) 
+        : 0.0;
+}
+unset($fItem);
+
+$liveOverallOccupancyPct = $totalInstitutionalCapacity > 0 
+    ? min(100, round(($liveTotalBookedPax / $totalInstitutionalCapacity) * 100, 1)) 
+    : 0.0;
+$liveHallsOccupancyPct = $totalHallsCapacity > 0 
+    ? min(100, round(($liveHallsBookedPax / $totalHallsCapacity) * 100, 1)) 
+    : 0.0;
+$liveDormsOccupancyPct = $totalDormsCapacity > 0 
+    ? min(100, round(($liveDormsBookedPax / $totalDormsCapacity) * 100, 1)) 
+    : 0.0;
+
+$peakDayLabel = date('l, M j');
+$peakDayPax = 0;
+foreach ($dailyPaxTrend as $dKey => &$dInfo) {
+    $dInfo['pct'] = $totalInstitutionalCapacity > 0 
+        ? min(100, round(($dInfo['pax'] / $totalInstitutionalCapacity) * 100, 1)) 
+        : 0.0;
+    if ($dInfo['pax'] >= $peakDayPax) {
+        $peakDayPax = $dInfo['pax'];
+        $peakDayLabel = date('l, M j', strtotime($dKey));
+    }
+}
+unset($dInfo);
+
+$peakDayPct = $totalInstitutionalCapacity > 0 
+    ? min(100, round(($peakDayPax / $totalInstitutionalCapacity) * 100, 1)) 
+    : 0.0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -237,6 +497,90 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
           </div>
         </section>
 
+        <!-- ==========================================================================
+             KPI STAT CARDS (TERNO WITH SYSTEM DESIGN)
+             ========================================================================== -->
+        <section class="my-res-stats-grid admin-kpi-grid" aria-label="Executive KPI Overview">
+          <!-- Total Reservations -->
+          <div class="my-res-stat-card active-filter" data-kpi="all" onclick="applyTabFilter('all')"
+            title="Click to view all reservations">
+            <div class="stat-icon-box green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value-row">
+                <span class="stat-value" id="kpiTotal"><?= $totalActiveReservations ?></span>
+                <span class="stat-trend positive">Live</span>
+              </div>
+              <span class="stat-label">Total Reservations</span>
+            </div>
+          </div>
+
+          <!-- Pending Approvals -->
+          <div class="my-res-stat-card admin-stat-highlight" data-kpi="pending"
+            onclick="applyTabFilter('pending')" title="Click to filter pending approval requests">
+            <div class="stat-icon-box amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value-row">
+                <span class="stat-value" id="kpiPending"><?= $pendingReservations ?></span>
+                <span class="stat-pill-urgent">Needs Action</span>
+              </div>
+              <span class="stat-label">Pending Approval Requests</span>
+            </div>
+          </div>
+
+          <!-- Venue Occupancy -->
+          <div class="my-res-stat-card" data-kpi="occupancy" id="cardOccupancyKpi" onclick="openOccupancyModal()"
+            title="Click to open occupancy analytics & graphs">
+            <div class="stat-icon-box blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value-row">
+                <span class="stat-value" id="kpiOccupancy"><?= $liveOverallOccupancyPct ?>%</span>
+                <span class="stat-trend neutral"><?= ($approvedReservations + $completedReservations) ?> Confirmed</span>
+              </div>
+              <span class="stat-label">Venue & Dorm Occupancy</span>
+            </div>
+          </div>
+
+          <!-- Monthly Revenue / Utilization -->
+          <div class="my-res-stat-card" data-kpi="revenue"
+            onclick="openOccupancyModal()"
+            title="Click to view real-time facility utilization analytics & breakdown">
+            <div class="stat-icon-box emerald">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M8.5 17V7h4.5a3 3 0 0 1 0 6H8.5"></path>
+                <line x1="6" y1="9.5" x2="15.5" y2="9.5"></line>
+                <line x1="6" y1="12" x2="15.5" y2="12"></line>
+              </svg>
+            </div>
+            <div class="stat-content">
+              <div class="stat-value-row">
+                <span class="stat-value" id="kpiRevenue">₱<?= $estimatedUtilization ?></span>
+                <span class="stat-trend positive">Live Est.</span>
+              </div>
+              <span class="stat-label">Estimated Facility Utilization</span>
+            </div>
+          </div>
+        </section>
+
 
 
         <!-- ==========================================================================
@@ -324,8 +668,8 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
               <thead>
                 <tr>
                   <th>Reference & Date</th>
-                  <th>Applicant & Organization</th>
-                  <th>Requested Facility</th>
+                  <th>Applicant &amp; Org</th>
+                  <th>Facility</th>
                   <th>Schedule / Duration</th>
                   <th>Attendees</th>
                   <th>Current Status</th>
@@ -679,6 +1023,350 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
       <div class="admin-modal-footer">
         <button type="button" class="btn-system-secondary" onclick="closeDeclineModal()">Cancel</button>
         <button type="button" class="btn-confirm-decline" onclick="submitDeclineAction()">Confirm & Send Notice</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: OCCUPANCY & UTILIZATION ANALYTICS (REAL-TIME COMPACT POPUP)
+       ========================================================================== -->
+  <div class="admin-modal-overlay" id="occupancyModal" style="display: none;"
+    onclick="if(event.target===this) closeOccupancyModal()">
+    <div class="admin-modal-card occupancy-analytics-modal">
+      <div class="admin-modal-header">
+        <div class="modal-title-wrap">
+          <div style="display: flex; align-items: center; gap: 0.55rem;">
+            <div class="stat-icon-box blue" style="width: 30px; height: 30px; min-width: 30px; border-radius: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
+            <div class="modal-header-title">
+              <h4>Venue &amp; Dormitory Occupancy Analytics</h4>
+              <p>Real-time capacity utilization, statistics, and booking trend breakdowns</p>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeOccupancyModal()" aria-label="Close dialog">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="admin-modal-body occupancy-modal-scroll">
+        <!-- 1. Top Summary Metric Cards (Dynamic Live Data) -->
+        <div class="occ-metrics-grid">
+          <div class="occ-metric-card primary">
+            <span class="occ-metric-lbl">Overall Occupancy</span>
+            <div class="occ-metric-val"><?= $liveOverallOccupancyPct ?>%</div>
+            <div class="occ-metric-sub"><strong><?= $liveTotalBookedPax ?></strong> / <?= $totalInstitutionalCapacity ?> Total PAX</div>
+            <div class="occ-bar-track">
+              <div class="occ-bar-fill" style="width: <?= min(100, $liveOverallOccupancyPct) ?>%; background: #174d2f;"></div>
+            </div>
+          </div>
+
+          <div class="occ-metric-card">
+            <span class="occ-metric-lbl">Function Halls</span>
+            <div class="occ-metric-val"><?= $liveHallsOccupancyPct ?>%</div>
+            <div class="occ-metric-sub"><strong><?= $liveHallsBookedPax ?></strong> / <?= $totalHallsCapacity ?> Hall PAX</div>
+            <div class="occ-bar-track">
+              <div class="occ-bar-fill" style="width: <?= min(100, $liveHallsOccupancyPct) ?>%; background: #2563eb;"></div>
+            </div>
+          </div>
+
+          <div class="occ-metric-card">
+            <span class="occ-metric-lbl">Dormitory Suites</span>
+            <div class="occ-metric-val"><?= $liveDormsOccupancyPct ?>%</div>
+            <div class="occ-metric-sub"><strong><?= $liveDormsBookedPax ?></strong> / <?= $totalDormsCapacity ?> Dorm Beds</div>
+            <div class="occ-bar-track">
+              <div class="occ-bar-fill" style="width: <?= min(100, $liveDormsOccupancyPct) ?>%; background: #d97706;"></div>
+            </div>
+          </div>
+
+          <div class="occ-metric-card">
+            <span class="occ-metric-lbl">Peak Load Day</span>
+            <div class="occ-metric-val" style="color: #b45309;"><?= $peakDayPct ?>%</div>
+            <div class="occ-metric-sub"><?= htmlspecialchars($peakDayLabel) ?> &bull; <?= $peakDayPax ?> PAX</div>
+            <div class="occ-bar-track">
+              <div class="occ-bar-fill" style="width: <?= min(100, $peakDayPct) ?>%; background: #ef4444;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Controls & Switcher Toolbar -->
+        <div class="occ-graph-toolbar">
+          <div class="occ-toggle-group">
+            <button type="button" class="occ-btn-toggle active" id="btnToggleBarGraph"
+              onclick="switchOccupancyGraph('bar')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>Bar Graph (By Venue)</span>
+            </button>
+            <button type="button" class="occ-btn-toggle" id="btnToggleLineGraph" onclick="switchOccupancyGraph('line')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              <span>Line Graph (Trend %)</span>
+            </button>
+          </div>
+
+          <div class="occ-range-group">
+            <label for="occTimeRangeSelect"
+              style="font-size: 0.74rem; font-weight: 700; color: #4b6354;">Timeline:</label>
+            <select id="occTimeRangeSelect" class="occ-range-select" onchange="updateOccupancyTimeRange(this.value)">
+              <option value="week" selected><?= htmlspecialchars($timelineLabel) ?></option>
+              <option value="month">Full Month of <?= date('F Y') ?></option>
+              <option value="q4">Quarter <?= ceil(date('n') / 3) ?> Institutional Projection</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 3. Graph Container -->
+        <div class="occ-chart-surface">
+          <!-- VIEW A: REAL-TIME BAR GRAPH (Facility Capacity Breakdown) -->
+          <div id="occupancyBarGraphView" class="occ-graph-pane">
+            <div class="occ-chart-caption">
+              <span class="occ-legend-pill"><span class="occ-dot hall"></span> Function Halls</span>
+              <span class="occ-legend-pill"><span class="occ-dot dorm"></span> Dormitory Suites</span>
+              <span class="occ-legend-pill"><span class="occ-target-line"></span> Benchmark Target (80%)</span>
+            </div>
+
+            <!-- SVG Bar Graph -->
+            <div class="occ-svg-container">
+              <svg viewBox="0 0 580 170" class="occ-bar-svg" preserveAspectRatio="xMidYMid meet">
+                <!-- Grid Lines (100px total height, baseline at y=130) -->
+                <line x1="42" y1="30" x2="560" y2="30" stroke="#e8efe9" stroke-dasharray="3 3" stroke-width="0.8"></line>
+                <line x1="42" y1="55" x2="560" y2="55" stroke="#e8efe9" stroke-dasharray="3 3" stroke-width="0.8"></line>
+                <line x1="42" y1="80" x2="560" y2="80" stroke="#e8efe9" stroke-dasharray="3 3" stroke-width="0.8"></line>
+                <line x1="42" y1="105" x2="560" y2="105" stroke="#e8efe9" stroke-dasharray="3 3" stroke-width="0.8"></line>
+                <line x1="42" y1="130" x2="560" y2="130" stroke="#d5e3d8" stroke-width="1.2"></line>
+
+                <!-- 80% Benchmark Line (y = 130 - 80 = 50) -->
+                <line x1="42" y1="50" x2="560" y2="50" stroke="#eab308" stroke-dasharray="5 3" stroke-width="1.5"></line>
+                <text x="562" y="53" font-size="8.5" fill="#b45309" font-weight="700">80% Target</text>
+
+                <!-- Y Axis Labels -->
+                <text x="36" y="33" font-size="9" fill="#789080" text-anchor="end">100%</text>
+                <text x="36" y="58" font-size="9" fill="#789080" text-anchor="end">75%</text>
+                <text x="36" y="83" font-size="9" fill="#789080" text-anchor="end">50%</text>
+                <text x="36" y="108" font-size="9" fill="#789080" text-anchor="end">25%</text>
+                <text x="36" y="133" font-size="9" fill="#789080" text-anchor="end">0%</text>
+
+                <!-- Dynamic Real Facility Bars -->
+                <?php 
+                $facCount = count($facilityOccupancyMap);
+                $barIdx = 0;
+                $usableWidth = 500;
+                $stepX = $facCount > 1 ? ($usableWidth / $facCount) : 60;
+                $barW = min(36, max(24, round($stepX * 0.65)));
+
+                foreach ($facilityOccupancyMap as $fItem):
+                  $bx = round(48 + ($barIdx * $stepX) + (($stepX - $barW) / 2));
+                  $pctVal = (float)$fItem['occupancy_pct'];
+                  $cappedPct = min(100.0, max(0.0, $pctVal));
+                  $bHeight = round(($cappedPct / 100.0) * 100);
+                  $by = 130 - $bHeight;
+                  $bcx = $bx + round($barW / 2);
+                  $isDormFac = ($fItem['type'] === 'dorms');
+                  $barGrad = $isDormFac ? 'url(#gradDorm)' : 'url(#gradHall)';
+                  $barColor = $isDormFac ? '#d97706' : '#174d2f';
+                  $unitLabel = $isDormFac ? 'Beds' : 'PAX';
+                  $barIdx++;
+                ?>
+                <g class="occ-bar-group" tabindex="0">
+                  <title><?= htmlspecialchars($fItem['name']) ?>: <?= $fItem['booked_pax'] ?> / <?= $fItem['capacity'] ?> <?= $unitLabel ?> (<?= $pctVal ?>%)</title>
+                  <rect x="<?= $bx ?>" y="<?= $by ?>" width="<?= $barW ?>" height="<?= max(2, $bHeight) ?>" rx="4" fill="<?= $barGrad ?>" class="bar-rect"></rect>
+                  <text x="<?= $bcx ?>" y="<?= max(18, $by - 4) ?>" font-size="8.5" font-weight="800" fill="<?= $barColor ?>" text-anchor="middle"><?= $pctVal ?>%</text>
+                  <text x="<?= $bcx ?>" y="142" font-size="8" font-weight="700" fill="#2d4233" text-anchor="middle"><?= htmlspecialchars($fItem['shortName']) ?></text>
+                  <text x="<?= $bcx ?>" y="153" font-size="7" fill="#698572" text-anchor="middle"><?= $fItem['booked_pax'] ?>/<?= $fItem['capacity'] ?> <?= $unitLabel ?></text>
+                </g>
+                <?php endforeach; ?>
+
+                <!-- Gradients -->
+                <defs>
+                  <linearGradient id="gradHall" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#1b5e33"></stop>
+                    <stop offset="100%" stop-color="#2a824b"></stop>
+                  </linearGradient>
+                  <linearGradient id="gradDorm" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#d97706"></stop>
+                    <stop offset="100%" stop-color="#f59e0b"></stop>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <!-- VIEW B: REAL-TIME LINE GRAPH (Daily Occupancy Percentage Trend) -->
+          <div id="occupancyLineGraphView" class="occ-graph-pane" style="display: none;">
+            <div class="occ-chart-caption">
+              <span class="occ-legend-pill"><span class="occ-dot" style="background: #174d2f;"></span> Daily Occupancy Rate (%)</span>
+              <span class="occ-legend-pill"><span class="occ-target-line"></span> Weekly Average (<?= $liveOverallOccupancyPct ?>%)</span>
+            </div>
+
+            <!-- SVG Line Graph -->
+            <div class="occ-svg-container">
+              <svg viewBox="0 0 580 170" class="occ-line-svg" preserveAspectRatio="xMidYMid meet">
+                <!-- Grid Lines -->
+                <line x1="42" y1="30" x2="560" y2="30" stroke="#e8efe9" stroke-dasharray="3 3" stroke-width="0.8"></line>
+                <line x1="42" y1="55" x2="560" y2="55" stroke="#e8efe9" stroke-dasharray="3 3" stroke-width="0.8"></line>
+                <line x1="42" y1="80" x2="560" y2="80" stroke="#e8efe9" stroke-dasharray="3 3" stroke-width="0.8"></line>
+                <line x1="42" y1="105" x2="560" y2="105" stroke="#e8efe9" stroke-dasharray="3 3" stroke-width="0.8"></line>
+                <line x1="42" y1="130" x2="560" y2="130" stroke="#d5e3d8" stroke-width="1.2"></line>
+
+                <!-- Average Line -->
+                <?php $avgY = 130 - round((min(100.0, $liveOverallOccupancyPct) / 100.0) * 100); ?>
+                <line x1="42" y1="<?= $avgY ?>" x2="560" y2="<?= $avgY ?>" stroke="#eab308" stroke-dasharray="5 3" stroke-width="1.5"></line>
+                <text x="562" y="<?= $avgY + 3 ?>" font-size="8.5" fill="#b45309" font-weight="700"><?= $liveOverallOccupancyPct ?>% Avg</text>
+
+                <!-- Y Axis Labels -->
+                <text x="36" y="33" font-size="9" fill="#789080" text-anchor="end">100%</text>
+                <text x="36" y="58" font-size="9" fill="#789080" text-anchor="end">75%</text>
+                <text x="36" y="83" font-size="9" fill="#789080" text-anchor="end">50%</text>
+                <text x="36" y="108" font-size="9" fill="#789080" text-anchor="end">25%</text>
+                <text x="36" y="133" font-size="9" fill="#789080" text-anchor="end">0%</text>
+
+                <?php 
+                $linePoints = [];
+                $dayIdx = 0;
+                foreach ($dailyPaxTrend as $dKey => $dVal) {
+                  $px = 65 + ($dayIdx * 74);
+                  $py = 130 - round((min(100.0, (float)$dVal['pct']) / 100.0) * 100);
+                  $linePoints[] = ['x' => $px, 'y' => $py, 'info' => $dVal];
+                  $dayIdx++;
+                }
+
+                $pathD = '';
+                $areaD = '';
+                if (!empty($linePoints)) {
+                  $firstP = $linePoints[0];
+                  $pathD = "M {$firstP['x']} {$firstP['y']}";
+                  $areaD = "M {$firstP['x']} {$firstP['y']}";
+                  for ($i = 1; $i < count($linePoints); $i++) {
+                    $pathD .= " L {$linePoints[$i]['x']} {$linePoints[$i]['y']}";
+                    $areaD .= " L {$linePoints[$i]['x']} {$linePoints[$i]['y']}";
+                  }
+                  $lastP = end($linePoints);
+                  $areaD .= " L {$lastP['x']} 130 L {$firstP['x']} 130 Z";
+                }
+                ?>
+
+                <!-- Area Gradient -->
+                <path d="<?= $areaD ?>" fill="url(#gradLineArea)"></path>
+                <!-- Line -->
+                <path d="<?= $pathD ?>" fill="none" stroke="#174d2f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path>
+
+                <!-- Data Points & Labels -->
+                <?php foreach ($linePoints as $lp): 
+                  $isPk = ($lp['info']['pax'] > 0 && $lp['info']['pax'] === $peakDayPax);
+                  $ptCircleFill = $isPk ? '#f59e0b' : '#ffffff';
+                  $ptCircleStroke = $isPk ? '#b45309' : '#174d2f';
+                  $ptRadius = $isPk ? 5.5 : 4;
+                ?>
+                <g class="occ-pt-group" tabindex="0">
+                  <title><?= htmlspecialchars($lp['info']['dayName']) ?>, <?= htmlspecialchars($lp['info']['dateStr']) ?>: <?= $lp['info']['pax'] ?> PAX (<?= $lp['info']['pct'] ?>%)</title>
+                  <circle cx="<?= $lp['x'] ?>" cy="<?= $lp['y'] ?>" r="<?= $ptRadius ?>" fill="<?= $ptCircleFill ?>" stroke="<?= $ptCircleStroke ?>" stroke-width="2"></circle>
+                  <text x="<?= $lp['x'] ?>" y="<?= max(18, $lp['y'] - 6) ?>" font-size="8.5" font-weight="<?= $isPk ? '800' : '700' ?>" fill="<?= $isPk ? '#b45309' : '#174d2f' ?>" text-anchor="middle"><?= $lp['info']['pct'] ?>%</text>
+                  <text x="<?= $lp['x'] ?>" y="142" font-size="8" font-weight="700" fill="#2d4233" text-anchor="middle"><?= htmlspecialchars($lp['info']['dayName']) ?></text>
+                  <text x="<?= $lp['x'] ?>" y="153" font-size="7" fill="<?= $lp['info']['isToday'] ? '#174d2f' : '#698572' ?>" font-weight="<?= $lp['info']['isToday'] ? '700' : '400' ?>" text-anchor="middle"><?= htmlspecialchars($lp['info']['dateStr']) ?><?= $lp['info']['isToday'] ? ' *' : '' ?></text>
+                </g>
+                <?php endforeach; ?>
+
+                <defs>
+                  <linearGradient id="gradLineArea" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#174d2f" stop-opacity="0.22"></stop>
+                    <stop offset="100%" stop-color="#174d2f" stop-opacity="0.01"></stop>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Detailed Facility Asset Breakdown Table (Dynamic Live Data) -->
+        <div class="occ-breakdown-section">
+          <h5 style="margin: 0 0 0.55rem; font-size: 0.88rem; font-weight: 800; color: #174d2f; display: flex; align-items: center; justify-content: space-between;">
+            <span>Monitored Facility Utilization Breakdown</span>
+            <span style="font-size: 0.72rem; font-weight: 600; color: #60796b;">Total <?= count($facilityOccupancyMap) ?> Institutional Assets</span>
+          </h5>
+
+          <div class="occ-table-wrap">
+            <table class="occ-breakdown-table">
+              <thead>
+                <tr>
+                  <th>Facility / Venue</th>
+                  <th>Category</th>
+                  <th>Capacity</th>
+                  <th>Booked Headcount</th>
+                  <th>Occupancy Rate</th>
+                  <th>Current Availability Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php if (empty($facilityOccupancyMap)): ?>
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 1.5rem; color: #627b6c;">No facilities recorded.</td>
+                  </tr>
+                <?php else: ?>
+                  <?php foreach ($facilityOccupancyMap as $fItem): 
+                    $isDorm = ($fItem['type'] === 'dorms');
+                    $capStr = $isDorm ? ($fItem['capacity'] . ' PAX (' . $fItem['beds'] . ' Beds)') : ($fItem['capacity'] . ' PAX');
+                    $bookedStr = $isDorm ? ($fItem['booked_pax'] . ' Beds') : ($fItem['booked_pax'] . ' PAX');
+                    $barFillColor = $isDorm ? '#d97706' : '#174d2f';
+                    
+                    $statusBadge = '<span class="occ-status-badge active">' . htmlspecialchars($fItem['stateLabel']) . '</span>';
+                    if ($fItem['stateKey'] === 'maintenance') {
+                      $statusBadge = '<span class="occ-status-badge high">Maintenance Hold</span>';
+                    } elseif ($fItem['stateKey'] === 'available') {
+                      $statusBadge = '<span class="occ-status-badge active">Available</span>';
+                    } elseif ($fItem['stateKey'] === 'occupied') {
+                      $statusBadge = '<span class="occ-status-badge dorm">' . htmlspecialchars($fItem['stateLabel']) . '</span>';
+                    } elseif ($fItem['stateKey'] === 'reserved') {
+                      $statusBadge = '<span class="occ-status-badge" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a;">' . htmlspecialchars($fItem['stateLabel']) . '</span>';
+                    }
+                  ?>
+                  <tr>
+                    <td><strong><?= htmlspecialchars($fItem['name']) ?></strong></td>
+                    <td><span class="occ-tag <?= $isDorm ? 'dorm' : 'hall' ?>"><?= $isDorm ? 'Dormitory Suite' : 'Function Hall' ?></span></td>
+                    <td><?= $capStr ?></td>
+                    <td><strong><?= $bookedStr ?></strong></td>
+                    <td>
+                      <div class="occ-tbl-rate">
+                        <div class="occ-tbl-bar">
+                          <div class="occ-tbl-fill" style="width: <?= min(100, $fItem['occupancy_pct']) ?>%; background: <?= $barFillColor ?>;"></div>
+                        </div>
+                        <span style="font-weight: 700; min-width: 42px;"><?= $fItem['occupancy_pct'] ?>%</span>
+                      </div>
+                    </td>
+                    <td><?= $statusBadge ?></td>
+                  </tr>
+                  <?php endforeach; ?>
+                <?php endif; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-system-secondary" onclick="closeOccupancyModal()" style="padding: 0.45rem 0.85rem; font-size: 0.8rem;">Close Analytics</button>
+        <button type="button" class="btn-export-analytics" onclick="exportOccupancyReport()"
+          style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.95rem; background: #174d2f; color: #ffffff; border: none; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Export Analytics Report</span>
+        </button>
       </div>
     </div>
   </div>
