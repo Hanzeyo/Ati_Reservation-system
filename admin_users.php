@@ -51,12 +51,14 @@ foreach ($usersList as $u) {
     }
 }
 
-function getUserInitials($name) {
-    $parts = explode(' ', trim($name));
-    if (count($parts) > 1) {
-        return strtoupper(substr($parts[0], 0, 1) . substr($parts[count($parts) - 1], 0, 1));
+if (!function_exists('getUserInitials')) {
+    function getUserInitials($name) {
+        $parts = explode(' ', trim($name));
+        if (count($parts) > 1) {
+            return strtoupper(substr($parts[0], 0, 1) . substr($parts[count($parts) - 1], 0, 1));
+        }
+        return strtoupper(substr($name, 0, 2));
     }
-    return strtoupper(substr($name, 0, 2));
 }
 
 function getRolePresentation($role) {

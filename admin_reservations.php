@@ -323,13 +323,13 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
             <table class="admin-data-table" id="adminReservationsTable">
               <thead>
                 <tr>
-                  <th style="width: 14%;">Reference & Date</th>
-                  <th style="width: 18%;">Applicant & Organization</th>
-                  <th style="width: 16%;">Requested Facility</th>
-                  <th style="width: 15%;">Schedule / Duration</th>
-                  <th style="width: 9%;">Attendees (PAX)</th>
-                  <th style="width: 12%;">Current Status</th>
-                  <th style="width: 16%; min-width: 180px; text-align: right;">Executive Actions</th>
+                  <th>Reference & Date</th>
+                  <th>Applicant & Organization</th>
+                  <th>Requested Facility</th>
+                  <th>Schedule / Duration</th>
+                  <th>Attendees</th>
+                  <th>Current Status</th>
+                  <th style="text-align: right;">Executive Actions</th>
                 </tr>
               </thead>
               <tbody id="adminTableBody">

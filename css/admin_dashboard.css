@@ -570,38 +570,43 @@ body.admin-app-body {
 
 .search-clear-btn {
   position: absolute;
-  right: 0.75rem;
+  right: 0.65rem;
   top: 50%;
   transform: translateY(-50%);
   background: #e2ede5;
   border: 1px solid #c9ded0;
   color: #2e593e;
-  width: 22px;
-  height: 22px;
-  min-width: 22px;
-  min-height: 22px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
   border-radius: 50%;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   padding: 0 !important;
   margin: 0 !important;
-  line-height: 0 !important;
+  line-height: 1;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-sizing: border-box !important;
+  z-index: 5;
 }
 
 .search-clear-btn svg {
-  width: 10px;
-  height: 10px;
+  width: 10px !important;
+  height: 10px !important;
+  position: static !important;
+  transform: none !important;
+  left: auto !important;
+  top: auto !important;
   display: block !important;
   margin: auto !important;
   flex-shrink: 0 !important;
   pointer-events: none;
-  stroke: currentColor;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.2s ease;
+  stroke: currentColor !important;
+  transition: transform 0.2s ease, stroke 0.2s ease;
 }
 
 .search-clear-btn svg line {
@@ -613,8 +618,8 @@ body.admin-app-body {
   background: #fee2e2 !important;
   border-color: #fca5a5 !important;
   color: #dc2626 !important;
-  transform: translateY(-50%) rotate(90deg) scale(1.1);
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.28);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
 }
 
 .search-clear-btn:hover svg line {
@@ -622,7 +627,7 @@ body.admin-app-body {
 }
 
 .search-clear-btn:active {
-  transform: translateY(-50%) rotate(90deg) scale(0.92);
+  transform: translateY(-50%) scale(0.92);
 }
 
 .topbar-date-pill {
@@ -925,10 +930,15 @@ body.admin-app-body {
   color: #ffffff !important;
 }
 
-/* Toolbar & Select Filter */
+/* Toolbar & Select Filter - Fluid Screen-Fit Layout */
 .admin-toolbar-card {
   margin-bottom: 0.65rem;
-  padding: 0.45rem 0.75rem;
+  padding: 0.5rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .filter-tabs-group {
@@ -936,6 +946,7 @@ body.admin-app-body {
   align-items: center;
   gap: 0.35rem;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .filter-tab-btn {
@@ -949,10 +960,19 @@ body.admin-app-body {
   padding: 0.1rem 0.4rem;
 }
 
+.toolbar-controls-right {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex-grow: 1;
+}
+
 .admin-search-wrap {
   position: relative;
-  min-width: 220px;
-  max-width: 380px;
+  min-width: 180px;
+  max-width: 340px;
   flex-grow: 1;
   display: flex;
   align-items: center;
@@ -980,15 +1000,16 @@ body.admin-app-body {
   background-color: #ffffff;
 }
 
-.admin-search-wrap svg {
+.admin-search-wrap > svg {
   position: absolute;
-  left: 10px;
+  left: 11px;
   top: 50%;
   transform: translateY(-50%);
   width: 14px;
   height: 14px;
   color: #677f71;
   pointer-events: none;
+  z-index: 2;
 }
 
 .select-filter-wrap select.venue-filter-select,
@@ -1097,16 +1118,17 @@ body.admin-app-body {
   border-radius: 9999px;
 }
 
-/* Table Styles - Zero Overflow & Dense Screen-Fit */
+/* Table Styles - Responsive Flexible Layout & Screen-Fit */
 .admin-table-responsive {
   width: 100% !important;
   max-width: 100% !important;
-  overflow-x: hidden !important;
+  overflow-x: auto;
   box-sizing: border-box;
 }
 
 .admin-data-table {
   width: 100% !important;
+  min-width: 860px;
   border-collapse: collapse;
   text-align: left;
   font-size: 0.8rem;
@@ -1120,17 +1142,17 @@ body.admin-app-body {
 
 .admin-data-table thead th:nth-child(2),
 .admin-data-table tbody td:nth-child(2) {
-  width: 21%;
+  width: 14%;
 }
 
 .admin-data-table thead th:nth-child(3),
 .admin-data-table tbody td:nth-child(3) {
-  width: 13%;
+  width: 17%;
 }
 
 .admin-data-table thead th:nth-child(4),
 .admin-data-table tbody td:nth-child(4) {
-  width: 16%;
+  width: 18%;
 }
 
 .admin-data-table thead th:nth-child(5),
@@ -1140,12 +1162,12 @@ body.admin-app-body {
 
 .admin-data-table thead th:nth-child(6),
 .admin-data-table tbody td:nth-child(6) {
-  width: 11%;
+  width: 15%;
 }
 
 .admin-data-table thead th:nth-child(7),
 .admin-data-table tbody td:nth-child(7) {
-  width: 19%;
+  width: 16%;
   text-align: right;
 }
 
@@ -1156,11 +1178,9 @@ body.admin-app-body {
   text-transform: uppercase;
   font-size: 0.68rem;
   letter-spacing: 0.04em;
-  padding: 0.45rem 0.55rem;
+  padding: 0.5rem 0.55rem;
   border-bottom: 1.5px solid #e1e9e3;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .admin-data-table tbody tr {
@@ -1173,10 +1193,8 @@ body.admin-app-body {
 }
 
 .admin-data-table td {
-  padding: 0.42rem 0.55rem;
+  padding: 0.45rem 0.55rem;
   vertical-align: middle;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* Empty Table State */
@@ -1284,11 +1302,22 @@ body.admin-app-body {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.74rem;
+  font-size: 0.73rem;
   font-weight: 700;
   padding: 0.22rem 0.55rem;
   border-radius: 6px;
-  white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.td-facility-pill svg {
+  flex-shrink: 0;
+}
+
+.td-facility-pill span {
+  white-space: normal;
+  line-height: 1.25;
+  word-break: break-word;
 }
 
 .td-facility-pill.hall {
@@ -1306,16 +1335,18 @@ body.admin-app-body {
 .td-schedule-text strong {
   display: block;
   color: #1a2f22;
-  font-size: 0.78rem;
-  line-height: 1.2;
+  font-size: 0.77rem;
+  line-height: 1.25;
   white-space: nowrap;
 }
 
 .td-schedule-text span {
-  font-size: 0.7rem;
+  display: block;
+  font-size: 0.69rem;
   color: #61776a;
-  line-height: 1.2;
-  white-space: nowrap;
+  line-height: 1.25;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .td-pax-count {
@@ -2903,13 +2934,13 @@ body.admin-app-body {
 /* ==========================================================================
    RESPONSIVE ADMIN DATA TABLE & MOBILE CARD ACCESSIBILITY
    ========================================================================== */
-@media (max-width: 1250px) and (min-width: 861px) {
+@media (max-width: 1120px) and (min-width: 861px) {
   .admin-data-table .btn-table-action span {
     display: none !important;
   }
 
   .admin-data-table .btn-table-action {
-    padding: 0.36rem 0.52rem !important;
+    padding: 0.35rem 0.5rem !important;
   }
 }
 
