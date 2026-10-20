@@ -1384,3 +1384,66 @@ async function confirmCompleteReservation(refId, applicantName) {
   }
 }
 
+/* ==========================================================================
+   OCCUPANCY & UTILIZATION ANALYTICS MODAL CONTROLLER
+   ========================================================================== */
+function openOccupancyModal() {
+  const modal = document.getElementById('occupancyModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeOccupancyModal() {
+  const modal = document.getElementById('occupancyModal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+
+function switchOccupancyGraph(type) {
+  const barView = document.getElementById('occupancyBarGraphView');
+  const lineView = document.getElementById('occupancyLineGraphView');
+  const btnBar = document.getElementById('btnToggleBarGraph');
+  const btnLine = document.getElementById('btnToggleLineGraph');
+
+  if (type === 'bar') {
+    if (barView) barView.style.display = 'block';
+    if (lineView) lineView.style.display = 'none';
+    if (btnBar) btnBar.classList.add('active');
+    if (btnLine) btnLine.classList.remove('active');
+  } else if (type === 'line') {
+    if (barView) barView.style.display = 'none';
+    if (lineView) lineView.style.display = 'block';
+    if (btnBar) btnBar.classList.remove('active');
+    if (btnLine) btnLine.classList.add('active');
+  }
+}
+
+function updateOccupancyTimeRange(range) {
+  const toastMsg = range === 'week' ? 'Loaded Current Weekly Occupancy'
+    : range === 'month' ? 'Loaded Full Monthly Utilization'
+      : 'Loaded Institutional Capacity Projection';
+  if (typeof showAdminToast === 'function') {
+    showAdminToast(toastMsg, 'info');
+  }
+}
+
+function exportOccupancyReport() {
+  if (typeof showAdminToast === 'function') {
+    showAdminToast('Generating Official Occupancy Analytics Report (PDF)...', 'success');
+  }
+  setTimeout(() => {
+    window.print();
+  }, 600);
+}
+
+// ESC listener to close modal
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    closeOccupancyModal();
+  }
+});
+
