@@ -24,17 +24,27 @@ $query = "SELECT r.*,
                  rm.room_number,
                  rm.floor AS room_floor,
                  u.full_name,
-                 u.office_agency
+                 u.office_agency,
+                 u_end.full_name AS endorser_name,
+                 u_rec.full_name AS recommender_name,
+                 u_clr.full_name AS clearer_name
           FROM reservations r
           LEFT JOIN facilities f ON r.facility_id = f.id
           LEFT JOIN rooms rm ON r.room_id = rm.id
           LEFT JOIN users u ON r.user_id = u.id
+          LEFT JOIN users u_end ON r.endorsed_by = u_end.id
+          LEFT JOIN users u_rec ON r.recommended_by = u_rec.id
+          LEFT JOIN users u_clr ON r.cleared_by = u_clr.id
           WHERE r.user_id = :user_id
           ORDER BY r.id DESC";
 
 $stmt = $db->prepare($query);
 $stmt->execute([':user_id' => $userId]);
 $reservationsList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch active facilities from database for dynamic dropdown filter
+$facFilterStmt = $db->query("SELECT id, name, type FROM facilities WHERE status != 'inactive' ORDER BY name ASC");
+$filterFacilities = $facFilterStmt ? $facFilterStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
 // Calculate dynamic stats
 $statsTotal = count($reservationsList);
@@ -559,46 +569,42 @@ foreach ($reservationsList as $resItem) {
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
-            <div class="facility-option" data-value="function-hall" role="option">
+
+            <div class="facility-option" data-value="facility" role="option">
               <span class="opt-bullet"></span>
-              <span class="opt-name">Function Hall</span>
+              <span class="opt-name">All Function &amp; Training Halls</span>
               <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
-            <div class="facility-option" data-value="training-hall" role="option">
-              <span class="opt-bullet"></span>
-              <span class="opt-name">Training Hall A</span>
-              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2.5">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </div>
-            <div class="facility-option" data-value="boardroom" role="option">
-              <span class="opt-bullet"></span>
-              <span class="opt-name">Boardroom</span>
-              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2.5">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </div>
-            <div class="facility-option" data-value="mess-hall" role="option">
-              <span class="opt-bullet"></span>
-              <span class="opt-name">Mess Hall</span>
-              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="2.5">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
-            </div>
+
             <div class="facility-option" data-value="dormitory" role="option">
-              <span class="opt-bullet"></span>
-              <span class="opt-name">Dormitory</span>
+              <span class="opt-bullet dorm-bullet"></span>
+              <span class="opt-name">All Dormitories &amp; Lodgings</span>
               <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
+
+            <?php if (!empty($filterFacilities)): ?>
+              <div style="height: 1px; background: #e5ede7; margin: 4px 8px;"></div>
+              <?php foreach ($filterFacilities as $f): 
+                $fType = strtolower($f['type'] ?? '');
+                $isDormType = ($fType === 'dormitories' || $fType === 'dorms');
+                $bulletClass = $isDormType ? 'dorm-bullet' : '';
+              ?>
+                <div class="facility-option" data-value="<?= htmlspecialchars($f['name']) ?>" data-facility-id="<?= (int)$f['id'] ?>" role="option">
+                  <span class="opt-bullet <?= $bulletClass ?>"></span>
+                  <span class="opt-name"><?= htmlspecialchars($f['name']) ?></span>
+                  <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+              <?php endforeach; ?>
+            <?php endif; ?>
           </div>
         </div>
 
@@ -754,13 +760,82 @@ foreach ($reservationsList as $resItem) {
               $statusBadgeClass = 'pending endorsement';
               $statusBadgeText = 'Stage 1: Awaiting Endorsement';
           }
+
+          // Compute 3-Stage Governance Stepper States
+          $s1Done = in_array($rawStatus, ['Pending Recommendation', 'Pending Clearance', 'Approved', 'Completed']) || !empty($item['endorsed_at']);
+          $s2Done = in_array($rawStatus, ['Pending Clearance', 'Approved', 'Completed']) || !empty($item['recommended_at']);
+          $s3Done = in_array($rawStatus, ['Approved', 'Completed']) || !empty($item['cleared_at']);
+
+          $isRejected = ($rawStatus === 'Rejected');
+          $isCancelled = ($rawStatus === 'Cancelled');
+
+          if ($isRejected) {
+              if ($s2Done) {
+                  $step1State = 'done';
+                  $step2State = 'done';
+                  $step3State = 'rejected';
+                  $currentStageLabel = 'Stage 3: Disapproved';
+                  $currentStageColor = '#dc2626';
+              } elseif ($s1Done) {
+                  $step1State = 'done';
+                  $step2State = 'rejected';
+                  $step3State = 'pending';
+                  $currentStageLabel = 'Stage 2: Returned';
+                  $currentStageColor = '#dc2626';
+              } else {
+                  $step1State = 'rejected';
+                  $step2State = 'pending';
+                  $step3State = 'pending';
+                  $currentStageLabel = 'Stage 1: Returned';
+                  $currentStageColor = '#dc2626';
+              }
+          } elseif ($isCancelled) {
+              $step1State = $s1Done ? 'done' : 'cancelled';
+              $step2State = $s2Done ? 'done' : 'cancelled';
+              $step3State = $s3Done ? 'done' : 'cancelled';
+              $currentStageLabel = 'Request Cancelled';
+              $currentStageColor = '#64748b';
+          } elseif ($rawStatus === 'Approved') {
+              $step1State = 'done';
+              $step2State = 'done';
+              $step3State = 'done';
+              $currentStageLabel = 'Governance Clearance Complete';
+              $currentStageColor = '#16a34a';
+          } elseif ($rawStatus === 'Completed') {
+              $step1State = 'done';
+              $step2State = 'done';
+              $step3State = 'done';
+              $currentStageLabel = 'Concluded & Archived';
+              $currentStageColor = '#475569';
+          } elseif ($rawStatus === 'Pending Clearance') {
+              $step1State = 'done';
+              $step2State = 'done';
+              $step3State = 'active';
+              $currentStageLabel = 'Stage 3: Directorate Clearance Active';
+              $currentStageColor = '#047857';
+          } elseif ($rawStatus === 'Pending Recommendation') {
+              $step1State = 'done';
+              $step2State = 'active';
+              $step3State = 'pending';
+              $currentStageLabel = 'Stage 2: Logistics Recommendation Active';
+              $currentStageColor = '#2563eb';
+          } else {
+              $step1State = 'active';
+              $step2State = 'pending';
+              $step3State = 'pending';
+              $currentStageLabel = 'Stage 1: Division Endorsement Active';
+              $currentStageColor = '#d97706';
+          }
         ?>
 
         <!-- RESERVATION CARD -->
         <article class="res-card" 
           data-status="<?= htmlspecialchars($filterStatus) ?>" 
+          data-raw-status="<?= htmlspecialchars($rawStatus) ?>" 
           data-category="<?= htmlspecialchars($category) ?>" 
           data-venue="<?= htmlspecialchars($slug) ?>"
+          data-venue-id="<?= (int)($item['facility_id'] ?? 0) ?>"
+          data-venue-name="<?= htmlspecialchars($venueName) ?>"
           data-ref="<?= htmlspecialchars($item['reference_no']) ?>" 
           data-venue-title="<?= htmlspecialchars($venueName . (!empty($item['room_number']) ? ' - Room ' . $item['room_number'] : '')) ?>" 
           data-venue-image="<?= htmlspecialchars($venueThumb) ?>"
@@ -768,10 +843,23 @@ foreach ($reservationsList as $resItem) {
           data-time="<?= htmlspecialchars($timeSlotText) ?>" 
           data-pax="<?= htmlspecialchars($paxText) ?>"
           data-division="<?= htmlspecialchars($divisionText) ?>" 
+          data-applicant-name="<?= htmlspecialchars($item['full_name'] ?? 'Applicant') ?>"
+          data-created-at="<?= htmlspecialchars(!empty($item['created_at']) ? date('M d, Y • h:i A', strtotime($item['created_at'])) : 'Recently Submitted') ?>"
           data-status-text="<?= htmlspecialchars($statusBadgeText) ?>"
           data-doc-path="<?= htmlspecialchars($item['document_path'] ?? '') ?>"
           data-special-notes="<?= htmlspecialchars($item['special_notes'] ?? '') ?>"
-          data-remarks="<?= htmlspecialchars($item['admin_remarks'] ?? '') ?>">
+          data-remarks="<?= htmlspecialchars($item['admin_remarks'] ?? '') ?>"
+          data-endorsed-by="<?= htmlspecialchars($item['endorser_name'] ?? '') ?>"
+          data-endorsed-at="<?= htmlspecialchars(!empty($item['endorsed_at']) ? date('M d, Y • h:i A', strtotime($item['endorsed_at'])) : '') ?>"
+          data-endorsement-remarks="<?= htmlspecialchars($item['endorsement_remarks'] ?? '') ?>"
+          data-recommended-by="<?= htmlspecialchars($item['recommender_name'] ?? '') ?>"
+          data-recommended-at="<?= htmlspecialchars(!empty($item['recommended_at']) ? date('M d, Y • h:i A', strtotime($item['recommended_at'])) : '') ?>"
+          data-recommendation-remarks="<?= htmlspecialchars($item['recommendation_remarks'] ?? '') ?>"
+          data-recommendation-doc="<?= htmlspecialchars($item['recommendation_doc_path'] ?? '') ?>"
+          data-cleared-by="<?= htmlspecialchars($item['clearer_name'] ?? '') ?>"
+          data-cleared-at="<?= htmlspecialchars(!empty($item['cleared_at']) ? date('M d, Y • h:i A', strtotime($item['cleared_at'])) : '') ?>"
+          data-clearance-remarks="<?= htmlspecialchars($item['clearance_remarks'] ?? '') ?>"
+          data-clearance-doc="<?= htmlspecialchars($item['clearance_doc_path'] ?? '') ?>">
 
           <div class="res-card-media">
             <img src="<?= htmlspecialchars($venueThumb) ?>" alt="<?= htmlspecialchars($venueName) ?>" onerror="this.onerror=null; this.src='<?= $isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg' ?>';">
@@ -832,32 +920,108 @@ foreach ($reservationsList as $resItem) {
               </div>
             </div>
 
-            <!-- Mini Routing Stepper / Progress Bar -->
+            <!-- 3-STAGE GOVERNANCE ROUTING TRACKER -->
             <div class="res-mini-routing">
-              <div class="routing-progress-bar">
-                <div class="progress-segment filled" title="Request Submitted (Done)"></div>
-                <div class="progress-segment <?= in_array($rawStatus, ['Pending Recommendation', 'Pending Clearance', 'Approved', 'Completed']) ? 'filled' : 'active-pulse' ?>" title="1. Division Endorsement"></div>
-                <div class="progress-segment <?= in_array($rawStatus, ['Pending Clearance', 'Approved', 'Completed']) ? 'filled' : ($rawStatus === 'Pending Recommendation' ? 'active-pulse' : '') ?>" title="2. Logistics Recommendation"></div>
-                <div class="progress-segment <?= in_array($rawStatus, ['Approved', 'Completed']) ? 'filled' : ($rawStatus === 'Pending Clearance' ? 'active-pulse' : '') ?>" title="3. Directorate Clearance"></div>
+              <div class="routing-stepper-header">
+                <div class="stepper-header-left">
+                  <span class="stepper-badge-icon">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                  </span>
+                  <span class="stepper-title">GOVERNANCE ROUTING TRACKER</span>
+                </div>
+                <span class="stepper-stage-chip" style="color: <?= $currentStageColor ?>; border-color: <?= $currentStageColor ?>44; background: <?= $currentStageColor ?>14;">
+                  <?= htmlspecialchars($currentStageLabel) ?>
+                </span>
               </div>
+
+              <div class="routing-stepper-track">
+                <!-- STEP 1: Endorsement -->
+                <div class="stepper-step step-<?= $step1State ?>" title="Stage 1: Division Chief Endorsement">
+                  <div class="step-circle">
+                    <?php if ($step1State === 'done'): ?>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <?php elseif ($step1State === 'active'): ?>
+                      <span class="step-pulse-dot"></span>
+                      <span class="step-num">1</span>
+                    <?php elseif ($step1State === 'rejected'): ?>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <?php else: ?>
+                      <span class="step-num">1</span>
+                    <?php endif; ?>
+                  </div>
+                  <div class="step-labels">
+                    <span class="step-name">1. Endorsement</span>
+                    <span class="step-desc">Division Chief</span>
+                  </div>
+                </div>
+
+                <div class="stepper-connector <?= $step1State === 'done' ? 'completed' : ($step2State === 'active' ? 'active' : '') ?>"></div>
+
+                <!-- STEP 2: Recommendation -->
+                <div class="stepper-step step-<?= $step2State ?>" title="Stage 2: Property & Logistics Recommendation">
+                  <div class="step-circle">
+                    <?php if ($step2State === 'done'): ?>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <?php elseif ($step2State === 'active'): ?>
+                      <span class="step-pulse-dot"></span>
+                      <span class="step-num">2</span>
+                    <?php elseif ($step2State === 'rejected'): ?>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <?php else: ?>
+                      <span class="step-num">2</span>
+                    <?php endif; ?>
+                  </div>
+                  <div class="step-labels">
+                    <span class="step-name">2. Recommendation</span>
+                    <span class="step-desc">Logistics &amp; Property</span>
+                  </div>
+                </div>
+
+                <div class="stepper-connector <?= $step2State === 'done' ? 'completed' : ($step3State === 'active' ? 'active' : '') ?>"></div>
+
+                <!-- STEP 3: Clearance -->
+                <div class="stepper-step step-<?= $step3State ?>" title="Stage 3: Directorate Final Clearance">
+                  <div class="step-circle">
+                    <?php if ($step3State === 'done'): ?>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <?php elseif ($step3State === 'active'): ?>
+                      <span class="step-pulse-dot"></span>
+                      <span class="step-num">3</span>
+                    <?php elseif ($step3State === 'rejected'): ?>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <?php else: ?>
+                      <span class="step-num">3</span>
+                    <?php endif; ?>
+                  </div>
+                  <div class="step-labels">
+                    <span class="step-name">3. Clearance</span>
+                    <span class="step-desc">Directorate IV</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contextual Action Note -->
               <div class="routing-status-label">
                 <?php if ($rawStatus === 'Approved'): ?>
-                  <span class="routing-step-desc"><strong style="color: #15803d;">Official Status:</strong> Approved & Confirmed on Master Board</span>
+                  <span class="routing-step-desc"><strong style="color: #15803d;">Governance Complete:</strong> Approved on Master Schedule &bull; Security Gate Pass ready</span>
                 <?php elseif ($rawStatus === 'Cancelled'): ?>
-                  <span class="routing-step-desc"><strong style="color: #b91c1c;">Status:</strong> Cancelled by Requestor</span>
+                  <span class="routing-step-desc"><strong style="color: #64748b;">Notice:</strong> Booking request cancelled by applicant</span>
                 <?php elseif ($rawStatus === 'Completed'): ?>
-                  <span class="routing-step-desc"><strong style="color: #475569;">Status:</strong> Concluded & Archived</span>
+                  <span class="routing-step-desc"><strong style="color: #475569;">Concluded:</strong> Event successfully executed &bull; Turn-over complete</span>
                 <?php elseif ($rawStatus === 'Rejected'): ?>
-                  <span class="routing-step-desc"><strong style="color: #b91c1c;">Status:</strong> Disapproved / Returned for Revision</span>
-                <?php elseif ($rawStatus === 'Pending Recommendation'): ?>
-                  <span class="routing-step-desc"><strong style="color: #2563eb;">Stage 2:</strong> Under Administrative & Logistics Recommendation</span>
+                  <span class="routing-step-desc"><strong style="color: #b91c1c;">Notice:</strong> Disapproved or returned for revision (click View Details for feedback)</span>
                 <?php elseif ($rawStatus === 'Pending Clearance'): ?>
-                  <span class="routing-step-desc"><strong style="color: #047857;">Stage 3:</strong> Endorsed & Recommended &bull; Awaiting Directorate Clearance</span>
+                  <span class="routing-step-desc"><strong style="color: #047857;">Under Review:</strong> Endorsed &amp; Recommended &bull; Forwarded to Director IV for Final Clearance</span>
+                <?php elseif ($rawStatus === 'Pending Recommendation'): ?>
+                  <span class="routing-step-desc"><strong style="color: #2563eb;">Under Review:</strong> Endorsed by Division &bull; Property &amp; Facilities Unit inspecting logistics</span>
                 <?php else: ?>
-                  <span class="routing-step-desc"><strong style="color: #b45309;">Stage 1:</strong> Awaiting Division / Originating Unit Endorsement</span>
+                  <span class="routing-step-desc"><strong style="color: #b45309;">Under Review:</strong> Awaiting Originating Division Chief endorsement approval</span>
                 <?php endif; ?>
+
                 <?php if (!empty($item['document_path'])): ?>
-                  <span class="routing-note">Doc Attached: <a href="<?= htmlspecialchars($item['document_path']) ?>" target="_blank" style="color: #174d2f; font-weight: 700; text-decoration: underline;">View Upload</a></span>
+                  <span class="routing-note">Attachment: <a href="<?= htmlspecialchars($item['document_path']) ?>" target="_blank" style="color: #174d2f; font-weight: 700; text-decoration: underline;">View Upload</a></span>
                 <?php endif; ?>
               </div>
             </div>
@@ -988,6 +1152,7 @@ foreach ($reservationsList as $resItem) {
             ?>
             <tr class="res-table-row" 
                 data-status="<?= htmlspecialchars($filterStatus) ?>" 
+                data-raw-status="<?= htmlspecialchars($rawStatus) ?>" 
                 data-category="<?= htmlspecialchars($category) ?>" 
                 data-venue="<?= htmlspecialchars($slug) ?>"
                 data-ref="<?= htmlspecialchars($item['reference_no']) ?>">

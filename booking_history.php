@@ -1,9 +1,65 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
+require_once __DIR__ . '/includes/auth_guard.php';
+
 /**
  * ATI Facility & Dormitory Reservation Portal
  * User Dashboard: Booking History (Completed Activities & Cancelled Bookings)
  */
+
+$userId = $_SESSION['user_id'] ?? 0;
+
+// Fetch count of Active Reservations for the tab switcher badge
+$activeCountStmt = $db->prepare("SELECT COUNT(*) FROM reservations WHERE user_id = :user_id AND status NOT IN ('Completed', 'Cancelled', 'Rejected') AND deleted_at IS NULL");
+$activeCountStmt->execute([':user_id' => $userId]);
+$activeCount = (int)$activeCountStmt->fetchColumn();
+
+// Fetch History Reservations for the current user joined with facilities and rooms
+$query = "SELECT r.*, 
+                 f.name AS facility_name, 
+                 f.type AS facility_type, 
+                 f.image AS facility_image,
+                 rm.room_number, 
+                 rm.floor AS room_floor,
+                 u.full_name, 
+                 u.office_agency,
+                 u_end.full_name AS endorser_name,
+                 u_rec.full_name AS recommender_name,
+                 u_clr.full_name AS clearer_name
+          FROM reservations r
+          LEFT JOIN facilities f ON r.facility_id = f.id
+          LEFT JOIN rooms rm ON r.room_id = rm.id
+          LEFT JOIN users u ON r.user_id = u.id
+          LEFT JOIN users u_end ON r.endorsed_by = u_end.id
+          LEFT JOIN users u_rec ON r.recommended_by = u_rec.id
+          LEFT JOIN users u_clr ON r.cleared_by = u_clr.id
+          WHERE r.user_id = :user_id 
+            AND r.status IN ('Completed', 'Cancelled', 'Rejected')
+            AND r.deleted_at IS NULL
+          ORDER BY r.id DESC";
+
+$stmt = $db->prepare($query);
+$stmt->execute([':user_id' => $userId]);
+$historyList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch active facilities from database for dynamic dropdown filter
+$facFilterStmt = $db->query("SELECT id, name, type FROM facilities WHERE status != 'inactive' ORDER BY name ASC");
+$filterFacilities = $facFilterStmt ? $facFilterStmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+// Calculate dynamic stats for KPI summary
+$statsHistoryTotal = count($historyList);
+$statsCompleted = 0;
+$statsCancelled = 0;
+
+foreach ($historyList as $item) {
+    $st = $item['status'] ?? '';
+    if ($st === 'Completed') {
+        $statsCompleted++;
+    } elseif (in_array($st, ['Cancelled', 'Rejected'])) {
+        $statsCancelled++;
+    }
+}
+$statsArchive = $statsHistoryTotal;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,7 +127,7 @@ require_once __DIR__ . '/includes/init.php';
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
           <span>My Reservations</span>
-          <span class="nav-badge-count"><?= $currentUserResCount ?></span>
+          <span class="nav-badge-count"><?= $activeCount ?></span>
         </a>
 
         <!-- Master Schedule -->
@@ -88,17 +144,17 @@ require_once __DIR__ . '/includes/init.php';
         <!-- User Profile Badge & Dropdown -->
         <div class="user-profile-menu">
           <div class="user-profile-badge" id="userProfileBadge" role="button" aria-haspopup="true">
-            <div class="user-avatar-circle">JD</div>
+            <div class="user-avatar-circle"><?= getUserInitials($_SESSION['full_name'] ?? 'User') ?></div>
             <div class="user-details">
-              <div class="user-name">Juan Dela Cruz</div>
-              <div class="user-role">ATI Staff (CDD)</div>
+              <div class="user-name"><?= htmlspecialchars($_SESSION['full_name'] ?? 'Official User') ?></div>
+              <div class="user-role"><?= htmlspecialchars(ucfirst(str_replace('_', ' ', $_SESSION['role'] ?? 'user'))) ?></div>
             </div>
           </div>
 
           <div class="profile-dropdown" id="profileDropdown">
             <div class="dropdown-header-info">
-              <div class="dropdown-user-name">Juan Dela Cruz</div>
-              <div class="dropdown-user-email"><span class="user-verified-dot"></span> ATI Personnel &bull; CDD</div>
+              <div class="dropdown-user-name"><?= htmlspecialchars($_SESSION['full_name'] ?? 'Official User') ?></div>
+              <div class="dropdown-user-email"><span class="user-verified-dot"></span> <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $_SESSION['role'] ?? 'user'))) ?></div>
             </div>
             <a href="profile.php" class="dropdown-item">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -179,11 +235,11 @@ require_once __DIR__ . '/includes/init.php';
       <div class="drawer-body">
         <!-- User Profile Card -->
         <div class="drawer-profile-card">
-          <div class="drawer-avatar">JD</div>
+          <div class="drawer-avatar"><?= getUserInitials($_SESSION['full_name'] ?? 'User') ?></div>
           <div class="drawer-profile-info">
-            <h5>Juan Dela Cruz</h5>
-            <p>ATI Staff (CDD)</p>
-            <span class="drawer-badge">Verified Personnel</span>
+            <h5><?= htmlspecialchars($_SESSION['full_name'] ?? 'Official User') ?></h5>
+            <p><?= htmlspecialchars($_SESSION['office_agency'] ?? 'ATI Central Office') ?></p>
+            <span class="drawer-badge"><?= htmlspecialchars(ucfirst(str_replace('_', ' ', $_SESSION['role'] ?? 'user'))) ?></span>
           </div>
         </div>
 
@@ -330,7 +386,7 @@ require_once __DIR__ . '/includes/init.php';
             <span class="seg-title">Active Reservations</span>
             <span class="seg-subtitle">Pending Clearances &amp; Upcoming Confirmed Schedules</span>
           </div>
-          <span class="seg-count-badge">4</span>
+          <span class="seg-count-badge"><?= $activeCount ?></span>
         </a>
 
         <!-- Tab 2: Booking History (Active on this page) -->
@@ -345,7 +401,7 @@ require_once __DIR__ . '/includes/init.php';
             <span class="seg-title">Booking History</span>
             <span class="seg-subtitle">Completed Activities &amp; Cancelled Requests Archive</span>
           </div>
-          <span class="seg-count-badge blue">6</span>
+          <span class="seg-count-badge blue"><?= $statsHistoryTotal ?></span>
         </a>
       </div>
     </div>
@@ -384,7 +440,7 @@ require_once __DIR__ . '/includes/init.php';
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiTotal">6</span>
+          <span class="stat-value" id="kpiTotal"><?= $statsHistoryTotal ?></span>
           <span class="stat-label">Total History Records</span>
         </div>
       </div>
@@ -398,7 +454,7 @@ require_once __DIR__ . '/includes/init.php';
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiCompleted">4</span>
+          <span class="stat-value" id="kpiCompleted"><?= $statsCompleted ?></span>
           <span class="stat-label">Completed &amp; Concluded</span>
         </div>
       </div>
@@ -413,7 +469,7 @@ require_once __DIR__ . '/includes/init.php';
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiCancelled">2</span>
+          <span class="stat-value" id="kpiCancelled"><?= $statsCancelled ?></span>
           <span class="stat-label">Cancelled / Disapproved</span>
         </div>
       </div>
@@ -430,7 +486,7 @@ require_once __DIR__ . '/includes/init.php';
           </svg>
         </div>
         <div class="stat-content">
-          <span class="stat-value" id="kpiArchive">6</span>
+          <span class="stat-value" id="kpiArchive"><?= $statsArchive ?></span>
           <span class="stat-label">Archived Official Slips</span>
         </div>
       </div>
@@ -508,13 +564,31 @@ require_once __DIR__ . '/includes/init.php';
               </svg>
             </div>
             <div class="facility-option" data-value="dormitory" role="option">
-              <span class="opt-bullet"></span>
+              <span class="opt-bullet dorm-bullet"></span>
               <span class="opt-name">Dormitories &amp; Lodgings</span>
               <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
+
+            <?php if (!empty($filterFacilities)): ?>
+              <div style="height: 1px; background: #e5ede7; margin: 4px 8px;"></div>
+              <?php foreach ($filterFacilities as $f): 
+                $fType = strtolower($f['type'] ?? '');
+                $isDormType = ($fType === 'dormitories' || $fType === 'dorms');
+                $bulletClass = $isDormType ? 'dorm-bullet' : '';
+              ?>
+                <div class="facility-option" data-value="<?= htmlspecialchars($f['name']) ?>" data-facility-id="<?= (int)$f['id'] ?>" role="option">
+                  <span class="opt-bullet <?= $bulletClass ?>"></span>
+                  <span class="opt-name"><?= htmlspecialchars($f['name']) ?></span>
+                  <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+              <?php endforeach; ?>
+            <?php endif; ?>
           </div>
         </div>
 
@@ -549,731 +623,311 @@ require_once __DIR__ . '/includes/init.php';
          ========================================================================== -->
     <section class="reservations-container" id="reservationsList">
 
-      <!-- CARD 1: COMPLETED FACILITY - REGIONAL COCONUT FARMERS TRAINING -->
-      <article class="res-card" data-status="completed" data-category="facility" data-venue="training-hall-a"
-        data-ref="ATI-RES-2026-0812" data-venue-title="Training Hall A (Agri-Fisheries Building)"
-        data-dates="Sep 14 - 16, 2026 (3 Days Concluded)" data-time="08:00 AM – 05:00 PM"
-        data-pax="45 Farmers & Field Workers" data-division="Partnership & Accreditation Division (PAD)"
-        data-status-text="Completed & Concluded">
-
-        <div class="res-card-media">
-          <img src="assets/images/training_hall.jpg" alt="ATI Training Hall A">
-          <span class="venue-thumb-pill">Training Hall A</span>
+      <?php if (empty($historyList)): ?>
+        <!-- Shown if user has zero history records in database -->
+        <div class="empty-res-state" id="zeroReservationsState" style="display: block; width: 100%; text-align: center; padding: 3.5rem 1.5rem; background: #fff; border-radius: 14px; border: 1.5px dashed #d0ded4; margin-bottom: 2rem;">
+          <div class="empty-res-icon" style="margin: 0 auto 1.25rem;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#175432" width="48" height="48" stroke-width="1.8">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+          </div>
+          <h3 style="font-size: 1.35rem; font-weight: 800; color: #173822; margin-bottom: 0.5rem;">No Booking History Found</h3>
+          <p style="color: #557262; max-width: 460px; margin: 0 auto 1.5rem; font-size: 0.92rem;">You do not have any concluded, completed, or cancelled reservations in your archive yet.</p>
+          <a href="my_reservations.php" class="btn-new-res-action" style="display: inline-flex; text-decoration: none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            </svg>
+            <span>View Active Reservations</span>
+          </a>
         </div>
+      <?php else: ?>
 
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag">ATI-RES-2026-0812</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0812" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <span class="res-timestamp">&bull; Concluded Sep 16, 2026</span>
-            </div>
-            <div class="res-status-badge completed">
-              <span class="status-dot-pulse"></span>
-              <span>Completed &amp; Concluded</span>
-            </div>
+        <?php foreach ($historyList as $item): 
+          $rawStatus = $item['status'] ?? 'Completed';
+          $isCompleted = ($rawStatus === 'Completed');
+          $isCancelled = ($rawStatus === 'Cancelled');
+          $isRejected = ($rawStatus === 'Rejected');
+          
+          $filterStatus = $isCompleted ? 'completed' : 'cancelled';
+          $isDorm = (($item['facility_type'] ?? '') === 'dormitories') || !empty($item['room_id']);
+          $category = $isDorm ? 'dormitory' : 'facility';
+
+          $venueName = $item['facility_name'] ?: ($isDorm ? 'ATI Dormitory' : 'Official Venue');
+          $facilityImgRaw = trim($item['facility_image'] ?? '');
+          
+          $slug = 'facility';
+          if ($isDorm) {
+              $slug = 'dormitory';
+          } elseif (stripos($venueName, 'boardroom') !== false) {
+              $slug = 'boardroom';
+          } elseif (stripos($venueName, 'training') !== false) {
+              $slug = 'training-hall';
+          } elseif (stripos($venueName, 'mess') !== false) {
+              $slug = 'mess-hall';
+          } else {
+              $slug = 'function-hall';
+          }
+
+          $venueThumb = '';
+          if (!empty($facilityImgRaw)) {
+              if (file_exists(__DIR__ . '/' . ltrim($facilityImgRaw, '/\\'))) {
+                  $venueThumb = ltrim($facilityImgRaw, '/\\');
+              } elseif (file_exists(__DIR__ . '/assets/images/' . ltrim($facilityImgRaw, '/\\'))) {
+                  $venueThumb = 'assets/images/' . ltrim($facilityImgRaw, '/\\');
+              } else {
+                  $venueThumb = $facilityImgRaw;
+              }
+          }
+          if (empty($venueThumb)) {
+              $venueThumb = $isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg';
+          }
+
+          $startTs = strtotime($item['start_date']);
+          $endTs = strtotime($item['end_date'] ?: $item['start_date']);
+          $daysCount = max(1, round(($endTs - $startTs) / 86400) + 1);
+          $daysSuffix = $daysCount . ($daysCount > 1 ? ' Days' : ' Day');
+          if ($startTs === $endTs) {
+              $formattedDates = date('M d, Y', $startTs) . " (1 Day)";
+          } else {
+              $formattedDates = date('M d', $startTs) . ' – ' . date('M d, Y', $endTs) . " ({$daysSuffix})";
+          }
+
+          $paxText = ($item['pax_count'] ?: 0) . ' Attendees';
+          $divisionText = $item['office_agency'] ?: 'ATI Personnel';
+          $eventTitle = $item['event_title'] ?: 'Official Institutional Activity';
+          $timeSlotText = $item['time_slot'] ?: '08:00 AM – 05:00 PM';
+          
+          $concludedDateTs = !empty($item['updated_at']) ? strtotime($item['updated_at']) : strtotime($item['created_at']);
+          $concludedDateText = date('M d, Y', $concludedDateTs);
+
+          if ($isCompleted) {
+              $statusBadgeClass = 'completed';
+              $statusBadgeText = 'Completed & Concluded';
+              $statusPrefix = 'Concluded ' . $concludedDateText;
+          } elseif ($isCancelled) {
+              $statusBadgeClass = 'cancelled';
+              $statusBadgeText = 'Cancelled by Requestor';
+              $statusPrefix = 'Cancelled ' . $concludedDateText;
+          } else {
+              $statusBadgeClass = 'cancelled';
+              $statusBadgeText = 'Disapproved / Returned';
+              $statusPrefix = 'Disapproved ' . $concludedDateText;
+          }
+
+          $venueTitleFull = $venueName . (!empty($item['room_number']) ? ' - Room ' . $item['room_number'] : '');
+        ?>
+        <!-- RESERVATION CARD -->
+        <article class="res-card" 
+          data-status="<?= htmlspecialchars($filterStatus) ?>" 
+          data-raw-status="<?= htmlspecialchars($rawStatus) ?>" 
+          data-category="<?= htmlspecialchars($category) ?>" 
+          data-venue="<?= htmlspecialchars($slug) ?>"
+          data-venue-id="<?= (int)($item['facility_id'] ?? 0) ?>"
+          data-venue-name="<?= htmlspecialchars($venueName) ?>"
+          data-ref="<?= htmlspecialchars($item['reference_no']) ?>" 
+          data-venue-title="<?= htmlspecialchars($venueTitleFull) ?>" 
+          data-venue-image="<?= htmlspecialchars($venueThumb) ?>"
+          data-dates="<?= htmlspecialchars($formattedDates) ?>" 
+          data-time="<?= htmlspecialchars($timeSlotText) ?>" 
+          data-pax="<?= htmlspecialchars($paxText) ?>" 
+          data-division="<?= htmlspecialchars($divisionText) ?>" 
+          data-applicant-name="<?= htmlspecialchars($item['full_name'] ?? 'Applicant') ?>"
+          data-created-at="<?= htmlspecialchars(!empty($item['created_at']) ? date('M d, Y • h:i A', strtotime($item['created_at'])) : 'Archived Record') ?>"
+          data-status-text="<?= htmlspecialchars($statusBadgeText) ?>"
+          data-special-notes="<?= htmlspecialchars($item['special_notes'] ?? '') ?>"
+          data-remarks="<?= htmlspecialchars($item['admin_remarks'] ?? '') ?>"
+          data-doc-path="<?= htmlspecialchars($item['document_path'] ?? '') ?>"
+          data-endorsed-by="<?= htmlspecialchars($item['endorser_name'] ?? '') ?>"
+          data-endorsed-at="<?= htmlspecialchars(!empty($item['endorsed_at']) ? date('M d, Y • h:i A', strtotime($item['endorsed_at'])) : '') ?>"
+          data-endorsement-remarks="<?= htmlspecialchars($item['endorsement_remarks'] ?? '') ?>"
+          data-recommended-by="<?= htmlspecialchars($item['recommender_name'] ?? '') ?>"
+          data-recommended-at="<?= htmlspecialchars(!empty($item['recommended_at']) ? date('M d, Y • h:i A', strtotime($item['recommended_at'])) : '') ?>"
+          data-recommendation-remarks="<?= htmlspecialchars($item['recommendation_remarks'] ?? '') ?>"
+          data-recommendation-doc="<?= htmlspecialchars($item['recommendation_doc_path'] ?? '') ?>"
+          data-cleared-by="<?= htmlspecialchars($item['clearer_name'] ?? '') ?>"
+          data-cleared-at="<?= htmlspecialchars(!empty($item['cleared_at']) ? date('M d, Y • h:i A', strtotime($item['cleared_at'])) : '') ?>"
+          data-clearance-remarks="<?= htmlspecialchars($item['clearance_remarks'] ?? '') ?>"
+          data-clearance-doc="<?= htmlspecialchars($item['clearance_doc_path'] ?? '') ?>">
+
+          <div class="res-card-media">
+            <img src="<?= htmlspecialchars($venueThumb) ?>" alt="<?= htmlspecialchars($venueName) ?>" onerror="this.onerror=null; this.src='<?= $isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg' ?>';">
+            <span class="venue-thumb-pill <?= $isDorm ? 'dorm-pill' : '' ?>"><?= htmlspecialchars($venueName) ?></span>
           </div>
 
-          <h3 class="res-event-title">Regional Coconut Farmers Modern Cultivation & Processing Training</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Sep 14 – 16, 2026 (3 Days)</span>
+          <div class="res-card-main">
+            <div class="res-main-top">
+              <div class="res-ref-group">
+                <span class="res-ref-tag <?= $isDorm ? 'dorm-ref' : '' ?>"><?= htmlspecialchars($item['reference_no']) ?></span>
+                <button type="button" class="btn-copy-ref" data-ref="<?= htmlspecialchars($item['reference_no']) ?>" title="Copy Reference Code">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+                <span class="res-timestamp">&bull; <?= htmlspecialchars($statusPrefix) ?></span>
+              </div>
+              <div class="res-status-badge <?= htmlspecialchars($statusBadgeClass) ?>">
+                <span class="status-dot-pulse"></span>
+                <span><?= htmlspecialchars($statusBadgeText) ?></span>
+              </div>
             </div>
-            <div class="res-chip-item">
+
+            <h3 class="res-event-title"><?= htmlspecialchars($eventTitle) ?></h3>
+
+            <div class="res-details-chips">
+              <div class="res-chip-item">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span><?= htmlspecialchars($formattedDates) ?></span>
+              </div>
+              <div class="res-chip-item">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span><?= htmlspecialchars($timeSlotText) ?></span>
+              </div>
+              <div class="res-chip-item">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                </svg>
+                <span><?= htmlspecialchars($venueTitleFull) ?></span>
+              </div>
+              <div class="res-chip-item">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span><?= htmlspecialchars($paxText) ?> &bull; <?= htmlspecialchars($divisionText) ?></span>
+              </div>
+            </div>
+
+            <?php if ($isCompleted): ?>
+              <div class="res-concluded-summary">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span><?= !empty($item['admin_remarks']) ? htmlspecialchars($item['admin_remarks']) : 'Activity successfully conducted. Facility inspection cleared &amp; venue turned over. Record permanently archived.' ?></span>
+              </div>
+            <?php else: ?>
+              <div class="res-cancellation-notice">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                <span><strong><?= $isCancelled ? 'Cancellation Notice:' : 'Disapproval Notice:' ?></strong> <?= !empty($item['admin_remarks']) ? htmlspecialchars($item['admin_remarks']) : ($isCancelled ? 'Reservation was cancelled by the applicant. Schedule was released back to availability.' : 'Application was disapproved / returned during administrative review.') ?></span>
+              </div>
+            <?php endif; ?>
+          </div>
+
+          <div class="res-card-side-actions">
+            <button type="button" class="btn-card-action secondary js-view-details">
               <svg viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
               </svg>
-              <span>08:00 AM – 05:00 PM</span>
-            </div>
-            <div class="res-chip-item">
+              <span>View Details</span>
+            </button>
+            <button type="button" class="btn-card-action secondary js-download-slip" data-ref="<?= htmlspecialchars($item['reference_no']) ?>" title="Download Record Slip">
               <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
-              <span>Training Hall A (Ground Floor)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>45 Farmers &amp; Technicians</span>
-            </div>
+              <span><?= $isCompleted ? 'Archived Slip' : 'Notice Slip' ?></span>
+            </button>
           </div>
+        </article>
+        <?php endforeach; ?>
 
-          <!-- Concluded Summary -->
-          <div class="res-concluded-summary">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span>Activity successfully conducted. Facility inspection cleared &amp; venue turned over. Completion slip filed.</span>
-          </div>
+        <!-- ======================================================================
+             ALTERNATIVE TABLE VIEW (TOGGLEABLE)
+             ====================================================================== -->
+        <div class="reservations-table-wrap" id="reservationsTableWrap" style="display: none;">
+          <table class="res-table">
+            <thead>
+              <tr>
+                <th>Ref &amp; Category</th>
+                <th>Activity / Lodging Purpose</th>
+                <th>Concluded Date &amp; Hours</th>
+                <th>Archive Status</th>
+                <th style="text-align: right;">Quick Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($historyList as $item): 
+                $rawStatus = $item['status'] ?? 'Completed';
+                $isCompleted = ($rawStatus === 'Completed');
+                $isCancelled = ($rawStatus === 'Cancelled');
+                $filterStatus = $isCompleted ? 'completed' : 'cancelled';
+                $isDorm = (($item['facility_type'] ?? '') === 'dormitories') || !empty($item['room_id']);
+                $category = $isDorm ? 'dormitory' : 'facility';
+                $venueName = $item['facility_name'] ?: ($isDorm ? 'ATI Dormitory' : 'Official Venue');
+                $venueTitleFull = $venueName . (!empty($item['room_number']) ? ' - Room ' . $item['room_number'] : '');
+                $startTs = strtotime($item['start_date']);
+                $endTs = strtotime($item['end_date'] ?: $item['start_date']);
+                $formattedDates = ($startTs === $endTs) ? date('M d, Y', $startTs) : (date('M d', $startTs) . ' – ' . date('M d, Y', $endTs));
+                $timeSlotText = $item['time_slot'] ?: '08:00 AM – 05:00 PM';
+                $eventTitle = $item['event_title'] ?: 'Official Institutional Activity';
+                $divisionText = $item['office_agency'] ?: 'ATI Personnel';
+                $paxText = ($item['pax_count'] ?: 0) . ' Attendees';
+
+                if ($isCompleted) {
+                    $statusBadgeClass = 'completed';
+                    $statusBadgeText = 'Completed & Concluded';
+                } elseif ($isCancelled) {
+                    $statusBadgeClass = 'cancelled';
+                    $statusBadgeText = 'Cancelled by Requestor';
+                } else {
+                    $statusBadgeClass = 'cancelled';
+                    $statusBadgeText = 'Disapproved / Returned';
+                }
+              ?>
+              <tr class="res-table-row" 
+                data-status="<?= htmlspecialchars($filterStatus) ?>" 
+                data-raw-status="<?= htmlspecialchars($rawStatus) ?>" 
+                data-category="<?= htmlspecialchars($category) ?>" 
+                data-venue="<?= htmlspecialchars($isDorm ? 'dormitory' : 'facility') ?>"
+                data-ref="<?= htmlspecialchars($item['reference_no']) ?>"
+                data-venue-title="<?= htmlspecialchars($venueTitleFull) ?>"
+                data-dates="<?= htmlspecialchars($formattedDates) ?>"
+                data-time="<?= htmlspecialchars($timeSlotText) ?>"
+                data-pax="<?= htmlspecialchars($paxText) ?>"
+                data-division="<?= htmlspecialchars($divisionText) ?>"
+                data-status-text="<?= htmlspecialchars($statusBadgeText) ?>"
+                data-special-notes="<?= htmlspecialchars($item['special_notes'] ?? '') ?>"
+                data-remarks="<?= htmlspecialchars($item['admin_remarks'] ?? '') ?>"
+                data-doc-path="<?= htmlspecialchars($item['document_path'] ?? '') ?>">
+                <td data-label="Ref & Venue">
+                  <span class="res-ref-tag <?= $isDorm ? 'dorm-ref' : '' ?>"><?= htmlspecialchars($item['reference_no']) ?></span>
+                  <div style="font-size: 0.82rem; font-weight: 700; color: #175432; margin-top: 0.2rem;"><?= htmlspecialchars($venueTitleFull) ?></div>
+                </td>
+                <td data-label="Activity Purpose">
+                  <div style="font-weight: 800; color: #142e20;"><?= htmlspecialchars($eventTitle) ?></div>
+                  <div style="font-size: 0.78rem; color: #556e5f;"><?= htmlspecialchars($divisionText) ?> &bull; <?= htmlspecialchars($paxText) ?></div>
+                </td>
+                <td data-label="Concluded Date">
+                  <div style="font-size: 0.85rem; font-weight: 700; color: #173222;"><?= htmlspecialchars($formattedDates) ?></div>
+                  <div style="font-size: 0.76rem; color: #617b6c;"><?= htmlspecialchars($timeSlotText) ?></div>
+                </td>
+                <td data-label="Archive Status">
+                  <span class="res-status-badge <?= htmlspecialchars($statusBadgeClass) ?>"><span class="status-dot-pulse"></span><span><?= htmlspecialchars($statusBadgeText) ?></span></span>
+                </td>
+                <td style="text-align: right;" data-label="Actions">
+                  <div style="display: inline-flex; gap: 0.4rem;">
+                    <button type="button" class="btn-card-action secondary js-view-details">Details</button>
+                    <button type="button" class="btn-card-action secondary js-download-slip" data-ref="<?= htmlspecialchars($item['reference_no']) ?>">Slip</button>
+                  </div>
+                </td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
         </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0812">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Archived Slip</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- CARD 2: COMPLETED DORMITORY - GUEST LECTURERS LODGING -->
-      <article class="res-card" data-status="completed" data-category="dormitory" data-venue="exec-wing"
-        data-ref="ATI-BK-2026-0689" data-venue-title="ATI Dormitory (Executive Wing)"
-        data-dates="Aug 19 - 23, 2026 (4 Nights Concluded)" data-time="Check-out Aug 23, 11:30 AM"
-        data-pax="8 Resource Speakers (4 Twin Rooms)" data-division="Career Development Division (CDD)"
-        data-status-text="Checked Out & Concluded">
-
-        <div class="res-card-media">
-          <img src="assets/images/dormitory.jpg" alt="ATI Dormitory Executive Wing">
-          <span class="venue-thumb-pill dorm-pill">Dormitory (Executive)</span>
-        </div>
-
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag dorm-ref">ATI-BK-2026-0689</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-BK-2026-0689" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <span class="res-timestamp">&bull; Concluded Aug 23, 2026</span>
-            </div>
-            <div class="res-status-badge completed">
-              <span class="status-dot-pulse"></span>
-              <span>Checked Out &amp; Concluded</span>
-            </div>
-          </div>
-
-          <h3 class="res-event-title">Guest Lecturers Lodging - Visayas &amp; Mindanao Agriculture Trainers</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Aug 19 – 23, 2026 (4 Nights)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span>Out: Aug 23, 11:30 AM</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>Executive Wing (Rooms 201-204)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>8 Resource Speakers</span>
-            </div>
-          </div>
-
-          <!-- Concluded Summary -->
-          <div class="res-concluded-summary">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span>All 8 guests successfully checked out. Room keys returned to lobby desk &amp; custodian sign-off completed.</span>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-0689">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Archived Slip</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- CARD 3: COMPLETED FACILITY - NATIONAL EXTENSION SUMMIT -->
-      <article class="res-card" data-status="completed" data-category="facility" data-venue="function-hall"
-        data-ref="ATI-RES-2026-0745" data-venue-title="Function Hall (Main Academic Building)"
-        data-dates="Aug 20 - 22, 2026 (3 Days Concluded)" data-time="08:00 AM – 06:00 PM"
-        data-pax="120 Participants" data-division="Career Development Division (CDD)"
-        data-status-text="Completed & Concluded">
-
-        <div class="res-card-media">
-          <img src="assets/images/function_hall.jpg" alt="ATI Function Hall">
-          <span class="venue-thumb-pill">Function Hall</span>
-        </div>
-
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag">ATI-RES-2026-0745</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0745" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <span class="res-timestamp">&bull; Concluded Aug 22, 2026</span>
-            </div>
-            <div class="res-status-badge completed">
-              <span class="status-dot-pulse"></span>
-              <span>Completed &amp; Concluded</span>
-            </div>
-          </div>
-
-          <h3 class="res-event-title">National Extension &amp; Advisory Services Annual Stakeholders Summit 2026</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Aug 20 – 22, 2026 (3 Days)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span>08:00 AM – 06:00 PM</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>Function Hall (Main Hall)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>120 Delegates</span>
-            </div>
-          </div>
-
-          <!-- Concluded Summary -->
-          <div class="res-concluded-summary">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span>General Assembly concluded. Audio-visual sound fixtures &amp; stage inspected. Post-activity records archived.</span>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0745">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Archived Slip</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- CARD 4: COMPLETED DORMITORY - LEADERSHIP FELLOWSHIP -->
-      <article class="res-card" data-status="completed" data-category="dormitory" data-venue="suites"
-        data-ref="ATI-BK-2026-0590" data-venue-title="Dormitory Suites A & B (Floors 3 & 4)"
-        data-dates="Jul 10 - 14, 2026 (4 Nights Concluded)" data-time="Check-out Jul 14, 10:45 AM"
-        data-pax="20 Officers (10 Twin Rooms)" data-division="Partnership & Accreditation Division (PAD)"
-        data-status-text="Checked Out & Concluded">
-
-        <div class="res-card-media">
-          <img src="assets/images/dormitory.jpg" alt="ATI Dormitory Suites">
-          <span class="venue-thumb-pill dorm-pill">Dormitory Suites</span>
-        </div>
-
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag dorm-ref">ATI-BK-2026-0590</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-BK-2026-0590" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <span class="res-timestamp">&bull; Concluded Jul 14, 2026</span>
-            </div>
-            <div class="res-status-badge completed">
-              <span class="status-dot-pulse"></span>
-              <span>Checked Out &amp; Concluded</span>
-            </div>
-          </div>
-
-          <h3 class="res-event-title">Agricultural Extension Officers Leadership Fellowship Lodging</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Jul 10 – 14, 2026 (4 Nights)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span>Out: Jul 14, 10:45 AM</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>Floors 3 &amp; 4 (Suites A &amp; B)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>20 Officers (10 Rooms)</span>
-            </div>
-          </div>
-
-          <!-- Concluded Summary -->
-          <div class="res-concluded-summary">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span>Delegates checkout finalized. Room key inventory matched and facility custodian sign-off archived.</span>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-0590">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Archived Slip</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- CARD 5: CANCELLED FACILITY - AGRI-TECH WORKSHOP -->
-      <article class="res-card" data-status="cancelled" data-category="facility" data-venue="function-hall"
-        data-ref="ATI-RES-2026-0902" data-venue-title="Function Hall (Main Academic Building)"
-        data-dates="Sep 28, 2026 (Cancelled)" data-time="08:00 AM – 05:00 PM"
-        data-pax="60 Participants" data-division="Information Services Section (ISS)"
-        data-status-text="Cancelled by Requestor">
-
-        <div class="res-card-media">
-          <img src="assets/images/function_hall.jpg" alt="ATI Function Hall">
-          <span class="venue-thumb-pill">Function Hall</span>
-        </div>
-
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag">ATI-RES-2026-0902</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-RES-2026-0902" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <span class="res-timestamp">&bull; Cancelled Sep 20, 2026</span>
-            </div>
-            <div class="res-status-badge cancelled">
-              <span class="status-dot-pulse"></span>
-              <span>Cancelled by Requestor</span>
-            </div>
-          </div>
-
-          <h3 class="res-event-title">Agri-Tech &amp; Precision Drone Technology Hands-on Workshop</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Sep 28, 2026 (Original Date)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span>08:00 AM – 05:00 PM</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>Function Hall</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>60 Participants</span>
-            </div>
-          </div>
-
-          <!-- Cancellation Reason Notice -->
-          <div class="res-cancellation-notice">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-            <span><strong>Cancellation Notice:</strong> Cancelled on Sep 20, 2026 due to emergency Department of Agriculture Central Office coordination meeting. Venue was released back to master schedule.</span>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0902">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Notice Slip</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- CARD 6: DISAPPROVED DORMITORY - DA-BAR RESEARCH FELLOWS -->
-      <article class="res-card" data-status="cancelled" data-category="dormitory" data-venue="exec-wing"
-        data-ref="ATI-BK-2026-0834" data-venue-title="ATI Dormitory (Executive Wing)"
-        data-dates="Sep 02 - 05, 2026 (Disapproved)" data-time="Check-in 02:00 PM"
-        data-pax="10 Researchers (5 Twin Rooms)" data-division="Career Development Division (CDD)"
-        data-status-text="Disapproved / Facility Maintenance">
-
-        <div class="res-card-media">
-          <img src="assets/images/dormitory.jpg" alt="ATI Dormitory Executive Wing">
-          <span class="venue-thumb-pill dorm-pill">Dormitory (Executive)</span>
-        </div>
-
-        <div class="res-card-main">
-          <div class="res-main-top">
-            <div class="res-ref-group">
-              <span class="res-ref-tag dorm-ref">ATI-BK-2026-0834</span>
-              <button type="button" class="btn-copy-ref" data-ref="ATI-BK-2026-0834" title="Copy Reference Code">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                </svg>
-              </button>
-              <span class="res-timestamp">&bull; Disapproved Aug 28, 2026</span>
-            </div>
-            <div class="res-status-badge cancelled">
-              <span class="status-dot-pulse"></span>
-              <span>Disapproved / Facility Maintenance</span>
-            </div>
-          </div>
-
-          <h3 class="res-event-title">DA-BAR Research Fellows Accommodation (Batch 2 Fellowship)</h3>
-
-          <div class="res-details-chips">
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                <line x1="16" y1="2" x2="16" y2="6"></line>
-                <line x1="8" y1="2" x2="8" y2="6"></line>
-                <line x1="3" y1="10" x2="21" y2="10"></line>
-              </svg>
-              <span>Sep 02 – 05, 2026 (Requested)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-              </svg>
-              <span>Check-in 02:00 PM</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              </svg>
-              <span>Executive Wing (Rooms 101-105)</span>
-            </div>
-            <div class="res-chip-item">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>10 Researchers (5 Rooms)</span>
-            </div>
-          </div>
-
-          <!-- Cancellation Reason Notice -->
-          <div class="res-cancellation-notice">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-            <span><strong>Disapproval Notice:</strong> Disapproved on Aug 28, 2026 by Dormitory Custodian due to scheduled electrical rewiring and HVAC maintenance in Executive Wing Wing A. Requestors notified via SMS/email.</span>
-          </div>
-        </div>
-
-        <div class="res-card-side-actions">
-          <button type="button" class="btn-card-action secondary js-view-details">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="16" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-            <span>View Details</span>
-          </button>
-          <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-0834">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Notice Slip</span>
-          </button>
-        </div>
-      </article>
-
-      <!-- ======================================================================
-           ALTERNATIVE TABLE VIEW (TOGGLEABLE)
-           ====================================================================== -->
-      <div class="reservations-table-wrap" id="reservationsTableWrap" style="display: none;">
-        <table class="res-table">
-          <thead>
-            <tr>
-              <th>Ref &amp; Category</th>
-              <th>Activity / Lodging Purpose</th>
-              <th>Concluded Date &amp; Hours</th>
-              <th>Archive Status</th>
-              <th style="text-align: right;">Quick Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Row 1: Completed Facility -->
-            <tr class="res-table-row" data-status="completed" data-category="facility" data-venue="training-hall-a">
-              <td data-label="Ref & Venue">
-                <span class="res-ref-tag">ATI-RES-2026-0812</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #175432; margin-top: 0.2rem;">Training Hall A</div>
-              </td>
-              <td data-label="Activity Purpose">
-                <div style="font-weight: 800; color: #142e20;">Regional Coconut Farmers Modern Cultivation Training</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Partnership &amp; Accreditation Division (PAD) &bull; 45 Farmers</div>
-              </td>
-              <td data-label="Concluded Date">
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Sep 14 – 16, 2026 (3 Days)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">08:00 AM – 05:00 PM</div>
-              </td>
-              <td data-label="Archive Status">
-                <span class="res-status-badge completed"><span class="status-dot-pulse"></span><span>Completed &amp; Concluded</span></span>
-              </td>
-              <td style="text-align: right;" data-label="Actions">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0812">Slip</button>
-                </div>
-              </td>
-            </tr>
-
-            <!-- Row 2: Completed Dormitory -->
-            <tr class="res-table-row" data-status="completed" data-category="dormitory" data-venue="exec-wing">
-              <td data-label="Ref & Venue">
-                <span class="res-ref-tag dorm-ref">ATI-BK-2026-0689</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Executive Wing</div>
-              </td>
-              <td data-label="Activity Purpose">
-                <div style="font-weight: 800; color: #142e20;">Guest Lecturers Lodging - Visayas Trainers</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Career Development Division (CDD) &bull; 8 Speakers (4 Rooms)</div>
-              </td>
-              <td data-label="Concluded Date">
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Aug 19 – 23, 2026 (4 Nights)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">Out: Aug 23, 11:30 AM</div>
-              </td>
-              <td data-label="Archive Status">
-                <span class="res-status-badge completed"><span class="status-dot-pulse"></span><span>Checked Out &amp; Concluded</span></span>
-              </td>
-              <td style="text-align: right;" data-label="Actions">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-0689">Slip</button>
-                </div>
-              </td>
-            </tr>
-
-            <!-- Row 3: Completed Facility -->
-            <tr class="res-table-row" data-status="completed" data-category="facility" data-venue="function-hall">
-              <td data-label="Ref & Venue">
-                <span class="res-ref-tag">ATI-RES-2026-0745</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #175432; margin-top: 0.2rem;">Function Hall</div>
-              </td>
-              <td data-label="Activity Purpose">
-                <div style="font-weight: 800; color: #142e20;">National Extension &amp; Advisory Services Summit 2026</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Career Development Division (CDD) &bull; 120 Delegates</div>
-              </td>
-              <td data-label="Concluded Date">
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Aug 20 – 22, 2026 (3 Days)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">08:00 AM – 06:00 PM</div>
-              </td>
-              <td data-label="Archive Status">
-                <span class="res-status-badge completed"><span class="status-dot-pulse"></span><span>Completed &amp; Concluded</span></span>
-              </td>
-              <td style="text-align: right;" data-label="Actions">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0745">Slip</button>
-                </div>
-              </td>
-            </tr>
-
-            <!-- Row 4: Completed Dormitory -->
-            <tr class="res-table-row" data-status="completed" data-category="dormitory" data-venue="suites">
-              <td data-label="Ref & Venue">
-                <span class="res-ref-tag dorm-ref">ATI-BK-2026-0590</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Dormitory Suites A &amp; B</div>
-              </td>
-              <td data-label="Activity Purpose">
-                <div style="font-weight: 800; color: #142e20;">Extension Officers Leadership Fellowship Lodging</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Partnership &amp; Accreditation Division (PAD) &bull; 20 Officers</div>
-              </td>
-              <td data-label="Concluded Date">
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Jul 10 – 14, 2026 (4 Nights)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">Out: Jul 14, 10:45 AM</div>
-              </td>
-              <td data-label="Archive Status">
-                <span class="res-status-badge completed"><span class="status-dot-pulse"></span><span>Checked Out &amp; Concluded</span></span>
-              </td>
-              <td style="text-align: right;" data-label="Actions">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-0590">Slip</button>
-                </div>
-              </td>
-            </tr>
-
-            <!-- Row 5: Cancelled Facility -->
-            <tr class="res-table-row" data-status="cancelled" data-category="facility" data-venue="function-hall">
-              <td data-label="Ref & Venue">
-                <span class="res-ref-tag">ATI-RES-2026-0902</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #175432; margin-top: 0.2rem;">Function Hall</div>
-              </td>
-              <td data-label="Activity Purpose">
-                <div style="font-weight: 800; color: #142e20;">Agri-Tech &amp; Precision Drone Technology Workshop</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Information Services Section (ISS) &bull; 60 Participants</div>
-              </td>
-              <td data-label="Concluded Date">
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Sep 28, 2026 (Cancelled)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">Cancelled Sep 20, 2026</div>
-              </td>
-              <td data-label="Archive Status">
-                <span class="res-status-badge cancelled"><span class="status-dot-pulse"></span><span>Cancelled by Requestor</span></span>
-              </td>
-              <td style="text-align: right;" data-label="Actions">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-RES-2026-0902">Notice</button>
-                </div>
-              </td>
-            </tr>
-
-            <!-- Row 6: Disapproved Dormitory -->
-            <tr class="res-table-row" data-status="cancelled" data-category="dormitory" data-venue="exec-wing">
-              <td data-label="Ref & Venue">
-                <span class="res-ref-tag dorm-ref">ATI-BK-2026-0834</span>
-                <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af; margin-top: 0.2rem;">Executive Wing</div>
-              </td>
-              <td data-label="Activity Purpose">
-                <div style="font-weight: 800; color: #142e20;">DA-BAR Research Fellows Accommodation (Batch 2)</div>
-                <div style="font-size: 0.78rem; color: #556e5f;">Career Development Division (CDD) &bull; 10 Researchers</div>
-              </td>
-              <td data-label="Concluded Date">
-                <div style="font-size: 0.85rem; font-weight: 700; color: #173222;">Sep 02 – 05, 2026 (Disapproved)</div>
-                <div style="font-size: 0.76rem; color: #617b6c;">Disapproved Aug 28, 2026</div>
-              </td>
-              <td data-label="Archive Status">
-                <span class="res-status-badge cancelled"><span class="status-dot-pulse"></span><span>Disapproved / Maintenance</span></span>
-              </td>
-              <td style="text-align: right;" data-label="Actions">
-                <div style="display: inline-flex; gap: 0.4rem;">
-                  <button type="button" class="btn-card-action secondary js-view-details">Details</button>
-                  <button type="button" class="btn-card-action secondary js-download-slip" data-ref="ATI-BK-2026-0834">Notice</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <?php endif; ?>
 
       <!-- EMPTY STATE (SEARCH / FILTER MISMATCH) -->
       <div class="empty-reservations-box" id="emptyReservationsState" style="display: none;">

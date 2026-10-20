@@ -218,7 +218,15 @@ function applyAllFilters() {
     } else if (activeVenueFilter === 'completed' || activeVenueFilter === 'cancelled') {
       matchesVenue = (cardStatus === activeVenueFilter);
     } else {
-      matchesVenue = (cardVenue === activeVenueFilter);
+      const vFilterLower = activeVenueFilter.toLowerCase();
+      const cardVenueName = (card.dataset.venueName || '').toLowerCase();
+      const cardVenueTitle = (card.dataset.venueTitle || '').toLowerCase();
+      matchesVenue = (
+        cardVenue === activeVenueFilter ||
+        card.dataset.venueId === activeVenueFilter ||
+        cardVenueName === vFilterLower ||
+        cardVenueTitle.includes(vFilterLower)
+      );
     }
     const matchesSearch = !activeSearchQuery || cardText.includes(activeSearchQuery);
 
@@ -250,7 +258,16 @@ function applyAllFilters() {
     } else if (activeVenueFilter === 'completed' || activeVenueFilter === 'cancelled') {
       matchesVenue = (rowStatus === activeVenueFilter);
     } else {
-      matchesVenue = (rowVenue === activeVenueFilter);
+      const vFilterLower = activeVenueFilter.toLowerCase();
+      const rowVenueName = (row.dataset.venueName || '').toLowerCase();
+      const rowVenueTitle = (row.dataset.venueTitle || '').toLowerCase();
+      matchesVenue = (
+        rowVenue === activeVenueFilter ||
+        row.dataset.venueId === activeVenueFilter ||
+        rowVenueName === vFilterLower ||
+        rowVenueTitle.includes(vFilterLower)
+      );
+      
     }
     const matchesSearch = !activeSearchQuery || rowText.includes(activeSearchQuery);
 
@@ -364,8 +381,13 @@ function updateKpiCounts() {
   if (catCountFacility) catCountFacility.textContent = totalFacility;
   if (catCountDormitory) catCountDormitory.textContent = totalDorm;
 
-  if (navBadgeFacilityCount) navBadgeFacilityCount.textContent = totalFacility;
+  if (navBadgeFacilityCount) {
+    navBadgeFacilityCount.textContent = totalAll;
+  }
   if (navBadgeDormCount) navBadgeDormCount.textContent = totalDorm;
+  document.querySelectorAll('.drawer-badge-count').forEach(el => {
+    el.textContent = totalAll;
+  });
 }
 
 function initKpiFilters() {
@@ -476,6 +498,16 @@ function initSearch() {
   }
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 /* ==========================================================================
    4. Reservation Details & Routing Modal
    ========================================================================== */
@@ -496,6 +528,7 @@ function initCardModals() {
           if (ref) {
             card = document.querySelector(`.res-card[data-ref="${ref}"]`);
           }
+          if (!card) card = row;
         }
       }
       if (!card) return;
@@ -510,9 +543,26 @@ function initCardModals() {
       const division = card.dataset.division || 'Career Development Division (CDD)';
       const statusText = card.dataset.statusText || 'Pending Administrative Review';
       const statusClass = card.dataset.status || 'pending';
+      const rawStatus = card.dataset.rawStatus || statusText;
+      const applicantName = card.dataset.applicantName || 'Applicant';
+      const createdAt = card.dataset.createdAt || 'Recently Submitted';
       const docPath = card.dataset.docPath || '';
       const notes = card.dataset.specialNotes || '';
       const remarks = card.dataset.remarks || '';
+
+      const endorsedBy = card.dataset.endorsedBy || '';
+      const endorsedAt = card.dataset.endorsedAt || '';
+      const endorsementRemarks = card.dataset.endorsementRemarks || '';
+
+      const recommendedBy = card.dataset.recommendedBy || '';
+      const recommendedAt = card.dataset.recommendedAt || '';
+      const recommendationRemarks = card.dataset.recommendationRemarks || '';
+      const recommendationDoc = card.dataset.recommendationDoc || '';
+
+      const clearedBy = card.dataset.clearedBy || '';
+      const clearedAt = card.dataset.clearedAt || '';
+      const clearanceRemarks = card.dataset.clearanceRemarks || '';
+      const clearanceDoc = card.dataset.clearanceDoc || '';
 
       // Populate modal
       document.getElementById('modalResRef').textContent = ref;
@@ -590,185 +640,233 @@ function initCardModals() {
         }
       }
 
-      // Configure routing steps display inside modal
+      // Configure dynamic 3-Stage Governance routing trail inside modal
       const routingList = document.getElementById('modalRoutingList');
       if (routingList) {
-        if (statusClass === 'approved') {
-          routingList.innerHTML = `
-            <div class="routing-item">
-              <div class="routing-icon-badge done">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="routing-text-content">
-                <h5>1. Request Created & Submitted</h5>
-                <p>Submitted by Juan Dela Cruz via online reservation system with attached Activity Design.</p>
-                <span class="routing-timestamp">Oct 01, 2026 • 09:15 AM</span>
-              </div>
+        const isApproved = (rawStatus === 'Approved');
+        const isCompleted = (rawStatus === 'Completed');
+        const isCancelled = (rawStatus === 'Cancelled');
+        const isRejected = (rawStatus === 'Rejected');
+
+        const s1Done = isApproved || isCompleted || ['Pending Recommendation', 'Pending Clearance'].includes(rawStatus) || !!endorsedAt;
+        const s2Done = isApproved || isCompleted || (rawStatus === 'Pending Clearance') || !!recommendedAt;
+        const s3Done = isApproved || isCompleted || !!clearedAt;
+
+        let stepsHtml = '';
+
+        // Step 1: Request Created & Submitted
+        stepsHtml += `
+          <div class="routing-item">
+            <div class="routing-icon-badge done">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
             </div>
-            <div class="routing-item">
-              <div class="routing-icon-badge done">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="routing-text-content">
-                <h5>2. Division Chief Endorsement</h5>
-                <p>Endorsed by Dr. M. Villacorta (Division Chief, CDD). Special Order verified.</p>
-                <span class="routing-timestamp">Oct 01, 2026 • 02:40 PM</span>
-              </div>
+            <div class="routing-text-content">
+              <h5>1. Request Created &amp; Submitted</h5>
+              <p>Submitted by <strong>${escapeHtml(applicantName)}</strong> (${escapeHtml(division)}) with activity specifications and uploaded requirements.</p>
+              <span class="routing-timestamp">${escapeHtml(createdAt)} &bull; Online Portal Lodging</span>
             </div>
+          </div>
+        `;
+
+        // Step 2: Stage 1 - Division Chief Endorsement
+        if (s1Done) {
+          const endorserText = endorsedBy ? `Endorsed by <strong>${escapeHtml(endorsedBy)}</strong> (Division Chief / Originating Unit Head).` : `Endorsed by Division Chief / Originating Unit Head.`;
+          const memoText = endorsementRemarks ? ` Remarks: "${escapeHtml(endorsementRemarks)}"` : ` Endorsement memo verified and aligned with annual division work plan.`;
+          stepsHtml += `
             <div class="routing-item">
               <div class="routing-icon-badge done">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
               </div>
               <div class="routing-text-content">
-                <h5>3. Administrative & Venue Operations Clearance</h5>
-                <p>Venue confirmed vacant. AV sound technician and air-conditioning engineers assigned.</p>
-                <span class="routing-timestamp">Oct 02, 2026 • 10:10 AM</span>
-              </div>
-            </div>
-            <div class="routing-item">
-              <div class="routing-icon-badge done">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="routing-text-content">
-                <h5>4. Final Approval & Gate Pass Released</h5>
-                <p>Approved by Engr. R. Santos, Chief Administrative Officer. Venue reserved on Master Schedule.</p>
-                <span class="routing-timestamp">Oct 02, 2026 • 03:30 PM</span>
+                <h5>2. Stage 1: Division Chief Endorsement (Approved)</h5>
+                <p>${endorserText}${memoText}</p>
+                <span class="routing-timestamp">${escapeHtml(endorsedAt || 'Stage 1 Completed')} &bull; Endorsed to Property Unit</span>
               </div>
             </div>
           `;
-        } else if (statusClass === 'completed') {
-          routingList.innerHTML = `
+        } else if (isRejected && !s1Done) {
+          stepsHtml += `
             <div class="routing-item">
-              <div class="routing-icon-badge done">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="routing-text-content">
-                <h5>1. Request Created & Verified</h5>
-                <p>Activity design submitted and scheduled on the portal.</p>
-                <span class="routing-timestamp">Phase 1 Complete</span>
-              </div>
-            </div>
-            <div class="routing-item">
-              <div class="routing-icon-badge done">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="routing-text-content">
-                <h5>2. Division & Custodian Endorsement</h5>
-                <p>Endorsed by Division Head & clearance signed by Administrative Officer / Custodian.</p>
-                <span class="routing-timestamp">Phase 2 Complete</span>
-              </div>
-            </div>
-            <div class="routing-item">
-              <div class="routing-icon-badge done">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="routing-text-content">
-                <h5>3. Execution & Event Utilization</h5>
-                <p>Event / lodging was held and utilized according to approved arrangements.</p>
-                <span class="routing-timestamp">Schedule Concluded</span>
-              </div>
-            </div>
-            <div class="routing-item">
-              <div class="routing-icon-badge done" style="background: #e8f5e9; border-color: #86efac;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="routing-text-content">
-                <h5 style="color: #166534;">4. Turnover, Checkout & Permanent Archive</h5>
-                <p>Premises inspected, keys returned, attendance logs recorded. Permanently archived.</p>
-                <span class="routing-timestamp" style="color: #16a34a; font-weight: 700;">Concluded &amp; Archived</span>
-              </div>
-            </div>
-          `;
-        } else if (statusClass === 'rejected') {
-          const rejectMsg = remarks && remarks.trim() !== '' ? remarks : 'Returned on official administrative or operational grounds.';
-          routingList.innerHTML = `
-            <div class="routing-item">
-              <div class="routing-icon-badge done">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="routing-text-content">
-                <h5>1. Request Created & Submitted</h5>
-                <p>Initial reservation application was submitted to the ATI reservation desk.</p>
-                <span class="routing-timestamp">Booking reference generated</span>
-              </div>
-            </div>
-            <div class="routing-item">
-              <div class="routing-icon-badge" style="background: #fee2e2; border-color: #fca5a5;">
+              <div class="routing-icon-badge" style="background: #fee2e2; border: 1.5px solid #fca5a5;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </div>
               <div class="routing-text-content">
-                <h5 style="color: #991b1b;">2. Disapproved / Returned by Administration</h5>
-                <p style="color: #7f1d1d; font-weight: 600; line-height: 1.45;">${rejectMsg}</p>
-                <span class="routing-timestamp" style="color: #dc2626; font-weight: 700;">Status: Action Required / Returned for Revision</span>
+                <h5 style="color: #991b1b;">2. Stage 1: Division Chief Endorsement (Disapproved / Returned)</h5>
+                <p style="color: #7f1d1d; font-weight: 600;">${escapeHtml(remarks || 'Returned by Division Chief or Administration during initial endorsement verification.')}</p>
+                <span class="routing-timestamp" style="color: #dc2626; font-weight: 700;">Action Required &bull; Disapproved at Stage 1</span>
               </div>
             </div>
           `;
-        } else if (statusClass === 'cancelled') {
-          routingList.innerHTML = `
+        } else if (isCancelled) {
+          stepsHtml += `
             <div class="routing-item">
-              <div class="routing-icon-badge done">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <div class="routing-icon-badge" style="background: #f1f5f9; border: 1.5px solid #cbd5e1;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </div>
               <div class="routing-text-content">
-                <h5>1. Request Created & Submitted</h5>
-                <p>Initial reservation application was submitted to the ATI reservation desk.</p>
-                <span class="routing-timestamp">Booking reference generated</span>
-              </div>
-            </div>
-            <div class="routing-item">
-              <div class="routing-icon-badge" style="background: #fee2e2; border-color: #fca5a5;">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </div>
-              <div class="routing-text-content">
-                <h5 style="color: #991b1b;">2. Cancelled / Disapproved Record</h5>
-                <p>This reservation has been cancelled or disapproved. Venue/rooms were released back to inventory.</p>
-                <span class="routing-timestamp" style="color: #dc2626; font-weight: 700;">Record Closed &amp; Archived</span>
+                <h5 style="color: #475569;">2. Stage 1: Division Chief Endorsement (Cancelled)</h5>
+                <p>Reservation was cancelled by the applicant prior to endorsement completion.</p>
+                <span class="routing-timestamp" style="color: #64748b;">Cancelled by Requestor</span>
               </div>
             </div>
           `;
         } else {
-          routingList.innerHTML = `
+          // In progress at Stage 1
+          stepsHtml += `
             <div class="routing-item">
-              <div class="routing-icon-badge done">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <div class="routing-icon-badge pending" style="background: #fef3c7; border: 1.5px solid #fde68a;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
               </div>
               <div class="routing-text-content">
-                <h5>1. Request Created & Submitted</h5>
-                <p>Submitted by Juan Dela Cruz with supporting documents uploaded.</p>
-                <span class="routing-timestamp">Oct 02, 2026 • 09:15 AM</span>
-              </div>
-            </div>
-            <div class="routing-item">
-              <div class="routing-icon-badge done">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              </div>
-              <div class="routing-text-content">
-                <h5>2. Division Chief Endorsement</h5>
-                <p>Endorsed by Division Head. Endorsement memo attached.</p>
-                <span class="routing-timestamp">Oct 02, 2026 • 11:30 AM</span>
-              </div>
-            </div>
-            <div class="routing-item">
-              <div class="routing-icon-badge pending">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              </div>
-              <div class="routing-text-content">
-                <h5>3. Administrative Services Clearance (In Progress)</h5>
-                <p>Currently undergoing schedule conflict verification and facility logistics allocation.</p>
-                <span class="routing-timestamp">Active Review • Assigned to: Admin Property & Facilities Unit</span>
-              </div>
-            </div>
-            <div class="routing-item">
-              <div class="routing-icon-badge">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ab0a2" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
-              </div>
-              <div class="routing-text-content">
-                <h5 style="color: #82998c;">4. Final Confirmation & Official Gate Pass</h5>
-                <p style="color: #9ab0a2;">Awaiting Step 3 completion for official signing and booking confirmation.</p>
+                <h5 style="color: #92400e;">2. Stage 1: Division Chief Endorsement (Under Active Review)</h5>
+                <p>Awaiting review and signature from the Originating Division Chief / Section Head. Supporting documents are being verified.</p>
+                <span class="routing-timestamp" style="color: #b45309; font-weight: 700;">In Progress &bull; Assigned to Originating Unit Head</span>
               </div>
             </div>
           `;
         }
+
+        // Step 3: Stage 2 - Property & Facilities Logistics Recommendation
+        if (s2Done) {
+          const recOfficer = recommendedBy ? `Evaluated &amp; recommended by <strong>${escapeHtml(recommendedBy)}</strong> (Property &amp; Facilities Unit).` : `Evaluated &amp; recommended by Administrative Property &amp; Facilities Management Unit.`;
+          const recNote = recommendationRemarks ? ` Remarks: "${escapeHtml(recommendationRemarks)}"` : ` Facility verified vacant; AV equipment, sound technicians, and HVAC confirmed ready.`;
+          const recDocLink = recommendationDoc ? `<div style="margin-top: 0.35rem;"><a href="${escapeHtml(recommendationDoc)}" target="_blank" style="color: #166534; font-size: 0.76rem; font-weight: 700; text-decoration: underline;">View Signed Recommendation Form (PDF)</a></div>` : '';
+          stepsHtml += `
+            <div class="routing-item">
+              <div class="routing-icon-badge done">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5>3. Stage 2: Property &amp; Logistics Recommendation (Recommended)</h5>
+                <p>${recOfficer}${recNote}</p>
+                ${recDocLink}
+                <span class="routing-timestamp">${escapeHtml(recommendedAt || 'Stage 2 Completed')} &bull; Forwarded to Directorate</span>
+              </div>
+            </div>
+          `;
+        } else if (isRejected && s1Done && !s2Done) {
+          stepsHtml += `
+            <div class="routing-item">
+              <div class="routing-icon-badge" style="background: #fee2e2; border: 1.5px solid #fca5a5;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5 style="color: #991b1b;">3. Stage 2: Property Recommendation (Disapproved / Conflict)</h5>
+                <p style="color: #7f1d1d; font-weight: 600;">${escapeHtml(remarks || 'Venue schedule conflict or equipment logistics unavailable on requested dates.')}</p>
+                <span class="routing-timestamp" style="color: #dc2626; font-weight: 700;">Disapproved at Stage 2 (Property Logistics)</span>
+              </div>
+            </div>
+          `;
+        } else if (rawStatus === 'Pending Recommendation') {
+          stepsHtml += `
+            <div class="routing-item">
+              <div class="routing-icon-badge pending" style="background: #eff6ff; border: 1.5px solid #bfdbfe;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5 style="color: #1e40af;">3. Stage 2: Property &amp; Logistics Recommendation (Under Evaluation)</h5>
+                <p>Stage 1 Endorsement complete. Property and Facilities Management Unit is inspecting venue availability, utility readiness, and assigning technical support crew.</p>
+                <span class="routing-timestamp" style="color: #2563eb; font-weight: 700;">In Progress &bull; Administrative Logistics Unit</span>
+              </div>
+            </div>
+          `;
+        } else if (isCancelled) {
+          // Closed
+        } else {
+          // Waiting for stage 1
+          stepsHtml += `
+            <div class="routing-item">
+              <div class="routing-icon-badge" style="background: #f8fafc; border: 1.5px solid #e2e8f0; color: #94a3b8;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5 style="color: #64748b;">3. Stage 2: Property &amp; Logistics Recommendation</h5>
+                <p style="color: #94a3b8;">Pending completion of Stage 1 Division Chief Endorsement before facility inspection commences.</p>
+                <span class="routing-timestamp" style="color: #94a3b8;">Scheduled after Stage 1</span>
+              </div>
+            </div>
+          `;
+        }
+
+        // Step 4: Stage 3 - Directorate Clearance & Final Approval
+        if (s3Done || isApproved) {
+          const clrOfficer = clearedBy ? `Approved &amp; cleared by <strong>${escapeHtml(clearedBy)}</strong> (Director IV / Executive Office).` : `Approved &amp; cleared by Office of the Director IV.`;
+          const clrNote = clearanceRemarks ? ` Executive Note: "${escapeHtml(clearanceRemarks)}"` : ` Institutional clearance granted. Master calendar officially reserved and Gate Pass generated.`;
+          const clrDocLink = clearanceDoc ? `<div style="margin-top: 0.35rem;"><a href="${escapeHtml(clearanceDoc)}" target="_blank" style="color: #166534; font-size: 0.76rem; font-weight: 700; text-decoration: underline;">View Signed Executive Clearance Permit (PDF)</a></div>` : '';
+          stepsHtml += `
+            <div class="routing-item">
+              <div class="routing-icon-badge done">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5>4. Stage 3: Directorate Final Clearance &amp; Approval (Approved)</h5>
+                <p>${clrOfficer}${clrNote}</p>
+                ${clrDocLink}
+                <span class="routing-timestamp">${escapeHtml(clearedAt || 'Stage 3 Approved')} &bull; Official Permit Released</span>
+              </div>
+            </div>
+          `;
+        } else if (isRejected && s2Done && !s3Done) {
+          stepsHtml += `
+            <div class="routing-item">
+              <div class="routing-icon-badge" style="background: #fee2e2; border: 1.5px solid #fca5a5;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5 style="color: #991b1b;">4. Stage 3: Directorate Final Clearance (Disapproved)</h5>
+                <p style="color: #7f1d1d; font-weight: 600;">${escapeHtml(remarks || 'Disapproved by Director IV on institutional policy or official executive grounds.')}</p>
+                <span class="routing-timestamp" style="color: #dc2626; font-weight: 700;">Disapproved at Directorate Level</span>
+              </div>
+            </div>
+          `;
+        } else if (rawStatus === 'Pending Clearance') {
+          stepsHtml += `
+            <div class="routing-item">
+              <div class="routing-icon-badge pending" style="background: #ecfdf5; border: 1.5px solid #a7f3d0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5 style="color: #065f46;">4. Stage 3: Directorate Final Clearance (Transmitted to Director)</h5>
+                <p>Fully endorsed by Division and recommended by Logistics. Transmitted to the Office of Director IV for final executive clearance and issuance of official security pass.</p>
+                <span class="routing-timestamp" style="color: #059669; font-weight: 700;">Awaiting Director Signature &bull; Final Stage</span>
+              </div>
+            </div>
+          `;
+        } else if (isCancelled) {
+          // Closed
+        } else {
+          // Waiting
+          stepsHtml += `
+            <div class="routing-item">
+              <div class="routing-icon-badge" style="background: #f8fafc; border: 1.5px solid #e2e8f0; color: #94a3b8;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5 style="color: #64748b;">4. Stage 3: Directorate Final Clearance &amp; Approval</h5>
+                <p style="color: #94a3b8;">Final approval step by Director IV following successful completion of Stages 1 and 2.</p>
+                <span class="routing-timestamp" style="color: #94a3b8;">Scheduled after Stage 2</span>
+              </div>
+            </div>
+          `;
+        }
+
+        // Optional Step 5: Concluded / Archived
+        if (isCompleted) {
+          stepsHtml += `
+            <div class="routing-item">
+              <div class="routing-icon-badge done" style="background: #e8f5e9; border: 1.5px solid #86efac;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              </div>
+              <div class="routing-text-content">
+                <h5 style="color: #166534;">5. Activity Concluded &amp; Facility Turnover (Archived)</h5>
+                <p>Activity has taken place successfully. Facility returned in good order, post-activity inspection passed, and record permanently archived.</p>
+                <span class="routing-timestamp" style="color: #16a34a; font-weight: 700;">Concluded &amp; Permanently Archived</span>
+              </div>
+            </div>
+          `;
+        }
+
+        routingList.innerHTML = stepsHtml;
       }
 
       modal.classList.add('show');
@@ -962,11 +1060,13 @@ function initDownloadSlip() {
     if (elStatus) elStatus.textContent = statusText;
     if (elNotes) elNotes.textContent = notes && notes.trim() !== '' ? notes : 'Standard venue arrangement';
 
-    // Show slip modal
+    // Show slip modal if present, otherwise open official printable form
     const slipModal = document.getElementById('slipModal');
     if (slipModal) {
       slipModal.classList.add('show');
       document.body.style.overflow = 'hidden';
+    } else {
+      window.open(`download_form.php?ref=${encodeURIComponent(ref)}`, '_blank');
     }
   });
 }

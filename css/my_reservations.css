@@ -1438,52 +1438,194 @@ body.my-res-body {
   flex-shrink: 0;
 }
 
-/* Mini Routing Stepper / Progress Bar */
+/* ==========================================================================
+   3-Stage Governance Routing Stepper (Executive ATI Styling)
+   ========================================================================== */
 .res-mini-routing {
-  margin-top: 0.15rem;
+  margin-top: 0.35rem;
   background: #fbfdfc;
-  border: 1px solid #e7f0e9;
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-}
-
-.routing-progress-bar {
-  display: flex;
-  gap: 4px;
-  height: 5px;
-  border-radius: 9999px;
-  overflow: hidden;
-  background: transparent;
-  margin-bottom: 0.35rem;
-}
-
-.progress-segment {
-  flex: 1;
-  height: 100%;
-  background: #dbe7de;
-  border-radius: 9999px;
+  border: 1px solid #e1ece5;
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
   transition: all 0.2s ease;
 }
 
-.progress-segment.filled {
+.res-mini-routing:hover {
+  border-color: #c5ded0;
+  box-shadow: 0 2px 8px rgba(23, 84, 50, 0.04);
+}
+
+.routing-stepper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid #edf4ef;
+}
+
+.stepper-header-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.stepper-badge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: #e8f3ed;
+  color: #175432;
+  flex-shrink: 0;
+}
+
+.stepper-title {
+  font-size: 0.71rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #175432;
+}
+
+.stepper-stage-chip {
+  font-size: 0.71rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.routing-stepper-track {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin-bottom: 0.65rem;
+  padding: 0 0.2rem;
+}
+
+.stepper-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+}
+
+.step-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  border: 2px solid #cbdcd2;
+  background: #ffffff;
+  color: #6d8878;
+  position: relative;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.step-circle svg {
+  width: 13px;
+  height: 13px;
+}
+
+.step-labels {
+  display: flex;
+  flex-direction: column;
+}
+
+.step-name {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #243d2f;
+  line-height: 1.2;
+}
+
+.step-desc {
+  font-size: 0.67rem;
+  color: #698375;
+  line-height: 1.2;
+}
+
+/* Stepper States */
+.stepper-step.step-done .step-circle {
+  background: #175432;
+  border-color: #175432;
+  color: #ffffff;
+  box-shadow: 0 2px 5px rgba(23, 84, 50, 0.25);
+}
+
+.stepper-step.step-done .step-name {
+  color: #175432;
+  font-weight: 800;
+}
+
+.stepper-step.step-active .step-circle {
+  background: #fef3c7;
+  border-color: #d97706;
+  color: #92400e;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2);
+  animation: stepRingPulse 2s infinite ease-in-out;
+}
+
+@keyframes stepRingPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(217, 119, 6, 0.08);
+  }
+}
+
+.stepper-step.step-active .step-name {
+  color: #92400e;
+  font-weight: 800;
+}
+
+.stepper-step.step-rejected .step-circle {
+  background: #fee2e2;
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.stepper-step.step-rejected .step-name {
+  color: #b91c1c;
+}
+
+.stepper-step.step-cancelled .step-circle {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  color: #64748b;
+}
+
+.stepper-connector {
+  flex: 1;
+  height: 2px;
+  background: #d8e6de;
+  margin: 0 0.5rem;
+  border-radius: 9999px;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.stepper-connector.completed {
   background: #175432;
 }
 
-.progress-segment.active-pulse {
-  background: #f59e0b;
-  animation: barPulse 1.8s infinite ease-in-out;
-}
-
-@keyframes barPulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.4;
-  }
+.stepper-connector.active {
+  background: linear-gradient(90deg, #175432, #d97706);
 }
 
 .routing-status-label {
@@ -1493,16 +1635,41 @@ body.my-res-body {
   gap: 0.5rem;
   font-size: 0.74rem;
   flex-wrap: wrap;
+  padding-top: 0.45rem;
+  border-top: 1px dashed #e5efe8;
 }
 
 .routing-step-desc {
   color: #3b5344;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .routing-note {
   color: #6d8878;
-  font-style: italic;
+  font-size: 0.72rem;
+}
+
+.routing-note a {
+  color: #175432;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+@media (max-width: 680px) {
+  .routing-stepper-track {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.55rem;
+    padding-left: 0.25rem;
+  }
+  .stepper-connector {
+    width: 2px;
+    height: 12px;
+    margin-left: 11px;
+    margin-top: -3px;
+    margin-bottom: -3px;
+    flex: none;
+  }
 }
 
 /* Side Action Buttons */
