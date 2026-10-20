@@ -711,22 +711,63 @@ document.addEventListener('keydown', (e) => {
 });
 
 /* ==========================================================================
-   FACILITY MAINTENANCE TOGGLE
+   FACILITY MAINTENANCE TOGGLE (Live AJAX to ajax/facility_actions.php)
    ========================================================================== */
-function toggleFacilityMaintenance(venueId, venueName, isMaintenance) {
+async function toggleFacilityMaintenance(venueId, venueName, isMaintenance) {
   const badge = document.getElementById(`badge-${venueId}`);
-  if (!badge) return;
 
-  if (isMaintenance) {
-    badge.className = 'facility-state-badge state-maintenance';
-    badge.textContent = 'Maintenance Hold';
-    addAuditLogEntry(`Maintenance Mode activated for <strong>${venueName}</strong> by Super Admin.`, 'amber');
-    showAdminToast(`${venueName} placed on Maintenance Hold.`, 'decline');
-  } else {
-    badge.className = 'facility-state-badge state-available';
-    badge.textContent = 'Available';
-    addAuditLogEntry(`<strong>${venueName}</strong> restored to Active & Available status.`, 'green');
-    showAdminToast(`${venueName} is now Available for bookings.`, 'success');
+  try {
+    const formData = new FormData();
+    formData.append('action', 'toggle_maintenance');
+    formData.append('id', venueId);
+    formData.append('maintenance', isMaintenance ? 'true' : 'false');
+    formData.append('reason', isMaintenance ? 'Administrative Maintenance Hold via Dashboard' : '');
+
+    const res = await fetch('ajax/facility_actions.php', {
+      method: 'POST',
+      body: formData
+    });
+    const result = await res.json();
+
+    if (!result.success) {
+      showAdminToast(result.message || 'Failed to update maintenance hold.', 'decline');
+      // Revert checkbox state
+      const row = document.querySelector(`.facility-item-row[data-venue-id="${venueId}"]`);
+      if (row) {
+        const toggle = row.querySelector('input[type="checkbox"]');
+        if (toggle) toggle.checked = !isMaintenance;
+      }
+      return;
+    }
+
+    if (badge) {
+      if (isMaintenance) {
+        badge.className = 'facility-state-badge state-maintenance';
+        badge.textContent = 'Maintenance Hold';
+      } else {
+        badge.className = 'facility-state-badge state-available';
+        badge.textContent = 'Available';
+      }
+    }
+
+    addAuditLogEntry(
+      isMaintenance
+        ? `Maintenance Mode activated for <strong>${venueName}</strong>.`
+        : `<strong>${venueName}</strong> restored to Active & Available status.`,
+      isMaintenance ? 'amber' : 'green'
+    );
+    showAdminToast(
+      result.message || (isMaintenance ? `${venueName} placed on Maintenance Hold.` : `${venueName} is now Available.`),
+      isMaintenance ? 'decline' : 'success'
+    );
+  } catch (err) {
+    console.error('Facility maintenance toggle error:', err);
+    showAdminToast('Network error while updating maintenance mode.', 'decline');
+    const row = document.querySelector(`.facility-item-row[data-venue-id="${venueId}"]`);
+    if (row) {
+      const toggle = row.querySelector('input[type="checkbox"]');
+      if (toggle) toggle.checked = !isMaintenance;
+    }
   }
 }
 
@@ -755,37 +796,6 @@ function addAuditLogEntry(messageHtml, dotColor = 'green') {
   while (stream.children.length > 15) {
     stream.removeChild(stream.lastChild);
   }
-}
-
-function updateKPIBadges() {
-  const rows = document.querySelectorAll('#adminTableBody tr');
-  let pendingCount = 0;
-  let approvedCount = 0;
-
-  rows.forEach(row => {
-    const st = row.getAttribute('data-status');
-    if (st === 'pending') pendingCount++;
-    if (st === 'approved') approvedCount++;
-  });
-
-  const kpiPending = document.getElementById('kpiPending');
-  const tabPending = document.getElementById('tabCountPending');
-  const navBadge = document.getElementById('topNavPendingBadge');
-  const sidebarBadge = document.getElementById('sidebarPendingCount');
-
-  if (kpiPending) kpiPending.textContent = pendingCount;
-  if (tabPending) tabPending.textContent = pendingCount;
-  if (navBadge) {
-    navBadge.textContent = pendingCount;
-    navBadge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
-  }
-  if (sidebarBadge) {
-    sidebarBadge.textContent = pendingCount;
-    sidebarBadge.style.display = pendingCount > 0 ? 'inline-block' : 'none';
-  }
-
-  const tabApproved = document.getElementById('tabCountApproved');
-  if (tabApproved) tabApproved.textContent = 113 + approvedCount;
 }
 
 /* ==========================================================================
@@ -1085,8 +1095,8 @@ function switchOccupancyGraph(type) {
 
 function updateOccupancyTimeRange(range) {
   const toastMsg = range === 'week' ? 'Loaded Weekly Occupancy (Oct 5 – 11, 2026)'
-                 : range === 'month' ? 'Loaded Full Monthly Utilization (October 2026)'
-                 : 'Loaded Q4 2026 Institutional Capacity Projection';
+    : range === 'month' ? 'Loaded Full Monthly Utilization (October 2026)'
+      : 'Loaded Q4 2026 Institutional Capacity Projection';
   showAdminToast(toastMsg, 'info');
 }
 

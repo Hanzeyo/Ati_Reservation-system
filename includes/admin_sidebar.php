@@ -17,7 +17,7 @@ if (!isset($activeNav)) {
 // Fetch pending count if not provided
 if (!isset($sidebarPendingCount)) {
     try {
-        $pendingStmt = $db->query("SELECT COUNT(*) FROM reservations WHERE status IN ('Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance', 'Awaiting Endorsement', 'Awaiting Recommendation', 'Awaiting Clearance')");
+        $pendingStmt = $db->query("SELECT COUNT(*) FROM reservations WHERE status IN ('Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance', 'Awaiting Endorsement', 'Awaiting Recommendation', 'Awaiting Clearance') AND deleted_at IS NULL");
         $sidebarPendingCount = (int)$pendingStmt->fetchColumn();
     } catch (Exception $e) {
         $sidebarPendingCount = 0;

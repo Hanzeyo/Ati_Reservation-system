@@ -22,7 +22,7 @@ try {
 
     // Resolve facility_id if facility_name is passed
     if (!$facility_id && !empty($facility_name)) {
-        $stmt = $conn->prepare("SELECT id FROM facilities WHERE name = ? LIMIT 1");
+        $stmt = $conn->prepare("SELECT id FROM facilities WHERE name = ? AND deleted_at IS NULL LIMIT 1");
         $stmt->execute([$facility_name]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($row) {
@@ -49,7 +49,7 @@ try {
     $isDormFacility = false;
     $totalDormRooms = 0;
     if ($facility_id > 0 && $room_id === null) {
-        $fTypeStmt = $conn->prepare("SELECT type FROM facilities WHERE id = ? LIMIT 1");
+        $fTypeStmt = $conn->prepare("SELECT type FROM facilities WHERE id = ? AND deleted_at IS NULL LIMIT 1");
         $fTypeStmt->execute([$facility_id]);
         $fTypeRow = $fTypeStmt->fetch(PDO::FETCH_ASSOC);
         if ($fTypeRow && in_array(strtolower($fTypeRow['type']), ['dorms', 'dormitories'])) {

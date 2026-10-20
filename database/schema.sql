@@ -25,7 +25,8 @@ CREATE TABLE facilities (
     location VARCHAR(100),
     description TEXT,
     status ENUM('available', 'maintenance', 'inactive') DEFAULT 'available',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL DEFAULT NULL
 );
 
 CREATE TABLE rooms (

@@ -9,18 +9,22 @@ class AuditLog extends BaseModel {
     public $ip_address;
     public $created_at;
 
-    public function log() {
-        $query = "INSERT INTO " . $this->table_name . " (user_id, action, details, ip_address) VALUES (:user_id, :action, :details, :ip_address)";
-        $stmt = $this->conn->prepare($query);
+    public static function log($user_id = null, $action = null, $details = null, $ip_address = null) {
+        $ip = $ip_address ?: ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+        $uid = $user_id ?: ($_SESSION['user_id'] ?? null);
 
-        $stmt->bindParam(':user_id', $this->user_id);
-        $stmt->bindParam(':action', $this->action);
-        $stmt->bindParam(':details', $this->details);
-        $stmt->bindParam(':ip_address', $this->ip_address);
-
-        if($stmt->execute()) {
-            return true;
-        }
+        try {
+            global $db;
+            $conn = $db;
+            if (!$conn && class_exists('Database')) {
+                $conn = (new Database())->getConnection();
+            }
+            if ($conn) {
+                $query = "INSERT INTO audit_logs (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)";
+                $stmt = $conn->prepare($query);
+                return $stmt->execute([$uid, $action, $details, $ip]);
+            }
+        } catch (Throwable $e) {}
         return false;
     }
 

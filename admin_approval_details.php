@@ -298,6 +298,36 @@ if (!empty($res['room_number'])) {
     .btn-act-large.decline:hover {
       background: #fee2e2;
     }
+    .btn-act-large:disabled {
+      opacity: 0.75;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    @keyframes popScale {
+      0% { transform: scale(0.6); opacity: 0; }
+      70% { transform: scale(1.08); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes checkDraw {
+      from { stroke-dashoffset: 40; }
+      to { stroke-dashoffset: 0; }
+    }
+    .check-animated {
+      stroke-dasharray: 40;
+      animation: checkDraw 0.45s cubic-bezier(0.65, 0, 0.45, 1) forwards 0.12s;
+    }
+    .spin {
+      animation: spinAnim 0.85s linear infinite;
+    }
+    @keyframes spinAnim {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .file-input-error {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.22) !important;
+      background: #fef2f2 !important;
+    }
   </style>
 </head>
 <body style="background: #f4f8f5; min-height: 100vh; margin: 0; padding: 0; font-family: var(--font-sans); color: var(--text-main);">
@@ -417,6 +447,30 @@ if (!empty($res['room_number'])) {
                 <?php endif; ?>
               </div>
             </div>
+
+            <?php if (!empty($res['recommendation_doc_path'])): ?>
+            <div class="review-field-unit" style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed #cde1d4;">
+              <label style="color: #1d4ed8;">Signed Recommendation Routing Form (Stage 2)</label>
+              <div style="margin-top: 0.5rem;">
+                <a href="<?= htmlspecialchars($res['recommendation_doc_path']) ?>" target="_blank" class="btn-back-link" style="border-color: #2563eb; background: #eff6ff; color: #1e40af;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                  <span>View Attached Signed Recommendation Form</span>
+                </a>
+              </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if (!empty($res['clearance_doc_path'])): ?>
+            <div class="review-field-unit" style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px dashed #cde1d4;">
+              <label style="color: #047857;">Signed Executive Clearance &amp; Approved Permit (Stage 3)</label>
+              <div style="margin-top: 0.5rem;">
+                <a href="<?= htmlspecialchars($res['clearance_doc_path']) ?>" target="_blank" class="btn-back-link" style="border-color: #10b981; background: #ecfdf5; color: #047857;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                  <span>View Attached Signed Clearance Permit</span>
+                </a>
+              </div>
+            </div>
+            <?php endif; ?>
           </div>
 
           <!-- Section 3: Approval Progress / Timeline -->
@@ -498,7 +552,7 @@ if (!empty($res['room_number'])) {
               <textarea id="pageRemarksInput" class="review-textarea" rows="2" placeholder="Add remarks or instructions (optional)..."></textarea>
               <div class="review-buttons-row">
                 <button type="button" class="btn-act-large decline" onclick="openDeclineModal()">Decline / Return Request</button>
-                <button type="button" class="btn-act-large approve" style="background: #d97706;" onclick="submitPageAction('stage1')">Endorse Booking &rarr;</button>
+                <button type="button" class="btn-act-large approve" style="background: #d97706;" onclick="submitPageAction('stage1', this)">Endorse Booking &rarr;</button>
               </div>
             </div>
           <?php else: ?>
@@ -509,13 +563,33 @@ if (!empty($res['room_number'])) {
           <?php endif; ?>
         <?php elseif ($stage === 'stage2'): ?>
           <?php if ($currentAdminRole === 'recommendation' || $currentAdminRole === 'super_admin'): ?>
-            <div class="review-action-banner" style="border-color: #2563eb; background: #f8faff;">
+            <?php 
+              $isDormVenue = (($res['facility_type'] ?? '') === 'dormitories' || !empty($res['room_number']));
+              $templateHref = $isDormVenue ? 'download_dormitory_form.php' : 'download_form.php';
+              $templateTitle = $isDormVenue ? 'Download Dormitory Form' : 'Download Hall Form';
+            ?>
+            <div class="review-action-banner" id="actionSection" style="border-color: #2563eb; background: #f8faff;">
               <h3 class="action-prompt-title" style="color: #1d4ed8;">Action: Recommendation Desk</h3>
-              <p class="action-prompt-desc">Confirm that the room is available, capacity is adequate, and equipment is ready.</p>
-              <textarea id="pageRemarksInput" class="review-textarea" rows="2" placeholder="Add logistics verification notes (optional)..."></textarea>
+              <p class="action-prompt-desc">Confirm that the room is available, capacity is adequate, and equipment is ready. Pirmahan ang form at i-upload ang signed copy bago ipasa sa Stage 3 Clearance.</p>
+              
+              <div style="margin-bottom: 0.95rem; padding: 0.95rem; background: #eff6ff; border: 1.5px dashed #93c5fd; border-radius: 9px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <label for="pageSignedDocInput" style="font-size: 0.85rem; font-weight: 800; color: #1e40af; display: flex; align-items: center; gap: 0.35rem; margin: 0;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                    Attach Signed Recommendation Form <span style="color:#dc2626;">*</span>
+                  </label>
+                  <a href="<?= $templateHref ?>" target="_blank" style="font-size: 0.78rem; font-weight: 700; color: #2563eb; text-decoration: underline; display: inline-flex; align-items: center; gap: 0.25rem;">
+                    <span>📥 <?= $templateTitle ?></span>
+                  </a>
+                </div>
+                <input type="file" id="pageSignedDocInput" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="width: 100%; box-sizing: border-box; font-size: 0.85rem; padding: 0.5rem; background: #ffffff; border: 1px solid #bfdbfe; border-radius: 6px;">
+                <small style="display: block; font-size: 0.75rem; color: #64748b; margin-top: 0.4rem;">Kailangan: Mag-attach ng PDF, PNG, o JPG na may pirma ni Recommending Officer.</small>
+              </div>
+
+              <textarea id="pageRemarksInput" class="review-textarea" rows="2" placeholder="Add logistics verification notes or remarks (optional)..."></textarea>
               <div class="review-buttons-row">
                 <button type="button" class="btn-act-large decline" onclick="openDeclineModal()">Decline / Return Request</button>
-                <button type="button" class="btn-act-large approve" style="background: #2563eb;" onclick="submitPageAction('stage2')">Recommend Booking &rarr;</button>
+                <button type="button" class="btn-act-large approve" style="background: #2563eb;" onclick="submitPageAction('stage2', this)">Upload &amp; Recommend &rarr;</button>
               </div>
             </div>
           <?php else: ?>
@@ -526,13 +600,30 @@ if (!empty($res['room_number'])) {
           <?php endif; ?>
         <?php elseif ($stage === 'stage3'): ?>
           <?php if ($currentAdminRole === 'clearance' || $currentAdminRole === 'super_admin'): ?>
-            <div class="review-action-banner" style="border-color: #10b981; background: #f7fdf9;">
-              <h3 class="action-prompt-title" style="color: #047857;">Action: Director Final Clearance</h3>
-              <p class="action-prompt-desc">Endorsed and verified. Click approve to authorize the booking and generate the official permit.</p>
+            <div class="review-action-banner" id="actionSection" style="border-color: #10b981; background: #f7fdf9;">
+              <h3 class="action-prompt-title" style="color: #047857;">Action: Director Final Clearance &amp; Signing</h3>
+              <p class="action-prompt-desc">Endorsed and verified. Pirmahan ang opisyal na permit/clearance document at i-upload ang signed copy bago i-finalize ang approval.</p>
+
+              <div style="margin-bottom: 0.95rem; padding: 0.95rem; background: #ecfdf5; border: 1.5px dashed #6ee7b7; border-radius: 9px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <label for="pageSignedClearanceDocInput" style="font-size: 0.85rem; font-weight: 800; color: #065f46; display: flex; align-items: center; gap: 0.35rem; margin: 0;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    Attach Signed Clearance / Approved Permit <span style="color:#dc2626;">*</span>
+                  </label>
+                  <?php if (!empty($res['recommendation_doc_path'])): ?>
+                    <a href="<?= htmlspecialchars($res['recommendation_doc_path']) ?>" target="_blank" style="font-size: 0.78rem; font-weight: 700; color: #047857; text-decoration: underline; display: inline-flex; align-items: center; gap: 0.25rem;">
+                      <span>📄 Inspect Signed Rec Form</span>
+                    </a>
+                  <?php endif; ?>
+                </div>
+                <input type="file" id="pageSignedClearanceDocInput" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" style="width: 100%; box-sizing: border-box; font-size: 0.85rem; padding: 0.5rem; background: #ffffff; border: 1px solid #a7f3d0; border-radius: 6px;">
+                <small style="display: block; font-size: 0.75rem; color: #64748b; margin-top: 0.4rem;">Kailangan: Mag-attach ng PDF, PNG, o JPG na may pirma ng Clearance Authority bago maaprubahan.</small>
+              </div>
+
               <textarea id="pageRemarksInput" class="review-textarea" rows="2" placeholder="Final approval remarks or permit conditions (optional)..."></textarea>
               <div class="review-buttons-row">
                 <button type="button" class="btn-act-large decline" onclick="openDeclineModal()">Decline / Return Request</button>
-                <button type="button" class="btn-act-large approve" style="background: #10b981;" onclick="submitPageAction('stage3')">Approve Reservation &check;</button>
+                <button type="button" class="btn-act-large approve" style="background: #10b981;" onclick="submitPageAction('stage3', this)">Upload &amp; Approve Reservation &check;</button>
               </div>
             </div>
           <?php else: ?>
@@ -548,8 +639,12 @@ if (!empty($res['room_number'])) {
                 <h3 class="action-prompt-title" style="color: #174d2f;">Review Completed (Status: <?= htmlspecialchars(strtoupper($st)) ?>)</h3>
                 <p class="action-prompt-desc">This reservation has already been processed in the system.</p>
               </div>
-              <a href="download_form.php?ref=<?= urlencode($ref) ?>" target="_blank" class="btn-act-large approve" style="text-decoration: none;">
-                Download Official Form (PDF)
+              <?php 
+                $isDormRes = (($res['facility_type'] ?? '') === 'dorms');
+                $formTarget = $isDormRes ? "download_dormitory_form.php?ref=" . urlencode($ref) : "download_form.php?ref=" . urlencode($ref);
+              ?>
+              <a href="<?= $formTarget ?>" target="_blank" class="btn-act-large approve" style="text-decoration: none;">
+                Download Official <?= $isDormRes ? 'Dormitory' : 'Facility' ?> Form (PDF)
               </a>
             </div>
           </div>
@@ -607,6 +702,72 @@ if (!empty($res['room_number'])) {
     </div>
   </div>
 
+  <!-- ==========================================================================
+       SUCCESS CONFIRMATION MODAL (POP UP MODAL)
+       ========================================================================== -->
+  <div class="admin-modal-overlay" id="successActionModal" style="display: none;">
+    <div class="admin-modal-card sm" style="max-width: 520px; text-align: center; overflow: hidden; border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.22); border: 1.5px solid #dce8e0;">
+      
+      <!-- Colored top stripe -->
+      <div id="successModalBand" style="height: 6px; background: linear-gradient(90deg, #2563eb, #1d4ed8);"></div>
+
+      <div class="admin-modal-body" style="padding: 2.25rem 2rem 2rem; display: flex; flex-direction: column; align-items: center;">
+        
+        <!-- Animated / Glowing Check Icon -->
+        <div id="successModalIconCircle" style="width: 76px; height: 76px; border-radius: 50%; background: #eff6ff; border: 3px solid #bfdbfe; display: flex; align-items: center; justify-content: center; margin-bottom: 1.25rem; box-shadow: 0 8px 22px rgba(37, 99, 235, 0.2); animation: popScale 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline class="check-animated" points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+
+        <div id="successModalBadge" style="margin-bottom: 0.65rem; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.25rem 0.8rem; border-radius: 999px; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">
+          Recommendation Recorded
+        </div>
+
+        <h3 id="successModalTitle" style="font-size: 1.45rem; font-weight: 800; color: #172c1f; margin: 0 0 0.45rem 0; line-height: 1.25;">
+          Recommended Successfully!
+        </h3>
+
+        <div style="display: inline-flex; align-items: center; gap: 0.4rem; background: #f0f7f2; border: 1px solid #c8e4d2; padding: 0.25rem 0.75rem; border-radius: 999px; margin-bottom: 1rem;">
+          <span style="font-size: 0.75rem; color: #51715e; font-weight: 700; text-transform: uppercase;">Reference No:</span>
+          <strong id="successModalRef" style="font-family: monospace; color: #174d2f; font-size: 0.95rem;"><?= htmlspecialchars($ref) ?></strong>
+        </div>
+
+        <p id="successModalMessage" style="font-size: 0.93rem; color: #496353; line-height: 1.5; margin: 0 0 1.25rem 0;">
+          Ang pirmadong rekomendasyon ay nai-upload at opisyal nang naipasa sa Stage 3 para sa Directorial Clearance.
+        </p>
+
+        <!-- Document & Step Summary Card -->
+        <div id="successDocSummaryBox" style="width: 100%; box-sizing: border-box; background: #f8faf8; border: 1.5px dashed #c9ded1; border-radius: 12px; padding: 0.95rem 1.15rem; margin-bottom: 1.5rem; text-align: left;">
+          <div style="font-size: 0.74rem; font-weight: 800; text-transform: uppercase; color: #627f6e; margin-bottom: 0.45rem;">Attached Signed Document:</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.55rem; overflow: hidden;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+              <span id="successAttachedDocName" style="font-size: 0.88rem; font-weight: 700; color: #1e3a8a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">signed_document.pdf</span>
+            </div>
+            <a id="successAttachedDocLink" href="#" target="_blank" style="font-size: 0.82rem; font-weight: 700; color: #2563eb; text-decoration: underline; flex-shrink: 0; display: inline-flex; align-items: center; gap: 0.2rem;">
+              <span>View File &nearr;</span>
+            </a>
+          </div>
+          <div id="successNextStageText" style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid #e2ece5; font-size: 0.84rem; color: #284433; display: flex; align-items: center; gap: 0.4rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Next: <strong>Stage 3 Clearance (Office of the Director)</strong></span>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div style="display: flex; gap: 0.75rem; width: 100%; flex-wrap: wrap;">
+          <a href="admin_approvals.php" class="btn-act-large approve" style="flex: 1; text-decoration: none; justify-content: center; padding: 0.85rem 1.25rem; font-size: 0.95rem; border-radius: 10px; background: #174d2f; box-shadow: 0 4px 14px rgba(23,77,47,0.25);">
+            <span>Return to Approvals Queue &rarr;</span>
+          </a>
+          <button type="button" onclick="closeSuccessModalAndReload()" class="btn-system-secondary" style="padding: 0.85rem 1.25rem; font-weight: 700; font-size: 0.9rem; border-radius: 10px; background: #ffffff; border: 1.5px solid #dce8e0; cursor: pointer; color: #374151;">
+            Stay on Details
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const currentRef = "<?= addslashes($ref) ?>";
 
@@ -617,13 +778,76 @@ if (!empty($res['room_number'])) {
       document.getElementById('pageDeclineModal').style.display = 'none';
     }
 
-    async function submitPageAction(actionType) {
+    function showUploadError(inputEl, msg) {
+      if (!inputEl) {
+        alert(msg);
+        return;
+      }
+      inputEl.classList.add('file-input-error');
+      inputEl.focus();
+
+      let errEl = inputEl.parentElement.querySelector('.upload-error-msg');
+      if (!errEl) {
+        errEl = document.createElement('div');
+        errEl.className = 'upload-error-msg';
+        errEl.style.cssText = 'color: #dc2626; font-size: 0.82rem; font-weight: 700; margin-top: 0.45rem; display: flex; align-items: center; gap: 0.35rem;';
+        inputEl.parentElement.appendChild(errEl);
+      }
+      errEl.innerHTML = `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>${msg}</span>
+      `;
+    }
+
+    function clearUploadError(inputEl) {
+      if (!inputEl) return;
+      inputEl.classList.remove('file-input-error');
+      const errEl = inputEl.parentElement.querySelector('.upload-error-msg');
+      if (errEl) errEl.remove();
+    }
+
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+      input.addEventListener('change', () => clearUploadError(input));
+    });
+
+    async function submitPageAction(actionType, btn) {
       const remarks = document.getElementById('pageRemarksInput') ? document.getElementById('pageRemarksInput').value.trim() : '';
       
       const formData = new FormData();
       formData.append('action', actionType);
       formData.append('ref', currentRef);
       formData.append('remarks', remarks);
+
+      if (actionType === 'stage2') {
+        const fileInput = document.getElementById('pageSignedDocInput');
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+          showUploadError(fileInput, 'Kailangan munang pumili at mag-upload ng pirmadong document/routing form bago ma-recommend.');
+          return;
+        }
+        clearUploadError(fileInput);
+        formData.append('signed_doc', fileInput.files[0]);
+      } else if (actionType === 'stage3') {
+        const fileInput = document.getElementById('pageSignedClearanceDocInput');
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+          showUploadError(fileInput, 'Kailangan munang pumili at mag-upload ng pirmadong clearance / approved permit document bago i-finalize ang approval.');
+          return;
+        }
+        clearUploadError(fileInput);
+        formData.append('signed_doc', fileInput.files[0]);
+      }
+
+      // Show spinner & disable button
+      const origBtnHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `
+          <svg class="spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+            <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"></path>
+          </svg>
+          <span>Uploading &amp; Submitting...</span>
+        `;
+      }
 
       try {
         const response = await fetch('ajax/update_approval_stage.php', {
@@ -632,14 +856,108 @@ if (!empty($res['room_number'])) {
         });
         const result = await response.json();
         if (result.success) {
-          alert('Success: ' + result.message);
-          window.location.href = 'admin_approvals.php';
+          openSuccessModal(actionType, result);
         } else {
-          alert('Error: ' + result.message);
+          alert('Error: ' + (result.message || 'Action failed.'));
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origBtnHtml;
+          }
         }
       } catch (err) {
-        alert('Network or server error while updating.');
+        alert('Network or server error while uploading. Please check connection and try again.');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = origBtnHtml;
+        }
       }
+    }
+
+    function openSuccessModal(actionType, result) {
+      const modal = document.getElementById('successActionModal');
+      const band = document.getElementById('successModalBand');
+      const iconCircle = document.getElementById('successModalIconCircle');
+      const iconSvgPoly = iconCircle.querySelector('polyline');
+      const badge = document.getElementById('successModalBadge');
+      const title = document.getElementById('successModalTitle');
+      const message = document.getElementById('successModalMessage');
+      const docBox = document.getElementById('successDocSummaryBox');
+      const docName = document.getElementById('successAttachedDocName');
+      const docLink = document.getElementById('successAttachedDocLink');
+      const nextStageText = document.getElementById('successNextStageText');
+
+      if (actionType === 'stage2') {
+        band.style.background = 'linear-gradient(90deg, #3b82f6, #1d4ed8)';
+        iconCircle.style.background = '#eff6ff';
+        iconCircle.style.borderColor = '#bfdbfe';
+        iconCircle.style.boxShadow = '0 8px 22px rgba(37, 99, 235, 0.22)';
+        if (iconSvgPoly) iconSvgPoly.setAttribute('stroke', '#2563eb');
+        badge.style.background = '#e0f2fe';
+        badge.style.color = '#0369a1';
+        badge.style.borderColor = '#bae6fd';
+        badge.textContent = 'Stage 2 Completed';
+        title.textContent = 'Recommended Successfully!';
+        message.textContent = 'Ang pirmadong recommendation routing form ay nai-upload at naipasa na sa Office of the Executive Director para sa Stage 3 Clearance.';
+        
+        if (result.recommendationDocPath) {
+          docBox.style.display = 'block';
+          const fileName = result.recommendationDocPath.split('/').pop();
+          docName.textContent = fileName;
+          docLink.href = result.recommendationDocPath;
+        } else {
+          docBox.style.display = 'none';
+        }
+
+        nextStageText.innerHTML = `
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Next: <strong>Stage 3 Clearance (Office of the Executive Director)</strong></span>
+        `;
+      } else if (actionType === 'stage3') {
+        band.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+        iconCircle.style.background = '#ecfdf5';
+        iconCircle.style.borderColor = '#a7f3d0';
+        iconCircle.style.boxShadow = '0 8px 22px rgba(16, 185, 129, 0.22)';
+        if (iconSvgPoly) iconSvgPoly.setAttribute('stroke', '#059669');
+        badge.style.background = '#dcfce7';
+        badge.style.color = '#15803d';
+        badge.style.borderColor = '#86efac';
+        badge.textContent = 'Official Permit Issued';
+        title.textContent = 'Approved Successfully!';
+        message.textContent = 'Ang pirmadong executive clearance at approved permit ay na-attach na. Opisyal nang aprubado ang reservation at handa na ang campus gate pass.';
+
+        if (result.clearanceDocPath) {
+          docBox.style.display = 'block';
+          const fileName = result.clearanceDocPath.split('/').pop();
+          docName.textContent = fileName;
+          docLink.href = result.clearanceDocPath;
+        } else {
+          docBox.style.display = 'none';
+        }
+
+        nextStageText.innerHTML = `
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Status: <strong>Official Permit Authorized &amp; Active</strong></span>
+        `;
+      } else if (actionType === 'stage1') {
+        band.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+        iconCircle.style.background = '#fffbeb';
+        iconCircle.style.borderColor = '#fde68a';
+        iconCircle.style.boxShadow = '0 8px 22px rgba(217, 119, 6, 0.22)';
+        if (iconSvgPoly) iconSvgPoly.setAttribute('stroke', '#d97706');
+        badge.style.background = '#fef3c7';
+        badge.style.color = '#b45309';
+        badge.style.borderColor = '#fcd34d';
+        badge.textContent = 'Stage 1 Completed';
+        title.textContent = 'Endorsed Successfully!';
+        message.textContent = 'Matagumpay na na-endorse ang booking application. Naipasa na ito sa Stage 2 para sa logistics & availability verification.';
+        docBox.style.display = 'none';
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeSuccessModalAndReload() {
+      window.location.reload();
     }
 
     async function submitDeclineAction() {
@@ -668,6 +986,24 @@ if (!empty($res['room_number'])) {
         alert('Network error while declining.');
       }
     }
+
+    // Auto-scroll and highlight upload field when arriving from Recommend/Clearance button
+    window.addEventListener('DOMContentLoaded', () => {
+      if (window.location.hash === '#actionSection') {
+        setTimeout(() => {
+          const target = document.getElementById('actionSection');
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const fileInput = document.getElementById('pageSignedDocInput') || document.getElementById('pageSignedClearanceDocInput');
+            if (fileInput) {
+              fileInput.focus();
+              fileInput.parentElement.style.boxShadow = '0 0 0 3px rgba(16,185,129,0.35)';
+              setTimeout(() => { fileInput.parentElement.style.boxShadow = 'none'; }, 3000);
+            }
+          }
+        }, 200);
+      }
+    });
   </script>
 </body>
 </html>

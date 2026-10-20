@@ -37,12 +37,16 @@ $occupiedFacilityIds = $occStmt->fetchAll(PDO::FETCH_COLUMN);
 
 foreach ($facilitiesList as $row) {
     $fid = (string)$row['id'];
+    $isArchived = !empty($row['deleted_at']);
     $isMaint = ($row['status'] === 'maintenance');
     $isOccupied = in_array($row['id'], $occupiedFacilityIds);
 
     $status = 'available';
     $statusLabel = 'Available';
-    if ($isMaint) {
+    if ($isArchived) {
+        $status = 'archived';
+        $statusLabel = 'Archived / Inactive';
+    } elseif ($isMaint) {
         $status = 'maintenance';
         $statusLabel = 'Under Maintenance';
         $maintenanceCount++;
@@ -59,8 +63,10 @@ foreach ($facilitiesList as $row) {
         $pax = (int)$row['capacity'];
     }
     $beds = (int)($row['beds'] ?? 0);
-    $totalPax += $pax;
-    $totalBeds += $beds;
+    if (!$isArchived) {
+        $totalPax += $pax;
+        $totalBeds += $beds;
+    }
 
     $featuresArray = array_filter(array_map('trim', explode(',', $row['features'] ?? '')));
     if (empty($featuresArray)) {
@@ -92,13 +98,17 @@ foreach ($facilitiesList as $row) {
         'maintenanceReason' => $row['maintenance_reason'] ?? '',
         'estResumeDate' => $row['est_resume_date'] ?? '',
         'notes' => $row['notes'] ?? $row['description'] ?? '',
-        'layouts' => $row['layouts'] ?? ''
+        'layouts' => $row['layouts'] ?? '',
+        'isArchived' => $isArchived,
+        'deletedAt' => $isArchived ? date('M d, Y • h:i A', strtotime($row['deleted_at'])) : null
     ];
 }
 
-$hallsCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'halls'));
-$dormsCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'dorms'));
-$diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'dining'));
+$totalActiveAssets = count(array_filter($facilitiesData, fn($f) => !$f['isArchived']));
+$archivedCount = count(array_filter($facilitiesData, fn($f) => $f['isArchived']));
+$hallsCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'halls' && !$f['isArchived']));
+$dormsCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'dorms' && !$f['isArchived']));
+$diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'dining' && !$f['isArchived']));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -208,15 +218,6 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
               </svg>
               <span>+ Register New Venue / Room</span>
             </button>
-
-            <button type="button" class="btn-system-secondary" onclick="exportFacilityInventoryCSV()">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="7 10 12 15 17 10"></polyline>
-                <line x1="12" y1="15" x2="12" y2="3"></line>
-              </svg>
-              <span>Export Asset Inventory</span>
-            </button>
           </div>
         </section>
 
@@ -234,10 +235,10 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiTotalFacilities"><?= $totalAssets ?></span>
-                <span class="stat-trend positive">100% Operational</span>
+                <span class="stat-value" id="kpiTotalFacilities"><?= $totalActiveAssets ?></span>
+                <span class="stat-trend positive"><?= $archivedCount > 0 ? "{$archivedCount} In Archive" : "100% Operational" ?></span>
               </div>
-              <span class="stat-label">Total Monitored Assets</span>
+              <span class="stat-label">Active Monitored Assets</span>
             </div>
           </div>
 
@@ -323,11 +324,12 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
 
           <div class="facility-toolbar-actions">
             <div class="facility-filter-group">
-              <button type="button" class="facility-filter-tab active" data-category="all" onclick="filterFacilitiesByCategory('all', this)">All Assets (<?= $totalAssets ?>)</button>
+              <button type="button" class="facility-filter-tab active" data-category="all" onclick="filterFacilitiesByCategory('all', this)">All Assets (<?= $totalActiveAssets ?>)</button>
               <button type="button" class="facility-filter-tab" data-category="halls" onclick="filterFacilitiesByCategory('halls', this)">Training &amp; Function Halls (<?= $hallsCount ?>)</button>
               <button type="button" class="facility-filter-tab" data-category="dorms" onclick="filterFacilitiesByCategory('dorms', this)">Dormitory Suites (<?= $dormsCount ?>)</button>
               <button type="button" class="facility-filter-tab" data-category="dining" onclick="filterFacilitiesByCategory('dining', this)">Dining Pavilions (<?= $diningCount ?>)</button>
               <button type="button" class="facility-filter-tab" data-category="maintenance" onclick="filterFacilitiesByCategory('maintenance', this)">Maintenance Holds (<?= $maintenanceCount ?>)</button>
+              <button type="button" class="facility-filter-tab" data-category="archived" onclick="filterFacilitiesByCategory('archived', this)" style="<?= $archivedCount > 0 ? 'color: #b91c1c; font-weight: 700;' : '' ?>">Trash / Archive (<?= $archivedCount ?>)</button>
             </div>
 
             <!-- View Mode Switcher -->
@@ -365,14 +367,15 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
           <?php else: ?>
             <?php foreach ($facilitiesData as $fid => $item): 
               $isMaint = $item['maintenance'];
-              $statusClass = $item['status'] === 'maintenance' ? 'state-maintenance' : ($item['status'] === 'occupied' ? 'state-occupied' : 'state-available');
+              $isArchived = $item['isArchived'];
+              $statusClass = $isArchived ? 'state-archived' : ($item['status'] === 'maintenance' ? 'state-maintenance' : ($item['status'] === 'occupied' ? 'state-occupied' : 'state-available'));
               $typeBadge = $item['category'] === 'dorms' ? 'Dormitory Suite' : ($item['category'] === 'dining' ? 'Dining Pavilion' : 'Function & Training Hall');
               $capDisplay = $item['pax'] . ' Participants';
               if ($item['beds'] > 0) {
                 $capDisplay = $item['pax'] . ' PAX (' . $item['beds'] . ' Beds)';
               }
             ?>
-            <div class="facility-card-item" data-id="<?= htmlspecialchars($fid) ?>" data-category="<?= htmlspecialchars($item['category']) ?>" data-maintenance="<?= $isMaint ? 'true' : 'false' ?>">
+            <div class="facility-card-item <?= $isArchived ? 'facility-card-archived' : '' ?>" data-id="<?= htmlspecialchars($fid) ?>" data-category="<?= htmlspecialchars($item['category']) ?>" data-maintenance="<?= $isMaint ? 'true' : 'false' ?>" data-archived="<?= $isArchived ? 'true' : 'false' ?>">
               <div class="facility-card-media">
                 <img src="<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="facility-card-img" onerror="this.src='assets/images/function_hall.jpg'">
                 <span class="facility-type-badge"><?= htmlspecialchars($typeBadge) ?></span>
@@ -402,33 +405,49 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                   <?php endforeach; ?>
                 </div>
                 <div class="facility-card-footer">
-                  <div class="facility-maintenance-quick-toggle">
-                    <label class="switch-toggle" title="Toggle Maintenance Mode">
-                      <input type="checkbox" <?= $isMaint ? 'checked' : '' ?> onchange="onMaintenanceSwitchChange('<?= htmlspecialchars($fid) ?>', this.checked)">
-                      <span class="slider-round"></span>
-                    </label>
-                    <span>Maintenance</span>
-                  </div>
-                  <div class="card-action-btns">
-                    <?php if ($item['category'] === 'dorms'): ?>
-                      <button type="button" class="btn-card-action btn-manage-rooms" onclick="openManageRoomsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Manage Individual Dormitory Rooms">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                        <span>Rooms</span>
+                  <?php if ($isArchived): ?>
+                    <div style="font-size: 0.76rem; color: #b91c1c; font-weight: 700;">
+                      Archived: <?= htmlspecialchars($item['deletedAt']) ?>
+                    </div>
+                    <div class="card-action-btns">
+                      <button type="button" class="btn-card-action btn-restore-facility" onclick="confirmRestoreFacility('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Restore Facility to Active Catalog">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                        <span>Restore</span>
                       </button>
-                    <?php else: ?>
-                      <button type="button" class="btn-card-action btn-manage-setups" onclick="openManageSetupsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Manage Venue Setups & Floor Plans">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18M9 21V9"></path></svg>
-                        <span>Setups</span>
+                      <button type="button" class="btn-card-action btn-purge-facility" onclick="confirmPermanentDeleteFacility('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Permanently Delete Facility from Database">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        <span>Purge</span>
                       </button>
-                    <?php endif; ?>
-                    <button type="button" class="btn-card-action" onclick="openEditFacilityModal('<?= htmlspecialchars($fid) ?>')">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                      <span>Edit</span>
-                    </button>
-                    <a href="schedule.php" class="btn-card-action" title="View in Master Schedule">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
-                    </a>
-                  </div>
+                    </div>
+                  <?php else: ?>
+                    <div class="facility-maintenance-quick-toggle">
+                      <label class="switch-toggle" title="Toggle Maintenance Mode">
+                        <input type="checkbox" <?= $isMaint ? 'checked' : '' ?> onchange="onMaintenanceSwitchChange('<?= htmlspecialchars($fid) ?>', this.checked)">
+                        <span class="slider-round"></span>
+                      </label>
+                      <span>Maintenance</span>
+                    </div>
+                    <div class="card-action-btns">
+                      <?php if ($item['category'] === 'dorms'): ?>
+                        <button type="button" class="btn-card-action btn-manage-rooms" onclick="openManageRoomsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Manage Individual Dormitory Rooms">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                          <span>Rooms</span>
+                        </button>
+                      <?php else: ?>
+                        <button type="button" class="btn-card-action btn-manage-setups" onclick="openManageSetupsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Manage Venue Setups & Floor Plans">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18M9 21V9"></path></svg>
+                          <span>Setups</span>
+                        </button>
+                      <?php endif; ?>
+                      <button type="button" class="btn-card-action" onclick="openEditFacilityModal('<?= htmlspecialchars($fid) ?>')">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                        <span>Edit</span>
+                      </button>
+                      <button type="button" class="btn-card-action btn-delete-facility" onclick="confirmDeleteFacility('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Move to Trash / Archive">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      </button>
+                    </div>
+                  <?php endif; ?>
                 </div>
               </div>
             </div>
@@ -470,13 +489,16 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                   </tr>
                 <?php else: ?>
                   <?php foreach ($facilitiesData as $fid => $item): ?>
-                    <tr data-id="<?= htmlspecialchars($fid) ?>" data-category="<?= htmlspecialchars($item['category']) ?>" data-maintenance="<?= $item['maintenance'] ? 'true' : 'false' ?>">
+                    <tr data-id="<?= htmlspecialchars($fid) ?>" data-category="<?= htmlspecialchars($item['category']) ?>" data-maintenance="<?= $item['maintenance'] ? 'true' : 'false' ?>" data-archived="<?= $item['isArchived'] ? 'true' : 'false' ?>" class="<?= $item['isArchived'] ? 'row-archived' : '' ?>">
                       <td>
                         <div class="facility-table-info-cell">
                           <img src="<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="facility-table-thumb" onerror="this.src='assets/images/function_hall.jpg'">
                           <div class="facility-table-info-text">
                             <strong><?= htmlspecialchars($item['name']) ?></strong>
                             <span><?= htmlspecialchars($item['location']) ?></span>
+                            <?php if ($item['isArchived']): ?>
+                              <span style="font-size: 0.72rem; color: #dc2626; font-weight: 700;">Archived on <?= htmlspecialchars($item['deletedAt']) ?></span>
+                            <?php endif; ?>
                           </div>
                         </div>
                       </td>
@@ -499,13 +521,19 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                         </div>
                       </td>
                       <td>
-                        <label class="switch-toggle">
-                          <input type="checkbox" <?= $item['maintenance'] ? 'checked' : '' ?> onchange="onMaintenanceSwitchChange('<?= htmlspecialchars($fid) ?>', this.checked)">
-                          <span class="slider-round"></span>
-                        </label>
+                        <?php if ($item['isArchived']): ?>
+                          <span style="font-size: 0.78rem; color: #64748b;">Archived</span>
+                        <?php else: ?>
+                          <label class="switch-toggle">
+                            <input type="checkbox" <?= $item['maintenance'] ? 'checked' : '' ?> onchange="onMaintenanceSwitchChange('<?= htmlspecialchars($fid) ?>', this.checked)">
+                            <span class="slider-round"></span>
+                          </label>
+                        <?php endif; ?>
                       </td>
                       <td>
-                        <?php if ($item['status'] === 'available'): ?>
+                        <?php if ($item['isArchived']): ?>
+                          <span class="status-badge-chip chip-declined">Archived (Trash)</span>
+                        <?php elseif ($item['status'] === 'available'): ?>
                           <span class="status-badge-chip chip-confirmed">Available</span>
                         <?php elseif ($item['status'] === 'occupied'): ?>
                           <span class="status-badge-chip chip-pending"><?= htmlspecialchars($item['statusLabel']) ?></span>
@@ -514,12 +542,26 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                         <?php endif; ?>
                       </td>
                       <td style="text-align: right;">
-                        <?php if ($item['category'] === 'dorms'): ?>
-                          <button type="button" class="btn-card-action btn-manage-rooms" style="margin-right: 0.35rem;" onclick="openManageRoomsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')">Rooms</button>
+                        <?php if ($item['isArchived']): ?>
+                          <button type="button" class="btn-card-action btn-restore-facility" onclick="confirmRestoreFacility('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Restore Facility to Active Catalog">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                            <span>Restore</span>
+                          </button>
+                          <button type="button" class="btn-card-action btn-purge-facility" onclick="confirmPermanentDeleteFacility('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Permanently Delete Facility from Database">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            <span>Purge</span>
+                          </button>
                         <?php else: ?>
-                          <button type="button" class="btn-card-action btn-manage-setups" style="margin-right: 0.35rem;" onclick="openManageSetupsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')">Setups</button>
+                          <?php if ($item['category'] === 'dorms'): ?>
+                            <button type="button" class="btn-card-action btn-manage-rooms" style="margin-right: 0.35rem;" onclick="openManageRoomsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')">Rooms</button>
+                          <?php else: ?>
+                            <button type="button" class="btn-card-action btn-manage-setups" style="margin-right: 0.35rem;" onclick="openManageSetupsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')">Setups</button>
+                          <?php endif; ?>
+                          <button type="button" class="btn-card-action" onclick="openEditFacilityModal('<?= htmlspecialchars($fid) ?>')">Configure</button>
+                          <button type="button" class="btn-card-action btn-delete-facility" onclick="confirmDeleteFacility('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Move to Trash / Archive">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                          </button>
                         <?php endif; ?>
-                        <button type="button" class="btn-card-action" onclick="openEditFacilityModal('<?= htmlspecialchars($fid) ?>')">Configure</button>
                       </td>
                     </tr>
                   <?php endforeach; ?>

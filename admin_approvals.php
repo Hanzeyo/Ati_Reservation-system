@@ -111,6 +111,8 @@ foreach ($rawReservations as $row) {
         'equipment' => $row['special_notes'] ?: 'Standard Logistics & Venue Equipment',
         'specialNotes' => $row['special_notes'] ?: '',
         'documentPath' => $row['document_path'] ?: '',
+        'recommendationDocPath' => $row['recommendation_doc_path'] ?? '',
+        'clearanceDocPath' => $row['clearance_doc_path'] ?? '',
         'stage' => $stage,
         'stage1By' => $row['endorsed_by_name'] ?? null,
         'stage1Date' => !empty($row['endorsed_at']) ? date('M d, Y h:i A', strtotime($row['endorsed_at'])) : null,
@@ -282,14 +284,13 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
             <?php endif; ?>
 
             <div style="display: flex; gap: 0.5rem;">
-              <button type="button" class="btn-system-secondary" onclick="window.print()">
+              <a href="admin_facilities.php" class="btn-system-secondary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="6 9 6 2 18 2 18 9"></polyline>
-                  <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                  <rect x="6" y="14" width="12" height="8"></rect>
+                  <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                  <path d="M3 9h18M9 21V9"></path>
                 </svg>
-                <span>Print Sheet</span>
-              </button>
+                <span>Facilities &amp; Setups</span>
+              </a>
               <a href="admin_schedule.php" class="btn-system-primary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -571,6 +572,34 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
                       <polyline points="10 9 9 9 8 9"></polyline>
                     </svg>
                     <span id="dossierDocName">Open Attached Document</span>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Signed Recommendation Document (for Stage 3 / Clearance review) -->
+              <div class="dossier-field-item" id="dossierRecDocRow" style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px dashed #dce8e0; display: none;">
+                <label style="display: flex; align-items: center; gap: 0.35rem; color: #1d4ed8; font-weight: 700;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                  Signed Recommendation Routing Slip
+                </label>
+                <div style="margin-top: 0.45rem;">
+                  <a id="dossierRecDocLink" href="#" target="_blank" class="btn-system-secondary" style="display: inline-flex; align-items: center; gap: 0.55rem; padding: 0.65rem 1rem; font-size: 0.88rem; border-radius: 9px; text-decoration: none; color: #1d4ed8; font-weight: 700; background: #eff6ff; border: 1px solid #bfdbfe;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                    <span>View Signed Recommendation Form</span>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Signed Clearance Document (Once cleared/approved) -->
+              <div class="dossier-field-item" id="dossierClearanceDocRow" style="margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px dashed #dce8e0; display: none;">
+                <label style="display: flex; align-items: center; gap: 0.35rem; color: #047857; font-weight: 700;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                  Signed Executive Clearance &amp; Approved Permit
+                </label>
+                <div style="margin-top: 0.45rem;">
+                  <a id="dossierClearanceDocLink" href="#" target="_blank" class="btn-system-secondary" style="display: inline-flex; align-items: center; gap: 0.55rem; padding: 0.65rem 1rem; font-size: 0.88rem; border-radius: 9px; text-decoration: none; color: #047857; font-weight: 700; background: #ecfdf5; border: 1px solid #a7f3d0;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                    <span>View Signed Approved Permit</span>
                   </a>
                 </div>
               </div>

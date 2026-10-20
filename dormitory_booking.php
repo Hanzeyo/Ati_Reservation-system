@@ -5,7 +5,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
 $selectedFacilityId = isset($_GET['facility_id']) ? intval($_GET['facility_id']) : 0;
 
 // Fetch active dormitory facilities from MySQL
-$dormStmt = $db->query("SELECT * FROM facilities WHERE type = 'dorms' AND status != 'inactive' ORDER BY id ASC");
+$dormStmt = $db->query("SELECT * FROM facilities WHERE type = 'dorms' AND status != 'inactive' AND deleted_at IS NULL ORDER BY id ASC");
 $dbDorms = $dormStmt ? $dormStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 $dormCount = count($dbDorms);
 
@@ -141,7 +141,7 @@ $dormCount = count($dbDorms);
             </a>
             <?php endif; ?>
             <div style="height: 1px; background: #e5ede7; margin: 0.35rem 0;"></div>
-            <a href="index.php" class="dropdown-item danger">
+            <a href="logout.php" class="dropdown-item danger">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
@@ -299,7 +299,7 @@ $dormCount = count($dbDorms);
       </div>
 
       <div class="drawer-footer">
-        <a href="index.php" class="drawer-logout-btn">
+        <a href="logout.php" class="drawer-logout-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
@@ -868,6 +868,37 @@ $dormCount = count($dbDorms);
         <p style="font-size: 0.88rem; color: #516d5d; margin-bottom: 1.5rem;">Upload required government authority
           papers or official participant lists for custodian gate verification.</p>
 
+        <!-- Official ATI Dormitory Form Download Box -->
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #e6f7ec 100%); border: 1.5px solid #a3d9b5; border-radius: 12px; padding: 1.15rem 1.35rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.9rem;">
+            <div style="width: 44px; height: 44px; border-radius: 10px; background: #175432; color: #facc15; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(23,84,50,0.2);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+            </div>
+            <div>
+              <div style="font-size: 0.92rem; font-weight: 800; color: #173822; margin-bottom: 0.2rem;">
+                Official ATI Dormitory Reservation Form (ATI-QF/DTS-22)
+              </div>
+              <div style="font-size: 0.8rem; color: #476652; line-height: 1.35;">
+                Need the official form? Download or print the 1-page reservation template with Rates, Terms &amp; Conditions, fill it out, and upload the signed copy below.
+              </div>
+            </div>
+          </div>
+
+          <a href="download_dormitory_form.php" target="_blank" class="btn-card-action primary" style="padding: 0.65rem 1.15rem; font-size: 0.84rem; text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.45rem; background: #175432; color: #ffffff; border-radius: 8px; font-weight: 700; box-shadow: 0 3px 8px rgba(23,84,50,0.25);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Download Official Form</span>
+          </a>
+        </div>
+
         <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
           <div
             style="border: 2px dashed #9bcbb0; background: #fbfdfc; border-radius: 12px; padding: 2rem; text-align: center;">
@@ -1117,6 +1148,9 @@ $dormCount = count($dbDorms);
     </div>
   </main>
 
+  <script>
+    window.currentUserFullName = <?= json_encode($_SESSION['full_name'] ?? 'Authorized Officer') ?>;
+  </script>
   <script src="js/booking.js?v=<?php echo time(); ?>"></script>
   <script>
     function closeRoomModal() {

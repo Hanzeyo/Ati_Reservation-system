@@ -278,10 +278,10 @@ function renderApprovalsTable() {
       const canRecommend = (userRole === 'super_admin' || userRole === 'recommendation');
       if (canRecommend && (activeRole === 'recommendation' || activeRole === 'all')) {
         actionButtonsHtml = `
-          <button type="button" class="btn-card-action" style="background:#2563eb; color:#fff;" onclick="quickRecommendStage2('${item.ref}')" title="Issue Logistics Recommendation">
+          <a href="admin_approval_details.php?ref=${encodeURIComponent(item.ref)}#actionSection" class="btn-card-action" style="background:#2563eb; color:#fff; text-decoration:none;" title="Review Logistics & Upload Signed Document to Recommend">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
             <span>Recommend</span>
-          </button>
+          </a>
           <button type="button" class="btn-card-action" onclick="openDisapproveModal('${item.ref}')" title="Return / Decline">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
@@ -293,10 +293,10 @@ function renderApprovalsTable() {
       const canClear = (userRole === 'super_admin' || userRole === 'clearance');
       if (canClear && (activeRole === 'clearance' || activeRole === 'all')) {
         actionButtonsHtml = `
-          <button type="button" class="btn-card-action" style="background:#10b981; color:#fff;" onclick="quickGrantClearanceStage3('${item.ref}')" title="Grant Directorial Clearance & Permit">
+          <a href="admin_approval_details.php?ref=${encodeURIComponent(item.ref)}#actionSection" class="btn-card-action" style="background:#10b981; color:#fff; text-decoration:none;" title="Review & Upload Signed Clearance Permit">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
             <span>Clearance</span>
-          </button>
+          </a>
           <button type="button" class="btn-card-action" onclick="openDisapproveModal('${item.ref}')" title="Withhold / Disapprove">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
@@ -402,13 +402,18 @@ function clearRowSelections() {}
    ========================================================================== */
 async function callApprovalApi(formData) {
   try {
-    const response = await fetch('ajax/update_approval_stage.php', {
-      method: 'POST',
-      headers: {
+    const fetchOptions = {
+      method: 'POST'
+    };
+    if (formData instanceof FormData) {
+      fetchOptions.body = formData;
+    } else {
+      fetchOptions.headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: new URLSearchParams(formData).toString()
-    });
+      };
+      fetchOptions.body = new URLSearchParams(formData).toString();
+    }
+    const response = await fetch('ajax/update_approval_stage.php', fetchOptions);
     const result = await response.json();
     return result;
   } catch (err) {
@@ -548,50 +553,12 @@ async function quickEndorseStage1(ref) {
   }
 }
 
-async function quickRecommendStage2(ref) {
-  const item = approvalsData[ref];
-  if (!item) return;
-
-  const res = await callApprovalApi({
-    action: 'stage2',
-    ref: ref
-  });
-
-  if (res.success) {
-    item.stage = 'stage3';
-    item.stage2By = res.stage2By || 'Recommending Officer';
-    item.stage2Date = res.stage2Date || new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    item.stage2Remarks = res.stage2Remarks || 'Verified logistics. Recommended for final clearance.';
-
-    updateKPICounters();
-    renderApprovalsTable();
-    showAdminToast(res.message || `Stage 2 Recommendation recorded for ${ref}. Forwarded to Final Clearance.`, 'success');
-  } else {
-    showAdminToast(res.message || 'Failed to record recommendation.', 'decline');
-  }
+function quickRecommendStage2(ref) {
+  window.location.href = `admin_approval_details.php?ref=${encodeURIComponent(ref)}#actionSection`;
 }
 
-async function quickGrantClearanceStage3(ref) {
-  const item = approvalsData[ref];
-  if (!item) return;
-
-  const res = await callApprovalApi({
-    action: 'stage3',
-    ref: ref
-  });
-
-  if (res.success) {
-    item.stage = 'approved';
-    item.stage3By = res.stage3By || 'Clearance Authority';
-    item.stage3Date = res.stage3Date || new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    item.stage3Remarks = res.stage3Remarks || 'Official approval granted. Permit issued.';
-
-    updateKPICounters();
-    renderApprovalsTable();
-    showAdminToast(res.message || `Stage 3 Final Clearance granted for ${ref}! Permit generated.`, 'success');
-  } else {
-    showAdminToast(res.message || 'Failed to grant clearance.', 'decline');
-  }
+function quickGrantClearanceStage3(ref) {
+  window.location.href = `admin_approval_details.php?ref=${encodeURIComponent(ref)}#actionSection`;
 }
 
 /* ==========================================================================
@@ -633,6 +600,26 @@ function openDossierModal(ref) {
     if (docLink) docLink.style.display = 'none';
   }
 
+  // Signed Recommendation Document (for Stage 3 / Clearance review)
+  const recDocRow = document.getElementById('dossierRecDocRow');
+  const recDocLink = document.getElementById('dossierRecDocLink');
+  if (item.recommendationDocPath) {
+    if (recDocRow) recDocRow.style.display = 'block';
+    if (recDocLink) recDocLink.href = item.recommendationDocPath;
+  } else {
+    if (recDocRow) recDocRow.style.display = 'none';
+  }
+
+  // Signed Clearance Document (Once cleared/approved)
+  const clrDocRow = document.getElementById('dossierClearanceDocRow');
+  const clrDocLink = document.getElementById('dossierClearanceDocLink');
+  if (item.clearanceDocPath) {
+    if (clrDocRow) clrDocRow.style.display = 'block';
+    if (clrDocLink) clrDocLink.href = item.clearanceDocPath;
+  } else {
+    if (clrDocRow) clrDocRow.style.display = 'none';
+  }
+
   // 3-Stage Timeline rendering (Submitted -> Endorsed -> Recommended -> Cleared)
   const timelineEl = document.getElementById('dossierTimelineList');
   if (timelineEl) {
@@ -671,12 +658,16 @@ function openDossierModal(ref) {
 
     // 2. Recommendation Milestone
     if (item.stage2By) {
+      const recDocLinkHtml = item.recommendationDocPath
+        ? `<div style="margin-top:0.35rem;"><a href="${item.recommendationDocPath}" target="_blank" style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.75rem; color:#2563eb; font-weight:700; text-decoration:underline;">📄 View Attached Signed Routing Form</a></div>`
+        : '';
       timelineHtml += `
         <div style="display:flex; gap:0.95rem; margin-bottom:1.15rem; align-items:flex-start;">
           <div style="width:32px; height:32px; border-radius:50%; background:#2563eb; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:800; flex-shrink:0; box-shadow:0 2px 6px rgba(37,99,235,0.3);">✓</div>
           <div>
             <strong style="display:block; font-size:0.92rem; color:#1d4ed8; font-weight:800;">Step 2: Recommended by ${item.stage2By}</strong>
             <small style="color:#4b6555; font-size:0.82rem; font-weight:500;">${item.stage2Date} • "${item.stage2Remarks || 'Recommended'}"</small>
+            ${recDocLinkHtml}
           </div>
         </div>
       `;
@@ -694,12 +685,16 @@ function openDossierModal(ref) {
 
     // 3. Clearance Milestone
     if (item.stage3By) {
+      const clrDocLinkHtml = item.clearanceDocPath
+        ? `<div style="margin-top:0.35rem;"><a href="${item.clearanceDocPath}" target="_blank" style="display:inline-flex; align-items:center; gap:0.35rem; font-size:0.75rem; color:#047857; font-weight:700; text-decoration:underline;">📄 View Attached Signed Clearance Permit</a></div>`
+        : '';
       timelineHtml += `
         <div style="display:flex; gap:0.95rem; align-items:flex-start;">
           <div style="width:32px; height:32px; border-radius:50%; background:#10b981; color:#fff; display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:800; flex-shrink:0; box-shadow:0 2px 6px rgba(16,185,129,0.3);">✓</div>
           <div>
             <strong style="display:block; font-size:0.92rem; color:#047857; font-weight:800;">Step 3: Approved by Director</strong>
             <small style="color:#4b6555; font-size:0.82rem; font-weight:500;">${item.stage3Date} • Cleared by ${item.stage3By}</small>
+            ${clrDocLinkHtml}
           </div>
         </div>
       `;
@@ -735,23 +730,28 @@ function openDossierModal(ref) {
     } else if (item.stage === 'stage2') {
       actionBox.className = 'action-decision-box stage2';
       actionBox.innerHTML = `
-        <h4 style="margin: 0 0 0.35rem 0; font-size: 1rem; font-weight: 800; color: #1d4ed8;">Action: Step 2 (Logistics Recommendation)</h4>
-        <p style="margin: 0 0 0.85rem 0; font-size: 0.85rem; color: #4b6354; line-height: 1.45;">Confirm that the room is available, capacity is adequate, and equipment is ready.</p>
-        <textarea id="dossierRemarksInput" rows="2" placeholder="Add logistics verification notes (optional)..."></textarea>
+        <h4 style="margin: 0 0 0.35rem 0; font-size: 1rem; font-weight: 800; color: #1d4ed8;">Action: Step 2 (Logistics Recommendation & Signing)</h4>
+        <p style="margin: 0 0 0.85rem 0; font-size: 0.85rem; color: #4b6354; line-height: 1.45;">Confirm room and equipment availability. Upang mai-forward sa Stage 3 Clearance, buksan ang reservation details at i-upload doon ang pirmadong dokumento.</p>
+        
         <div class="action-decision-btn-group">
           <button type="button" class="btn-card-action" style="background:#ffffff; color:#b91c1c; border:1.5px solid #fca5a5;" onclick="openDisapproveModal('${item.ref}')">Decline / Return</button>
-          <button type="button" class="btn-system-primary" style="background:#2563eb; color:#ffffff; border:none; box-shadow:0 3px 10px rgba(37,99,235,0.3);" onclick="submitDossierAction('stage2')">Recommend Booking &rarr;</button>
+          <a href="admin_approval_details.php?ref=${encodeURIComponent(item.ref)}#actionSection" class="btn-system-primary" style="background:#2563eb; color:#ffffff; text-decoration:none; display:inline-flex; align-items:center; gap:0.45rem; padding:0.65rem 1.15rem; font-weight:700; box-shadow:0 3px 10px rgba(37,99,235,0.3);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span>Proceed to Upload Signed Form in Details &rarr;</span>
+          </a>
         </div>
       `;
     } else if (item.stage === 'stage3') {
       actionBox.className = 'action-decision-box stage3';
       actionBox.innerHTML = `
-        <h4 style="margin: 0 0 0.35rem 0; font-size: 1rem; font-weight: 800; color: #047857;">Action: Step 3 (Director Final Approval)</h4>
-        <p style="margin: 0 0 0.85rem 0; font-size: 0.85rem; color: #4b6354; line-height: 1.45;">Endorsed and verified. Click approve to authorize the reservation and generate the official permit.</p>
-        <textarea id="dossierRemarksInput" rows="2" placeholder="Final approval remarks or permit conditions (optional)..."></textarea>
+        <h4 style="margin: 0 0 0.35rem 0; font-size: 1rem; font-weight: 800; color: #047857;">Action: Step 3 (Director Final Approval & Signing)</h4>
+        <p style="margin: 0 0 0.85rem 0; font-size: 0.85rem; color: #4b6354; line-height: 1.45;">Bago mai-approve at mailabas ang permit, kailangang pirmahan at i-upload ang signed clearance document. Buksan ang details upang i-upload ang pirmadong kopya.</p>
         <div class="action-decision-btn-group">
           <button type="button" class="btn-card-action" style="background:#ffffff; color:#b91c1c; border:1.5px solid #fca5a5;" onclick="openDisapproveModal('${item.ref}')">Decline / Return</button>
-          <button type="button" class="btn-system-primary" style="background:#10b981; color:#ffffff; border:none; box-shadow:0 3px 10px rgba(16,185,129,0.3);" onclick="submitDossierAction('stage3')">Approve Reservation &check;</button>
+          <a href="admin_approval_details.php?ref=${encodeURIComponent(item.ref)}#actionSection" class="btn-system-primary" style="background:#10b981; color:#ffffff; text-decoration:none; display:inline-flex; align-items:center; gap:0.45rem; padding:0.65rem 1.15rem; font-weight:700; box-shadow:0 3px 10px rgba(16,185,129,0.3);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span>Proceed to Upload Signed Clearance in Details &rarr;</span>
+          </a>
         </div>
       `;
     } else {
@@ -784,11 +784,35 @@ async function submitDossierAction(actionType) {
   const remarksInput = document.getElementById('dossierRemarksInput');
   const remarks = remarksInput ? remarksInput.value.trim() : '';
 
-  const res = await callApprovalApi({
-    action: actionType,
-    ref: item.ref,
-    remarks: remarks
-  });
+  let apiPayload;
+  if (actionType === 'stage2') {
+    const fileInput = document.getElementById('dossierSignedDocInput');
+    const hasExistingDoc = !!item.recommendationDocPath;
+    const hasNewFile = fileInput && fileInput.files && fileInput.files.length > 0;
+
+    if (!hasExistingDoc && !hasNewFile) {
+      showAdminToast('Kailangan munang mag-upload ng pirmadong form/routing slip bago ma-recommend.', 'decline');
+      if (fileInput) fileInput.focus();
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('action', 'stage2');
+    formData.append('ref', item.ref);
+    formData.append('remarks', remarks);
+    if (hasNewFile) {
+      formData.append('signed_doc', fileInput.files[0]);
+    }
+    apiPayload = formData;
+  } else {
+    apiPayload = {
+      action: actionType,
+      ref: item.ref,
+      remarks: remarks
+    };
+  }
+
+  const res = await callApprovalApi(apiPayload);
 
   if (res.success) {
     if (actionType === 'stage1') {
@@ -802,12 +826,14 @@ async function submitDossierAction(actionType) {
       item.stage2By = res.stage2By || 'Recommending Officer';
       item.stage2Date = res.stage2Date || new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       item.stage2Remarks = res.stage2Remarks || remarks || 'Recommended for Stage 3 Final Clearance.';
-      showAdminToast(`Stage 2 Recommendation saved for ${item.ref}.`, 'success');
+      item.recommendationDocPath = res.recommendationDocPath || item.recommendationDocPath || '';
+      showAdminToast(`Stage 2 Recommendation & Signed Document recorded for ${item.ref}. Forwarded to Clearance.`, 'success');
     } else if (actionType === 'stage3') {
       item.stage = 'approved';
       item.stage3By = res.stage3By || 'Clearance Authority';
       item.stage3Date = res.stage3Date || new Date().toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       item.stage3Remarks = res.stage3Remarks || remarks || 'Final clearance granted. Permit issued.';
+      item.clearanceDocPath = res.clearanceDocPath || item.clearanceDocPath || '';
       showAdminToast(`Stage 3 Final Clearance granted for ${item.ref}! Permit generated.`, 'success');
     }
 

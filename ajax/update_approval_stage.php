@@ -114,15 +114,53 @@ try {
         }
 
         // Sequence Validation: Must be endorsed first
-        $chkStmt = $db->prepare("SELECT status FROM reservations WHERE reference_no = :ref LIMIT 1");
+        $chkStmt = $db->prepare("SELECT status, recommendation_doc_path FROM reservations WHERE reference_no = :ref LIMIT 1");
         $chkStmt->execute([':ref' => $ref]);
-        $currSt = $chkStmt->fetchColumn();
-        if (!$currSt) {
+        $currRow = $chkStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$currRow) {
             echo json_encode(['success' => false, 'message' => "Reservation {$ref} not found."]);
             exit;
         }
+        $currSt = $currRow['status'];
         if (in_array($currSt, ['Pending', 'Pending Endorsement', 'Awaiting Endorsement'])) {
             echo json_encode(['success' => false, 'message' => 'Hindi pa maaaring i-recommend ang reservation na ito dahil kailangan muna itong i-endorse ng Endorsement Officer (Stage 1).']);
+            exit;
+        }
+
+        // Signed Document Upload Handling
+        $signedDocPath = $currRow['recommendation_doc_path'] ?? null;
+        if (isset($_FILES['signed_doc']) && $_FILES['signed_doc']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../uploads/documents/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            $fileTmp = $_FILES['signed_doc']['tmp_name'];
+            $fileOrig = $_FILES['signed_doc']['name'];
+            $fileExt = strtolower(pathinfo($fileOrig, PATHINFO_EXTENSION));
+            $allowedExts = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+
+            if (!in_array($fileExt, $allowedExts)) {
+                echo json_encode(['success' => false, 'message' => 'Invalid file format. Mangyaring mag-upload ng PDF, PNG, JPG, o DOC document.']);
+                exit;
+            }
+
+            if ($_FILES['signed_doc']['size'] > 15 * 1024 * 1024) {
+                echo json_encode(['success' => false, 'message' => 'Masyadong malaki ang file. Maximum limit is 15MB.']);
+                exit;
+            }
+
+            $cleanRef = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $ref);
+            $newFileName = 'signed_rec_' . $cleanRef . '_' . time() . '.' . $fileExt;
+            $destPath = $uploadDir . $newFileName;
+
+            if (move_uploaded_file($fileTmp, $destPath)) {
+                $signedDocPath = 'uploads/documents/' . $newFileName;
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Hindi matagumpay na na-save ang uploaded signed document.']);
+                exit;
+            }
+        } elseif (empty($signedDocPath)) {
+            echo json_encode(['success' => false, 'message' => 'Kailangan munang mag-upload ng pirmadong form o routing document bago maipasa sa Stage 3 Clearance.']);
             exit;
         }
 
@@ -133,28 +171,31 @@ try {
             status = 'Pending Clearance',
             recommended_by = :user_id,
             recommended_at = NOW(),
-            recommendation_remarks = :remarks
+            recommendation_remarks = :remarks,
+            recommendation_doc_path = :doc_path
             WHERE reference_no = :ref");
         
         $stmt->execute([
             ':user_id' => $adminUserId,
             ':remarks' => $finalRemarks,
+            ':doc_path' => $signedDocPath,
             ':ref' => $ref
         ]);
 
         if ($stmt->rowCount() > 0) {
             $auditLog->action = 'STAGE2_RECOMMENDATION';
-            $auditLog->details = "Issued Stage 2 Recommendation for reservation [{$ref}] by {$adminFullName}. Remarks: {$finalRemarks}";
+            $auditLog->details = "Issued Stage 2 Recommendation for reservation [{$ref}] by {$adminFullName}. Attached signed document: {$signedDocPath}. Remarks: {$finalRemarks}";
             $auditLog->log();
 
             echo json_encode([
                 'success' => true,
-                'message' => "Stage 2 Recommendation recorded for {$ref}. Forwarded to Stage 3: Final Clearance.",
+                'message' => "Stage 2 Recommendation recorded for {$ref}. Pirmadong dokumento ay na-attach at naipasa na sa Stage 3: Final Clearance.",
                 'stage' => 'stage3',
                 'status' => 'Pending Clearance',
                 'stage2By' => $adminFullName,
                 'stage2Date' => date('M d, Y h:i A'),
-                'stage2Remarks' => $finalRemarks
+                'stage2Remarks' => $finalRemarks,
+                'recommendationDocPath' => $signedDocPath
             ]);
         } else {
             echo json_encode(['success' => false, 'message' => "Reservation {$ref} not found or no changes made."]);
@@ -172,13 +213,14 @@ try {
         }
 
         // Sequence Validation: Must be endorsed AND recommended before final clearance
-        $chkStmt = $db->prepare("SELECT status FROM reservations WHERE reference_no = :ref LIMIT 1");
+        $chkStmt = $db->prepare("SELECT status, clearance_doc_path FROM reservations WHERE reference_no = :ref LIMIT 1");
         $chkStmt->execute([':ref' => $ref]);
-        $currSt = $chkStmt->fetchColumn();
-        if (!$currSt) {
+        $currRow = $chkStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$currRow) {
             echo json_encode(['success' => false, 'message' => "Reservation {$ref} not found."]);
             exit;
         }
+        $currSt = $currRow['status'];
         if (in_array($currSt, ['Pending', 'Pending Endorsement', 'Awaiting Endorsement'])) {
             echo json_encode(['success' => false, 'message' => 'Hindi pa maaaring aprubahan ang reservation na ito dahil kailangan muna itong i-endorse ng Endorsement Officer (Stage 1).']);
             exit;
@@ -188,35 +230,75 @@ try {
             exit;
         }
 
-        $defaultRemarks = 'Final institutional clearance granted. Official permit and venue gate pass authorized.';
+        // Signed Clearance Document Upload Handling
+        $clearanceDocPath = $currRow['clearance_doc_path'] ?? null;
+        if (isset($_FILES['signed_doc']) && $_FILES['signed_doc']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = __DIR__ . '/../uploads/documents/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            $fileTmp = $_FILES['signed_doc']['tmp_name'];
+            $fileOrig = $_FILES['signed_doc']['name'];
+            $fileExt = strtolower(pathinfo($fileOrig, PATHINFO_EXTENSION));
+            $allowedExts = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
+
+            if (!in_array($fileExt, $allowedExts)) {
+                echo json_encode(['success' => false, 'message' => 'Invalid file format. Mangyaring mag-upload ng PDF, PNG, JPG, o DOC document.']);
+                exit;
+            }
+
+            if ($_FILES['signed_doc']['size'] > 15 * 1024 * 1024) {
+                echo json_encode(['success' => false, 'message' => 'Masyadong malaki ang file. Maximum limit is 15MB.']);
+                exit;
+            }
+
+            $cleanRef = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $ref);
+            $newFileName = 'signed_clr_' . $cleanRef . '_' . time() . '.' . $fileExt;
+            $destPath = $uploadDir . $newFileName;
+
+            if (move_uploaded_file($fileTmp, $destPath)) {
+                $clearanceDocPath = 'uploads/documents/' . $newFileName;
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Hindi matagumpay na na-save ang uploaded signed document.']);
+                exit;
+            }
+        } elseif (empty($clearanceDocPath)) {
+            echo json_encode(['success' => false, 'message' => 'Kailangan munang mag-upload ng pirmadong clearance / approved permit form bago i-finalize ang approval.']);
+            exit;
+        }
+
+        $defaultRemarks = 'Final institutional clearance granted. Official permit authorized with signed document attached.';
         $finalRemarks = !empty($remarks) ? $remarks : $defaultRemarks;
 
         $stmt = $db->prepare("UPDATE reservations SET 
             status = 'Approved',
             cleared_by = :user_id,
             cleared_at = NOW(),
-            clearance_remarks = :remarks
+            clearance_remarks = :remarks,
+            clearance_doc_path = :doc_path
             WHERE reference_no = :ref");
         
         $stmt->execute([
             ':user_id' => $adminUserId,
             ':remarks' => $finalRemarks,
+            ':doc_path' => $clearanceDocPath,
             ':ref' => $ref
         ]);
 
         if ($stmt->rowCount() > 0) {
             $auditLog->action = 'STAGE3_CLEARANCE';
-            $auditLog->details = "Granted Stage 3 final institutional clearance for reservation [{$ref}] by {$adminFullName}. Remarks: {$finalRemarks}";
+            $auditLog->details = "Granted Stage 3 final institutional clearance for reservation [{$ref}] by {$adminFullName}. Attached signed clearance document: {$clearanceDocPath}. Remarks: {$finalRemarks}";
             $auditLog->log();
 
             echo json_encode([
                 'success' => true,
-                'message' => "Stage 3 Final Clearance granted for {$ref}. Official permit issued.",
+                'message' => "Stage 3 Final Clearance granted for {$ref}! Pirmadong dokumento ay na-attach at opisyal nang naaprubahan ang reservation.",
                 'stage' => 'approved',
                 'status' => 'Approved',
                 'stage3By' => $adminFullName,
                 'stage3Date' => date('M d, Y h:i A'),
-                'stage3Remarks' => $finalRemarks
+                'stage3Remarks' => $finalRemarks,
+                'clearanceDocPath' => $clearanceDocPath
             ]);
         } else {
             echo json_encode(['success' => false, 'message' => "Reservation {$ref} not found or no changes made."]);

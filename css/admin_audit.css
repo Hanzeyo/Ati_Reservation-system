@@ -271,3 +271,131 @@
   color: #174d2f;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
+
+/* ==========================================================================
+   Audit Pagination Bar & Navigation
+   ========================================================================== */
+.audit-pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.95rem 1.4rem;
+  background: #fbfdfc;
+  border-top: 1.5px solid #edf4ef;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pagination-info {
+  font-size: 0.84rem;
+  color: #4b6655;
+}
+
+.pagination-info strong {
+  color: #172d1f;
+  font-weight: 700;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.pagination-page-size {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: #4b6655;
+  font-weight: 600;
+}
+
+.pagination-size-select {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1b3828;
+  background: #ffffff;
+  border: 1.2px solid #cfe0d5;
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.pagination-size-select:focus {
+  border-color: #174d2f;
+  box-shadow: 0 0 0 3px rgba(23, 77, 47, 0.12);
+}
+
+.pagination-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-page-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #274533;
+  background: #ffffff;
+  border: 1.2px solid #d8e5dd;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+  font-family: inherit;
+}
+
+.btn-page-nav:hover:not(:disabled) {
+  background: #f0f7f2;
+  border-color: #174d2f;
+  color: #174d2f;
+}
+
+.btn-page-nav.active {
+  background: #174d2f;
+  color: #ffffff;
+  border-color: #174d2f;
+  box-shadow: 0 2px 6px rgba(23, 77, 47, 0.25);
+}
+
+.btn-page-nav:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 32px;
+  font-size: 0.85rem;
+  color: #8ca394;
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  .audit-pagination-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+  .pagination-controls {
+    justify-content: space-between;
+  }
+}
