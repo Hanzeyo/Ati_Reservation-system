@@ -44,4 +44,15 @@ if (isset($_SESSION['user_id']) && isset($db)) {
         $currentUserResCount = 0;
     }
 }
+
+// Automatically conclude approved reservations whose end_date has elapsed
+if (isset($db)) {
+    try {
+        $todayStr = date('Y-m-d');
+        $autoCompStmt = $db->prepare("UPDATE reservations SET status = 'Completed', updated_at = NOW() WHERE status = 'Approved' AND end_date < :today AND deleted_at IS NULL");
+        $autoCompStmt->execute([':today' => $todayStr]);
+    } catch (Exception $e) {
+        // Silently skip if database or schema is migrating
+    }
+}
 ?>

@@ -461,13 +461,24 @@ function viewReservationDetails(refId) {
   // Button state depending on status
   const btnApprove = document.getElementById('btnModalApprove');
   const btnDecline = document.getElementById('btnModalDecline');
+  const btnComplete = document.getElementById('btnModalComplete');
 
-  if (data.status === 'approved' || data.status === 'rejected') {
+  if (data.status === 'completed') {
     if (btnApprove) btnApprove.style.display = 'none';
     if (btnDecline) btnDecline.style.display = 'none';
+    if (btnComplete) btnComplete.style.display = 'none';
+  } else if (data.status === 'approved') {
+    if (btnApprove) btnApprove.style.display = 'none';
+    if (btnDecline) btnDecline.style.display = 'none';
+    if (btnComplete) btnComplete.style.display = 'inline-flex';
+  } else if (data.status === 'rejected') {
+    if (btnApprove) btnApprove.style.display = 'none';
+    if (btnDecline) btnDecline.style.display = 'none';
+    if (btnComplete) btnComplete.style.display = 'none';
   } else {
     if (btnApprove) btnApprove.style.display = 'inline-flex';
     if (btnDecline) btnDecline.style.display = 'inline-flex';
+    if (btnComplete) btnComplete.style.display = 'none';
   }
 
   const modal = document.getElementById('reservationDetailsModal');
@@ -478,6 +489,14 @@ function closeReservationModal() {
   const modal = document.getElementById('reservationDetailsModal');
   if (modal) modal.style.display = 'none';
   currentModalActiveRef = null;
+}
+
+function modalTriggerComplete() {
+  if (currentModalActiveRef && reservationsData[currentModalActiveRef]) {
+    const item = reservationsData[currentModalActiveRef];
+    closeReservationModal();
+    confirmCompleteReservation(item.ref, item.applicant);
+  }
 }
 
 function modalTriggerApprove() {
@@ -605,6 +624,8 @@ function applyCombinedAdminFilters() {
         matchesTab = (status === 'pending');
       } else if (adminFilterState.tab === 'approved') {
         matchesTab = (status === 'approved');
+      } else if (adminFilterState.tab === 'completed') {
+        matchesTab = (status === 'completed');
       } else if (adminFilterState.tab === 'halls') {
         matchesTab = (category === 'halls');
       } else if (adminFilterState.tab === 'dorms') {
@@ -703,6 +724,7 @@ function updateKPIBadges() {
   let allCount = 0;
   let pendingCount = 0;
   let approvedCount = 0;
+  let completedCount = 0;
   let hallsCount = 0;
   let dormsCount = 0;
   let archivedCount = 0;
@@ -719,6 +741,7 @@ function updateKPIBadges() {
     const cat = row.getAttribute('data-category');
     if (st === 'pending') pendingCount++;
     if (st === 'approved') approvedCount++;
+    if (st === 'completed') completedCount++;
     if (cat === 'halls') hallsCount++;
     if (cat === 'dorms') dormsCount++;
   });
@@ -726,6 +749,7 @@ function updateKPIBadges() {
   const tabAll = document.getElementById('tabCountAll');
   const tabPending = document.getElementById('tabCountPending');
   const tabApproved = document.getElementById('tabCountApproved');
+  const tabCompleted = document.getElementById('tabCountCompleted');
   const tabHalls = document.getElementById('tabCountHalls');
   const tabDorms = document.getElementById('tabCountDorms');
   const tabArchived = document.getElementById('tabCountArchived');
@@ -734,6 +758,7 @@ function updateKPIBadges() {
   if (tabAll) tabAll.textContent = allCount;
   if (tabPending) tabPending.textContent = pendingCount;
   if (tabApproved) tabApproved.textContent = approvedCount;
+  if (tabCompleted) tabCompleted.textContent = completedCount;
   if (tabHalls) tabHalls.textContent = hallsCount;
   if (tabDorms) tabDorms.textContent = dormsCount;
   if (tabArchived) tabArchived.textContent = archivedCount;
@@ -1214,6 +1239,75 @@ async function confirmPermanentDeleteReservation(refId, applicantName) {
     }
   } catch (err) {
     showAdminToast('Server error while permanently deleting reservation.', 'decline');
+  }
+}
+
+/**
+ * Conclude and mark reservation as Completed
+ */
+async function confirmCompleteReservation(refId, applicantName) {
+  if (!confirm(`Mark reservation "${refId}" (${applicantName}) as Completed & Concluded?\n\nThis will officially close the activity and archive it in the Completed history.`)) {
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'complete_reservation');
+    formData.append('ref', refId);
+
+    const response = await fetch('ajax/reservation_actions.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      const row = document.querySelector(`tr[data-ref="${refId}"]`);
+      if (row) {
+        row.setAttribute('data-status', 'completed');
+        row.setAttribute('data-stage', 'completed');
+
+        // Update status cell (column 6)
+        const statusCell = row.cells[5];
+        if (statusCell) {
+          statusCell.innerHTML = `
+            <span class="status-pill status-completed">
+              <span class="status-dot"></span>
+              Completed &amp; Concluded
+            </span>
+          `;
+        }
+
+        // Update actions wrap (column 7)
+        const actionsWrap = row.querySelector('.action-buttons-wrap');
+        if (actionsWrap) {
+          actionsWrap.innerHTML = `
+            <span class="badge-completed-note">Completed</span>
+            <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')" title="View Booking Form">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+            <button type="button" class="btn-table-action delete-res" onclick="confirmDeleteReservation('${refId}', '${applicantName.replace(/'/g, "\\'")}')" title="Move Reservation to Trash (Soft Delete)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          `;
+        }
+      }
+
+      if (reservationsData[refId]) {
+        reservationsData[refId].status = 'completed';
+        reservationsData[refId].stage = 'completed';
+      }
+
+      showAdminToast(result.message || `Reservation ${refId} has been successfully completed!`, 'success');
+      updateKPIBadges();
+      applyCombinedAdminFilters();
+    } else {
+      showAdminToast(result.message || 'Failed to complete reservation.', 'decline');
+    }
+  } catch (err) {
+    console.error('Complete reservation error:', err);
+    showAdminToast('Server error while marking reservation as completed.', 'decline');
   }
 }
 

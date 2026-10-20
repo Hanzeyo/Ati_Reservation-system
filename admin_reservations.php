@@ -30,6 +30,7 @@ $allReservations = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 $totalActiveReservations = 0;
 $pendingReservations = 0;
 $approvedReservations = 0;
+$completedReservations = 0;
 $hallsCount = 0;
 $dormsCount = 0;
 $archivedReservationsCount = 0;
@@ -40,7 +41,8 @@ foreach ($allReservations as $row) {
     $isArchived = !empty($row['deleted_at']);
     $st = $row['status'] ?? 'Pending';
     $isPending = in_array($st, ['Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance']);
-    $isApproved = in_array($st, ['Approved', 'Completed']);
+    $isApproved = ($st === 'Approved');
+    $isCompleted = ($st === 'Completed');
     $isRejected = in_array($st, ['Rejected', 'Cancelled']);
 
     $isDorm = (($row['facility_type'] ?? '') === 'dormitories' || !empty($row['room_number']));
@@ -51,6 +53,7 @@ foreach ($allReservations as $row) {
         $totalActiveReservations++;
         if ($isPending) $pendingReservations++;
         if ($isApproved) $approvedReservations++;
+        if ($isCompleted) $completedReservations++;
         if ($isDorm) {
             $dormsCount++;
         } else {
@@ -75,9 +78,9 @@ foreach ($allReservations as $row) {
     $isStage1 = in_array($st, ['Pending', 'Pending Endorsement', 'Awaiting Endorsement']);
     $isStage2 = in_array($st, ['Pending Recommendation', 'Awaiting Recommendation']);
     $isStage3 = in_array($st, ['Pending Clearance', 'Awaiting Clearance']);
-    $stageKey = $isApproved ? 'approved' : ($isRejected ? 'rejected' : ($isStage1 ? 'stage1' : ($isStage2 ? 'stage2' : 'stage3')));
+    $stageKey = $isCompleted ? 'completed' : ($isApproved ? 'approved' : ($isRejected ? 'rejected' : ($isStage1 ? 'stage1' : ($isStage2 ? 'stage2' : 'stage3'))));
 
-    $normalizedStatus = $isApproved ? 'approved' : ($isRejected ? 'rejected' : 'pending');
+    $normalizedStatus = $isCompleted ? 'completed' : ($isApproved ? 'approved' : ($isRejected ? 'rejected' : 'pending'));
 
     $reservationsData[$ref] = [
         'id' => (int)$row['id'],
@@ -235,6 +238,10 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
             <button type="button" class="filter-tab-btn" data-filter="approved" onclick="applyTabFilter('approved')">
               <span>Approved</span>
               <span class="tab-count-pill" id="tabCountApproved"><?= $approvedReservations ?></span>
+            </button>
+            <button type="button" class="filter-tab-btn" data-filter="completed" onclick="applyTabFilter('completed')">
+              <span>Completed</span>
+              <span class="tab-count-pill" id="tabCountCompleted"><?= $completedReservations ?></span>
             </button>
             <button type="button" class="filter-tab-btn" data-filter="halls" onclick="applyTabFilter('halls')">
               <span>Function Halls</span>
@@ -400,6 +407,11 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
                           Archived: <?= $item['deletedAt'] ?>
                         </span>
                       <?php endif; ?>
+                    <?php elseif ($item['stage'] === 'completed' || $item['rawStatus'] === 'Completed'): ?>
+                      <span class="status-pill status-completed">
+                        <span class="status-dot"></span>
+                        Completed &amp; Concluded
+                      </span>
                     <?php elseif ($item['stage'] === 'approved'): ?>
                       <span class="status-pill status-approved">
                         <span class="status-dot"></span>
@@ -485,8 +497,14 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
                           <?php else: ?>
                             <span style="font-size:0.75rem; font-weight:700; color:#047857; background:#ecfdf5; padding:0.25rem 0.55rem; border-radius:9999px; border:1px solid #a7f3d0;">Awaiting Clearance</span>
                           <?php endif; ?>
+                        <?php elseif ($item['stage'] === 'completed' || $item['rawStatus'] === 'Completed'): ?>
+                          <span class="badge-completed-note">Completed</span>
                         <?php elseif ($item['stage'] === 'approved'): ?>
-                          <span class="badge-approved-note">Approved by Director</span>
+                          <button type="button" class="btn-table-action complete" onclick="confirmCompleteReservation('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Mark Reservation as Completed &amp; Concluded">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Complete</span>
+                          </button>
+                          <span class="badge-approved-note">Approved</span>
                         <?php else: ?>
                           <span class="badge-declined-note">Declined</span>
                         <?php endif; ?>
@@ -582,6 +600,10 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
       <div class="admin-modal-footer">
         <button type="button" class="btn-system-secondary" onclick="closeReservationModal()">Close Review</button>
+        <button type="button" class="btn-complete-modal" id="btnModalComplete" onclick="modalTriggerComplete()" style="display: none;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          <span>Mark as Completed</span>
+        </button>
         <button type="button" class="btn-decline-modal" id="btnModalDecline" onclick="modalTriggerDecline()">Decline Request</button>
         <button type="button" class="btn-approve-modal" id="btnModalApprove" onclick="modalTriggerApprove()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
