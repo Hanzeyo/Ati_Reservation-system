@@ -17,11 +17,17 @@ $resQuery = "SELECT r.*,
                     u.full_name AS applicant_name,
                     u.email AS applicant_email,
                     u.contact_number AS applicant_phone,
-                    u.office_agency AS applicant_agency
+                    u.office_agency AS applicant_agency,
+                    u_end.full_name AS endorser_name,
+                    u_rec.full_name AS recommender_name,
+                    u_clr.full_name AS clearer_name
              FROM reservations r
              LEFT JOIN facilities f ON r.facility_id = f.id
              LEFT JOIN rooms rm ON r.room_id = rm.id
              LEFT JOIN users u ON r.user_id = u.id
+             LEFT JOIN users u_end ON r.endorsed_by = u_end.id
+             LEFT JOIN users u_rec ON r.recommended_by = u_rec.id
+             LEFT JOIN users u_clr ON r.cleared_by = u_clr.id
              ORDER BY r.id DESC";
 
 $stmt = $db->query($resQuery);
@@ -98,6 +104,17 @@ foreach ($allReservations as $row) {
         'eventTitle' => $row['event_title'] ?: 'Official Institutional Activity',
         'equipment' => $row['special_notes'] ?: 'Standard Logistics & Venue Equipment',
         'documentPath' => $row['document_path'] ?: '',
+        'recommendationDocPath' => $row['recommendation_doc_path'] ?: '',
+        'clearanceDocPath' => $row['clearance_doc_path'] ?: '',
+        'endorserName' => $row['endorser_name'] ?: '',
+        'endorsedAt' => !empty($row['endorsed_at']) ? date('M d, Y • h:i A', strtotime($row['endorsed_at'])) : '',
+        'endorsementRemarks' => $row['endorsement_remarks'] ?: '',
+        'recommenderName' => $row['recommender_name'] ?: '',
+        'recommendedAt' => !empty($row['recommended_at']) ? date('M d, Y • h:i A', strtotime($row['recommended_at'])) : '',
+        'recommendationRemarks' => $row['recommendation_remarks'] ?: '',
+        'clearerName' => $row['clearer_name'] ?: '',
+        'clearedAt' => !empty($row['cleared_at']) ? date('M d, Y • h:i A', strtotime($row['cleared_at'])) : '',
+        'clearanceRemarks' => $row['clearance_remarks'] ?: '',
         'status' => $normalizedStatus,
         'stage' => $stageKey,
         'rawStatus' => $st,
@@ -139,6 +156,7 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
   <link rel="stylesheet" href="css/booking.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/my_reservations.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/admin_dashboard.css?v=<?php echo time(); ?>">
+  <link rel="stylesheet" href="css/admin_approvals.css?v=<?php echo time(); ?>">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
 
@@ -536,7 +554,7 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
        MODAL: RESERVATION DETAILS & DOCUMENT REVIEW
        ========================================================================== -->
   <div class="admin-modal-overlay" id="reservationDetailsModal" style="display: none;">
-    <div class="admin-modal-card">
+    <div class="admin-modal-card" style="max-width: 840px;">
       <div class="admin-modal-header">
         <div class="modal-title-wrap">
           <span class="modal-badge-ref" id="modalRefId">R-2026-0891</span>
@@ -584,8 +602,9 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
           <span id="modalEquipment">Projector & Screen, 4 Wireless Microphones, Stage Rostrum, Classroom Type Seating</span>
         </div>
 
+        <!-- Supporting / Signed Document Attachment -->
         <div class="modal-data-box" style="margin-top: 1rem;">
-          <label>Official Supporting Document / Letter of Intent</label>
+          <label id="modalDocSectionLabel">Original Client Supporting Document (Letter of Intent / Request Memo)</label>
           <div class="attachment-preview-box" id="modalDocBox">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
             <div class="attachment-meta">
@@ -594,6 +613,11 @@ $facilitiesList = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
             </div>
             <a id="btnModalPreviewDoc" href="#" target="_blank" class="btn-preview-file" style="text-decoration: none;">View Document</a>
             <span id="modalNoDocText" style="display:none; font-size:0.8rem; color:#8a9e92; font-style:italic;">No document attached</span>
+          </div>
+          <!-- Clean secondary link for original client request memo if a signed document is active -->
+          <div id="modalClientDocAltWrap" style="display: none; margin-top: 0.5rem; font-size: 0.8rem; padding: 0.4rem 0.75rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px;">
+            <span style="color: #64748b;">Original Client Upload (Request Memo): </span>
+            <a id="modalClientDocAltLink" href="#" target="_blank" style="color: #166534; font-weight: 600; text-decoration: underline;">View Client Request Letter</a>
           </div>
         </div>
       </div>

@@ -437,25 +437,98 @@ function viewReservationDetails(refId) {
   const initials = (data.applicant || 'ATI').split(' ').map(n => n[0]).slice(0, 2).join('');
   document.getElementById('modalAvatar').textContent = initials;
 
-  // Document attachment handling
+  // =========================================================================
+  // DOCUMENT HANDLING (AUTOMATICALLY POINTS TO SIGNED DOCUMENT IF PRESENT)
+  // =========================================================================
   const docLink = document.getElementById('btnModalPreviewDoc');
   const docTitle = document.getElementById('modalDocTitle');
+  const docSub = document.getElementById('modalDocSub');
   const noDocText = document.getElementById('modalNoDocText');
+  const docLabel = document.getElementById('modalDocSectionLabel');
+  const clientAltWrap = document.getElementById('modalClientDocAltWrap');
+  const clientAltLink = document.getElementById('modalClientDocAltLink');
 
-  if (data.documentPath && data.documentPath.trim() !== '') {
+  const hasClearanceDoc = data.clearanceDocPath && data.clearanceDocPath.trim() !== '';
+  const hasRecommendationDoc = data.recommendationDocPath && data.recommendationDocPath.trim() !== '';
+  const hasClientDoc = data.documentPath && data.documentPath.trim() !== '';
+
+  if (hasClearanceDoc) {
+    // Stage 3 / Approved Signed Permit Document
+    if (docLink) {
+      docLink.style.display = 'inline-flex';
+      docLink.href = data.clearanceDocPath;
+      docLink.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><polyline points="9 15 12 18 15 15"></polyline></svg>View Signed Permit (Clearance)`;
+    }
+    if (docTitle) {
+      docTitle.textContent = data.clearanceDocPath.split('/').pop() || 'Signed_Clearance_Document.pdf';
+    }
+    if (docSub) {
+      docSub.innerHTML = '<span style="color: #166534; font-weight: 700;">✓ Signed Clearance (Approved)</span>';
+    }
+    if (docLabel) {
+      docLabel.textContent = 'Official Supporting / Signed Document';
+    }
+    if (noDocText) noDocText.style.display = 'none';
+
+    // Show secondary link for original client memo if available
+    if (hasClientDoc && clientAltWrap && clientAltLink) {
+      clientAltWrap.style.display = 'block';
+      clientAltLink.href = data.documentPath;
+    } else if (clientAltWrap) {
+      clientAltWrap.style.display = 'none';
+    }
+  } else if (hasRecommendationDoc) {
+    // Stage 2 Signed Recommendation Form
+    if (docLink) {
+      docLink.style.display = 'inline-flex';
+      docLink.href = data.recommendationDocPath;
+      docLink.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 5px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><polyline points="9 15 12 18 15 15"></polyline></svg>View Signed Form (Stage 2)`;
+    }
+    if (docTitle) {
+      docTitle.textContent = data.recommendationDocPath.split('/').pop() || 'Signed_Recommendation_Form.pdf';
+    }
+    if (docSub) {
+      docSub.innerHTML = '<span style="color: #2563eb; font-weight: 700;">✓ Signed Form (Recommendation)</span>';
+    }
+    if (docLabel) {
+      docLabel.textContent = 'Official Supporting / Signed Document';
+    }
+    if (noDocText) noDocText.style.display = 'none';
+
+    if (hasClientDoc && clientAltWrap && clientAltLink) {
+      clientAltWrap.style.display = 'block';
+      clientAltLink.href = data.documentPath;
+    } else if (clientAltWrap) {
+      clientAltWrap.style.display = 'none';
+    }
+  } else if (hasClientDoc) {
+    // Initial Client Request Letter
     if (docLink) {
       docLink.style.display = 'inline-flex';
       docLink.href = data.documentPath;
+      docLink.textContent = 'View Document';
     }
     if (docTitle) {
-      const fileName = data.documentPath.split('/').pop();
-      docTitle.textContent = fileName || 'Official_Document.pdf';
+      docTitle.textContent = data.documentPath.split('/').pop() || 'Official_Request_Document.pdf';
+    }
+    if (docSub) {
+      docSub.textContent = 'Original Client Supporting Document';
+    }
+    if (docLabel) {
+      docLabel.textContent = 'Original Client Supporting Document (Letter of Intent / Request Memo)';
     }
     if (noDocText) noDocText.style.display = 'none';
+    if (clientAltWrap) clientAltWrap.style.display = 'none';
   } else {
+    // No file uploaded
     if (docLink) docLink.style.display = 'none';
     if (docTitle) docTitle.textContent = 'No Document Attached';
+    if (docSub) docSub.textContent = 'Walang nakalakip na dokumento';
+    if (docLabel) {
+      docLabel.textContent = 'Original Client Supporting Document (Letter of Intent / Request Memo)';
+    }
     if (noDocText) noDocText.style.display = 'inline-block';
+    if (clientAltWrap) clientAltWrap.style.display = 'none';
   }
 
   // Button state depending on status
