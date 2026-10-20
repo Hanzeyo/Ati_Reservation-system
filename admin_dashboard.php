@@ -95,7 +95,7 @@ $totalUsersCount = $userCountStmt ? (int) $userCountStmt->fetchColumn() : 0;
 
 // 3. Fetch Real Monitored Facilities with Live Status
 $today = date('Y-m-d');
-$facStmt = $db->query("SELECT * FROM facilities ORDER BY id ASC");
+$facStmt = $db->query("SELECT * FROM facilities WHERE deleted_at IS NULL ORDER BY id ASC");
 $monitoredFacilities = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 $facilitiesCount = count($monitoredFacilities);
 

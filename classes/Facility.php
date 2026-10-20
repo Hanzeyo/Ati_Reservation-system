@@ -17,11 +17,15 @@ class Facility extends BaseModel {
     public $status;
     public $maintenance_reason;
     public $est_resume_date;
+    public $deleted_at;
 
-    public function getAll($type = null) {
-        $query = "SELECT * FROM " . $this->table_name;
+    public function getAll($type = null, $includeDeleted = false) {
+        $query = "SELECT * FROM " . $this->table_name . " WHERE 1=1";
+        if (!$includeDeleted) {
+            $query .= " AND deleted_at IS NULL";
+        }
         if ($type) {
-            $query .= " WHERE type = :type";
+            $query .= " AND type = :type";
         }
         $query .= " ORDER BY name ASC";
         

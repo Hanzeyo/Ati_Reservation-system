@@ -37,7 +37,7 @@ if (!function_exists('isAdmin')) {
 $currentUserResCount = 0;
 if (isset($_SESSION['user_id']) && isset($db)) {
     try {
-        $stmtCount = $db->prepare("SELECT COUNT(*) FROM reservations WHERE user_id = :uid");
+        $stmtCount = $db->prepare("SELECT COUNT(*) FROM reservations WHERE user_id = :uid AND deleted_at IS NULL");
         $stmtCount->execute([':uid' => (int)$_SESSION['user_id']]);
         $currentUserResCount = (int)$stmtCount->fetchColumn();
     } catch (Exception $e) {

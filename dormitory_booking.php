@@ -5,7 +5,7 @@ require_once __DIR__ . '/includes/auth_guard.php';
 $selectedFacilityId = isset($_GET['facility_id']) ? intval($_GET['facility_id']) : 0;
 
 // Fetch active dormitory facilities from MySQL
-$dormStmt = $db->query("SELECT * FROM facilities WHERE type = 'dorms' AND status != 'inactive' ORDER BY id ASC");
+$dormStmt = $db->query("SELECT * FROM facilities WHERE type = 'dorms' AND status != 'inactive' AND deleted_at IS NULL ORDER BY id ASC");
 $dbDorms = $dormStmt ? $dormStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 $dormCount = count($dbDorms);
 
@@ -141,7 +141,7 @@ $dormCount = count($dbDorms);
             </a>
             <?php endif; ?>
             <div style="height: 1px; background: #e5ede7; margin: 0.35rem 0;"></div>
-            <a href="index.php" class="dropdown-item danger">
+            <a href="logout.php" class="dropdown-item danger">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
@@ -299,7 +299,7 @@ $dormCount = count($dbDorms);
       </div>
 
       <div class="drawer-footer">
-        <a href="index.php" class="drawer-logout-btn">
+        <a href="logout.php" class="drawer-logout-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
@@ -1148,6 +1148,9 @@ $dormCount = count($dbDorms);
     </div>
   </main>
 
+  <script>
+    window.currentUserFullName = <?= json_encode($_SESSION['full_name'] ?? 'Authorized Officer') ?>;
+  </script>
   <script src="js/booking.js?v=<?php echo time(); ?>"></script>
   <script>
     function closeRoomModal() {

@@ -31,14 +31,22 @@ if (is_numeric($rawFacId) && (int)$rawFacId > 0) {
 
 $fac = null;
 if ($facility_id > 0) {
-    $stmt = $conn->prepare("SELECT id, name, status FROM facilities WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT id, name, status, deleted_at FROM facilities WHERE id = ? LIMIT 1");
     $stmt->execute([$facility_id]);
     $fac = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 if (!$fac && !empty($facility_name)) {
-    $stmt = $conn->prepare("SELECT id, name, status FROM facilities WHERE name = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT id, name, status, deleted_at FROM facilities WHERE name = ? LIMIT 1");
     $stmt->execute([$facility_name]);
     $fac = $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+if ($fac && (!empty($fac['deleted_at']) || $fac['status'] === 'inactive')) {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Hindi maaaring i-book ang pasilidad na ito dahil ito ay kasalukuyang naka-archive o hindi aktibo.'
+    ]);
+    exit;
 }
 
 if ($fac && $fac['status'] === 'maintenance') {
@@ -174,6 +182,9 @@ if (move_uploaded_file($_FILES['document']['tmp_name'], $targetPath)) {
 
 try {
     if ($reservation->create()) {
+        if (isset($auditLog)) {
+            $auditLog->log($_SESSION['user_id'], 'CREATE_RESERVATION', "Submitted reservation [{$refNum}] for {$event_title} ({$facility_name})");
+        }
         echo json_encode([
             'success' => true,
             'message' => 'Reservation created successfully',

@@ -1658,6 +1658,7 @@ function initStepperNavigation() {
       const dormFloorText = document.getElementById('dormReviewFloor')?.textContent?.trim() || (bookingState.selectedFacility?.name || 'Suite 1');
       const dormStayText = document.getElementById('dormReviewStay')?.textContent?.trim() || bookingState.date || 'Selected Dates';
 
+      const currentUserName = window.currentUserFullName || 'Authorized Staff';
       const submitData = {
         isDorm: true,
         refNum: refNum,
@@ -1668,7 +1669,7 @@ function initStepperNavigation() {
         time: timeSlot,
         pax: curPax,
         purpose: curTitle,
-        requestedBy: `Juan Dela Cruz (${curDivision})`
+        requestedBy: `${currentUserName} (${curDivision})`
       };
 
       fetch('ajax/submit_booking.php', {
@@ -1690,9 +1691,10 @@ function initStepperNavigation() {
         window.showReservationSuccessModal(submitData);
       })
       .catch(err => {
+        console.error(err);
         btnSubmitDormitory.innerHTML = origText;
         btnSubmitDormitory.disabled = false;
-        window.showReservationSuccessModal(submitData);
+        showValidationModal('Submission Error', 'A network or transmission error occurred while processing your lodging request. Please check your connection and try again.');
       });
     });
   }
@@ -1748,6 +1750,7 @@ function initStepperNavigation() {
       finalSubmitBtn.innerHTML = '<span>Submitting Please Wait...</span>';
       finalSubmitBtn.disabled = true;
 
+      const currentUserName = window.currentUserFullName || 'Authorized Staff';
       const submitData = {
         isDorm: isDorm,
         refNum: refNum,
@@ -1760,7 +1763,7 @@ function initStepperNavigation() {
         time: timeSlot || 'Whole Day (8:00 AM - 5:00 PM)',
         pax: bookingState.participants || '200',
         purpose: bookingState.eventTitle || 'Regional Agricultural Extension Activity',
-        requestedBy: `Juan Dela Cruz (${curDivision})`
+        requestedBy: `${currentUserName} (${curDivision})`
       };
 
       fetch('ajax/submit_booking.php', {
@@ -1785,7 +1788,7 @@ function initStepperNavigation() {
           console.error(err);
           finalSubmitBtn.innerHTML = origText;
           finalSubmitBtn.disabled = false;
-          window.showReservationSuccessModal(submitData);
+          showValidationModal('Submission Error', 'A network or transmission error occurred while processing your booking request. Please check your connection and try again.');
         });
     });
   }

@@ -10,7 +10,7 @@ $reqCategory = isset($_GET['category']) ? strtolower(trim($_GET['category'])) : 
 $selectedFacilityId = isset($_GET['facility_id']) ? intval($_GET['facility_id']) : 0;
 
 // Fetch all active facilities dynamically from MySQL
-$facStmt = $db->query("SELECT * FROM facilities WHERE status != 'inactive' ORDER BY id ASC");
+$facStmt = $db->query("SELECT * FROM facilities WHERE status != 'inactive' AND deleted_at IS NULL ORDER BY id ASC");
 $dbFacilities = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
 // If facility_id is passed, align category with the requested facility
@@ -157,7 +157,7 @@ $totalCount = count($dbFacilities);
               </a>
             <?php endif; ?>
             <div style="height: 1px; background: #e5ede7; margin: 0.35rem 0;"></div>
-            <a href="index.php" class="dropdown-item danger">
+            <a href="logout.php" class="dropdown-item danger">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
@@ -309,7 +309,7 @@ $totalCount = count($dbFacilities);
 
       <!-- Drawer Footer -->
       <div class="drawer-footer">
-        <a href="index.php" class="drawer-logout-btn">
+        <a href="logout.php" class="drawer-logout-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
@@ -1269,6 +1269,9 @@ $totalCount = count($dbFacilities);
     </div>
   </main>
 
+  <script>
+    window.currentUserFullName = <?= json_encode($_SESSION['full_name'] ?? 'Authorized Officer') ?>;
+  </script>
   <script src="js/booking.js?v=<?php echo time(); ?>"></script>
 </body>
 

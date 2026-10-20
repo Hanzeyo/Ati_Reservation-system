@@ -10,10 +10,18 @@ const auditFilterState = {
   query: ''
 };
 
+const auditPaginationState = {
+  currentPage: 1,
+  pageSize: 15,
+  filteredRows: [],
+  filteredCards: []
+};
+
 let currentViewMode = 'table';
 
 document.addEventListener('DOMContentLoaded', () => {
   updateAuditCounters();
+  applyAuditFilters();
 
   // Restore desktop sidebar collapsed preference if previously saved
   if (window.innerWidth > 960 && localStorage.getItem('admin_sidebar_collapsed') === 'true') {
@@ -39,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
    ========================================================================== */
 function filterAuditByCategory(category) {
   auditFilterState.category = category;
+  auditPaginationState.currentPage = 1;
 
   document.querySelectorAll('.my-res-stat-card[data-cat]').forEach(card => {
     if (card.getAttribute('data-cat') === category) {
@@ -61,6 +70,7 @@ function filterAuditByCategory(category) {
 
 function handleAuditSearch(query) {
   auditFilterState.query = (query || '').toLowerCase().trim();
+  auditPaginationState.currentPage = 1;
 
   const clearBtn = document.getElementById('auditSearchClear');
   if (clearBtn) {
@@ -81,11 +91,13 @@ function clearAuditSearch() {
 
 function handleSeverityFilter(val) {
   auditFilterState.severity = val;
+  auditPaginationState.currentPage = 1;
   applyAuditFilters();
 }
 
 function handleTimeframeFilter(val) {
   auditFilterState.timeframe = val;
+  auditPaginationState.currentPage = 1;
   applyAuditFilters();
 }
 
@@ -94,6 +106,7 @@ function resetAllAuditFilters() {
   auditFilterState.timeframe = 'all';
   auditFilterState.severity = 'all';
   auditFilterState.query = '';
+  auditPaginationState.currentPage = 1;
 
   const input = document.getElementById('auditSearchInput');
   if (input) input.value = '';
@@ -131,9 +144,11 @@ function applyAuditFilters() {
   const timelineCards = document.querySelectorAll('.timeline-event-card[data-event-id]');
   const emptyRow = document.getElementById('auditNoResultsRow');
   const emptyTimeline = document.getElementById('auditNoResultsTimeline');
-  let visibleCount = 0;
 
-  // Process Table Rows
+  auditPaginationState.filteredRows = [];
+  auditPaginationState.filteredCards = [];
+
+  // Filter Table Rows
   rows.forEach(row => {
     const cat = (row.getAttribute('data-category') || '').toLowerCase();
     const sev = (row.getAttribute('data-severity') || '').toLowerCase();
@@ -142,18 +157,22 @@ function applyAuditFilters() {
 
     const matchesCat = (auditFilterState.category === 'all' || auditFilterState.category === cat);
     const matchesSev = (auditFilterState.severity === 'all' || auditFilterState.severity === sev);
-    const matchesTime = (auditFilterState.timeframe === 'all' || auditFilterState.timeframe === timeframe);
+    const matchesTime = (
+      auditFilterState.timeframe === 'all' || 
+      (auditFilterState.timeframe === 'week' 
+        ? (timeframe === 'today' || timeframe === 'yesterday' || timeframe === 'week') 
+        : auditFilterState.timeframe === timeframe)
+    );
     const matchesQuery = (!auditFilterState.query || text.includes(auditFilterState.query));
 
     if (matchesCat && matchesSev && matchesTime && matchesQuery) {
-      row.style.display = '';
-      visibleCount++;
+      auditPaginationState.filteredRows.push(row);
     } else {
       row.style.display = 'none';
     }
   });
 
-  // Process Timeline Cards
+  // Filter Timeline Cards
   timelineCards.forEach(card => {
     const cat = (card.getAttribute('data-category') || '').toLowerCase();
     const sev = (card.getAttribute('data-severity') || '').toLowerCase();
@@ -162,18 +181,191 @@ function applyAuditFilters() {
 
     const matchesCat = (auditFilterState.category === 'all' || auditFilterState.category === cat);
     const matchesSev = (auditFilterState.severity === 'all' || auditFilterState.severity === sev);
-    const matchesTime = (auditFilterState.timeframe === 'all' || auditFilterState.timeframe === timeframe);
+    const matchesTime = (
+      auditFilterState.timeframe === 'all' || 
+      (auditFilterState.timeframe === 'week' 
+        ? (timeframe === 'today' || timeframe === 'yesterday' || timeframe === 'week') 
+        : auditFilterState.timeframe === timeframe)
+    );
     const matchesQuery = (!auditFilterState.query || text.includes(auditFilterState.query));
 
     if (matchesCat && matchesSev && matchesTime && matchesQuery) {
+      auditPaginationState.filteredCards.push(card);
+    } else {
+      card.style.display = 'none';
+    }
+  });
+
+  const rowCount = auditPaginationState.filteredRows.length;
+  const timelineCount = auditPaginationState.filteredCards.length;
+
+  if (emptyRow) emptyRow.style.display = rowCount === 0 ? '' : 'none';
+  if (emptyTimeline) emptyTimeline.style.display = timelineCount === 0 ? 'block' : 'none';
+
+  renderAuditPagination();
+}
+
+/* ==========================================================================
+   PAGINATION CONTROLLER
+   ========================================================================== */
+function renderAuditPagination() {
+  const totalItems = auditPaginationState.filteredRows.length;
+  const navContainer = document.getElementById('auditPaginationNav');
+  const startEl = document.getElementById('paginationStart');
+  const endEl = document.getElementById('paginationEnd');
+  const totalEl = document.getElementById('paginationTotal');
+
+  if (totalEl) totalEl.textContent = totalItems;
+
+  if (totalItems === 0) {
+    if (startEl) startEl.textContent = '0';
+    if (endEl) endEl.textContent = '0';
+    if (navContainer) navContainer.innerHTML = '';
+    return;
+  }
+
+  const isAll = (auditPaginationState.pageSize === 'all');
+  const pageSize = isAll ? totalItems : parseInt(auditPaginationState.pageSize, 10);
+  const totalPages = isAll ? 1 : Math.max(1, Math.ceil(totalItems / pageSize));
+
+  // Clamp current page
+  if (auditPaginationState.currentPage > totalPages) {
+    auditPaginationState.currentPage = totalPages;
+  }
+  if (auditPaginationState.currentPage < 1) {
+    auditPaginationState.currentPage = 1;
+  }
+  const curPage = auditPaginationState.currentPage;
+
+  const startIdx = (curPage - 1) * pageSize;
+  const endIdx = isAll ? totalItems : Math.min(startIdx + pageSize, totalItems);
+
+  if (startEl) startEl.textContent = startIdx + 1;
+  if (endEl) endEl.textContent = endIdx;
+
+  // Render Table Rows for this page
+  auditPaginationState.filteredRows.forEach((row, idx) => {
+    if (idx >= startIdx && idx < endIdx) {
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+
+  // Render Timeline Cards for this page
+  auditPaginationState.filteredCards.forEach((card, idx) => {
+    if (idx >= startIdx && idx < endIdx) {
       card.style.display = 'flex';
     } else {
       card.style.display = 'none';
     }
   });
 
-  if (emptyRow) emptyRow.style.display = visibleCount === 0 ? '' : 'none';
-  if (emptyTimeline) emptyTimeline.style.display = visibleCount === 0 ? 'block' : 'none';
+  // Build Pagination Nav Controls
+  if (!navContainer) return;
+  navContainer.innerHTML = '';
+
+  if (totalPages <= 1) {
+    return;
+  }
+
+  // Prev Button
+  const prevBtn = document.createElement('button');
+  prevBtn.type = 'button';
+  prevBtn.className = 'btn-page-nav';
+  prevBtn.innerHTML = `
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    <span>Prev</span>
+  `;
+  prevBtn.disabled = (curPage <= 1);
+  prevBtn.onclick = () => goToAuditPage(curPage - 1);
+  navContainer.appendChild(prevBtn);
+
+  // Generate Page Numbers with smart ellipsis
+  const pagesToShow = getPaginationPages(curPage, totalPages);
+  pagesToShow.forEach(p => {
+    if (p === '...') {
+      const span = document.createElement('span');
+      span.className = 'pagination-ellipsis';
+      span.textContent = '...';
+      navContainer.appendChild(span);
+    } else {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `btn-page-nav ${p === curPage ? 'active' : ''}`;
+      btn.textContent = p;
+      btn.onclick = () => goToAuditPage(p);
+      navContainer.appendChild(btn);
+    }
+  });
+
+  // Next Button
+  const nextBtn = document.createElement('button');
+  nextBtn.type = 'button';
+  nextBtn.className = 'btn-page-nav';
+  nextBtn.innerHTML = `
+    <span>Next</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  `;
+  nextBtn.disabled = (curPage >= totalPages);
+  nextBtn.onclick = () => goToAuditPage(curPage + 1);
+  navContainer.appendChild(nextBtn);
+}
+
+function getPaginationPages(currentPage, totalPages) {
+  if (totalPages <= 7) {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+    return pages;
+  }
+
+  const pages = [1];
+  let start = Math.max(2, currentPage - 1);
+  let end = Math.min(totalPages - 1, currentPage + 1);
+
+  if (currentPage <= 3) {
+    start = 2;
+    end = 4;
+  } else if (currentPage >= totalPages - 2) {
+    start = totalPages - 3;
+    end = totalPages - 1;
+  }
+
+  if (start > 2) {
+    pages.push('...');
+  }
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  if (end < totalPages - 1) {
+    pages.push('...');
+  }
+
+  pages.push(totalPages);
+  return pages;
+}
+
+function goToAuditPage(page) {
+  auditPaginationState.currentPage = page;
+  renderAuditPagination();
+
+  // Scroll to table smoothly
+  const card = document.querySelector('.admin-table-card');
+  if (card) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function changeAuditPageSize(val) {
+  auditPaginationState.pageSize = (val === 'all') ? 'all' : parseInt(val, 10);
+  auditPaginationState.currentPage = 1;
+  renderAuditPagination();
 }
 
 function updateAuditCounters() {
@@ -234,21 +426,22 @@ function switchAuditView(mode) {
     if (btnTimeline) btnTimeline.classList.add('active');
   }
 
-  applyAuditFilters();
+  renderAuditPagination();
 }
 
 /* ==========================================================================
    EXPORT AUDIT LOG TO CSV
    ========================================================================== */
 function exportAuditLogCSV() {
-  const visibleRows = document.querySelectorAll('#auditTableBody tr[data-event-id]');
+  const rowsToExport = (auditPaginationState.filteredRows && auditPaginationState.filteredRows.length > 0)
+    ? auditPaginationState.filteredRows
+    : document.querySelectorAll('#auditTableBody tr[data-event-id]');
+
   const data = [
     ['Event ID', 'Timestamp', 'Category', 'Severity', 'Authority / Actor', 'Target Resource', 'Details & Narrative', 'Security Stamp']
   ];
 
-  visibleRows.forEach(row => {
-    if (row.style.display === 'none') return;
-
+  rowsToExport.forEach(row => {
     const id = row.getAttribute('data-event-id') || '';
     const time = row.children[0]?.innerText.replace(/\n/g, ' ') || '';
     const cat = row.children[1]?.innerText.replace(/\n/g, ' ') || '';
@@ -269,7 +462,7 @@ function exportAuditLogCSV() {
   link.click();
   document.body.removeChild(link);
 
-  showAuditToast('Audit Trail Log successfully exported as official CSV.', 'success');
+  showAuditToast(`Successfully exported ${rowsToExport.length} audit records to CSV.`, 'success');
 }
 
 /* ==========================================================================

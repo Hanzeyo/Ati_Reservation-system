@@ -33,7 +33,7 @@ $userCountStmt = $db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL
 $totalUsersCount = (int)$userCountStmt->fetchColumn();
 
 // Fetch facilities
-$facStmt = $db->query("SELECT id, name, type, status, maintenance_reason, est_resume_date FROM facilities ORDER BY id ASC");
+$facStmt = $db->query("SELECT id, name, type, status, maintenance_reason, est_resume_date FROM facilities WHERE deleted_at IS NULL ORDER BY id ASC");
 $facilitiesList = $facStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch all reservations

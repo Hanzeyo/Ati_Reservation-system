@@ -987,4 +987,59 @@
   transform: translateY(0) !important;
 }
 
+/* ==========================================================================
+   Facility Soft Delete & Archive Styling
+   ========================================================================== */
+.facility-status-pill-overlay.state-archived {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.facility-card-archived {
+  opacity: 0.82;
+  border-color: #fca5a5;
+  background: #fffafa;
+}
+
+.row-archived {
+  background: #fffafa;
+  opacity: 0.88;
+}
+
+.btn-card-action.btn-delete-facility {
+  color: #dc2626;
+  border-color: #fecaca;
+  padding: 0.38rem 0.55rem;
+}
+
+.btn-card-action.btn-delete-facility:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
+.btn-card-action.btn-restore-facility {
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.btn-card-action.btn-restore-facility:hover {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+.btn-card-action.btn-purge-facility {
+  color: #b91c1c;
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.btn-card-action.btn-purge-facility:hover {
+  background: #b91c1c;
+  color: #ffffff;
+  border-color: #b91c1c;
+}
+
 

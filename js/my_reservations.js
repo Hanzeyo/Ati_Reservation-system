@@ -573,6 +573,10 @@ function initCardModals() {
       document.getElementById('modalResPax').textContent = pax;
       document.getElementById('modalResDivision').textContent = division;
 
+      modal.querySelectorAll('.js-download-slip').forEach(b => {
+        b.dataset.ref = ref;
+      });
+
       const modalBadge = document.getElementById('modalResStatusBadge');
       if (modalBadge) {
         modalBadge.className = `res-status-badge ${statusClass}`;
@@ -1023,14 +1027,20 @@ function initDownloadSlip() {
     const btn = e.target.closest('.js-download-slip');
     if (!btn) return;
 
-    const ref = btn.dataset.ref;
+    let ref = btn.dataset.ref;
+    if (!ref) {
+      ref = document.getElementById('modalResRef')?.textContent?.trim();
+    }
     if (!ref) return;
 
-    // Find card corresponding to this reference code
-    const card = document.querySelector(`.res-card[data-ref="${ref}"]`);
-    if (!card) return;
+    // Find card or row corresponding to this reference code
+    const card = document.querySelector(`.res-card[data-ref="${ref}"]`) || document.querySelector(`.res-table-row[data-ref="${ref}"]`);
+    if (!card) {
+      window.open(`download_form.php?ref=${encodeURIComponent(ref)}`, '_blank');
+      return;
+    }
 
-    const title = card.querySelector('.res-event-title')?.textContent || 'Institutional Activity';
+    const title = card.querySelector('.res-event-title')?.textContent || card.querySelector('td[data-label="Activity Purpose"] div:first-child')?.textContent || 'Institutional Activity';
     const venue = card.dataset.venueTitle || 'ATI Facility';
     const dates = card.dataset.dates || 'Scheduled Dates';
     const time = card.dataset.time || '08:00 AM – 05:00 PM';

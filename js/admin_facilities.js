@@ -13,6 +13,7 @@ let currentViewMode = 'grid';
 document.addEventListener('DOMContentLoaded', function () {
   initDateDisplay();
   updateKPICounters();
+  applyCombinedFilters('all', '');
 
   // Restore desktop sidebar collapsed preference if previously saved
   if (window.innerWidth > 960 && localStorage.getItem('admin_sidebar_collapsed') === 'true') {
@@ -97,6 +98,14 @@ function filterFacilitiesByCategory(category, tabBtn) {
   if (tabBtn) {
     document.querySelectorAll('.facility-filter-tab').forEach(t => t.classList.remove('active'));
     tabBtn.classList.add('active');
+  } else {
+    document.querySelectorAll('.facility-filter-tab').forEach(t => {
+      if (t.getAttribute('data-category') === category) {
+        t.classList.add('active');
+      } else {
+        t.classList.remove('active');
+      }
+    });
   }
 
   const query = (document.getElementById('facilitySearchInput')?.value || '').toLowerCase().trim();
@@ -115,12 +124,23 @@ function applyCombinedFilters(category, query) {
   cards.forEach(card => {
     const cardCat = card.getAttribute('data-category');
     const isMaint = card.getAttribute('data-maintenance') === 'true';
+    const isArchived = card.getAttribute('data-archived') === 'true';
     const text = card.innerText.toLowerCase();
 
     let matchesCategory = false;
-    if (category === 'all') matchesCategory = true;
-    else if (category === 'maintenance') matchesCategory = isMaint;
-    else matchesCategory = (cardCat === category);
+    if (category === 'archived') {
+      matchesCategory = isArchived;
+    } else {
+      if (isArchived) {
+        matchesCategory = false;
+      } else if (category === 'all') {
+        matchesCategory = true;
+      } else if (category === 'maintenance') {
+        matchesCategory = isMaint;
+      } else {
+        matchesCategory = (cardCat === category);
+      }
+    }
 
     const matchesQuery = !query || text.includes(query);
 
@@ -132,12 +152,23 @@ function applyCombinedFilters(category, query) {
   rows.forEach(row => {
     const rowCat = row.getAttribute('data-category');
     const isMaint = row.getAttribute('data-maintenance') === 'true';
+    const isArchived = row.getAttribute('data-archived') === 'true';
     const text = row.innerText.toLowerCase();
 
     let matchesCategory = false;
-    if (category === 'all') matchesCategory = true;
-    else if (category === 'maintenance') matchesCategory = isMaint;
-    else matchesCategory = (rowCat === category);
+    if (category === 'archived') {
+      matchesCategory = isArchived;
+    } else {
+      if (isArchived) {
+        matchesCategory = false;
+      } else if (category === 'all') {
+        matchesCategory = true;
+      } else if (category === 'maintenance') {
+        matchesCategory = isMaint;
+      } else {
+        matchesCategory = (rowCat === category);
+      }
+    }
 
     const matchesQuery = !query || text.includes(query);
 
@@ -1341,6 +1372,93 @@ function saveFacilitySetups() {
         saveBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span>Save Setups Changes</span>`;
       }
       showAdminToast('Network error saving setups.', 'decline');
+    });
+}
+
+/* ==========================================================================
+   FACILITY SOFT DELETE, RESTORE & PERMANENT PURGE
+   ========================================================================== */
+function confirmDeleteFacility(id, name) {
+  if (!confirm(`Are you sure you want to move facility "${name}" to the Archive (Trash)?\n\nIt will be hidden from applicants and the booking catalog.`)) {
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('action', 'delete');
+  formData.append('id', id);
+
+  fetch('ajax/facility_actions.php', {
+    method: 'POST',
+    body: formData
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        showAdminToast(data.message || `Facility "${name}" moved to archive.`, 'success');
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        alert(data.message || 'Failed to archive facility.');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('A network error occurred while archiving the facility.');
+    });
+}
+
+function confirmRestoreFacility(id, name) {
+  if (!confirm(`Restore facility "${name}" back to the active catalog?`)) {
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('action', 'restore');
+  formData.append('id', id);
+
+  fetch('ajax/facility_actions.php', {
+    method: 'POST',
+    body: formData
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        showAdminToast(data.message || `Facility "${name}" restored.`, 'success');
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        alert(data.message || 'Failed to restore facility.');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('A network error occurred while restoring the facility.');
+    });
+}
+
+function confirmPermanentDeleteFacility(id, name) {
+  if (!confirm(`PERMANENTLY PURGE facility "${name}"?\n\nWARNING: This will permanently delete the facility record and its room configurations from the database. This action CANNOT be undone.`)) {
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('action', 'purge');
+  formData.append('id', id);
+
+  fetch('ajax/facility_actions.php', {
+    method: 'POST',
+    body: formData
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        showAdminToast(data.message || `Facility "${name}" permanently deleted.`, 'success');
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        alert(data.message || 'Failed to permanently delete facility.');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('A network error occurred while purging the facility.');
     });
 }
 

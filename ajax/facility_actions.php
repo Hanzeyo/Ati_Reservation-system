@@ -19,6 +19,17 @@ if (!$userId) {
         $_SESSION['role'] = $admin['role'];
         $_SESSION['full_name'] = $admin['full_name'];
     }
+} elseif (empty($userRole)) {
+    $uStmt = $db->prepare("SELECT role, full_name FROM users WHERE id = ? LIMIT 1");
+    $uStmt->execute([$userId]);
+    $uRow = $uStmt->fetch(PDO::FETCH_ASSOC);
+    if ($uRow) {
+        $userRole = strtolower($uRow['role'] ?? '');
+        $_SESSION['role'] = $uRow['role'] ?? '';
+        if (empty($_SESSION['full_name'])) {
+            $_SESSION['full_name'] = $uRow['full_name'] ?? '';
+        }
+    }
 }
 
 $isAllowedAdmin = isAdmin() || in_array($userRole, [
@@ -107,7 +118,7 @@ try {
                 'beds' => $beds,
                 'rate' => $rate,
                 'location' => $location,
-                'features' => array_filter(array_map('trim', explode(',', $features))),
+                'features' => array_values(array_filter(array_map('trim', explode(',', $features)))),
                 'image' => $image,
                 'notes' => $notes,
                 'status' => 'available',
@@ -156,6 +167,7 @@ try {
             capacity = :capacity, 
             beds = :beds, 
             location = :location, 
+            description = :description,
             features = :features, 
             notes = :notes";
         
@@ -166,6 +178,7 @@ try {
             ':capacity' => $capacity,
             ':beds' => $beds,
             ':location' => $location,
+            ':description' => $notes,
             ':features' => $features,
             ':notes' => $notes,
             ':id' => $id
@@ -202,7 +215,7 @@ try {
                 'beds' => $beds,
                 'rate' => $rate,
                 'location' => $location,
-                'features' => array_filter(array_map('trim', explode(',', $features))),
+                'features' => array_values(array_filter(array_map('trim', explode(',', $features)))),
                 'image' => $image,
                 'notes' => $notes
             ]
@@ -265,26 +278,127 @@ try {
             exit;
         }
 
+        // Get facility name
+        $stmt = $db->prepare("SELECT id, name FROM facilities WHERE id = ?");
+        $stmt->execute([$id]);
+        $fac = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$fac) {
+            echo json_encode(['success' => false, 'message' => 'Facility not found.']);
+            exit;
+        }
+
         // Check if there are active reservations referencing this facility
-        $chk = $db->prepare("SELECT COUNT(*) FROM reservations WHERE facility_id = ? AND status NOT IN ('Rejected', 'Cancelled', 'Completed')");
+        $chk = $db->prepare("SELECT COUNT(*) FROM reservations WHERE facility_id = ? AND status NOT IN ('Rejected', 'Cancelled', 'Completed') AND deleted_at IS NULL");
         $chk->execute([$id]);
         $activeCount = (int)$chk->fetchColumn();
 
         if ($activeCount > 0) {
             echo json_encode([
                 'success' => false, 
-                'message' => "Cannot delete facility because it has {$activeCount} active reservation(s). You may place it on Maintenance Hold instead."
+                'message' => "Cannot archive facility '{$fac['name']}' because it has {$activeCount} active reservation(s). You may place it on Maintenance Hold instead."
             ]);
             exit;
         }
 
-        // Safe to delete
-        $del = $db->prepare("DELETE FROM facilities WHERE id = ?");
+        // Soft delete: set deleted_at and status = inactive
+        $del = $db->prepare("UPDATE facilities SET deleted_at = NOW(), status = 'inactive' WHERE id = ?");
         $del->execute([$id]);
+
+        // Log audit
+        try {
+            AuditLog::log($userId, 'DELETE_FACILITY', "Moved facility [FAC-{$id}] {$fac['name']} to archive/trash");
+        } catch (Throwable $e) {}
 
         echo json_encode([
             'success' => true,
-            'message' => 'Facility deleted successfully.'
+            'message' => "Facility '{$fac['name']}' moved to archive successfully."
+        ]);
+        exit;
+    }
+
+    if ($action === 'restore') {
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid facility ID.']);
+            exit;
+        }
+
+        $stmt = $db->prepare("SELECT id, name FROM facilities WHERE id = ?");
+        $stmt->execute([$id]);
+        $fac = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$fac) {
+            echo json_encode(['success' => false, 'message' => 'Facility not found.']);
+            exit;
+        }
+
+        // Restore: clear deleted_at and restore to available
+        $restore = $db->prepare("UPDATE facilities SET deleted_at = NULL, status = 'available' WHERE id = ?");
+        $restore->execute([$id]);
+
+        // Log audit
+        try {
+            AuditLog::log($userId, 'RESTORE_FACILITY', "Restored facility [FAC-{$id}] {$fac['name']} from archive");
+        } catch (Throwable $e) {}
+
+        echo json_encode([
+            'success' => true,
+            'message' => "Facility '{$fac['name']}' restored to active catalog successfully."
+        ]);
+        exit;
+    }
+
+    if ($action === 'purge') {
+        if ($userRole !== 'super_admin') {
+            echo json_encode(['success' => false, 'message' => 'Permission denied. Only Super Administrators can permanently delete facilities.']);
+            exit;
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid facility ID.']);
+            exit;
+        }
+
+        $stmt = $db->prepare("SELECT id, name FROM facilities WHERE id = ?");
+        $stmt->execute([$id]);
+        $fac = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$fac) {
+            echo json_encode(['success' => false, 'message' => 'Facility not found.']);
+            exit;
+        }
+
+        // Check if there are active reservations
+        $chk = $db->prepare("SELECT COUNT(*) FROM reservations WHERE facility_id = ? AND status NOT IN ('Rejected', 'Cancelled', 'Completed') AND deleted_at IS NULL");
+        $chk->execute([$id]);
+        $activeCount = (int)$chk->fetchColumn();
+
+        if ($activeCount > 0) {
+            echo json_encode([
+                'success' => false, 
+                'message' => "Cannot permanently purge '{$fac['name']}' because it has {$activeCount} active reservation(s)."
+            ]);
+            exit;
+        }
+
+        // Delete associated rooms first
+        $delRooms = $db->prepare("DELETE FROM rooms WHERE facility_id = ?");
+        $delRooms->execute([$id]);
+
+        // Permanent delete
+        $del = $db->prepare("DELETE FROM facilities WHERE id = ?");
+        $del->execute([$id]);
+
+        // Log audit
+        try {
+            AuditLog::log($userId, 'PURGE_FACILITY', "Permanently purged facility [FAC-{$id}] {$fac['name']} from database");
+        } catch (Throwable $e) {}
+
+        echo json_encode([
+            'success' => true,
+            'message' => "Facility '{$fac['name']}' permanently purged from database."
         ]);
         exit;
     }
@@ -361,7 +475,7 @@ try {
                 "Updated venue layout setups for facility #{$id}",
                 $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1'
             ]);
-        } catch (Exception $e) {}
+        } catch (Throwable $e) {}
 
         echo json_encode([
             'success' => true,
@@ -372,6 +486,6 @@ try {
     }
 
     echo json_encode(['success' => false, 'message' => 'Unknown action.']);
-} catch (Exception $e) {
+} catch (Throwable $e) {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }

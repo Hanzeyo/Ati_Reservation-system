@@ -35,7 +35,7 @@ $query = "SELECT r.*,
           LEFT JOIN users u_end ON r.endorsed_by = u_end.id
           LEFT JOIN users u_rec ON r.recommended_by = u_rec.id
           LEFT JOIN users u_clr ON r.cleared_by = u_clr.id
-          WHERE r.user_id = :user_id
+          WHERE r.user_id = :user_id AND r.deleted_at IS NULL
           ORDER BY r.id DESC";
 
 $stmt = $db->prepare($query);
@@ -43,7 +43,7 @@ $stmt->execute([':user_id' => $userId]);
 $reservationsList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch active facilities from database for dynamic dropdown filter
-$facFilterStmt = $db->query("SELECT id, name, type FROM facilities WHERE status != 'inactive' ORDER BY name ASC");
+$facFilterStmt = $db->query("SELECT id, name, type FROM facilities WHERE status != 'inactive' AND deleted_at IS NULL ORDER BY name ASC");
 $filterFacilities = $facFilterStmt ? $facFilterStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
 // Calculate dynamic stats
@@ -195,7 +195,7 @@ foreach ($reservationsList as $resItem) {
             </a>
             <?php endif; ?>
             <div style="height: 1px; background: #e5ede7; margin: 0.35rem 0;"></div>
-            <a href="index.php" class="dropdown-item danger">
+            <a href="logout.php" class="dropdown-item danger">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
@@ -347,7 +347,7 @@ foreach ($reservationsList as $resItem) {
 
       <!-- Drawer Footer -->
       <div class="drawer-footer">
-        <a href="index.php" class="drawer-logout-btn">
+        <a href="logout.php" class="drawer-logout-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
             <polyline points="16 17 21 12 16 7"></polyline>
@@ -421,7 +421,7 @@ foreach ($reservationsList as $resItem) {
             <span class="seg-title">Active Reservations</span>
             <span class="seg-subtitle">Pending Clearances &amp; Upcoming Confirmed Schedules</span>
           </div>
-          <span class="seg-count-badge"><?= $statsTotal ?></span>
+          <span class="seg-count-badge"><?= $statsPending + $statsApproved ?></span>
         </a>
 
         <!-- Tab 2: Booking History (Link to History Archive) -->
