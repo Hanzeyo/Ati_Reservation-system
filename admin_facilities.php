@@ -30,17 +30,51 @@ $maintenanceCount = 0;
 $totalPax = 0;
 $totalBeds = 0;
 
-// Active reservations today for occupied status
+// Active reservations today for occupied status and occupant information
 $today = date('Y-m-d');
-$occStmt = $db->prepare("SELECT DISTINCT facility_id FROM reservations WHERE status IN ('Approved', 'Completed') AND start_date <= ? AND end_date >= ?");
+$occStmt = $db->prepare("SELECT r.id AS reservation_id,
+                                r.facility_id,
+                                r.room_id,
+                                r.reference_no,
+                                r.event_title,
+                                r.start_date,
+                                r.end_date,
+                                r.time_slot,
+                                r.pax_count,
+                                r.status,
+                                rm.room_number,
+                                rm.floor AS room_floor,
+                                u.full_name AS client_name,
+                                u.contact_number AS client_contact,
+                                u.email AS client_email,
+                                u.office_agency AS client_agency
+                         FROM reservations r
+                         LEFT JOIN rooms rm ON r.room_id = rm.id
+                         LEFT JOIN users u ON r.user_id = u.id
+                         WHERE r.status = 'Approved'
+                           AND r.start_date <= ? AND r.end_date >= ?
+                           AND r.deleted_at IS NULL
+                         ORDER BY r.id DESC");
 $occStmt->execute([$today, $today]);
-$occupiedFacilityIds = $occStmt->fetchAll(PDO::FETCH_COLUMN);
+$occupiedRaw = $occStmt->fetchAll(PDO::FETCH_ASSOC);
+
+$occupiedFacilityMap = [];
+foreach ($occupiedRaw as $occItem) {
+    $fidKey = (int)$occItem['facility_id'];
+    if (!isset($occupiedFacilityMap[$fidKey])) {
+        $occupiedFacilityMap[$fidKey] = [];
+    }
+    $occupiedFacilityMap[$fidKey][] = $occItem;
+}
 
 foreach ($facilitiesList as $row) {
     $fid = (string)$row['id'];
+    $fidInt = (int)$row['id'];
     $isArchived = !empty($row['deleted_at']);
     $isMaint = ($row['status'] === 'maintenance');
-    $isOccupied = in_array($row['id'], $occupiedFacilityIds);
+    $facilityOccupants = $occupiedFacilityMap[$fidInt] ?? [];
+    $isOccupied = !empty($facilityOccupants);
+    $primaryOccupant = $isOccupied ? $facilityOccupants[0] : null;
 
     $status = 'available';
     $statusLabel = 'Available';
@@ -103,7 +137,10 @@ foreach ($facilitiesList as $row) {
         'layouts' => $row['layouts'] ?? '',
         'gallery' => getFacilityGallery($row),
         'isArchived' => $isArchived,
-        'deletedAt' => $isArchived ? date('M d, Y • h:i A', strtotime($row['deleted_at'])) : null
+        'deletedAt' => $isArchived ? date('M d, Y • h:i A', strtotime($row['deleted_at'])) : null,
+        'isOccupied' => $isOccupied,
+        'occupants' => $facilityOccupants,
+        'primaryOccupant' => $primaryOccupant
     ];
 }
 
@@ -406,6 +443,65 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                     <strong class="spec-val spec-rate-val"><?= htmlspecialchars(!empty($item['rate']) ? $item['rate'] : 'Institutional') ?></strong>
                   </div>
                 </div>
+
+                <?php if ($item['status'] === 'occupied' && !empty($item['primaryOccupant'])): 
+                  $occ = $item['primaryOccupant'];
+                  $occCount = count($item['occupants']);
+                  $occPayloadJson = htmlspecialchars(json_encode([
+                    'facilityName' => $item['name'],
+                    'facilityType' => $item['categoryLabel'],
+                    'occupants' => $item['occupants'],
+                    'primary' => $occ
+                  ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
+                ?>
+                  <div class="facility-occupant-preview-card" onclick="openOccupantModal(<?= $occPayloadJson ?>)" title="Click to view full occupant &amp; reservation details">
+                    <div class="f-occ-header">
+                      <span class="f-occ-pulse-dot"></span>
+                      <span class="f-occ-status-text"><?= $item['category'] === 'dorms' ? ($occCount > 1 ? "{$occCount} Rooms Occupied Today" : "Room {$occ['room_number']} Occupied") : "Active Event / In Session" ?></span>
+                      <span class="f-occ-ref">#<?= htmlspecialchars($occ['reference_no']) ?></span>
+                    </div>
+                    <div class="f-occ-event-title" title="<?= htmlspecialchars($occ['event_title']) ?>">
+                      <?= htmlspecialchars($occ['event_title']) ?>
+                    </div>
+                    <div class="f-occ-client-row">
+                      <span class="f-occ-client-name" title="<?= htmlspecialchars($occ['client_name']) ?>">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <strong><?= htmlspecialchars($occ['client_name']) ?></strong>
+                      </span>
+                      <?php if (!empty($occ['client_contact'])): ?>
+                        <span class="f-occ-client-phone" title="Contact Number">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                          <?= htmlspecialchars($occ['client_contact']) ?>
+                        </span>
+                      <?php elseif (!empty($occ['client_agency'])): ?>
+                        <span class="f-occ-client-agency">
+                          <?= htmlspecialchars($occ['client_agency']) ?>
+                        </span>
+                      <?php endif; ?>
+                    </div>
+                    <?php if ($item['category'] !== 'dorms' && (!empty($occ['time_slot']) || !empty($occ['pax_count']))): ?>
+                      <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.35rem; font-size: 0.72rem; color: #475569;">
+                        <?php if (!empty($occ['time_slot'])): ?>
+                          <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            <?= htmlspecialchars($occ['time_slot']) ?>
+                          </span>
+                        <?php endif; ?>
+                        <?php if (!empty($occ['pax_count'])): ?>
+                          <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            <?= htmlspecialchars($occ['pax_count']) ?> PAX
+                          </span>
+                        <?php endif; ?>
+                      </div>
+                    <?php endif; ?>
+                    <div class="f-occ-click-hint">
+                      <span>View Occupant Details</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                  </div>
+                <?php endif; ?>
+
                 <div class="facility-features-wrap">
                   <?php foreach (array_slice($item['features'], 0, 5) as $feat): ?>
                     <span class="feature-pill-tag"><?= htmlspecialchars($feat) ?></span>
@@ -413,8 +509,16 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                 </div>
                 <div class="facility-card-footer">
                   <?php if ($isArchived): ?>
-                    <div style="font-size: 0.76rem; color: #b91c1c; font-weight: 700;">
-                      Archived: <?= htmlspecialchars($item['deletedAt']) ?>
+                    <div class="facility-card-footer-top">
+                      <div class="facility-maintenance-quick-toggle">
+                        <span style="font-size: 0.76rem; color: #b91c1c; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+                          Archived Asset
+                        </span>
+                      </div>
+                      <div style="font-size: 0.72rem; color: #718096; font-weight: 600;">
+                        <?= htmlspecialchars($item['deletedAt']) ?>
+                      </div>
                     </div>
                     <div class="card-action-btns">
                       <button type="button" class="btn-card-action btn-restore-facility" onclick="confirmRestoreFacility('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Restore Facility to Active Catalog">
@@ -427,12 +531,14 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                       </button>
                     </div>
                   <?php else: ?>
-                    <div class="facility-maintenance-quick-toggle">
-                      <label class="switch-toggle" title="Toggle Maintenance Mode">
-                        <input type="checkbox" <?= $isMaint ? 'checked' : '' ?> onchange="onMaintenanceSwitchChange('<?= htmlspecialchars($fid) ?>', this.checked)">
-                        <span class="slider-round"></span>
-                      </label>
-                      <span>Maintenance</span>
+                    <div class="facility-card-footer-top">
+                      <div class="facility-maintenance-quick-toggle">
+                        <label class="switch-toggle" title="Toggle Maintenance Mode">
+                          <input type="checkbox" <?= $isMaint ? 'checked' : '' ?> onchange="onMaintenanceSwitchChange('<?= htmlspecialchars($fid) ?>', this.checked)">
+                          <span class="slider-round"></span>
+                        </label>
+                        <span class="maintenance-label">Maintenance Mode</span>
+                      </div>
                     </div>
                     <div class="card-action-btns">
                       <?php
@@ -565,13 +671,34 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                           <span class="status-badge-chip chip-declined">Archived (Trash)</span>
                         <?php elseif ($item['status'] === 'available'): ?>
                           <span class="status-badge-chip chip-confirmed">Available</span>
-                        <?php elseif ($item['status'] === 'occupied'): ?>
-                          <span class="status-badge-chip chip-pending"><?= htmlspecialchars($item['statusLabel']) ?></span>
+                        <?php elseif ($item['status'] === 'occupied'): 
+                          $occ = $item['primaryOccupant'] ?? [];
+                          $occPayloadJson = htmlspecialchars(json_encode([
+                            'facilityName' => $item['name'],
+                            'facilityType' => $item['categoryLabel'],
+                            'occupants' => $item['occupants'],
+                            'primary' => $occ
+                          ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
+                        ?>
+                          <div class="facility-table-occ-wrap" onclick="openOccupantModal(<?= $occPayloadJson ?>)" title="Click to view occupant details">
+                            <span class="status-badge-chip chip-pending" style="display: inline-flex; align-items: center; gap: 4px;">
+                              <span class="f-occ-pulse-dot" style="width: 6px; height: 6px;"></span>
+                              Occupied
+                            </span>
+                            <?php if (!empty($occ)): ?>
+                              <div style="font-size: 0.74rem; color: #172c1f; font-weight: 700; margin-top: 3px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?= htmlspecialchars($occ['client_name']) ?>">
+                                <?= htmlspecialchars($occ['client_name']) ?>
+                              </div>
+                              <div style="font-size: 0.68rem; color: #637f6f; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?= htmlspecialchars($occ['event_title']) ?>">
+                                <?= htmlspecialchars($occ['event_title']) ?>
+                              </div>
+                            <?php endif; ?>
+                          </div>
                         <?php else: ?>
                           <span class="status-badge-chip chip-declined">Maintenance Hold</span>
                         <?php endif; ?>
                       </td>
-                      <td style="text-align: right;">
+                      <td style="text-align: right; white-space: nowrap;">
                         <?php if ($item['isArchived']): ?>
                           <button type="button" class="btn-card-action btn-restore-facility" onclick="confirmRestoreFacility('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Restore Facility to Active Catalog">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
@@ -1146,6 +1273,41 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
       <div class="admin-modal-footer">
         <button type="button" class="btn-system-secondary" onclick="closeMaintenanceModal()">Cancel</button>
         <button type="button" class="btn-confirm-decline" onclick="confirmMaintenanceHold()">Activate Maintenance Hold</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: ACTIVE OCCUPANT & REAL-TIME EVENT DETAILS
+       ========================================================================== -->
+  <div class="admin-modal-overlay" id="facilityOccupantModal" role="dialog" aria-modal="true" aria-labelledby="occupantModalFacilityName" style="display: none;">
+    <div class="admin-modal-card" style="max-width: 620px;">
+      <div class="admin-modal-header" style="background: linear-gradient(135deg, #174d2f, #2e7d32); color: #ffffff; padding: 1.25rem 1.5rem;">
+        <div class="modal-title-wrap">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="f-occ-pulse-dot" style="background: #4ade80;"></span>
+            <span style="font-size: 0.74rem; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; color: #bbf7d0;" id="occupantModalStatusBadge">Active Occupant (Today)</span>
+          </div>
+          <h4 id="occupantModalFacilityName" style="color: #ffffff; margin-top: 4px; font-size: 1.2rem; font-weight: 800; margin-bottom: 0;">Facility Name</h4>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeOccupantModal()" aria-label="Close dialog" style="color: #ffffff; background: rgba(255,255,255,0.18); border: none;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="admin-modal-body" id="occupantModalBody" style="padding: 1.5rem; max-height: 70vh; overflow-y: auto;">
+        <!-- Dynamic Content injected via JS -->
+      </div>
+
+      <div class="admin-modal-footer" style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-top: 1px solid #eef3f0;">
+        <button type="button" class="btn-system-secondary" onclick="closeOccupantModal()">Close</button>
+        <a id="btnOccupantGoToBooking" href="#" class="btn-system-primary" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 0.55rem 1.15rem; font-size: 0.84rem;">
+          <span>Open in Reservations</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+        </a>
       </div>
     </div>
   </div>

@@ -866,12 +866,14 @@ function handleAddNewFacility(e) {
               ${features.slice(0, 5).map(f => `<span class="feature-pill-tag">${f}</span>`).join('')}
             </div>
             <div class="facility-card-footer">
-              <div class="facility-maintenance-quick-toggle">
-                <label class="switch-toggle" title="Toggle Maintenance Mode">
-                  <input type="checkbox" onchange="onMaintenanceSwitchChange('${newId}', this.checked)">
-                  <span class="slider-round"></span>
-                </label>
-                <span>Maintenance</span>
+              <div class="facility-card-footer-top">
+                <div class="facility-maintenance-quick-toggle">
+                  <label class="switch-toggle" title="Toggle Maintenance Mode">
+                    <input type="checkbox" onchange="onMaintenanceSwitchChange('${newId}', this.checked)">
+                    <span class="slider-round"></span>
+                  </label>
+                  <span class="maintenance-label">Maintenance Mode</span>
+                </div>
               </div>
               <div class="card-action-btns">
                 <button type="button" class="btn-card-action" onclick="openFacilityGalleryModal(facilitiesData['${newId}'])" title="Preview Client Showcase &amp; Multi-Photo Gallery">
@@ -882,9 +884,9 @@ function handleAddNewFacility(e) {
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                   <span>Edit</span>
                 </button>
-                <a href="admin_schedule.php" class="btn-card-action" title="View Schedule">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line></svg>
-                </a>
+                <button type="button" class="btn-card-action btn-delete-facility" onclick="confirmDeleteFacility('${newId}', '${name.replace(/'/g, "\\'")}')" title="Move to Trash / Archive">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -1125,11 +1127,49 @@ function loadFacilityRooms(facilityId) {
         tile.className = `room-admin-tile ${isMaint ? 'is-maintenance' : (isOcc ? 'is-occupied' : '')}`;
 
         let statusBadgeHtml = '<span class="room-tile-status-pill avail">Available</span>';
+        let occupantBoxHtml = '';
+
         if (isMaint) {
           statusBadgeHtml = '<span class="room-tile-status-pill maint">Maintenance</span>';
         } else if (isOcc) {
-          const refText = r.booking_ref ? ` • #${r.booking_ref}` : '';
-          statusBadgeHtml = `<span class="room-tile-status-pill occ">Occupied${refText}</span>`;
+          const occ = r.occupant || {};
+          const refNo = occ.booking_ref || r.booking_ref || '';
+          const refText = refNo ? ` • #${refNo}` : '';
+          
+          const dormModalTitle = (document.getElementById('manageRoomsModalTitle')?.textContent || 'Dormitory').replace('Manage Rooms: ', '').trim();
+          const occPayloadStr = JSON.stringify({
+            facilityName: `${dormModalTitle} • Room ${r.room_number}`,
+            facilityType: `Dormitory Suite (Room ${r.room_number})`,
+            occupants: [occ],
+            primary: occ
+          }).replace(/"/g, '&quot;');
+
+          statusBadgeHtml = `<span class="room-tile-status-pill occ" onclick="openOccupantModal(${occPayloadStr})" style="cursor: pointer;" title="View Occupant Details">Occupied</span>`;
+
+          occupantBoxHtml = `
+            <div class="room-occupant-box" onclick="openOccupantModal(${occPayloadStr})" title="Click to view full reservation details">
+              <div class="r-occ-header">
+                <div class="r-occ-tag-wrap">
+                  <span class="f-occ-pulse-dot"></span>
+                  <span class="r-occ-status-tag">Occupant</span>
+                </div>
+                <span class="r-occ-ref" title="${escapeHtml(refNo)}">#${escapeHtml(refNo)}</span>
+              </div>
+              <div class="r-occ-title" title="${escapeHtml(occ.event_title || 'Institutional Activity')}">
+                ${escapeHtml(occ.event_title || 'Institutional Activity')}
+              </div>
+              <div class="r-occ-client" title="${escapeHtml(occ.client_name || 'Official Guest')}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span class="r-occ-client-name">${escapeHtml(occ.client_name || 'Official Guest')}</span>
+              </div>
+              <div class="r-occ-meta">
+                <span class="r-occ-info-text" title="${escapeHtml(occ.client_contact || occ.client_agency || 'ATI Central Office')}">
+                  ${escapeHtml(occ.client_contact || occ.client_agency || 'ATI Central Office')}
+                </span>
+                <span class="r-occ-link">Details &rarr;</span>
+              </div>
+            </div>
+          `;
         }
 
         tile.innerHTML = `
@@ -1143,6 +1183,8 @@ function loadFacilityRooms(facilityId) {
             </div>
             ${statusBadgeHtml}
           </div>
+
+          ${occupantBoxHtml}
 
           <div class="room-tile-actions">
             <label class="room-maint-toggle-wrap" title="Toggle Maintenance Hold">
@@ -1681,6 +1723,177 @@ function confirmPermanentDeleteFacility(id, name) {
       console.error(err);
       alert('A network error occurred while purging the facility.');
     });
+}
+
+/* ==========================================================================
+   OCCUPANT & ACTIVE EVENT MODAL CONTROLLER
+   ========================================================================== */
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function openOccupantModal(payload) {
+  if (!payload) return;
+  const modal = document.getElementById('facilityOccupantModal');
+  const titleEl = document.getElementById('occupantModalFacilityName');
+  const bodyEl = document.getElementById('occupantModalBody');
+  const btnBooking = document.getElementById('btnOccupantGoToBooking');
+  if (!modal || !bodyEl) return;
+
+  const facName = payload.facilityName || 'Institutional Asset';
+  const facType = payload.facilityType || 'Facility';
+  const primary = payload.primary || {};
+  const occupants = Array.isArray(payload.occupants) && payload.occupants.length > 0 ? payload.occupants : [primary];
+  const refNo = primary.booking_ref || primary.reference_no || '';
+
+  if (titleEl) {
+    titleEl.textContent = facName;
+  }
+
+  if (btnBooking) {
+    if (refNo) {
+      btnBooking.href = `admin_reservations.php?search=${encodeURIComponent(refNo)}`;
+      btnBooking.style.display = 'inline-flex';
+    } else {
+      btnBooking.style.display = 'none';
+    }
+  }
+
+  // Format dates
+  const formatIsoDate = (dStr) => {
+    if (!dStr) return '';
+    try {
+      const parts = dStr.split('-');
+      if (parts.length === 3) {
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+    } catch (e) {}
+    return dStr;
+  };
+
+  const startDateFmt = formatIsoDate(primary.start_date);
+  const endDateFmt = formatIsoDate(primary.end_date);
+  const dateRangeStr = (startDateFmt === endDateFmt || !endDateFmt) ? startDateFmt : `${startDateFmt} — ${endDateFmt}`;
+
+  // Build body HTML
+  let html = `
+    <!-- Event Banner -->
+    <div class="occupant-modal-event-banner">
+      <div class="o-event-tag-row">
+        <span class="o-badge-chip active-session">
+          <span class="f-occ-pulse-dot" style="background:#16a34a;"></span>
+          Active Occupant Today
+        </span>
+        <span class="o-badge-chip ref">Ref #${escapeHtml(refNo)}</span>
+      </div>
+      <h3 class="o-event-title">${escapeHtml(primary.event_title || 'Institutional Event / Activity')}</h3>
+      <div class="o-event-facility-sub">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span>${escapeHtml(facType)} • Official Allocation</span>
+      </div>
+    </div>
+
+    <!-- Client / Contact Person Card -->
+    <div class="occupant-modal-section">
+      <h5 class="o-section-heading">Client &amp; Contact Person</h5>
+      <div class="o-client-detail-card">
+        <div class="o-client-avatar">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </div>
+        <div class="o-client-info">
+          <div class="o-client-name">${escapeHtml(primary.client_name || 'Authorized Staff / Guest')}</div>
+          <div class="o-client-agency">${escapeHtml(primary.client_agency || 'Agricultural Training Institute')}</div>
+        </div>
+      </div>
+
+      <div class="o-contact-chips-grid">
+        ${primary.client_contact ? `
+          <a href="tel:${escapeHtml(primary.client_contact)}" class="o-contact-chip" title="Call Contact Person">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <span><strong>${escapeHtml(primary.client_contact)}</strong> (Official Mobile)</span>
+          </a>
+        ` : `
+          <div class="o-contact-chip" style="color: #64748b;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <span>No contact number recorded</span>
+          </div>
+        `}
+
+        ${primary.client_email ? `
+          <a href="mailto:${escapeHtml(primary.client_email)}" class="o-contact-chip" title="Send Email">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <span>${escapeHtml(primary.client_email)}</span>
+          </a>
+        ` : ''}
+      </div>
+    </div>
+
+    <!-- Booking Schedule & Specs -->
+    <div class="occupant-modal-section">
+      <h5 class="o-section-heading">Schedule &amp; Attendance</h5>
+      <div class="o-specs-table-grid">
+        <div class="o-spec-card">
+          <span class="o-spec-label">Duration Dates</span>
+          <strong class="o-spec-value">${dateRangeStr}</strong>
+        </div>
+        <div class="o-spec-card">
+          <span class="o-spec-label">Time Slot / Schedule</span>
+          <strong class="o-spec-value">${escapeHtml(primary.time_slot || 'Full Day Activity')}</strong>
+        </div>
+        <div class="o-spec-card">
+          <span class="o-spec-label">Participants / Pax</span>
+          <strong class="o-spec-value">${primary.pax_count || '—'} Participants</strong>
+        </div>
+        <div class="o-spec-card">
+          <span class="o-spec-label">Approval Status</span>
+          <strong class="o-spec-value" style="color: #166534;">Officially Cleared &amp; Approved</strong>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // If there are multiple room occupants (e.g. multiple dormitory rooms booked under this dorm today)
+  if (occupants.length > 1) {
+    html += `
+      <div class="occupant-modal-section" style="margin-top: 1.25rem;">
+        <h5 class="o-section-heading">Other Active Rooms in this Dormitory (${occupants.length})</h5>
+        <div class="o-multi-rooms-list">
+          ${occupants.map(o => `
+            <div class="o-multi-room-item">
+              <div class="o-mr-badge">Room ${escapeHtml(o.room_number || 'N/A')}</div>
+              <div class="o-mr-info">
+                <strong>${escapeHtml(o.client_name)}</strong>
+                <span>${escapeHtml(o.event_title)} • #${escapeHtml(o.booking_ref || o.reference_no)}</span>
+              </div>
+              ${o.client_contact ? `<a href="tel:${escapeHtml(o.client_contact)}" class="o-mr-phone" title="Call">${escapeHtml(o.client_contact)}</a>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  bodyEl.innerHTML = html;
+
+  modal.style.display = 'flex';
+  void modal.offsetHeight;
+  modal.classList.add('show');
+}
+
+function closeOccupantModal() {
+  const modal = document.getElementById('facilityOccupantModal');
+  if (!modal) return;
+  modal.classList.remove('show');
+  setTimeout(() => {
+    modal.style.display = 'none';
+  }, 220);
 }
 
 

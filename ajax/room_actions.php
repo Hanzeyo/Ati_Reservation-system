@@ -57,11 +57,26 @@ try {
 
         // Check active reservations today for each room
         $today = date('Y-m-d');
-        $occStmt = $db->prepare("SELECT room_id, reference_no, event_title, user_id FROM reservations 
-                                 WHERE facility_id = ? 
-                                   AND room_id IS NOT NULL 
-                                   AND status IN ('Approved', 'Completed') 
-                                   AND start_date <= ? AND end_date >= ?");
+        $occStmt = $db->prepare("SELECT r.id AS reservation_id,
+                                        r.room_id, 
+                                        r.reference_no, 
+                                        r.event_title, 
+                                        r.start_date, 
+                                        r.end_date, 
+                                        r.time_slot, 
+                                        r.pax_count,
+                                        r.user_id,
+                                        u.full_name AS client_name,
+                                        u.contact_number AS client_contact,
+                                        u.email AS client_email,
+                                        u.office_agency AS client_agency
+                                 FROM reservations r 
+                                 LEFT JOIN users u ON r.user_id = u.id
+                                 WHERE r.facility_id = ? 
+                                   AND r.room_id IS NOT NULL 
+                                   AND r.status = 'Approved'
+                                   AND r.start_date <= ? AND r.end_date >= ?
+                                   AND r.deleted_at IS NULL");
         $occStmt->execute([$facilityId, $today, $today]);
         $occupiedList = [];
         while ($row = $occStmt->fetch(PDO::FETCH_ASSOC)) {
@@ -89,6 +104,19 @@ try {
                 'status' => $computedStatus,
                 'is_maintenance' => $isMaint,
                 'is_occupied' => $isOccupied,
+                'occupant' => $isOccupied ? [
+                    'reservation_id' => (int)$occupiedList[$rid]['reservation_id'],
+                    'booking_ref' => $occupiedList[$rid]['reference_no'],
+                    'event_title' => $occupiedList[$rid]['event_title'],
+                    'client_name' => $occupiedList[$rid]['client_name'] ?? 'Authorized Guest',
+                    'client_contact' => $occupiedList[$rid]['client_contact'] ?? '',
+                    'client_email' => $occupiedList[$rid]['client_email'] ?? '',
+                    'client_agency' => $occupiedList[$rid]['client_agency'] ?? 'ATI Central Office',
+                    'start_date' => $occupiedList[$rid]['start_date'],
+                    'end_date' => $occupiedList[$rid]['end_date'],
+                    'time_slot' => $occupiedList[$rid]['time_slot'] ?? '',
+                    'pax_count' => $occupiedList[$rid]['pax_count'] ?? 1
+                ] : null,
                 'booking_ref' => $occupiedList[$rid]['reference_no'] ?? null
             ];
         }, $rooms);
