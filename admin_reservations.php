@@ -189,7 +189,7 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
 
 // Fetch unique facilities for filter and live monitoring
 $today = date('Y-m-d');
-$facStmt = $db->query("SELECT * FROM facilities WHERE deleted_at IS NULL ORDER BY id ASC");
+$facStmt = $db->query("SELECT * FROM facilities WHERE deleted_at IS NULL ORDER BY CASE WHEN type = 'halls' THEN 1 WHEN type = 'dining' THEN 2 WHEN type = 'dorms' THEN 3 ELSE 4 END ASC, id ASC");
 $monitoredFacilities = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 $facilitiesList = $monitoredFacilities;
 

@@ -18,8 +18,8 @@ $pendingCount = (int)$pendingStmt->fetchColumn();
 $userCountStmt = $db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
 $totalUsersCount = (int)$userCountStmt->fetchColumn();
 
-// Fetch all facilities from DB
-$stmt = $db->query("SELECT * FROM facilities ORDER BY id ASC");
+// Fetch all facilities from DB grouped by type (Halls, Dining, Dormitories) so suites stay together
+$stmt = $db->query("SELECT * FROM facilities ORDER BY CASE WHEN type = 'halls' THEN 1 WHEN type = 'dining' THEN 2 WHEN type = 'dorms' THEN 3 ELSE 4 END ASC, id ASC");
 $facilitiesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $facilitiesData = [];

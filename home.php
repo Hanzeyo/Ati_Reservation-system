@@ -7,8 +7,8 @@ require_once __DIR__ . '/includes/auth_guard.php';
  * Authenticated Portal Home: Facility & Dormitory Category Selection
  */
 
-// Fetch active institutional facilities for dynamic dashboard indicators & showcase
-$facStmt = $db->query("SELECT * FROM facilities WHERE status != 'inactive' AND deleted_at IS NULL ORDER BY id ASC");
+// Fetch active institutional facilities for dynamic dashboard indicators & showcase (grouped so suites stay together)
+$facStmt = $db->query("SELECT * FROM facilities WHERE status != 'inactive' AND deleted_at IS NULL ORDER BY CASE WHEN type = 'halls' THEN 1 WHEN type = 'dining' THEN 2 WHEN type = 'dorms' THEN 3 ELSE 4 END ASC, id ASC");
 $allFacilities = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
 $hallsCount = 0;
