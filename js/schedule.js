@@ -161,10 +161,11 @@ const masterEventsDatabase = [
 
 const FACILITY_DISPLAY_NAMES = {
   'all': 'All Facilities',
+  'carandang': 'Carandang Hall',
+  'orosa': 'Orosa Hall',
+  'rdec-training': 'RDEC Training Halls',
   'function-hall': 'Function Hall',
-  'training-hall': 'Training Hall A',
-  'mess-hall': 'Mess Hall & Dining Area',
-  'boardroom': 'Executive Boardroom',
+  'serrano': 'Serrano Hall',
   'dormitory': 'Dormitory Suites'
 };
 
@@ -550,10 +551,11 @@ function initSystemStatusCards() {
       if (chipsEl) {
         const counts = status.facilityCounts || {};
         const items = [
+          { name: 'Carandang Hall', count: counts['carandang'] || 0, icon: '💼' },
+          { name: 'Orosa Hall', count: counts['orosa'] || 0, icon: '🏛️' },
+          { name: 'RDEC Training', count: counts['rdec-training'] || 0, icon: '🏫' },
           { name: 'Function Hall', count: counts['function-hall'] || 0, icon: '🏛️' },
-          { name: 'Training Hall', count: counts['training-hall'] || 0, icon: '🏫' },
-          { name: 'Mess Hall', count: counts['mess-hall'] || 0, icon: '🍽️' },
-          { name: 'Boardroom', count: counts['boardroom'] || 0, icon: '💼' },
+          { name: 'Serrano Hall', count: counts['serrano'] || 0, icon: '🎭' },
           { name: 'Dormitory', count: counts['dormitory'] || 0, icon: '🛏️' }
         ];
         chipsEl.innerHTML = items
@@ -932,10 +934,11 @@ function openEventDetails(eventId) {
 
 function getFacilityColor(key) {
   switch (key) {
+    case 'carandang': return '#7c3aed';
+    case 'orosa': return '#2563eb';
+    case 'rdec-training': return '#0284c7';
     case 'function-hall': return '#107545';
-    case 'training-hall': return '#2563eb';
-    case 'mess-hall': return '#d97706';
-    case 'boardroom': return '#7c3aed';
+    case 'serrano': return '#d97706';
     case 'dormitory': return '#0d9488';
     default: return '#175432';
   }

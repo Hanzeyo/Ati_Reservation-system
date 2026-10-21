@@ -44,12 +44,16 @@ try {
 
         // Map facility name to front-end facilityKey for styling & filtering
         $facilityKey = 'function-hall';
-        if (strpos($lowerFac, 'training') !== false) {
-            $facilityKey = 'training-hall';
-        } elseif (strpos($lowerFac, 'mess') !== false || strpos($lowerFac, 'dining') !== false) {
-            $facilityKey = 'mess-hall';
-        } elseif (strpos($lowerFac, 'board') !== false || strpos($lowerFac, 'executive') !== false) {
-            $facilityKey = 'boardroom';
+        if (strpos($lowerFac, 'carandang') !== false || strpos($lowerFac, 'board') !== false) {
+            $facilityKey = 'carandang';
+        } elseif (strpos($lowerFac, 'orosa') !== false) {
+            $facilityKey = 'orosa';
+        } elseif (strpos($lowerFac, 'rdec') !== false || strpos($lowerFac, 'training') !== false) {
+            $facilityKey = 'rdec-training';
+        } elseif (strpos($lowerFac, 'serrano') !== false) {
+            $facilityKey = 'serrano';
+        } elseif (strpos($lowerFac, 'function') !== false) {
+            $facilityKey = 'function-hall';
         } elseif (strpos($lowerFac, 'dorm') !== false || ($row['facility_type'] ?? '') === 'dormitories') {
             $facilityKey = 'dormitory';
         }

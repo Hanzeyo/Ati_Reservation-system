@@ -21,9 +21,12 @@ function initHeroSlider() {
   if (!slides.length) return;
 
   const hallNames = [
+    'Carandang Hall',
+    'Orosa Hall',
+    'RDEC Training Hall 1',
+    'RDEC Training Hall 2',
     'Function Hall',
-    'Training Hall',
-    'Mess Hall'
+    'Serrano Hall'
   ];
 
   let currentIndex = 0;
@@ -34,9 +37,11 @@ function initHeroSlider() {
       slide.classList.toggle('active', i === index);
     });
 
-    dots.forEach((dot, i) => {
-      dot.classList.toggle('active', i === index);
-    });
+    if (dots && dots.length) {
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+      });
+    }
 
     if (pillBadge && hallNames[index]) {
       pillBadge.textContent = hallNames[index];
@@ -57,13 +62,15 @@ function initHeroSlider() {
     if (intervalTimer) clearInterval(intervalTimer);
   }
 
-  dots.forEach(dot => {
-    dot.addEventListener('click', (e) => {
-      const targetIndex = parseInt(e.target.dataset.index, 10);
-      showSlide(targetIndex);
-      startAutoCycle();
+  if (dots && dots.length) {
+    dots.forEach(dot => {
+      dot.addEventListener('click', (e) => {
+        const targetIndex = parseInt(e.target.dataset.index, 10);
+        showSlide(targetIndex);
+        startAutoCycle();
+      });
     });
-  });
+  }
 
   const heroCard = document.querySelector('.hero-card');
   if (heroCard) {
@@ -98,14 +105,14 @@ function initCalendar() {
 
   // Mock reservation schedules for display
   const mockSchedules = {
-    '2026-09-02': { status: 'reserved', functionHall: 'Reserved (8:00 AM - 5:00 PM)', trainingHall: 'Reserved', messHall: 'Available' },
-    '2026-09-05': { status: 'available', functionHall: 'Available All Day', trainingHall: 'Available All Day', messHall: 'Available All Day' },
-    '2026-09-08': { status: 'pending', functionHall: 'Pending Approval (DA Staff)', trainingHall: 'Available', messHall: 'Available' },
-    '2026-09-12': { status: 'reserved', functionHall: 'Reserved (Training Group A)', trainingHall: 'Reserved', messHall: 'Reserved' },
-    '2026-09-15': { status: 'available', functionHall: 'Available All Day', trainingHall: 'Available All Day', messHall: 'Available All Day' },
-    '2026-09-21': { status: 'pending', functionHall: 'Available', trainingHall: 'Pending Review', messHall: 'Available' },
-    '2026-09-24': { status: 'reserved', functionHall: 'Annual Regional Assembly', trainingHall: 'Reserved', messHall: 'Reserved' },
-    '2026-09-29': { status: 'suspended', functionHall: 'Maintenance / Closed', trainingHall: 'Maintenance', messHall: 'Maintenance' },
+    '2026-09-02': { status: 'reserved', functionHall: 'Reserved (8:00 AM - 5:00 PM)', carandangHall: 'Reserved', orosaHall: 'Available' },
+    '2026-09-05': { status: 'available', functionHall: 'Available All Day', carandangHall: 'Available All Day', orosaHall: 'Available All Day' },
+    '2026-09-08': { status: 'pending', functionHall: 'Pending Approval (DA Staff)', carandangHall: 'Available', orosaHall: 'Available' },
+    '2026-09-12': { status: 'reserved', functionHall: 'Reserved (Training Group A)', carandangHall: 'Reserved', orosaHall: 'Reserved' },
+    '2026-09-15': { status: 'available', functionHall: 'Available All Day', carandangHall: 'Available All Day', orosaHall: 'Available All Day' },
+    '2026-09-21': { status: 'pending', functionHall: 'Available', carandangHall: 'Pending Review', orosaHall: 'Available' },
+    '2026-09-24': { status: 'reserved', functionHall: 'Annual Regional Assembly', carandangHall: 'Reserved', orosaHall: 'Reserved' },
+    '2026-09-29': { status: 'suspended', functionHall: 'Maintenance / Closed', carandangHall: 'Maintenance', orosaHall: 'Maintenance' },
   };
 
   const monthNames = [
@@ -191,8 +198,8 @@ function initCalendar() {
 
     // Generate schedule overview items
     const fStatus = schedule?.functionHall || 'Available All Day';
-    const tStatus = schedule?.trainingHall || 'Available All Day';
-    const mStatus = schedule?.messHall || 'Available All Day';
+    const cStatus = schedule?.carandangHall || 'Available All Day';
+    const oStatus = schedule?.orosaHall || 'Available All Day';
 
     const getPillClass = (statusStr) => {
       if (statusStr.includes('Reserved')) return 'reserved';
@@ -214,20 +221,20 @@ function initCalendar() {
         </div>
         <div class="hall-slot-item">
           <div>
-            <div class="slot-name">Training Hall</div>
-            <small style="color: #64748b;">${tStatus}</small>
+            <div class="slot-name">Carandang Hall</div>
+            <small style="color: #64748b;">${cStatus}</small>
           </div>
-          <span class="slot-status-pill ${getPillClass(tStatus)}">
-            ${getPillClass(tStatus).toUpperCase()}
+          <span class="slot-status-pill ${getPillClass(cStatus)}">
+            ${getPillClass(cStatus).toUpperCase()}
           </span>
         </div>
         <div class="hall-slot-item">
           <div>
-            <div class="slot-name">Mess Hall</div>
-            <small style="color: #64748b;">${mStatus}</small>
+            <div class="slot-name">Orosa Hall</div>
+            <small style="color: #64748b;">${oStatus}</small>
           </div>
-          <span class="slot-status-pill ${getPillClass(mStatus)}">
-            ${getPillClass(mStatus).toUpperCase()}
+          <span class="slot-status-pill ${getPillClass(oStatus)}">
+            ${getPillClass(oStatus).toUpperCase()}
           </span>
         </div>
       `;
@@ -279,26 +286,47 @@ function initModals() {
   // Facility detail buttons
   const facilityDetailButtons = document.querySelectorAll('.js-view-facility');
   const facilityData = {
+    'carandang-hall': {
+      title: 'Carandang Hall',
+      image: 'assets/images/carandang_room.jpg',
+      desc: 'Executive boardroom venue equipped for high-level management conferences, diplomatic delegations, hybrid video conferences, and strategic planning assemblies.',
+      capacity: 'Up to 28 Persons',
+      features: ['Executive Solid Table & Ergonomic Seating', '4K Hybrid Video-Conferencing Bar', 'Dedicated Digital Presentation Screen', 'High-Speed Secure Wi-Fi']
+    },
+    'orosa-hall': {
+      title: 'Orosa Hall',
+      image: 'assets/images/orosa_hall.jpg',
+      desc: 'Versatile banquet and seminar hall ideal for specialized workshops, institutional assemblies, and technical presentations.',
+      capacity: 'Up to 80 Persons',
+      features: ['Dual Laser Projectors & Screens', 'Acoustic Wall Paneling & PA Audio', 'Flexible Classroom or Banquet Seating', 'High-Speed Presentation Wi-Fi']
+    },
+    'rdec-training-1': {
+      title: 'RDEC Training Hall 1',
+      image: 'assets/images/rdec_training_1.jpg',
+      desc: 'Comprehensive training auditorium with dual display presentation systems, stage podium, and modular classroom layout.',
+      capacity: 'Up to 100 Persons',
+      features: ['Dual Presentation Monitors', 'Modular Workstations & Power Outlets', 'Front Stage & Lectern Mic', 'Full Air-conditioning']
+    },
+    'rdec-training-2': {
+      title: 'RDEC Training Hall 2',
+      image: 'assets/images/rdec_training_2.jpg',
+      desc: 'Interactive training facility designed for hands-on technical sessions, collaborative workshops, and agricultural technology demonstrations.',
+      capacity: 'Up to 100 Persons',
+      features: ['Interactive Display Board', 'Modular Breakout Workstations', 'Surround Sound Audio System', 'Dedicated High-Speed LAN & Wi-Fi']
+    },
     'function-hall': {
       title: 'Function Hall',
       image: 'assets/images/function_hall.jpg',
       desc: 'Our premier venue for broad audience events, symposiums, official regional congresses, and stakeholder meetings. Equipped with high-definition presentation screens and dedicated acoustics.',
-      capacity: 'Up to 250 Persons',
-      features: ['Dual HD Laser Projectors', 'Surround Sound & Lapel Microphones', 'Full Air-conditioning', 'VIP Stage & Podium']
+      capacity: 'Up to 200 Persons',
+      features: ['Dual HD Laser Projectors', 'Surround Sound & Lapel Microphones', 'Full Air-conditioning', 'VIP Stage & Elevated Rostrum']
     },
-    'training-hall': {
-      title: 'Training Hall',
-      image: 'assets/images/training_hall.jpg',
-      desc: 'Purpose-built for comprehensive hands-on training sessions, agricultural extension modules, interactive workshops, and group breakout discussions.',
+    'serrano-hall': {
+      title: 'Serrano Hall',
+      image: 'assets/images/serrano_hall.jpg',
+      desc: 'Multi-purpose auditorium setup providing flexible configurations for educational seminars, general assemblies, and institutional events.',
       capacity: 'Up to 80 Persons',
-      features: ['Modular Work Tables & Chairs', 'Dual Presentation Monitors', 'Dedicated High-Speed WiFi', 'Whiteboards & Training Kits']
-    },
-    'mess-hall': {
-      title: 'Mess Hall',
-      image: 'assets/images/mess_hall.jpg',
-      desc: 'A welcoming, naturally lit dining facility designed for delegate meals, networking breaks, and catered agricultural community banquets.',
-      capacity: 'Up to 150 Persons',
-      features: ['Buffet & Food Service Counters', 'Sanitation & Handwash Stations', 'Direct Access to Kitchen Area', 'Comfortable Solid Wood Seating']
+      features: ['Full Stage & Lighting Setup', 'Surround Sound PA System', 'Ergonomic Auditorium Seating', 'High-Definition Laser Projection']
     }
   };
 

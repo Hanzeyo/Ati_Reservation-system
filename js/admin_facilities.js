@@ -782,7 +782,7 @@ function handleAddNewFacility(e) {
   const location = document.getElementById('addFacilityLocation').value.trim();
   const featStr = document.getElementById('addFacilityFeatures').value.trim();
   const uploadedOrPresetImg = document.getElementById('addFacilityImageSrc')?.value;
-  const defaultFallbackImg = category === 'dorms' ? 'assets/images/dormitory.jpg' : (category === 'halls' ? 'assets/images/function_hall.jpg' : 'assets/images/mess_hall.jpg');
+  const defaultFallbackImg = category === 'dorms' ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg';
   const finalImg = uploadedOrPresetImg || defaultFallbackImg;
 
   const formData = new FormData();

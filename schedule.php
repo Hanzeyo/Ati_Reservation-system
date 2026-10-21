@@ -475,10 +475,11 @@ if (!empty($_SESSION['full_name'])) {
       <!-- Facility Filter Pills -->
       <div class="facility-filter-pills">
         <button type="button" class="fac-pill active" data-facility="all">All Facilities</button>
+        <button type="button" class="fac-pill" data-facility="carandang">Carandang Hall</button>
+        <button type="button" class="fac-pill" data-facility="orosa">Orosa Hall</button>
+        <button type="button" class="fac-pill" data-facility="rdec-training">RDEC Training Halls</button>
         <button type="button" class="fac-pill" data-facility="function-hall">Function Hall</button>
-        <button type="button" class="fac-pill" data-facility="training-hall">Training Hall A</button>
-        <button type="button" class="fac-pill" data-facility="mess-hall">Mess Hall</button>
-        <button type="button" class="fac-pill" data-facility="boardroom">Boardroom</button>
+        <button type="button" class="fac-pill" data-facility="serrano">Serrano Hall</button>
         <button type="button" class="fac-pill" data-facility="dormitory">Dormitory</button>
       </div>
     </div>

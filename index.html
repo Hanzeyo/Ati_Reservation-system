@@ -79,7 +79,8 @@
           </div>
         </div>
         <button type="button" class="drawer-close-btn" id="mobileDrawerClose" aria-label="Close Navigation Menu">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+            stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
@@ -211,11 +212,13 @@
           </div>
           <h2 class="hero-title">Welcome to the<br><span class="hero-title-highlight">ATI Reservation System</span></h2>
           <p class="hero-subtitle">
-            Easily reserve our state-of-the-art facilities and accommodations for training sessions, conferences, workshops, and official institutional events.
+            Easily reserve our state-of-the-art facilities and accommodations for training sessions, conferences,
+            workshops, and official institutional events.
           </p>
           <div class="hero-actions">
             <a href="login.php" class="btn-hero-primary" id="heroLoginBtn">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                 <polyline points="10 17 15 12 10 7"></polyline>
                 <line x1="15" y1="12" x2="3" y2="12"></line>
@@ -223,7 +226,8 @@
               <span>Login to Reserve</span>
             </a>
             <a href="#availability" class="btn-hero-secondary" id="heroCheckBtn">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="16" y1="2" x2="16" y2="6"></line>
                 <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -256,26 +260,30 @@
             </div>
             <div class="showcase-slider">
               <div class="showcase-slide active">
+                <img src="assets/images/carandang_room.jpg" alt="Carandang Hall - Agriculture Training Institute">
+              </div>
+              <div class="showcase-slide">
+                <img src="assets/images/orosa_hall.jpg" alt="Orosa Hall - Agriculture Training Institute">
+              </div>
+              <div class="showcase-slide">
+                <img src="assets/images/rdec_training_1.jpg"
+                  alt="RDEC Training Hall 1 - Agriculture Training Institute">
+              </div>
+              <div class="showcase-slide">
+                <img src="assets/images/rdec_training_2.jpg"
+                  alt="RDEC Training Hall 2 - Agriculture Training Institute">
+              </div>
+              <div class="showcase-slide">
                 <img src="assets/images/function_hall.jpg" alt="Function Hall - Agriculture Training Institute">
               </div>
               <div class="showcase-slide">
-                <img src="assets/images/training_hall.jpg" alt="Training Hall - Agriculture Training Institute">
+                <img src="assets/images/serrano_hall.jpg" alt="Serrano Hall - Agriculture Training Institute">
               </div>
-              <div class="showcase-slide">
-                <img src="assets/images/mess_hall.jpg" alt="Mess Hall Dining - Agriculture Training Institute">
-              </div>
-            </div>
-
-            <!-- Carousel navigation dots -->
-            <div class="showcase-controls">
-              <span class="showcase-dot active" data-index="0" title="Function Hall"></span>
-              <span class="showcase-dot" data-index="1" title="Training Hall"></span>
-              <span class="showcase-dot" data-index="2" title="Mess Hall"></span>
             </div>
           </div>
 
           <div class="hero-pill-badge" id="heroPillBadge">
-            Function Hall
+            Carandang Hall
           </div>
         </div>
       </div>
@@ -291,15 +299,16 @@
         </div>
 
         <div class="facilities-grid">
-          <!-- Facility 1: Function Hall -->
+          <!-- Facility 1: Carandang Hall -->
           <article class="facility-card">
             <div class="facility-img-wrapper">
-              <img src="assets/images/function_hall.jpg" alt="Function Hall" loading="lazy">
-              <span class="facility-badge">Cap: 250 Pax</span>
+              <img src="assets/images/carandang_room.jpg" alt="Carandang Hall" loading="lazy">
+              <span class="facility-badge">Cap: 28 Pax</span>
             </div>
             <div class="facility-body">
-              <h3 class="facility-name">Function Hall</h3>
-              <p class="facility-desc">Suitable for seminars, meetings, and large events.</p>
+              <h3 class="facility-name">Carandang Hall</h3>
+              <p class="facility-desc">Executive boardroom equipped for high-level meetings, hybrid conferences, and
+                strategy sessions.</p>
               <div class="facility-footer">
                 <span class="facility-meta">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -308,7 +317,111 @@
                     <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                     <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                   </svg>
-                  250 Capacity
+                  28 Capacity
+                </span>
+                <button type="button" class="facility-btn js-view-facility" data-facility="carandang-hall">
+                  Details &rarr;
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Facility 2: Orosa Hall -->
+          <article class="facility-card">
+            <div class="facility-img-wrapper">
+              <img src="assets/images/orosa_hall.jpg" alt="Orosa Hall" loading="lazy">
+              <span class="facility-badge">Cap: 80 Pax</span>
+            </div>
+            <div class="facility-body">
+              <h3 class="facility-name">Orosa Hall</h3>
+              <p class="facility-desc">Ideal for specialized seminars, workshops, and official institutional assemblies.
+              </p>
+              <div class="facility-footer">
+                <span class="facility-meta">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  80 Capacity
+                </span>
+                <button type="button" class="facility-btn js-view-facility" data-facility="orosa-hall">
+                  Details &rarr;
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Facility 3: RDEC Training Hall 1 -->
+          <article class="facility-card">
+            <div class="facility-img-wrapper">
+              <img src="assets/images/rdec_training_1.jpg" alt="RDEC Training Hall 1" loading="lazy">
+              <span class="facility-badge">Cap: 100 Pax</span>
+            </div>
+            <div class="facility-body">
+              <h3 class="facility-name">RDEC Training Hall 1</h3>
+              <p class="facility-desc">Comprehensive training hall with dual display presentation systems and modular
+                workstations.</p>
+              <div class="facility-footer">
+                <span class="facility-meta">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                  </svg>
+                  100 Capacity
+                </span>
+                <button type="button" class="facility-btn js-view-facility" data-facility="rdec-training-1">
+                  Details &rarr;
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Facility 4: RDEC Training Hall 2 -->
+          <article class="facility-card">
+            <div class="facility-img-wrapper">
+              <img src="assets/images/rdec_training_2.jpg" alt="RDEC Training Hall 2" loading="lazy">
+              <span class="facility-badge">Cap: 100 Pax</span>
+            </div>
+            <div class="facility-body">
+              <h3 class="facility-name">RDEC Training Hall 2</h3>
+              <p class="facility-desc">State-of-the-art interactive training hall for hands-on technical sessions and
+                demonstrations.</p>
+              <div class="facility-footer">
+                <span class="facility-meta">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                  </svg>
+                  100 Capacity
+                </span>
+                <button type="button" class="facility-btn js-view-facility" data-facility="rdec-training-2">
+                  Details &rarr;
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Facility 5: Function Hall -->
+          <article class="facility-card">
+            <div class="facility-img-wrapper">
+              <img src="assets/images/function_hall.jpg" alt="Function Hall" loading="lazy">
+              <span class="facility-badge">Cap: 200 Pax</span>
+            </div>
+            <div class="facility-body">
+              <h3 class="facility-name">Function Hall</h3>
+              <p class="facility-desc">Premier venue for regional congresses, ceremonies, symposia, and large
+                institutional gatherings.</p>
+              <div class="facility-footer">
+                <span class="facility-meta">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
+                  200 Capacity
                 </span>
                 <button type="button" class="facility-btn js-view-facility" data-facility="function-hall">
                   Details &rarr;
@@ -317,51 +430,27 @@
             </div>
           </article>
 
-          <!-- Facility 2: Training Hall -->
+          <!-- Facility 6: Serrano Hall -->
           <article class="facility-card">
             <div class="facility-img-wrapper">
-              <img src="assets/images/training_hall.jpg" alt="Training Hall" loading="lazy">
+              <img src="assets/images/serrano_hall.jpg" alt="Serrano Hall" loading="lazy">
               <span class="facility-badge">Cap: 80 Pax</span>
             </div>
             <div class="facility-body">
-              <h3 class="facility-name">Training Hall</h3>
-              <p class="facility-desc">For training sessions, workshops, and educational activities.</p>
+              <h3 class="facility-name">Serrano Hall</h3>
+              <p class="facility-desc">Flexible multi-purpose auditorium and training facility for institutional
+                programs and seminars.</p>
               <div class="facility-footer">
                 <span class="facility-meta">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                   </svg>
-                  Interactive Lab
+                  80 Capacity
                 </span>
-                <button type="button" class="facility-btn js-view-facility" data-facility="training-hall">
-                  Details &rarr;
-                </button>
-              </div>
-            </div>
-          </article>
-
-          <!-- Facility 3: Mess Hall -->
-          <article class="facility-card">
-            <div class="facility-img-wrapper">
-              <img src="assets/images/mess_hall.jpg" alt="Mess Hall" loading="lazy">
-              <span class="facility-badge">Cap: 150 Pax</span>
-            </div>
-            <div class="facility-body">
-              <h3 class="facility-name">Mess Hall</h3>
-              <p class="facility-desc">For meals, gatherings, and related activities.</p>
-              <div class="facility-footer">
-                <span class="facility-meta">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                    <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-                    <line x1="6" y1="1" x2="6" y2="4"></line>
-                    <line x1="10" y1="1" x2="10" y2="4"></line>
-                    <line x1="14" y1="1" x2="14" y2="4"></line>
-                  </svg>
-                  Dining & Buffet
-                </span>
-                <button type="button" class="facility-btn js-view-facility" data-facility="mess-hall">
+                <button type="button" class="facility-btn js-view-facility" data-facility="serrano-hall">
                   Details &rarr;
                 </button>
               </div>
@@ -588,7 +677,8 @@
   <div class="modal-overlay" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
     <div class="modal-card">
       <button class="modal-close-btn js-close-modal" aria-label="Close modal">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
@@ -625,7 +715,8 @@
   <div class="modal-overlay" id="facilityModal" role="dialog" aria-modal="true" aria-labelledby="modalFacilityTitle">
     <div class="modal-card modal-lg">
       <button class="modal-close-btn js-close-modal" aria-label="Close modal">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+          stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
@@ -649,7 +740,7 @@
     </div>
   </div>
 
-  <script src="js/main.js?v=4"></script>
+  <script src="js/main.js?v=5"></script>
 </body>
 
 </html>

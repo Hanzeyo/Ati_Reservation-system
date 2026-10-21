@@ -815,16 +815,26 @@ body.schedule-body {
   background-color: var(--badge-function);
 }
 
+.event-chip.carandang,
+.event-chip.boardroom {
+  background-color: var(--badge-boardroom);
+}
+
+.event-chip.orosa {
+  background-color: #2563eb;
+}
+
+.event-chip.rdec-training,
 .event-chip.training-hall {
-  background-color: var(--badge-training);
+  background-color: #0284c7;
+}
+
+.event-chip.serrano {
+  background-color: #d97706;
 }
 
 .event-chip.mess-hall {
   background-color: var(--badge-mess);
-}
-
-.event-chip.boardroom {
-  background-color: var(--badge-boardroom);
 }
 
 .event-chip.dormitory {

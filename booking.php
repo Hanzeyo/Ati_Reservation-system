@@ -519,12 +519,14 @@ $totalCount = count($dbFacilities);
           $lowerName = strtolower($f['name']);
           if (strpos($lowerName, 'function hall') !== false) {
             $cardSlug = 'function-hall';
-          } elseif (strpos($lowerName, 'training hall') !== false) {
-            $cardSlug = 'training-hall-a';
-          } elseif (strpos($lowerName, 'mess hall') !== false) {
-            $cardSlug = 'mess-hall';
-          } elseif (strpos($lowerName, 'boardroom') !== false) {
-            $cardSlug = 'executive-boardroom';
+          } elseif (strpos($lowerName, 'carandang') !== false || strpos($lowerName, 'boardroom') !== false) {
+            $cardSlug = 'carandang-hall';
+          } elseif (strpos($lowerName, 'orosa') !== false) {
+            $cardSlug = 'orosa-hall';
+          } elseif (strpos($lowerName, 'serrano') !== false) {
+            $cardSlug = 'serrano-hall';
+          } elseif (strpos($lowerName, 'rdec') !== false || strpos($lowerName, 'training') !== false) {
+            $cardSlug = 'rdec-training';
           }
 
           $imgSrc = !empty($f['image']) ? $f['image'] : ($isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg');

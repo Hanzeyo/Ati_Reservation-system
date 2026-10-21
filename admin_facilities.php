@@ -885,7 +885,6 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                   <select id="editFacilityGalleryPreset" onchange="handleGalleryPresetSelected(this, 'edit')" style="padding: 0.38rem 0.65rem; border: 1.2px solid #dce8e0; border-radius: 6px; font-family: inherit; font-size: 0.78rem; color: #2e4738;">
                     <option value="">+ Add official preset photo...</option>
                     <option value="assets/images/carandang_room.jpg|Executive Stage &amp; Meeting Setup">Carandang Room (Executive Boardroom)</option>
-                    <option value="assets/images/boardroom.jpg|Executive Presentation Podium &amp; Digital Display">Boardroom Podium &amp; Screen</option>
                     <option value="assets/images/orosa_hall.jpg|Orosa Function Venue &amp; Banquet Setup">Orosa Hall</option>
                     <option value="assets/images/rdec_training_1.jpg|Training Hall Dual Presentation Screens">RDEC Training Hall 1</option>
                     <option value="assets/images/rdec_training_2.jpg|Classroom Workshop Workstations">RDEC Training Hall 2</option>
@@ -1041,7 +1040,6 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                   <select id="addFacilityGalleryPreset" onchange="handleGalleryPresetSelected(this, 'add')" style="padding: 0.38rem 0.65rem; border: 1.2px solid #dce8e0; border-radius: 6px; font-family: inherit; font-size: 0.78rem; color: #2e4738;">
                     <option value="">+ Add official preset photo...</option>
                     <option value="assets/images/carandang_room.jpg|Executive Stage &amp; Meeting Setup">Carandang Room (Executive Boardroom)</option>
-                    <option value="assets/images/boardroom.jpg|Executive Presentation Podium &amp; Digital Display">Boardroom Podium &amp; Screen</option>
                     <option value="assets/images/orosa_hall.jpg|Orosa Function Venue &amp; Banquet Setup">Orosa Hall</option>
                     <option value="assets/images/rdec_training_1.jpg|Training Hall Dual Presentation Screens">RDEC Training Hall 1</option>
                     <option value="assets/images/rdec_training_2.jpg|Classroom Workshop Workstations">RDEC Training Hall 2</option>

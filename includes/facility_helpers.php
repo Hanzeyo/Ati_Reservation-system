@@ -65,7 +65,7 @@ if (!function_exists('getFacilityGallery')) {
                 $lowerName = strtolower($facility['name'] ?? '');
                 if (stripos($lowerName, 'carandang') !== false || stripos($lowerName, 'boardroom') !== false) {
                     $gallery[] = [
-                        'src' => 'assets/images/boardroom.jpg',
+                        'src' => 'assets/images/carandang_room.jpg',
                         'caption' => 'Executive Presentation Podium & Digital Display'
                     ];
                     $gallery[] = [
@@ -96,7 +96,7 @@ if (!function_exists('getFacilityGallery')) {
                         'caption' => 'Serrano Multi-Purpose Auditorium Setup'
                     ];
                     $gallery[] = [
-                        'src' => 'assets/images/training_hall.jpg',
+                        'src' => 'assets/images/rdec_training_1.jpg',
                         'caption' => 'Classroom Seminar Seating Configuration'
                     ];
                 } else {
@@ -105,7 +105,7 @@ if (!function_exists('getFacilityGallery')) {
                         'caption' => 'Spacious Multi-Purpose Floor Plan & Stage'
                     ];
                     $gallery[] = [
-                        'src' => 'assets/images/boardroom.jpg',
+                        'src' => 'assets/images/carandang_room.jpg',
                         'caption' => 'Audio-Visual Control Center & High-Output Projector'
                     ];
                 }

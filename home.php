@@ -766,8 +766,7 @@ $totalFacilities = count($allFacilities);
           </svg>
         </div>
         <h2 class="cat-card-title">Halls</h2>
-        <p class="cat-card-desc">Function auditoriums, audio-visual training rooms, executive boardrooms &amp; mess
-          dining facilities.</p>
+        <p class="cat-card-desc">Function auditoriums, executive meeting halls &amp; interactive training facilities.</p>
       </a>
 
       <!-- 2. Dormitories Category Card -->

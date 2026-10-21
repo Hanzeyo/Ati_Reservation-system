@@ -701,12 +701,12 @@ foreach ($reservationsList as $resItem) {
 
           // Fallback if no uploaded or custom image exists
           if (empty($venueThumb)) {
-              if (stripos($venueName, 'boardroom') !== false) {
-                  $venueThumb = 'assets/images/boardroom.jpg';
-              } elseif (stripos($venueName, 'training') !== false) {
-                  $venueThumb = 'assets/images/training_hall.jpg';
-              } elseif (stripos($venueName, 'mess') !== false) {
-                  $venueThumb = 'assets/images/mess_hall.jpg';
+              if (stripos($venueName, 'carandang') !== false || stripos($venueName, 'boardroom') !== false) {
+                  $venueThumb = 'assets/images/carandang_room.jpg';
+              } elseif (stripos($venueName, 'orosa') !== false) {
+                  $venueThumb = 'assets/images/orosa_hall.jpg';
+              } elseif (stripos($venueName, 'rdec') !== false || stripos($venueName, 'training') !== false) {
+                  $venueThumb = 'assets/images/rdec_training_1.jpg';
               } elseif (stripos($venueName, 'serrano') !== false) {
                   $venueThumb = 'assets/images/serrano_hall.jpg';
               } elseif ($isDorm) {
