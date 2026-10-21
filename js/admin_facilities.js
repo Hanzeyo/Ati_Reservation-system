@@ -700,6 +700,29 @@ function saveFacilityChanges(e) {
         if (locEl) locEl.textContent = item.location;
         const capCell = row.children[2];
         if (capCell) capCell.innerHTML = `<strong>${item.pax} PAX</strong>${item.beds > 0 ? `<br><small style="color: #637f6f;">${item.beds} Beds</small>` : ''}`;
+
+        const tblPhotoBtn = row.querySelector('.btn-tbl-action[onclick*="openFacilityGalleryModal"]');
+        if (tblPhotoBtn && item.gallery) {
+          const span = tblPhotoBtn.querySelector('span');
+          if (span) span.textContent = `Photos (${item.gallery.length})`;
+          const galPayload = {
+            id: activeEditFacilityId,
+            dbId: item.db_id || item.id,
+            name: item.name,
+            type: item.category,
+            isDorm: (item.category === 'dorms'),
+            rate: item.rate,
+            capacity: item.category === 'dorms' ? `${item.beds} Bunk Beds` : `${item.pax} Participants`,
+            beds: item.beds,
+            cooling_type: item.cooling_type || '',
+            location: item.location,
+            description: item.notes,
+            features: item.features,
+            image: item.image,
+            photos: item.gallery
+          };
+          tblPhotoBtn.onclick = () => openFacilityGalleryModal(galPayload);
+        }
       }
 
       updateKPICounters();
@@ -924,8 +947,31 @@ function handleAddNewFacility(e) {
             </label>
           </td>
           <td><span class="status-badge-chip chip-confirmed">Available</span></td>
-          <td style="text-align: right;">
-            <button type="button" class="btn-card-action" onclick="openEditFacilityModal('${newId}')">Configure</button>
+          <td style="text-align: right; white-space: nowrap; padding-right: 1.25rem;">
+            <div class="facility-table-action-btns">
+              <button type="button" class="btn-tbl-action" onclick="openFacilityGalleryModal(facilitiesData['${newId}'])" title="Preview Client Showcase &amp; Multi-Photo Gallery">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <span>Photos (${facilitiesData[newId].gallery.length})</span>
+              </button>
+              ${category === 'dorms' ? `
+                <button type="button" class="btn-tbl-action btn-manage-rooms" onclick="openManageRoomsModal('${newId}', '${name.replace(/'/g, "\\'")}')" title="Manage Individual Dormitory Rooms">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                  <span>Rooms</span>
+                </button>
+              ` : `
+                <button type="button" class="btn-tbl-action btn-manage-setups" onclick="openManageSetupsModal('${newId}', '${name.replace(/'/g, "\\'")}')" title="Manage Venue Setups &amp; Floor Plans">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18M9 21V9"></path></svg>
+                  <span>Setups</span>
+                </button>
+              `}
+              <button type="button" class="btn-tbl-action" onclick="openEditFacilityModal('${newId}')" title="Edit Facility Details">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                <span>Edit</span>
+              </button>
+              <button type="button" class="btn-tbl-action btn-tbl-delete" onclick="confirmDeleteFacility('${newId}', '${name.replace(/'/g, "\\'")}')" title="Move to Trash / Archive">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
           </td>
         `;
         tbody.insertBefore(tr, tbody.firstChild);

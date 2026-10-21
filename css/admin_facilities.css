@@ -426,6 +426,131 @@
   color: #5c7768;
 }
 
+/* Table Structure & Styling */
+.admin-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.facility-table-view-container .admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.facility-table-view-container .admin-table thead th {
+  background: #f8faf8;
+  color: #576d60;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding: 0.85rem 1rem;
+  border-bottom: 1.5px solid #e1e9e3;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.facility-table-view-container .admin-table tbody td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #edf3ef;
+  vertical-align: middle;
+  font-size: 0.82rem;
+}
+
+.facility-table-view-container .admin-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.facility-table-view-container .admin-table tbody tr:hover {
+  background: #f8fbf9;
+}
+
+/* ==========================================================================
+   Table View Action Buttons (Tailored Sizing - Grid Section Untouched)
+   ========================================================================== */
+.facility-table-action-btns {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.32rem;
+  white-space: nowrap;
+}
+
+.btn-tbl-action {
+  background: #ffffff;
+  border: 1.2px solid #c7ddce;
+  color: #174d2f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.32rem 0.52rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  line-height: 1.2;
+  transition: all 0.16s ease;
+  text-decoration: none;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.btn-tbl-action svg {
+  flex-shrink: 0;
+}
+
+.btn-tbl-action:hover {
+  background: #174d2f;
+  color: #ffffff;
+  border-color: #174d2f;
+}
+
+.btn-tbl-action.btn-tbl-delete {
+  color: #dc2626;
+  border-color: #fecaca;
+  background: #fffafa;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-tbl-action.btn-tbl-delete:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+}
+
+.btn-tbl-action.btn-tbl-restore {
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.btn-tbl-action.btn-tbl-restore:hover {
+  background: #1d4ed8;
+  color: #ffffff;
+  border-color: #1d4ed8;
+}
+
+.btn-tbl-action.btn-tbl-purge {
+  color: #b91c1c;
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.btn-tbl-action.btn-tbl-purge:hover {
+  background: #b91c1c;
+  color: #ffffff;
+  border-color: #b91c1c;
+}
+
 /* Maintenance Hold Modal Warning Box */
 .maintenance-alert-box {
   background: #fff8eb;
