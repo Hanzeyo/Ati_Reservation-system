@@ -1042,4 +1042,128 @@
   border-color: #b91c1c;
 }
 
+/* ==========================================================================
+   MULTI-PHOTO GALLERY MANAGER (ADMIN MODAL)
+   ========================================================================== */
+.gallery-manager-wrap {
+  background: #fbfdfc;
+  border: 1.5px solid #dce8e0;
+  border-radius: 10px;
+  padding: 0.85rem;
+}
+
+.gallery-manager-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.65rem;
+}
+
+.gallery-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.gallery-items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 0.65rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.gallery-item-card {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  background: #ffffff;
+  border: 1.2px solid #dce8e0;
+  border-radius: 8px;
+  padding: 0.45rem 0.55rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.gallery-item-card:hover {
+  border-color: #174d2f;
+  box-shadow: 0 2px 6px rgba(23, 77, 47, 0.1);
+}
+
+.gallery-item-thumb {
+  width: 52px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #c9ded0;
+  flex-shrink: 0;
+  background: #eaf1ec;
+}
+
+.gallery-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.gallery-item-caption-input {
+  width: 100%;
+  font-size: 0.76rem;
+  padding: 0.28rem 0.45rem;
+  border: 1px solid #dce8e0;
+  border-radius: 5px;
+  font-family: inherit;
+  color: #173322;
+  box-sizing: border-box;
+}
+
+.gallery-item-caption-input:focus {
+  border-color: #174d2f;
+  outline: none;
+}
+
+.gallery-item-remove-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: #fee2e2;
+  color: #b91c1c;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.gallery-item-remove-btn:hover {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.gallery-empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 1.2rem 1rem;
+  color: #71897b;
+  font-size: 0.82rem;
+  background: #f4f8f5;
+  border: 1.5px dashed #cbdcd1;
+  border-radius: 8px;
+}
+
+@keyframes fgSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 

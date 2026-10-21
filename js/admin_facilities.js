@@ -363,6 +363,96 @@ function applyPresetImage(presetPath, previewImgId, hiddenSrcId) {
 }
 
 /* ==========================================================================
+   MULTI-PHOTO GALLERY MANAGER STATE & HANDLERS
+   ========================================================================== */
+let editGalleryList = [];
+let addGalleryList = [];
+
+function renderGalleryEditor(mode) {
+  const list = mode === 'edit' ? editGalleryList : addGalleryList;
+  const grid = document.getElementById(`${mode}GalleryItemsGrid`);
+  const badge = document.getElementById(`${mode}GalleryCountBadge`);
+  if (badge) badge.textContent = `${list.length} Photo${list.length === 1 ? '' : 's'}`;
+  if (!grid) return;
+
+  if (list.length === 0) {
+    grid.innerHTML = `
+      <div class="gallery-empty-state">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="margin-bottom:0.35rem; display:inline-block;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+        <div>No gallery photos added yet.</div>
+        <small style="color:#8ca696;">Click <strong>"Upload Multiple Photos"</strong> or pick an official preset above.</small>
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = list.map((item) => `
+    <div class="gallery-item-card" data-gallery-id="${item.id}">
+      <img src="${item.src}" alt="${escapeHtml(item.caption || 'Photo')}" class="gallery-item-thumb" onerror="this.src='assets/images/function_hall.jpg'">
+      <div class="gallery-item-info">
+        <input type="text" class="gallery-item-caption-input" placeholder="Angle Caption (e.g. Stage View)" value="${escapeHtml(item.caption || '')}" oninput="updateGalleryItemCaption('${item.id}', this.value, '${mode}')">
+      </div>
+      <button type="button" class="gallery-item-remove-btn" onclick="removeGalleryItem('${item.id}', '${mode}')" title="Remove photo">✕</button>
+    </div>
+  `).join('');
+}
+
+function handleGalleryFilesSelected(input, mode) {
+  if (!input || !input.files || input.files.length === 0) return;
+  const list = mode === 'edit' ? editGalleryList : addGalleryList;
+
+  Array.from(input.files).forEach((file, idx) => {
+    let cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]+/g, ' ');
+    cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+
+    list.push({
+      id: 'gal_upload_' + Date.now() + '_' + idx + '_' + Math.random().toString(36).substr(2, 5),
+      src: URL.createObjectURL(file),
+      caption: cleanName || 'Facility Photograph',
+      file: file
+    });
+  });
+
+  input.value = '';
+  renderGalleryEditor(mode);
+}
+
+function handleGalleryPresetSelected(selectEl, mode) {
+  if (!selectEl || !selectEl.value) return;
+  const parts = selectEl.value.split('|');
+  const src = parts[0];
+  const caption = parts[1] || 'Official Facility Preset';
+  const list = mode === 'edit' ? editGalleryList : addGalleryList;
+
+  list.push({
+    id: 'gal_preset_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+    src: src,
+    caption: caption,
+    file: null
+  });
+
+  selectEl.value = '';
+  renderGalleryEditor(mode);
+}
+
+function removeGalleryItem(itemId, mode) {
+  if (mode === 'edit') {
+    editGalleryList = editGalleryList.filter(item => item.id !== itemId);
+  } else {
+    addGalleryList = addGalleryList.filter(item => item.id !== itemId);
+  }
+  renderGalleryEditor(mode);
+}
+
+function updateGalleryItemCaption(itemId, newCaption, mode) {
+  const list = mode === 'edit' ? editGalleryList : addGalleryList;
+  const item = list.find(i => i.id === itemId);
+  if (item) {
+    item.caption = newCaption;
+  }
+}
+
+/* ==========================================================================
    EDIT SPECIFICATIONS MODAL (AJAX PERSISTENCE)
    ========================================================================== */
 let activeEditFacilityId = null;
@@ -385,7 +475,24 @@ function openEditFacilityModal(facilityId) {
   }
   document.getElementById('editFacilityLocation').value = item.location;
   document.getElementById('editFacilityFeatures').value = (item.features || []).join(', ');
-  document.getElementById('editFacilityNotes').value = item.notes || '';
+  const defaultDesc = (item.category === 'dorms') 
+    ? 'Fully air-conditioned institutional dormitory accommodation tailored for government trainees, agricultural extension workers, and official delegates.'
+    : 'Spacious institutional conference venue equipped with complete sound systems, stage lighting, and climate control for official seminars and workshops.';
+  document.getElementById('editFacilityNotes').value = item.notes || item.description || defaultDesc;
+
+  // Populate Gallery Manager
+  editGalleryList = [];
+  if (Array.isArray(item.gallery) && item.gallery.length > 0) {
+    item.gallery.forEach((g, idx) => {
+      editGalleryList.push({
+        id: 'gal_init_' + idx + '_' + Math.random().toString(36).substr(2, 5),
+        src: g.src,
+        caption: g.caption || 'Facility Photograph',
+        file: null
+      });
+    });
+  }
+  renderGalleryEditor('edit');
 
   // Populate Image Preview
   const imgPreview = document.getElementById('editFacilityImgPreview');
@@ -407,10 +514,19 @@ function closeEditFacilityModal() {
 
 function saveFacilityChanges(e) {
   if (e) e.preventDefault();
-  if (!activeEditFacilityId) return;
 
-  const item = facilitiesData[activeEditFacilityId];
-  if (!item) return;
+  const facilityId = activeEditFacilityId || document.getElementById('editFacilityId')?.value;
+  if (!facilityId) {
+    showAdminToast('No active facility selected to update.', 'decline');
+    return;
+  }
+  activeEditFacilityId = facilityId;
+
+  const item = facilitiesData[facilityId];
+  if (!item) {
+    showAdminToast('Facility record not found in system.', 'decline');
+    return;
+  }
 
   const name = document.getElementById('editFacilityName').value.trim();
   const category = document.getElementById('editFacilityCategory').value;
@@ -427,6 +543,33 @@ function saveFacilityChanges(e) {
   const notes = document.getElementById('editFacilityNotes').value.trim();
   const newImgSrc = document.getElementById('editFacilityImageSrc')?.value || item.image;
 
+  if (!name) {
+    showAdminToast('Facility name is required.', 'decline');
+    document.getElementById('editFacilityName')?.focus();
+    return;
+  }
+  if (!pax || pax < 1) {
+    showAdminToast('Participant capacity must be at least 1 PAX.', 'decline');
+    document.getElementById('editFacilityPax')?.focus();
+    return;
+  }
+  if (!location) {
+    showAdminToast('Building & floor location is required.', 'decline');
+    document.getElementById('editFacilityLocation')?.focus();
+    return;
+  }
+
+  const submitBtn = document.getElementById('btnSaveFacilitySpecs') || document.querySelector('#editFacilityForm button[type="submit"]');
+  let origBtnHtml = '';
+  if (submitBtn) {
+    origBtnHtml = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: fgSpin 0.9s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>
+      <span>Saving Specifications...</span>
+    `;
+  }
+
   const formData = new FormData();
   formData.append('action', 'update');
   formData.append('id', item.db_id || item.id);
@@ -439,6 +582,18 @@ function saveFacilityChanges(e) {
   formData.append('features', featStr);
   formData.append('notes', notes);
   formData.append('image', newImgSrc);
+
+  // Append Multi-Photo Gallery items
+  const existingGallery = editGalleryList
+    .filter(item => item.file === null)
+    .map(item => ({ src: item.src, caption: item.caption }));
+  formData.append('existing_gallery', JSON.stringify(existingGallery));
+
+  const newFiles = editGalleryList.filter(item => item.file !== null);
+  newFiles.forEach(item => {
+    formData.append('gallery_uploads[]', item.file);
+    formData.append('gallery_upload_captions[]', item.caption || 'Facility Photograph');
+  });
 
   const fileInput = document.getElementById('editFacilityFileInput');
   if (fileInput && fileInput.files && fileInput.files[0]) {
@@ -459,11 +614,18 @@ function saveFacilityChanges(e) {
       item.beds = beds;
       item.rate = rate;
       item.location = location;
+      if (data.facility && data.facility.cooling_type) {
+        item.cooling_type = data.facility.cooling_type;
+      }
       item.notes = notes;
+      item.description = notes;
       if (data.facility && data.facility.image) {
         item.image = data.facility.image;
       } else if (newImgSrc) {
         item.image = newImgSrc;
+      }
+      if (data.facility && Array.isArray(data.facility.gallery)) {
+        item.gallery = data.facility.gallery;
       }
       item.features = featStr.split(',').map(f => f.trim()).filter(Boolean);
 
@@ -489,6 +651,30 @@ function saveFacilityChanges(e) {
 
         const rateEl = card.querySelector('.spec-rate-val');
         if (rateEl) rateEl.textContent = item.rate || 'Institutional';
+
+        // Update Photos Preview Button
+        const photoBtn = card.querySelector('.btn-card-action[onclick*="openFacilityGalleryModal"]');
+        if (photoBtn && item.gallery) {
+          const span = photoBtn.querySelector('span');
+          if (span) span.textContent = `Photos (${item.gallery.length})`;
+          const galPayload = {
+            id: activeEditFacilityId,
+            dbId: item.db_id || item.id,
+            name: item.name,
+            type: item.category,
+            isDorm: (item.category === 'dorms'),
+            rate: item.rate,
+            capacity: item.category === 'dorms' ? `${item.beds} Bunk Beds` : `${item.pax} Participants`,
+            beds: item.beds,
+            cooling_type: item.cooling_type || '',
+            location: item.location,
+            description: item.notes,
+            features: item.features,
+            image: item.image,
+            photos: item.gallery
+          };
+          photoBtn.onclick = () => openFacilityGalleryModal(galPayload);
+        }
 
         // Rebuild features
         const featsWrap = card.querySelector('.facility-features-wrap');
@@ -526,6 +712,15 @@ function saveFacilityChanges(e) {
   .catch(err => {
     console.error(err);
     showAdminToast('Network error while saving specifications.', 'decline');
+  })
+  .finally(() => {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = origBtnHtml || `
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        <span>Save Specifications</span>
+      `;
+    }
   });
 }
 
@@ -540,6 +735,9 @@ function openAddFacilityModal() {
   const hiddenSrc = document.getElementById('addFacilityImageSrc');
   if (preview) preview.src = 'assets/images/function_hall.jpg';
   if (hiddenSrc) hiddenSrc.value = 'assets/images/function_hall.jpg';
+
+  addGalleryList = [];
+  renderGalleryEditor('add');
 
   const modal = document.getElementById('addFacilityModal');
   if (modal) modal.style.display = 'flex';
@@ -573,7 +771,21 @@ function handleAddNewFacility(e) {
   formData.append('rate', rate);
   formData.append('location', location);
   formData.append('features', featStr);
+  const notes = document.getElementById('addFacilityNotes')?.value.trim() || '';
+  formData.append('notes', notes);
   formData.append('image', finalImg);
+
+  // Append Multi-Photo Gallery items
+  const existingGallery = addGalleryList
+    .filter(item => item.file === null)
+    .map(item => ({ src: item.src, caption: item.caption }));
+  formData.append('existing_gallery', JSON.stringify(existingGallery));
+
+  const newFiles = addGalleryList.filter(item => item.file !== null);
+  newFiles.forEach(item => {
+    formData.append('gallery_uploads[]', item.file);
+    formData.append('gallery_upload_captions[]', item.caption || 'Facility Photograph');
+  });
 
   const fileInput = document.getElementById('addFacilityFileInput');
   if (fileInput && fileInput.files && fileInput.files[0]) {
@@ -601,12 +813,17 @@ function handleAddNewFacility(e) {
         beds: beds,
         rate: rate,
         location: location,
+        cooling_type: data.facility?.cooling_type || '',
         image: returnedImg,
         features: features,
+        gallery: (data.facility && Array.isArray(data.facility.gallery)) ? data.facility.gallery : [
+          { src: returnedImg, caption: `${name} View` }
+        ],
         status: 'available',
         statusLabel: 'Available',
         maintenance: false,
-        notes: ''
+        notes: notes,
+        description: notes
       };
 
       // Prepend to Grid
@@ -657,6 +874,10 @@ function handleAddNewFacility(e) {
                 <span>Maintenance</span>
               </div>
               <div class="card-action-btns">
+                <button type="button" class="btn-card-action" onclick="openFacilityGalleryModal(facilitiesData['${newId}'])" title="Preview Client Showcase &amp; Multi-Photo Gallery">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                  <span>Photos (${facilitiesData[newId].gallery.length})</span>
+                </button>
                 <button type="button" class="btn-card-action" onclick="openEditFacilityModal('${newId}')">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                   <span>Edit</span>

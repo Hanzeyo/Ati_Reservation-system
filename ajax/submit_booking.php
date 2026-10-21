@@ -44,7 +44,7 @@ if (!$fac && !empty($facility_name)) {
 if ($fac && (!empty($fac['deleted_at']) || $fac['status'] === 'inactive')) {
     echo json_encode([
         'success' => false,
-        'message' => 'Hindi maaaring i-book ang pasilidad na ito dahil ito ay kasalukuyang naka-archive o hindi aktibo.'
+        'message' => 'You Can\'t book this facility because it\'s archived or inactive right now.'
     ]);
     exit;
 }
@@ -52,7 +52,7 @@ if ($fac && (!empty($fac['deleted_at']) || $fac['status'] === 'inactive')) {
 if ($fac && $fac['status'] === 'maintenance') {
     echo json_encode([
         'success' => false,
-        'message' => 'Hindi maaaring i-book ang pasilidad na ito dahil ito ay kasalukuyang under maintenance.'
+        'message' => 'You can\'t book this facility because it\'s under maintenance right now.'
     ]);
     exit;
 }
@@ -85,7 +85,7 @@ $pax_count = (int) ($_POST['pax_count'] ?? 0);
 if (empty($event_title) || strlen($event_title) < 3) {
     echo json_encode([
         'success' => false,
-        'message' => 'Pakilagay ang Activity / Event Title (minimum 3 characters).'
+        'message' => 'Please enter the Activity / Event Title (minimum 3 characters).'
     ]);
     exit;
 }
@@ -93,7 +93,7 @@ if (empty($event_title) || strlen($event_title) < 3) {
 if ($pax_count <= 0) {
     echo json_encode([
         'success' => false,
-        'message' => 'Pakitukoy ang wastong bilang ng attendees / guests (hindi bababa sa 1).'
+        'message' => 'Please enter the number of attendees / guests (minimum 1).'
     ]);
     exit;
 }
@@ -145,7 +145,7 @@ $reservation->status = 'Pending';
 if (!isset($_FILES['document']) || $_FILES['document']['error'] !== UPLOAD_ERR_OK) {
     echo json_encode([
         'success' => false,
-        'message' => 'Kinakailangan mag-upload ng Supporting Document (Special Order, Activity Design, o Request Memo) bago magpatuloy.'
+        'message' => 'You need to upload a Supporting Document (Special Order, Activity Design, or Request Memo) before proceeding.'
     ]);
     exit;
 }
@@ -162,7 +162,7 @@ $allowedExts = ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'];
 if (!in_array($ext, $allowedExts)) {
     echo json_encode([
         'success' => false,
-        'message' => 'Hindi suportadong format ng dokumento. PDF, DOCX, DOC, o PNG/JPG lamang ang tinatanggap.'
+        'message' => 'Unsupported document format. Only PDF, DOCX, DOC, PNG, or JPG files are accepted.'
     ]);
     exit;
 }
@@ -175,7 +175,7 @@ if (move_uploaded_file($_FILES['document']['tmp_name'], $targetPath)) {
 } else {
     echo json_encode([
         'success' => false,
-        'message' => 'Nagkaroon ng problema sa pag-save ng in-upload na dokumento. Pakisubukan muli.'
+        'message' => 'Error occurred while saving the uploaded document. Please try again.'
     ]);
     exit;
 }

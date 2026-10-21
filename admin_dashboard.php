@@ -834,15 +834,14 @@ $peakDayPct = $totalInstitutionalCapacity > 0
                             <?php endif; ?>
                           <?php elseif ($isStage3): ?>
                             <?php if ($currentAdminRole === 'clearance' || $currentAdminRole === 'super_admin'): ?>
-                              <button type="button" class="btn-table-action approve"
-                                onclick="clearanceReservation('<?= $ref ?>', '<?= addslashes($applicantName) ?>')"
+                              <a href="admin_approval_details.php?ref=<?= urlencode($ref) ?>#actionSection" class="btn-table-action approve"
                                 title="Grant Director Clearance & Permit (Stage 3)">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                   stroke-width="2.5">
                                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                                 </svg>
                                 <span>Approve</span>
-                              </button>
+                              </a>
                               <button type="button" class="btn-table-action decline"
                                 onclick="openDeclineModal('<?= $ref ?>', '<?= addslashes($applicantName) ?>')"
                                 title="Decline Request (Stage 3)">
@@ -863,14 +862,14 @@ $peakDayPct = $totalInstitutionalCapacity > 0
                           <?php else: ?>
                             <span class="badge-declined-note">Declined</span>
                           <?php endif; ?>
-                          <button type="button" class="btn-table-action view"
-                            onclick="viewReservationDetails('<?= $ref ?>')" title="View Booking Form">
+                          <a href="admin_approval_details.php?ref=<?= urlencode($ref) ?>" class="btn-table-action view"
+                            title="View Approval Details">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                               stroke-width="2">
                               <circle cx="11" cy="11" r="8"></circle>
                               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                             </svg>
-                          </button>
+                          </a>
                         </div>
                       </td>
                     </tr>

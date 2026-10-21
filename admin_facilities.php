@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/admin_guard.php';
+require_once __DIR__ . '/includes/facility_helpers.php';
 /**
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Super Administrator: Facilities & Dormitories Master Management Portal
@@ -88,6 +89,7 @@ foreach ($facilitiesList as $row) {
         'categoryLabel' => $categoryLabel,
         'pax' => $pax,
         'beds' => $beds,
+        'cooling_type' => !empty($row['cooling_type']) ? $row['cooling_type'] : ($row['type'] === 'dorms' ? 'Fan Cooled (Non-Aircon)' : 'Full Climate Control'),
         'rate' => $row['rate'] ?? '',
         'location' => $row['location'] ?? 'ATI Central Office',
         'image' => !empty($row['image']) ? $row['image'] : 'assets/images/function_hall.jpg',
@@ -99,6 +101,7 @@ foreach ($facilitiesList as $row) {
         'estResumeDate' => $row['est_resume_date'] ?? '',
         'notes' => $row['notes'] ?? $row['description'] ?? '',
         'layouts' => $row['layouts'] ?? '',
+        'gallery' => getFacilityGallery($row),
         'isArchived' => $isArchived,
         'deletedAt' => $isArchived ? date('M d, Y • h:i A', strtotime($row['deleted_at'])) : null
     ];
@@ -133,6 +136,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
   <link rel="stylesheet" href="css/my_reservations.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/admin_dashboard.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/admin_facilities.css?v=<?php echo time(); ?>">
+  <link rel="stylesheet" href="css/facility_gallery.css?v=<?php echo time(); ?>">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
 
@@ -428,6 +432,29 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                       <span>Maintenance</span>
                     </div>
                     <div class="card-action-btns">
+                      <?php
+                        $galModalPayload = [
+                          'id' => $fid,
+                          'dbId' => $item['db_id'],
+                          'name' => $item['name'],
+                          'type' => $item['category'],
+                          'isDorm' => ($item['category'] === 'dorms'),
+                          'rate' => $item['rate'],
+                          'capacity' => $capDisplay,
+                          'beds' => $item['beds'],
+                          'cooling_type' => $item['cooling_type'],
+                          'location' => $item['location'],
+                          'description' => $item['notes'],
+                          'features' => $item['features'],
+                          'image' => $item['image'],
+                          'photos' => $item['gallery']
+                        ];
+                        $jsonGalPayload = htmlspecialchars(json_encode($galModalPayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
+                      ?>
+                      <button type="button" class="btn-card-action" onclick="openFacilityGalleryModal(<?= $jsonGalPayload ?>)" title="Preview Client Showcase &amp; Multi-Photo Gallery">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        <span>Photos (<?= count($item['gallery']) ?>)</span>
+                      </button>
                       <?php if ($item['category'] === 'dorms'): ?>
                         <button type="button" class="btn-card-action btn-manage-rooms" onclick="openManageRoomsModal('<?= htmlspecialchars($fid) ?>', '<?= htmlspecialchars(addslashes($item['name'])) ?>')" title="Manage Individual Dormitory Rooms">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
@@ -622,6 +649,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
               <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Total Bed Inventory (For Dorms)</label>
               <input type="number" id="editFacilityBeds" min="0" max="200" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
             </div>
+
             <div class="form-group-decline">
               <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Standard Rate</label>
               <div class="peso-input-group"><span class="peso-input-addon">₱</span><input type="text" id="editFacilityRate" class="peso-input-field" placeholder="5,000 / day"></div>
@@ -674,15 +702,55 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
             <input type="text" id="editFacilityFeatures" placeholder="Airconditioned, Projector, Sound System, Wi-Fi" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
           </div>
 
+          <!-- Multi-Photo Gallery & Angle Captions Manager -->
+          <div class="form-group-decline" style="margin-bottom: 0.85rem;">
+            <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Multi-Photo Gallery &amp; Angle Captions</label>
+            <div class="gallery-manager-wrap">
+              <div class="gallery-manager-toolbar">
+                <div class="gallery-toolbar-left">
+                  <label for="editFacilityGalleryFiles" class="btn-card-action" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; background: #eaf5ee; border-color: #a3d7b4; color: #174d2f; font-weight: 700;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    <span>Upload Multiple Photos</span>
+                  </label>
+                  <input type="file" id="editFacilityGalleryFiles" multiple accept="image/*" style="display: none;" onchange="handleGalleryFilesSelected(this, 'edit')">
+
+                  <select id="editFacilityGalleryPreset" onchange="handleGalleryPresetSelected(this, 'edit')" style="padding: 0.38rem 0.65rem; border: 1.2px solid #dce8e0; border-radius: 6px; font-family: inherit; font-size: 0.78rem; color: #2e4738;">
+                    <option value="">+ Add official preset photo...</option>
+                    <option value="assets/images/carandang_room.jpg|Executive Stage &amp; Meeting Setup">Carandang Room (Executive Boardroom)</option>
+                    <option value="assets/images/boardroom.jpg|Executive Presentation Podium &amp; Digital Display">Boardroom Podium &amp; Screen</option>
+                    <option value="assets/images/orosa_hall.jpg|Orosa Function Venue &amp; Banquet Setup">Orosa Hall</option>
+                    <option value="assets/images/rdec_training_1.jpg|Training Hall Dual Presentation Screens">RDEC Training Hall 1</option>
+                    <option value="assets/images/rdec_training_2.jpg|Classroom Workshop Workstations">RDEC Training Hall 2</option>
+                    <option value="assets/images/function_hall.jpg|Attendee Ergonomic Seating &amp; Surround Audio">Function Hall Seating</option>
+                    <option value="assets/images/serrano_hall.jpg|Serrano Multi-Purpose Auditorium Setup">Serrano Hall</option>
+                    <option value="assets/images/dorm_suite_1.png|Study Workstation &amp; Aircon Cooling">Dorm Suite 1 (Study Area)</option>
+                    <option value="assets/images/dorm_suite_2.png|Secured Storage Lockers &amp; Wardrobes">Dorm Suite 2 (Lockers)</option>
+                    <option value="assets/images/dorm_vip_suite.jpg|Ensuite Restroom &amp; Common Lounge">VIP Suite (Lounge &amp; Bath)</option>
+                    <option value="assets/images/dormitory.jpg|Dormitory Hallway &amp; Reception Access">Dormitory Hallway</option>
+                    <option value="assets/images/ATI_building.jpg|ATI Campus Arrival Wing &amp; Facade">ATI Main Building Facade</option>
+                  </select>
+                </div>
+                <span class="fg-photos-count-badge" id="editGalleryCountBadge" style="font-size: 0.74rem; font-weight: 700; color: #355742; background: #eef6f1; padding: 0.25rem 0.6rem; border-radius: 999px;">0 Photos</span>
+              </div>
+
+              <!-- Gallery Photos Card Track -->
+              <div class="gallery-items-grid" id="editGalleryItemsGrid">
+                <!-- Populated via renderGalleryEditor('edit') -->
+              </div>
+            </div>
+            <small style="color: #657b6f; font-size: 0.74rem; display: block; margin-top: 0.35rem;">Upload multiple photos from your device or pick presets. You can customize captions for each photo angle.</small>
+          </div>
+
           <div class="form-group-decline" style="margin-bottom: 0.5rem;">
-            <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Administrative Operational Notes</label>
-            <textarea id="editFacilityNotes" rows="2" placeholder="Special restrictions, key custodians, or technical equipment remarks..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;"></textarea>
+            <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Overview &amp; Purpose (Client Description)</label>
+            <textarea id="editFacilityNotes" rows="3" placeholder="Provide a brief overview of the venue purpose, capacity highlights, and features displayed to clients..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;"></textarea>
+            <small style="color: #657b6f; font-size: 0.74rem;">This text is displayed under "Overview &amp; Purpose" in the client showcase modal.</small>
           </div>
         </div>
 
         <div class="admin-modal-footer">
           <button type="button" class="btn-system-secondary" onclick="closeEditFacilityModal()">Cancel</button>
-          <button type="submit" class="btn-system-primary">
+          <button type="submit" id="btnSaveFacilitySpecs" class="btn-system-primary">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
             <span>Save Specifications</span>
           </button>
@@ -736,6 +804,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
               <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Bed Capacity (If Dormitory)</label>
               <input type="number" id="addFacilityBeds" min="0" max="200" placeholder="0" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
             </div>
+
             <div class="form-group-decline">
               <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Standard Rate</label>
               <div class="peso-input-group"><span class="peso-input-addon">₱</span><input type="text" id="addFacilityRate" class="peso-input-field" placeholder="5,000 / day"></div>
@@ -782,9 +851,56 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
             <input type="text" id="addFacilityLocation" placeholder="e.g. Training Annex Building, 2nd Floor" required style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
           </div>
 
-          <div class="form-group-decline" style="margin-bottom: 0.5rem;">
+          <div class="form-group-decline" style="margin-bottom: 0.85rem;">
             <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Included Equipment (Comma-separated)</label>
             <input type="text" id="addFacilityFeatures" placeholder="Airconditioned, Smart TV, Whiteboard, High-speed Wi-Fi" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
+          </div>
+
+          <!-- Multi-Photo Gallery & Angle Captions Manager -->
+          <div class="form-group-decline" style="margin-bottom: 0.85rem;">
+            <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">
+              Multi-Photo Gallery &amp; Angle Captions (Optional)
+            </label>
+            <div class="gallery-manager-wrap">
+              <div class="gallery-manager-toolbar">
+                <div class="gallery-toolbar-left">
+                  <label for="addFacilityGalleryFiles" class="btn-card-action" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; background: #eaf5ee; border-color: #a3d7b4; color: #174d2f; font-weight: 700;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    <span>Upload Multiple Photos</span>
+                  </label>
+                  <input type="file" id="addFacilityGalleryFiles" multiple accept="image/*" style="display: none;" onchange="handleGalleryFilesSelected(this, 'add')">
+
+                  <select id="addFacilityGalleryPreset" onchange="handleGalleryPresetSelected(this, 'add')" style="padding: 0.38rem 0.65rem; border: 1.2px solid #dce8e0; border-radius: 6px; font-family: inherit; font-size: 0.78rem; color: #2e4738;">
+                    <option value="">+ Add official preset photo...</option>
+                    <option value="assets/images/carandang_room.jpg|Executive Stage &amp; Meeting Setup">Carandang Room (Executive Boardroom)</option>
+                    <option value="assets/images/boardroom.jpg|Executive Presentation Podium &amp; Digital Display">Boardroom Podium &amp; Screen</option>
+                    <option value="assets/images/orosa_hall.jpg|Orosa Function Venue &amp; Banquet Setup">Orosa Hall</option>
+                    <option value="assets/images/rdec_training_1.jpg|Training Hall Dual Presentation Screens">RDEC Training Hall 1</option>
+                    <option value="assets/images/rdec_training_2.jpg|Classroom Workshop Workstations">RDEC Training Hall 2</option>
+                    <option value="assets/images/function_hall.jpg|Attendee Ergonomic Seating &amp; Surround Audio">Function Hall Seating</option>
+                    <option value="assets/images/serrano_hall.jpg|Serrano Multi-Purpose Auditorium Setup">Serrano Hall</option>
+                    <option value="assets/images/dorm_suite_1.png|Study Workstation &amp; Aircon Cooling">Dorm Suite 1 (Study Area)</option>
+                    <option value="assets/images/dorm_suite_2.png|Secured Storage Lockers &amp; Wardrobes">Dorm Suite 2 (Lockers)</option>
+                    <option value="assets/images/dorm_vip_suite.jpg|Ensuite Restroom &amp; Common Lounge">VIP Suite (Lounge &amp; Bath)</option>
+                    <option value="assets/images/dormitory.jpg|Dormitory Hallway &amp; Reception Access">Dormitory Hallway</option>
+                    <option value="assets/images/ATI_building.jpg|ATI Campus Arrival Wing &amp; Facade">ATI Main Building Facade</option>
+                  </select>
+                </div>
+                <span class="fg-photos-count-badge" id="addGalleryCountBadge" style="font-size: 0.74rem; font-weight: 700; color: #355742; background: #eef6f1; padding: 0.25rem 0.6rem; border-radius: 999px;">0 Photos</span>
+              </div>
+
+              <!-- Gallery Photos Card Track -->
+              <div class="gallery-items-grid" id="addGalleryItemsGrid">
+                <!-- Populated via renderGalleryEditor('add') -->
+              </div>
+            </div>
+            <small style="color: #657b6f; font-size: 0.74rem; display: block; margin-top: 0.35rem;">Upload multiple photos or pick presets. Leave empty to use intelligent library presets.</small>
+          </div>
+
+          <div class="form-group-decline" style="margin-bottom: 0.5rem;">
+            <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Overview &amp; Purpose (Client Description)</label>
+            <textarea id="addFacilityNotes" rows="3" placeholder="Provide a brief overview of the venue purpose, capacity highlights, and features displayed to clients..." style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;"></textarea>
+            <small style="color: #657b6f; font-size: 0.74rem;">This text is displayed under "Overview &amp; Purpose" in the client showcase modal.</small>
           </div>
         </div>
 
@@ -1031,6 +1147,9 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
     </div>
   </div>
 
+  <!-- Facility Multi-Photo Gallery & Specification Showcase Modal -->
+  <?php include __DIR__ . '/includes/facility_gallery_modal.php'; ?>
+
   <!-- Toast Container -->
   <div class="admin-toast-container" id="adminToastContainer"></div>
 
@@ -1038,6 +1157,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
   <script>
     window.initialFacilitiesData = <?= json_encode((object)$facilitiesData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
   </script>
+  <script src="js/facility_gallery.js?v=<?php echo time(); ?>"></script>
   <script src="js/admin_facilities.js?v=<?php echo time(); ?>"></script>
 </body>
 

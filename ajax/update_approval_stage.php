@@ -123,7 +123,7 @@ try {
         }
         $currSt = $currRow['status'];
         if (in_array($currSt, ['Pending', 'Pending Endorsement', 'Awaiting Endorsement'])) {
-            echo json_encode(['success' => false, 'message' => 'Hindi pa maaaring i-recommend ang reservation na ito dahil kailangan muna itong i-endorse ng Endorsement Officer (Stage 1).']);
+            echo json_encode(['success' => false, 'message' => 'This reservation cannot be recommended yet as it requires prior endorsement by an Endorsement Officer (Stage 1).']);
             exit;
         }
 
@@ -140,12 +140,12 @@ try {
             $allowedExts = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
 
             if (!in_array($fileExt, $allowedExts)) {
-                echo json_encode(['success' => false, 'message' => 'Invalid file format. Mangyaring mag-upload ng PDF, PNG, JPG, o DOC document.']);
+                echo json_encode(['success' => false, 'message' => 'Invalid file format. Please upload a PDF, PNG, JPG, or DOC document.']);
                 exit;
             }
 
             if ($_FILES['signed_doc']['size'] > 15 * 1024 * 1024) {
-                echo json_encode(['success' => false, 'message' => 'Masyadong malaki ang file. Maximum limit is 15MB.']);
+                echo json_encode(['success' => false, 'message' => 'File size exceeds the allowed limit. Maximum allowed size is 15MB.']);
                 exit;
             }
 
@@ -156,11 +156,11 @@ try {
             if (move_uploaded_file($fileTmp, $destPath)) {
                 $signedDocPath = 'uploads/documents/' . $newFileName;
             } else {
-                echo json_encode(['success' => false, 'message' => 'Hindi matagumpay na na-save ang uploaded signed document.']);
+                echo json_encode(['success' => false, 'message' => 'Failed to save the uploaded signed document to storage.']);
                 exit;
             }
         } elseif (empty($signedDocPath)) {
-            echo json_encode(['success' => false, 'message' => 'Kailangan munang mag-upload ng pirmadong form o routing document bago maipasa sa Stage 3 Clearance.']);
+            echo json_encode(['success' => false, 'message' => 'A signed routing document must be uploaded before forwarding to Stage 3 Clearance.']);
             exit;
         }
 
@@ -189,7 +189,7 @@ try {
 
             echo json_encode([
                 'success' => true,
-                'message' => "Stage 2 Recommendation recorded for {$ref}. Pirmadong dokumento ay na-attach at naipasa na sa Stage 3: Final Clearance.",
+                'message' => "Stage 2 Recommendation recorded for {$ref}. Signed document attached and forwarded to Stage 3: Final Clearance.",
                 'stage' => 'stage3',
                 'status' => 'Pending Clearance',
                 'stage2By' => $adminFullName,
@@ -222,11 +222,11 @@ try {
         }
         $currSt = $currRow['status'];
         if (in_array($currSt, ['Pending', 'Pending Endorsement', 'Awaiting Endorsement'])) {
-            echo json_encode(['success' => false, 'message' => 'Hindi pa maaaring aprubahan ang reservation na ito dahil kailangan muna itong i-endorse ng Endorsement Officer (Stage 1).']);
+            echo json_encode(['success' => false, 'message' => 'This reservation cannot be approved yet as it requires prior endorsement by an Endorsement Officer (Stage 1).']);
             exit;
         }
         if (in_array($currSt, ['Pending Recommendation', 'Awaiting Recommendation'])) {
-            echo json_encode(['success' => false, 'message' => 'Hindi pa maaaring aprubahan ang reservation na ito dahil kailangan muna itong suriin at i-recommend ng Recommending Officer (Stage 2).']);
+            echo json_encode(['success' => false, 'message' => 'This reservation cannot be approved yet as it requires prior review and recommendation by a Recommending Officer (Stage 2).']);
             exit;
         }
 
@@ -243,12 +243,12 @@ try {
             $allowedExts = ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'];
 
             if (!in_array($fileExt, $allowedExts)) {
-                echo json_encode(['success' => false, 'message' => 'Invalid file format. Mangyaring mag-upload ng PDF, PNG, JPG, o DOC document.']);
+                echo json_encode(['success' => false, 'message' => 'Invalid file format. Please upload a PDF, PNG, JPG, or DOC document.']);
                 exit;
             }
 
             if ($_FILES['signed_doc']['size'] > 15 * 1024 * 1024) {
-                echo json_encode(['success' => false, 'message' => 'Masyadong malaki ang file. Maximum limit is 15MB.']);
+                echo json_encode(['success' => false, 'message' => 'File size exceeds the allowed limit. Maximum allowed size is 15MB.']);
                 exit;
             }
 
@@ -259,11 +259,11 @@ try {
             if (move_uploaded_file($fileTmp, $destPath)) {
                 $clearanceDocPath = 'uploads/documents/' . $newFileName;
             } else {
-                echo json_encode(['success' => false, 'message' => 'Hindi matagumpay na na-save ang uploaded signed document.']);
+                echo json_encode(['success' => false, 'message' => 'Failed to save the uploaded signed document to storage.']);
                 exit;
             }
         } elseif (empty($clearanceDocPath)) {
-            echo json_encode(['success' => false, 'message' => 'Kailangan munang mag-upload ng pirmadong clearance / approved permit form bago i-finalize ang approval.']);
+            echo json_encode(['success' => false, 'message' => 'A signed clearance or approved permit document must be uploaded before finalizing approval.']);
             exit;
         }
 
@@ -292,7 +292,7 @@ try {
 
             echo json_encode([
                 'success' => true,
-                'message' => "Stage 3 Final Clearance granted for {$ref}! Pirmadong dokumento ay na-attach at opisyal nang naaprubahan ang reservation.",
+                'message' => "Stage 3 Final Clearance granted for {$ref}. Signed document attached and reservation officially approved.",
                 'stage' => 'approved',
                 'status' => 'Approved',
                 'stage3By' => $adminFullName,
@@ -325,11 +325,11 @@ try {
         }
 
         if (in_array($currSt, ['Approved', 'Completed'])) {
-            echo json_encode(['success' => false, 'message' => "Hindi na maaaring i-decline ang reservation na ito dahil opisyal na itong aprubado."]);
+            echo json_encode(['success' => false, 'message' => "This reservation cannot be declined because it has already been officially approved."]);
             exit;
         }
         if (in_array($currSt, ['Rejected', 'Cancelled'])) {
-            echo json_encode(['success' => false, 'message' => "Ang reservation na ito ay declined / cancelled na."]);
+            echo json_encode(['success' => false, 'message' => "This reservation has already been declined or cancelled."]);
             exit;
         }
 
@@ -338,15 +338,15 @@ try {
         $isStage3 = in_array($currSt, ['Pending Clearance', 'Awaiting Clearance']);
 
         if ($isStage1 && !in_array($normalizedRole, ['endorsement', 'super_admin'])) {
-            echo json_encode(['success' => false, 'message' => 'Unauthorized. Tanging Endorsement Officer o Super Admin lamang ang maaaring mag-decline habang nasa Stage 1 (Awaiting Endorsement).']);
+            echo json_encode(['success' => false, 'message' => 'Unauthorized. Only an Endorsement Officer or Super Administrator may decline a reservation during Stage 1 (Awaiting Endorsement).']);
             exit;
         }
         if ($isStage2 && !in_array($normalizedRole, ['recommendation', 'super_admin'])) {
-            echo json_encode(['success' => false, 'message' => 'Unauthorized. Tanging Recommending Officer o Super Admin lamang ang maaaring mag-decline habang nasa Stage 2 (Awaiting Recommendation).']);
+            echo json_encode(['success' => false, 'message' => 'Unauthorized. Only a Recommending Officer or Super Administrator may decline a reservation during Stage 2 (Awaiting Recommendation).']);
             exit;
         }
         if ($isStage3 && !in_array($normalizedRole, ['clearance', 'super_admin'])) {
-            echo json_encode(['success' => false, 'message' => 'Unauthorized. Tanging Clearance Authority o Super Admin lamang ang maaaring mag-decline habang nasa Stage 3 (Awaiting Clearance).']);
+            echo json_encode(['success' => false, 'message' => 'Unauthorized. Only the Clearance Authority or Super Administrator may decline a reservation during Stage 3 (Awaiting Clearance).']);
             exit;
         }
 

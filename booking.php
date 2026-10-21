@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/auth_guard.php';
+require_once __DIR__ . '/includes/facility_helpers.php';
 
 /**
  * Agriculture Training Institute - Facility and Dormitory Reservation System
@@ -53,6 +54,7 @@ $totalCount = count($dbFacilities);
     content="Submit official reservation requests for ATI function halls, training venues, boardrooms, and dormitory suites.">
   <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/booking.css?v=<?php echo time(); ?>">
+  <link rel="stylesheet" href="css/facility_gallery.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=<?php echo time(); ?>">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
@@ -539,6 +541,25 @@ $totalCount = count($dbFacilities);
           }
           
           $categoryTag = strtoupper($f['type']) . ($isDorm ? ' &bull; DORMITORY SUITE' : ' &bull; VENUE & HALLS');
+          
+          $galleryPhotos = getFacilityGallery($f);
+          $modalPayload = [
+            'id' => $cardSlug,
+            'dbId' => $f['id'],
+            'name' => $f['name'],
+            'type' => $f['type'],
+            'isDorm' => $isDorm,
+            'rate' => $f['rate'],
+            'capacity' => $capDisplay,
+            'beds' => (int)($f['beds'] ?? 0),
+            'cooling_type' => $f['cooling_type'] ?? '',
+            'location' => $f['location'] ?? 'ATI Institutional Complex',
+            'description' => !empty($f['description']) ? $f['description'] : (!empty($f['notes']) ? $f['notes'] : ''),
+            'features' => $featuresList,
+            'image' => $imgSrc,
+            'photos' => $galleryPhotos
+          ];
+          $jsonPayload = htmlspecialchars(json_encode($modalPayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
         ?>
         <article class="facility-choice-card <?= $isDorm ? 'dorm-suite-card' : '' ?> <?= $isMaint ? 'under-maintenance' : ($isSelected ? 'selected' : '') ?>"
           data-id="<?= $cardSlug ?>"
@@ -553,6 +574,14 @@ $totalCount = count($dbFacilities);
           <div class="facility-card-image">
             <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($f['name']) ?>" loading="lazy">
             <span class="facility-cap-badge"><?= htmlspecialchars($capDisplay) ?></span>
+            <button type="button" class="facility-gallery-badge-btn" onclick="event.stopPropagation(); openFacilityGalleryModal(<?= $jsonPayload ?>)" title="View <?= count($galleryPhotos) ?> Photos &amp; Facility Specifications">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
+              </svg>
+              <span><?= count($galleryPhotos) ?> Photos &amp; Specs</span>
+            </button>
             <?php if ($isMaint): ?>
               <span class="facility-maint-badge" style="position:absolute; top:10px; left:10px; background:#b45309; color:#fff; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(0,0,0,0.25);">UNDER MAINTENANCE</span>
             <?php endif; ?>
@@ -587,6 +616,14 @@ $totalCount = count($dbFacilities);
                 <?= $isDorm ? 'Select Room &amp; View Floor Plan' : 'Select Setup &amp; View Floor Plan' ?>
               </button>
             <?php endif; ?>
+
+            <button type="button" class="btn-view-facility-details" onclick="event.stopPropagation(); openFacilityGalleryModal(<?= $jsonPayload ?>)">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+              <span>View Photos &amp; Details</span>
+            </button>
           </div>
         </article>
         <?php endforeach; ?>
@@ -1269,9 +1306,13 @@ $totalCount = count($dbFacilities);
     </div>
   </main>
 
+  <!-- Facility Multi-Photo Gallery & Specification Showcase Modal -->
+  <?php include __DIR__ . '/includes/facility_gallery_modal.php'; ?>
+
   <script>
     window.currentUserFullName = <?= json_encode($_SESSION['full_name'] ?? 'Authorized Officer') ?>;
   </script>
+  <script src="js/facility_gallery.js?v=<?php echo time(); ?>"></script>
   <script src="js/booking.js?v=<?php echo time(); ?>"></script>
 </body>
 

@@ -475,11 +475,13 @@ function openAdminEventDetailsModal(refId) {
   }
 
   modal.style.display = 'flex';
+  document.body.classList.add('admin-modal-open');
 }
 
 function closeAdminEventDetailsModal() {
   const modal = document.getElementById('adminEventDetailsModal');
   if (modal) modal.style.display = 'none';
+  document.body.classList.remove('admin-modal-open');
   currentActiveViewedRef = null;
 }
 
@@ -527,12 +529,16 @@ function liftHoldByRef(refId) {
 function openManageHoldsModal() {
   renderActiveHoldsList();
   const modal = document.getElementById('manageHoldsModal');
-  if (modal) modal.style.display = 'flex';
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.classList.add('admin-modal-open');
+  }
 }
 
 function closeManageHoldsModal() {
   const modal = document.getElementById('manageHoldsModal');
   if (modal) modal.style.display = 'none';
+  document.body.classList.remove('admin-modal-open');
 }
 
 function renderActiveHoldsList() {
@@ -613,12 +619,16 @@ function openDateBlockModal(defaultDate = '') {
   }
 
   const modal = document.getElementById('adminDateBlockModal');
-  if (modal) modal.style.display = 'flex';
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.classList.add('admin-modal-open');
+  }
 }
 
 function closeDateBlockModal() {
   const modal = document.getElementById('adminDateBlockModal');
   if (modal) modal.style.display = 'none';
+  document.body.classList.remove('admin-modal-open');
 }
 
 function handleSaveDateBlock(e) {
@@ -754,4 +764,13 @@ openAdminEventDetailsModal = function(refId) {
   }
   originalOpenModal(refId);
 };
+
+// ESC key listener to close any open schedule modals
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    closeAdminEventDetailsModal();
+    closeManageHoldsModal();
+    closeDateBlockModal();
+  }
+});
 

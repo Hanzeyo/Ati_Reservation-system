@@ -897,7 +897,7 @@ $peakDayPct = $totalInstitutionalCapacity > 0
   <!-- ==========================================================================
        MODAL: RESERVATION DETAILS & DOCUMENT REVIEW
        ========================================================================== -->
-  <div class="admin-modal-overlay" id="reservationDetailsModal" style="display: none;">
+  <div class="admin-modal-overlay" id="reservationDetailsModal" style="display: none;" onclick="if(event.target===this) closeReservationModal()">
     <div class="admin-modal-card" style="max-width: 840px;">
       <div class="admin-modal-header">
         <div class="modal-title-wrap">
@@ -984,7 +984,7 @@ $peakDayPct = $totalInstitutionalCapacity > 0
   <!-- ==========================================================================
        MODAL: DECLINE RESERVATION WITH JUSTIFICATION
        ========================================================================== -->
-  <div class="admin-modal-overlay" id="declineModal" style="display: none;">
+  <div class="admin-modal-overlay" id="declineModal" style="display: none;" onclick="if(event.target===this) closeDeclineModal()">
     <div class="admin-modal-card sm">
       <div class="admin-modal-header">
         <div class="modal-title-wrap">

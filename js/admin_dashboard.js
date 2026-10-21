@@ -193,9 +193,9 @@ async function endorseReservation(refId, applicantName) {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             <span>Decline</span>
           </button>
-          <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')" title="View Booking Form">
+          <a href="admin_approval_details.php?ref=${encodeURIComponent(refId)}" class="btn-table-action view" title="View Approval Details">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          </button>
+          </a>
         </div>
       `;
     }
@@ -263,17 +263,17 @@ async function recommendReservation(refId, applicantName) {
     if (actionsCell) {
       actionsCell.innerHTML = `
         <div class="action-buttons-wrap">
-          <button type="button" class="btn-table-action approve" onclick="clearanceReservation('${refId}', '${applicantName}')" title="Grant Director Clearance (Stage 3)">
+          <a href="admin_approval_details.php?ref=${encodeURIComponent(refId)}#actionSection" class="btn-table-action approve" title="Grant Director Clearance & Permit (Stage 3)">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
             <span>Approve</span>
-          </button>
+          </a>
           <button type="button" class="btn-table-action decline" onclick="openDeclineModal('${refId}', '${applicantName}')" title="Decline Request">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             <span>Decline</span>
           </button>
-          <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')" title="View Booking Form">
+          <a href="admin_approval_details.php?ref=${encodeURIComponent(refId)}" class="btn-table-action view" title="View Approval Details">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          </button>
+          </a>
         </div>
       `;
     }
@@ -291,85 +291,11 @@ async function recommendReservation(refId, applicantName) {
 }
 
 /* ==========================================================================
-   STAGE 3: CLEARANCE & FINAL APPROVAL
+   STAGE 3: CLEARANCE & FINAL APPROVAL (NAVIGATE TO APPROVAL DETAILS)
    ========================================================================== */
-async function clearanceReservation(refId, applicantName, venueName) {
-  const row = document.querySelector(`tr[data-ref="${refId}"]`);
-  if (!row) return;
-
-  const btnApprove = row.querySelector('.btn-table-action.approve');
-  if (btnApprove) {
-    btnApprove.disabled = true;
-    btnApprove.innerHTML = `<span>Approving...</span>`;
-  }
-
-  try {
-    const formData = new FormData();
-    formData.append('action', 'stage3');
-    formData.append('ref', refId);
-    formData.append('remarks', 'Final clearance granted via Executive Dashboard.');
-
-    const res = await fetch('ajax/update_approval_stage.php', {
-      method: 'POST',
-      body: formData
-    });
-    const result = await res.json();
-
-    if (!result.success) {
-      showAdminToast(result.message || 'Approval failed.', 'decline');
-      if (btnApprove) {
-        btnApprove.disabled = false;
-        btnApprove.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Approve</span>`;
-      }
-      return;
-    }
-
-    // Update record
-    if (reservationsData[refId]) {
-      reservationsData[refId].status = 'approved';
-    }
-
-    // Update row status
-    row.setAttribute('data-status', 'approved');
-    row.setAttribute('data-stage', 'approved');
-    const statusCell = row.querySelector('td:nth-child(6)');
-    if (statusCell) {
-      statusCell.innerHTML = `
-        <span class="status-pill status-approved">
-          <span class="status-dot"></span>
-          Confirmed & Approved
-        </span>
-      `;
-    }
-
-    // Update actions cell
-    const actionsCell = row.querySelector('td:nth-child(7)');
-    if (actionsCell) {
-      actionsCell.innerHTML = `
-        <div class="action-buttons-wrap">
-          <span class="badge-approved-note">Approved by Director</span>
-          <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')" title="View Booking Form">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-          </button>
-        </div>
-      `;
-    }
-
-    // Update counters
-    updateKPIBadges();
-
-    // Audit Log Entry
-    addAuditLogEntry(`Approved: Reservation <span class="audit-ref">${refId}</span> was cleared and authorized.`, 'green');
-
-    // Toast
-    showAdminToast(result.message || `Reservation ${refId} officially approved! Applicant ${applicantName} notified.`, 'success');
-  } catch (err) {
-    console.error('Approval error:', err);
-    showAdminToast('Network error while processing approval.', 'decline');
-    if (btnApprove) {
-      btnApprove.disabled = false;
-      btnApprove.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Approve</span>`;
-    }
+function clearanceReservation(refId, applicantName, venueName) {
+  if (refId) {
+    window.location.href = `admin_approval_details.php?ref=${encodeURIComponent(refId)}#actionSection`;
   }
 }
 
@@ -453,9 +379,9 @@ async function submitDeclineAction() {
         actionsCell.innerHTML = `
           <div class="action-buttons-wrap">
             <span class="badge-declined-note">Declined</span>
-            <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${refId}')">
+            <a href="admin_approval_details.php?ref=${encodeURIComponent(refId)}" class="btn-table-action view" title="View Approval Details">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </button>
+            </a>
           </div>
         `;
       }
@@ -482,45 +408,12 @@ async function submitDeclineAction() {
 }
 
 /* ==========================================================================
-   VIEW RESERVATION DETAILS MODAL
+   VIEW RESERVATION DETAILS (NAVIGATE TO APPROVAL DETAILS)
    ========================================================================== */
 function viewReservationDetails(refId) {
-  const data = reservationsData[refId];
-  if (!data) return;
-
-  currentModalActiveRef = refId;
-
-  document.getElementById('modalRefId').textContent = data.ref;
-  document.getElementById('modalApplicantName').textContent = data.applicant;
-  document.getElementById('modalApplicantOrg').textContent = data.agency;
-  document.getElementById('modalApplicantContact').textContent = `${data.email} • ${data.phone}`;
-  document.getElementById('modalVenueName').textContent = data.venue;
-  document.getElementById('modalSchedule').textContent = data.schedule;
-  document.getElementById('modalPax').textContent = data.pax;
-  document.getElementById('modalEventTitle').textContent = data.eventTitle;
-  document.getElementById('modalEquipment').textContent = data.equipment;
-
-  // Avatar initials
-  const initials = data.applicant.split(' ').map(n => n[0]).slice(0, 2).join('');
-  document.getElementById('modalAvatar').textContent = initials;
-
-  // Button state depending on status
-  const btnApprove = document.getElementById('btnModalApprove');
-  const btnDecline = document.getElementById('btnModalDecline');
-
-  if (data.status === 'approved') {
-    btnApprove.style.display = 'none';
-    btnDecline.style.display = 'none';
-  } else if (data.status === 'rejected') {
-    btnApprove.style.display = 'none';
-    btnDecline.style.display = 'none';
-  } else {
-    btnApprove.style.display = 'inline-flex';
-    btnDecline.style.display = 'inline-flex';
+  if (refId) {
+    window.location.href = `admin_approval_details.php?ref=${encodeURIComponent(refId)}`;
   }
-
-  const modal = document.getElementById('reservationDetailsModal');
-  if (modal) modal.style.display = 'flex';
 }
 
 function closeReservationModal() {

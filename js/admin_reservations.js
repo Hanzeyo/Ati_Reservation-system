@@ -325,12 +325,16 @@ function openDeclineModal(refId, applicantName) {
   if (modalApplicant) modalApplicant.textContent = applicantName;
   if (remarks) remarks.value = '';
 
-  if (modal) modal.style.display = 'flex';
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.classList.add('admin-modal-open');
+  }
 }
 
 function closeDeclineModal() {
   const modal = document.getElementById('declineModal');
   if (modal) modal.style.display = 'none';
+  document.body.classList.remove('admin-modal-open');
   currentDeclineTargetRef = null;
 }
 
@@ -555,12 +559,16 @@ function viewReservationDetails(refId) {
   }
 
   const modal = document.getElementById('reservationDetailsModal');
-  if (modal) modal.style.display = 'flex';
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.classList.add('admin-modal-open');
+  }
 }
 
 function closeReservationModal() {
   const modal = document.getElementById('reservationDetailsModal');
   if (modal) modal.style.display = 'none';
+  document.body.classList.remove('admin-modal-open');
   currentModalActiveRef = null;
 }
 
@@ -1391,7 +1399,7 @@ function openOccupancyModal() {
   const modal = document.getElementById('occupancyModal');
   if (modal) {
     modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    document.body.classList.add('admin-modal-open');
   }
 }
 
@@ -1399,7 +1407,7 @@ function closeOccupancyModal() {
   const modal = document.getElementById('occupancyModal');
   if (modal) {
     modal.style.display = 'none';
-    document.body.style.overflow = '';
+    document.body.classList.remove('admin-modal-open');
   }
 }
 
@@ -1440,9 +1448,11 @@ function exportOccupancyReport() {
   }, 600);
 }
 
-// ESC listener to close modal
+// ESC listener to close any open admin modals
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
+    closeReservationModal();
+    closeDeclineModal();
     closeOccupancyModal();
   }
 });

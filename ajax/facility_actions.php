@@ -42,6 +42,88 @@ if (!$userId || !$isAllowedAdmin) {
     exit;
 }
 
+/**
+ * Helper to process multi-photo gallery payload
+ * Handles:
+ * 1. Retained existing photos via JSON string in $_POST['existing_gallery']
+ * 2. Newly uploaded files in $_FILES['gallery_uploads'] with captions in $_POST['gallery_upload_captions']
+ * 3. Fallback string/JSON in $_POST['gallery']
+ */
+function processGalleryPayload(): ?array {
+    $galleryItems = [];
+
+    // 1. Existing retained gallery photos from JSON string
+    if (!empty($_POST['existing_gallery'])) {
+        $decodedExisting = json_decode($_POST['existing_gallery'], true);
+        if (is_array($decodedExisting)) {
+            foreach ($decodedExisting as $item) {
+                if (is_array($item) && !empty($item['src'])) {
+                    $galleryItems[] = [
+                        'src' => trim($item['src']),
+                        'caption' => trim($item['caption'] ?? 'Facility Photograph')
+                    ];
+                } elseif (is_string($item) && trim($item) !== '') {
+                    $galleryItems[] = [
+                        'src' => trim($item),
+                        'caption' => 'Facility Photograph'
+                    ];
+                }
+            }
+        }
+    }
+
+    // 2. Newly uploaded gallery files (multiple file upload)
+    if (isset($_FILES['gallery_uploads']) && is_array($_FILES['gallery_uploads']['name'])) {
+        $uploadDir = __DIR__ . '/../assets/images/uploads/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $captions = $_POST['gallery_upload_captions'] ?? [];
+        $count = count($_FILES['gallery_uploads']['name']);
+
+        for ($i = 0; $i < $count; $i++) {
+            if ($_FILES['gallery_uploads']['error'][$i] === UPLOAD_ERR_OK) {
+                $ext = strtolower(pathinfo($_FILES['gallery_uploads']['name'][$i], PATHINFO_EXTENSION));
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
+                    $filename = 'gallery_' . time() . '_' . rand(1000, 9999) . '_' . $i . '.' . $ext;
+                    if (move_uploaded_file($_FILES['gallery_uploads']['tmp_name'][$i], $uploadDir . $filename)) {
+                        $caption = !empty($captions[$i]) ? trim($captions[$i]) : 'Facility Photograph';
+                        $galleryItems[] = [
+                            'src' => 'assets/images/uploads/' . $filename,
+                            'caption' => $caption
+                        ];
+                    }
+                }
+            }
+        }
+    }
+
+    // 3. Fallback: if $_POST['gallery'] was sent directly as text/JSON
+    if (empty($galleryItems) && !empty($_POST['gallery'])) {
+        $rawGal = trim($_POST['gallery']);
+        $decoded = json_decode($rawGal, true);
+        if (is_array($decoded)) {
+            $galleryItems = $decoded;
+        } else {
+            $lines = preg_split('/[\r\n,]+/', $rawGal);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if ($line !== '') {
+                    if (strpos($line, '|') !== false) {
+                        [$src, $cap] = array_map('trim', explode('|', $line, 2));
+                        $galleryItems[] = ['src' => $src, 'caption' => $cap ?: 'Facility Photograph'];
+                    } else {
+                        $galleryItems[] = ['src' => $line, 'caption' => 'Facility Photograph'];
+                    }
+                }
+            }
+        }
+    }
+
+    return !empty($galleryItems) ? $galleryItems : null;
+}
+
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
 try {
@@ -55,6 +137,9 @@ try {
         $image = trim($_POST['image'] ?? 'assets/images/function_hall.jpg');
         $notes = trim($_POST['notes'] ?? '');
         $rate = trim($_POST['rate'] ?? ($type === 'dorms' ? '₱500 / night' : '₱3,000 / day'));
+
+        $galleryItems = processGalleryPayload();
+        $galleryJson = $galleryItems ? json_encode($galleryItems, JSON_UNESCAPED_SLASHES) : null;
 
         if (empty($name)) {
             echo json_encode(['success' => false, 'message' => 'Facility name is required.']);
@@ -76,9 +161,11 @@ try {
             }
         }
 
+        $coolingType = trim($_POST['cooling_type'] ?? ($type === 'dorms' ? 'Fan Cooled (Non-Aircon)' : 'Full Climate Control'));
+
         $stmt = $db->prepare("INSERT INTO facilities 
-            (name, type, rate, capacity, beds, location, description, features, image, notes, status) 
-            VALUES (:name, :type, :rate, :capacity, :beds, :location, :description, :features, :image, :notes, 'available')");
+            (name, type, rate, capacity, beds, cooling_type, location, description, features, image, notes, gallery, status) 
+            VALUES (:name, :type, :rate, :capacity, :beds, :cooling_type, :location, :description, :features, :image, :notes, :gallery, 'available')");
 
         $stmt->execute([
             ':name' => $name,
@@ -86,11 +173,13 @@ try {
             ':rate' => $rate,
             ':capacity' => $capacity,
             ':beds' => $beds,
+            ':cooling_type' => $coolingType,
             ':location' => $location,
             ':description' => $notes,
             ':features' => $features,
             ':image' => $image,
-            ':notes' => $notes
+            ':notes' => $notes,
+            ':gallery' => $galleryJson
         ]);
 
         $newId = $db->lastInsertId();
@@ -116,10 +205,12 @@ try {
                 'category' => $type,
                 'capacity' => $capacity,
                 'beds' => $beds,
+                'cooling_type' => $coolingType,
                 'rate' => $rate,
                 'location' => $location,
                 'features' => array_values(array_filter(array_map('trim', explode(',', $features)))),
                 'image' => $image,
+                'gallery' => $galleryItems,
                 'notes' => $notes,
                 'status' => 'available',
                 'maintenance' => false
@@ -184,9 +275,23 @@ try {
             ':id' => $id
         ];
 
+        if (isset($_POST['cooling_type']) && trim($_POST['cooling_type']) !== '') {
+            $sql .= ", cooling_type = :cooling_type";
+            $params[':cooling_type'] = trim($_POST['cooling_type']);
+        }
+
         if (!empty($image)) {
             $sql .= ", image = :image";
             $params[':image'] = $image;
+        }
+
+        $galleryOutput = null;
+        $hasGalleryPayload = isset($_POST['existing_gallery']) || isset($_FILES['gallery_uploads']) || isset($_POST['gallery']);
+        if ($hasGalleryPayload) {
+            $galleryOutput = processGalleryPayload();
+            $galleryJson = $galleryOutput ? json_encode($galleryOutput, JSON_UNESCAPED_SLASHES) : null;
+            $sql .= ", gallery = :gallery";
+            $params[':gallery'] = $galleryJson;
         }
 
         $sql .= " WHERE id = :id";
@@ -217,6 +322,7 @@ try {
                 'location' => $location,
                 'features' => array_values(array_filter(array_map('trim', explode(',', $features)))),
                 'image' => $image,
+                'gallery' => $galleryOutput,
                 'notes' => $notes
             ]
         ]);
