@@ -110,7 +110,7 @@ foreach ($rawReservations as $row) {
         'eventTitle' => $row['event_title'] ?: 'Official Institutional Activity',
         'equipment' => $row['special_notes'] ?: 'Standard Logistics & Venue Equipment',
         'specialNotes' => $row['special_notes'] ?: '',
-        'documentPath' => $row['document_path'] ?: '',
+        'documentPath' => $row['document_path'] ?? '',
         'recommendationDocPath' => $row['recommendation_doc_path'] ?? '',
         'clearanceDocPath' => $row['clearance_doc_path'] ?? '',
         'stage' => $stage,
@@ -238,13 +238,10 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
             <h2>Institutional Endorsement &amp; Clearance Desk</h2>
           </div>
 
-          <div class="admin-header-actions"
-            style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; justify-content: flex-end;">
+          <div class="admin-header-actions approvals-header-actions">
             <?php if ($currentAdminRole === 'super_admin'): ?>
-            <div class="persona-switch-buttons"
-              style="display: flex; align-items: center; gap: 0.35rem; background: #ffffff; padding: 0.35rem 0.55rem; border-radius: 10px; border: 1.5px solid #dce8e0; box-shadow: 0 1px 3px rgba(0,0,0,0.02); flex-wrap: wrap;">
-              <span
-                style="font-size: 0.72rem; font-weight: 800; color: #627b6c; text-transform: uppercase; margin-right: 0.2rem;">Authority:</span>
+            <div class="persona-switch-buttons">
+              <span class="persona-authority-label">Authority:</span>
               <button type="button" id="btnRoleAll" class="btn-persona-toggle <?= $currentRole === 'all' ? 'active' : '' ?>"
                 onclick="switchAdminRole('all')">
                 All Stages
@@ -254,7 +251,7 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <polyline points="20 6 9 17 4 12"></polyline>
                 </svg>
-                1. Endorsement
+                <span>1. Endorsement</span>
               </button>
               <button type="button" id="btnRoleRec" class="btn-persona-toggle <?= $currentRole === 'recommendation' ? 'active' : '' ?>"
                 onclick="switchAdminRole('recommendation')">
@@ -262,7 +259,7 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
                   <circle cx="12" cy="12" r="10"></circle>
                   <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                2. Recommendation
+                <span>2. Recommendation</span>
               </button>
               <button type="button" id="btnRoleClear"
                 class="btn-persona-toggle <?= $currentRole === 'clearance' ? 'active director' : '' ?>"
@@ -270,20 +267,19 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                 </svg>
-                3. Clearance
+                <span>3. Clearance</span>
               </button>
             </div>
             <?php else: ?>
-            <div class="persona-switch-buttons"
-              style="display: flex; align-items: center; gap: 0.5rem; background: #ffffff; padding: 0.42rem 0.85rem; border-radius: 10px; border: 1.5px solid #dce8e0; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-              <span style="font-size: 0.72rem; font-weight: 800; color: #627b6c; text-transform: uppercase;">Active Desk:</span>
+            <div class="persona-switch-buttons single-desk">
+              <span class="persona-authority-label">Active Desk:</span>
               <span class="btn-persona-toggle active <?= $currentAdminRole === 'clearance' ? 'director' : '' ?>" style="cursor: default; pointer-events: none;">
                 <?= htmlspecialchars($roleOfficerTitle) ?>
               </span>
             </div>
             <?php endif; ?>
 
-            <div style="display: flex; gap: 0.5rem;">
+            <div class="header-action-links">
               <a href="admin_facilities.php" class="btn-system-secondary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="3" y="3" width="18" height="18" rx="2"></rect>
@@ -307,7 +303,7 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
         <!-- ==========================================================================
              KPI STAT CARDS (3-STAGE WORKFLOW)
              ========================================================================== -->
-        <section class="my-res-stats-grid admin-kpi-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));" aria-label="Approvals Queue Metrics">
+        <section class="my-res-stats-grid admin-kpi-grid approvals-kpi-grid" aria-label="Approvals Queue Metrics">
           <!-- Awaiting Action -->
           <div class="my-res-stat-card admin-stat-highlight" onclick="applyApprovalsFilterTab('awaiting')">
             <div class="stat-icon-box amber">
