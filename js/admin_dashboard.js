@@ -128,7 +128,7 @@ function toggleSidebar(forceState) {
 function initDateDisplay() {
   const dateEl = document.getElementById('currentDateDisplay');
   if (dateEl) {
-    const options = { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' };
+    const options = { month: 'short', day: 'numeric', year: 'numeric' };
     const today = new Date();
     dateEl.textContent = today.toLocaleDateString('en-US', options);
   }

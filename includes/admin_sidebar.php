@@ -37,6 +37,18 @@ if (!isset($sidebarUsersCount) && !empty($canManageUsers)) {
 // Generate initials for avatar
 $sidebarUserInitials = getUserInitials($_SESSION['full_name'] ?? 'Admin');
 $sidebarUserFullName = htmlspecialchars($_SESSION['full_name'] ?? 'Authorized Officer');
+
+// Fetch user profile picture from DB if available
+$sidebarUserAvatar = '';
+if (!empty($_SESSION['user_id'])) {
+    try {
+        $avStmt = $db->prepare("SELECT avatar_path FROM users WHERE id = ?");
+        $avStmt->execute([$_SESSION['user_id']]);
+        $sidebarUserAvatar = (string)($avStmt->fetchColumn() ?: '');
+    } catch (Exception $e) {
+        $sidebarUserAvatar = '';
+    }
+}
 ?>
     <!-- Sidebar Navigation -->
     <aside class="admin-sidebar" id="adminSidebar">
@@ -168,17 +180,8 @@ $sidebarUserFullName = htmlspecialchars($_SESSION['full_name'] ?? 'Authorized Of
         </a>
       </nav>
 
-      <!-- Sidebar User Profile Footer -->
+      <!-- Sidebar Sign Out Footer -->
       <div class="admin-sidebar-footer">
-        <div class="sidebar-user-card">
-          <div class="sidebar-avatar <?= htmlspecialchars($currentAdminRole ?? 'super_admin') ?>">
-            <?= htmlspecialchars($roleInitials ?? $sidebarUserInitials) ?>
-          </div>
-          <div class="sidebar-user-info">
-            <h5 title="<?= $sidebarUserFullName ?>"><?= $sidebarUserFullName ?></h5>
-            <p><?= htmlspecialchars($roleOfficerTitle ?? 'Administrator') ?></p>
-          </div>
-        </div>
         <a href="logout.php" class="sidebar-signout-btn" title="Sign Out">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -189,3 +192,40 @@ $sidebarUserFullName = htmlspecialchars($_SESSION['full_name'] ?? 'Authorized Of
         </a>
       </div>
     </aside>
+
+    <!-- Global Auto-Sync from Main Profile (profile.php / localStorage) -->
+    <script>
+      (function() {
+        function syncAdminProfilePicture() {
+          try {
+            var savedAvatar = localStorage.getItem('ati_user_avatar');
+            if (savedAvatar) {
+              document.querySelectorAll('.topbar-user-avatar').forEach(function(container) {
+                var img = container.querySelector('.topbar-avatar-img');
+                var initials = container.querySelector('.topbar-avatar-initials');
+                if (img) {
+                  img.src = savedAvatar;
+                  img.style.display = 'block';
+                  if (initials) initials.style.display = 'none';
+                }
+              });
+            }
+            var savedProfile = localStorage.getItem('ati_user_profile');
+            if (savedProfile) {
+              var p = JSON.parse(savedProfile);
+              if (p && p.fullName) {
+                document.querySelectorAll('.topbar-user-name').forEach(function(el) {
+                  el.textContent = p.fullName;
+                });
+              }
+            }
+          } catch(e) {}
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', syncAdminProfilePicture);
+        } else {
+          syncAdminProfilePicture();
+        }
+      })();
+    </script>

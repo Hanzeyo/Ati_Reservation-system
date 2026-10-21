@@ -174,7 +174,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
           </div>
         </div>
 
-        <div class="admin-topbar-right">
+        <div class="admin-topbar-center">
           <!-- Quick Search -->
           <div class="topbar-search-box">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -183,7 +183,9 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
             </svg>
             <input type="text" id="topbarSearchInput" placeholder="Quick search venues, halls, dorms..." oninput="handleFacilitySearch(this.value)" autocomplete="off">
           </div>
+        </div>
 
+        <div class="admin-topbar-right">
           <!-- Date Badge -->
           <div class="topbar-date-pill">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -192,8 +194,20 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
-            <span id="currentDateDisplay">Monday, Oct 05, 2026</span>
+            <span id="currentDateDisplay"><?= date('M d, Y') ?></span>
           </div>
+
+          <!-- User Profile Badge -->
+          <a href="profile.php" class="topbar-user-badge" title="<?= $sidebarUserFullName ?> (<?= htmlspecialchars($roleOfficerTitle ?? 'Administrator') ?>)">
+            <div class="topbar-user-avatar <?= htmlspecialchars($currentAdminRole ?? 'super_admin') ?>" id="topbarUserAvatar">
+              <img src="<?= !empty($sidebarUserAvatar) ? htmlspecialchars($sidebarUserAvatar) : '' ?>" alt="Profile Picture" class="topbar-avatar-img" id="topbarAvatarImg" style="<?= empty($sidebarUserAvatar) ? 'display: none;' : '' ?>">
+              <span class="topbar-avatar-initials" id="topbarAvatarInitials" style="<?= !empty($sidebarUserAvatar) ? 'display: none;' : '' ?>"><?= htmlspecialchars($roleInitials ?? $sidebarUserInitials) ?></span>
+            </div>
+            <div class="topbar-user-meta">
+              <span class="topbar-user-name" id="topbarUserName"><?= $sidebarUserFullName ?></span>
+              <span class="topbar-user-role"><?= htmlspecialchars($roleOfficerTitle ?? 'Administrator') ?></span>
+            </div>
+          </a>
         </div>
       </header>
 

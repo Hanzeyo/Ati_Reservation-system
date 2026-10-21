@@ -110,10 +110,9 @@ function initDateDisplay() {
   if (dateEl) {
     const today = new Date();
     dateEl.textContent = today.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
+      year: 'numeric'
     });
   }
 }
