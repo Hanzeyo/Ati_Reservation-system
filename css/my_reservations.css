@@ -183,10 +183,16 @@ body.my-res-body {
   background-color: var(--primary-green);
   color: #ffffff;
   font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.15rem 0.5rem;
+  font-weight: 800;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.38rem;
   border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
+  box-sizing: border-box;
 }
 
 /* User Profile Badge */

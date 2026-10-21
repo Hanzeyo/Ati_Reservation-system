@@ -221,9 +221,15 @@ body.admin-app-body {
 .sidebar-count-badge {
   font-size: 0.72rem;
   font-weight: 800;
-  padding: 0.15rem 0.5rem;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 0.38rem;
   border-radius: 9999px;
-  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-sizing: border-box;
 }
 
 .sidebar-count-badge.amber {
@@ -761,7 +767,7 @@ body.admin-app-body {
 /* KPI Stat Cards (Terno & Perfectly Aligned) */
 .admin-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.75rem;
   margin-bottom: 0.75rem;
   width: 100%;
@@ -771,11 +777,12 @@ body.admin-app-body {
   background: #ffffff;
   border: 1.5px solid #dce8e0;
   border-radius: 12px;
-  padding: 0.6rem 0.85rem;
+  padding: 0.65rem 0.85rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   min-height: 64px;
+  min-width: 0;
   height: 100%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
@@ -897,10 +904,14 @@ body.admin-app-body {
   font-weight: 600;
   color: #556f60;
   margin-top: 0.2rem;
-  line-height: 1.2;
-  white-space: nowrap;
+  line-height: 1.25;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 @keyframes pulseAmber {
@@ -928,6 +939,7 @@ body.admin-app-body {
 .tab-count-pending {
   background: #d97706 !important;
   color: #ffffff !important;
+  box-shadow: 0 1px 4px rgba(217, 119, 6, 0.35);
 }
 
 /* Toolbar & Select Filter - Fluid Screen-Fit Layout */
@@ -953,11 +965,37 @@ body.admin-app-body {
   padding: 0.35rem 0.65rem;
   font-size: 0.78rem;
   border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .tab-count-pill {
   font-size: 0.68rem;
-  padding: 0.1rem 0.4rem;
+  font-weight: 800;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 0.32rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
+  box-sizing: border-box;
+  background: #e2ece5;
+  color: #214e34;
+  transition: all 0.2s ease;
+}
+
+.filter-tab-btn.active .tab-count-pill {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.filter-tab-btn.active .tab-count-pill.tab-count-pending {
+  background: #ffffff !important;
+  color: #d97706 !important;
 }
 
 .toolbar-controls-right {
@@ -2502,6 +2540,53 @@ body.admin-modal-open {
   }
 }
 
+@media (max-width: 1024px) {
+  .admin-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-toolbar-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .filter-tabs-group {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    padding-bottom: 0.35rem;
+    scrollbar-width: none;
+  }
+
+  .filter-tabs-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-tab-btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .toolbar-controls-right {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .admin-search-wrap,
+  .select-filter-wrap,
+  .venue-filter-select {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
 @media (max-width: 680px) {
   .admin-header-actions {
     width: 100%;
@@ -2518,6 +2603,39 @@ body.admin-modal-open {
   }
 
   .modal-section-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .admin-kpi-grid .my-res-stat-card {
+    padding: 0.55rem 0.65rem;
+    gap: 0.5rem;
+    min-height: 60px;
+  }
+  .admin-kpi-grid .stat-icon-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+  .admin-kpi-grid .stat-icon-box svg {
+    width: 15px;
+    height: 15px;
+  }
+  .admin-kpi-grid .stat-value {
+    font-size: 1.15rem;
+  }
+  .admin-kpi-grid .stat-label {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .admin-kpi-grid {
     grid-template-columns: 1fr;
   }
 }
