@@ -1074,12 +1074,11 @@ body.admin-app-body {
 /* Toolbar & Select Filter - Fluid Screen-Fit Layout */
 .admin-toolbar-card {
   margin-bottom: 0.65rem;
-  padding: 0.5rem 0.85rem;
+  padding: 0.65rem 0.95rem;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
   gap: 0.75rem;
-  flex-wrap: wrap;
 }
 
 .filter-tabs-group {
@@ -1087,7 +1086,7 @@ body.admin-app-body {
   align-items: center;
   gap: 0.35rem;
   flex-wrap: wrap;
-  flex-shrink: 0;
+  width: 100%;
 }
 
 .filter-tab-btn {
@@ -1127,22 +1126,24 @@ body.admin-app-body {
   color: #d97706 !important;
 }
 
-.toolbar-controls-right {
+.toolbar-controls-right,
+.toolbar-controls-row {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  flex-grow: 1;
 }
 
 .admin-search-wrap {
   position: relative;
-  min-width: 180px;
-  max-width: 340px;
+  min-width: 220px;
+  max-width: 420px;
   flex-grow: 1;
   display: flex;
   align-items: center;
+  margin-right: auto;
 }
 
 .admin-search-wrap .search-input {

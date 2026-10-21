@@ -588,8 +588,8 @@ $peakDayPct = $totalInstitutionalCapacity > 0
             </button>
           </div>
 
-          <!-- Controls Right -->
-          <div class="toolbar-controls-right">
+          <!-- Controls Row: Search on Left, Filter on Right -->
+          <div class="toolbar-controls-row toolbar-controls-right">
             <div class="search-box-wrap admin-search-wrap">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8"></circle>

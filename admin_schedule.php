@@ -228,17 +228,6 @@ foreach ($facilitiesList as $fac) {
           </div>
         </div>
 
-        <div class="admin-topbar-center">
-          <!-- Quick Search -->
-          <div class="topbar-search-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" id="topbarSearchInput" placeholder="Quick search events, applicants..." oninput="filterCalendarByFacility('all');" autocomplete="off">
-          </div>
-        </div>
-
         <div class="admin-topbar-right">
           <!-- Date Badge -->
           <div class="topbar-date-pill">
