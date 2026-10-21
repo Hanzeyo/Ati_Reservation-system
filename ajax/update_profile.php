@@ -15,32 +15,11 @@ if (!$userId) {
 }
 
 $db = (new Database())->getConnection();
+$action = trim($_POST['action'] ?? 'update_profile');
 
 try {
-    $fullName = trim($_POST['fullName'] ?? $_POST['full_name'] ?? '');
-    $position = trim($_POST['position'] ?? '');
-    $division = trim($_POST['division'] ?? '');
-    $dateHired = trim($_POST['dateHired'] ?? $_POST['date_hired'] ?? '');
-    $empStatus = trim($_POST['empStatus'] ?? $_POST['employment_status'] ?? '');
-    $supervisor = trim($_POST['supervisor'] ?? $_POST['immediate_supervisor'] ?? '');
-    $station = trim($_POST['station'] ?? '');
-
-    $email = trim($_POST['email'] ?? '');
-    $altEmail = trim($_POST['altEmail'] ?? $_POST['alt_email'] ?? '');
-    $phone = trim($_POST['phone'] ?? $_POST['contact_number'] ?? '');
-    $emergencyContact = trim($_POST['emergencyContact'] ?? $_POST['emergency_contact'] ?? '');
-    $landline = trim($_POST['landline'] ?? '');
-    $extension = trim($_POST['extension'] ?? '');
-    $building = trim($_POST['building'] ?? '');
-    $desk = trim($_POST['desk'] ?? '');
-
-    $showGovService = isset($_POST['showGovService']) ? (int)$_POST['showGovService'] : (isset($_POST['show_gov_service']) ? (int)$_POST['show_gov_service'] : 1);
-    $prefSms = isset($_POST['prefSms']) ? (int)$_POST['prefSms'] : 1;
-    $prefEmailPass = isset($_POST['prefEmailPass']) ? (int)$_POST['prefEmailPass'] : 1;
-    $prefSupervisorCc = isset($_POST['prefSupervisorCc']) ? (int)$_POST['prefSupervisorCc'] : 1;
-
-    // Fetch existing user to avoid overwriting with blank if not provided
-    $currStmt = $db->prepare("SELECT * FROM users WHERE id = ?");
+    // Fetch current user from database
+    $currStmt = $db->prepare("SELECT id, full_name, email, password_hash, contact_number, office_agency, category, role FROM users WHERE id = ? AND deleted_at IS NULL");
     $currStmt->execute([$userId]);
     $currentUser = $currStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -49,77 +28,115 @@ try {
         exit;
     }
 
-    if (empty($fullName)) {
-        $fullName = $currentUser['full_name'];
-    }
-    if (empty($email)) {
-        $email = $currentUser['email'];
+    // =========================================================================
+    // ACTION: CHANGE PASSWORD
+    // =========================================================================
+    if ($action === 'change_password') {
+        $currentPwd = $_POST['current_password'] ?? '';
+        $newPwd = $_POST['new_password'] ?? '';
+        $confirmPwd = $_POST['confirm_password'] ?? '';
+
+        if (empty($currentPwd) || empty($newPwd) || empty($confirmPwd)) {
+            echo json_encode(['success' => false, 'message' => 'Please fill out all password fields.']);
+            exit;
+        }
+
+        if (strlen($newPwd) < 8) {
+            echo json_encode(['success' => false, 'message' => 'New password must be at least 8 characters long.']);
+            exit;
+        }
+
+        if ($newPwd !== $confirmPwd) {
+            echo json_encode(['success' => false, 'message' => 'New password and confirm password do not match.']);
+            exit;
+        }
+
+        // Verify current password
+        if (!password_verify($currentPwd, $currentUser['password_hash'])) {
+            echo json_encode(['success' => false, 'message' => 'Incorrect current password.']);
+            exit;
+        }
+
+        // Hash and update new password
+        $newHash = password_hash($newPwd, PASSWORD_BCRYPT);
+        $pwdStmt = $db->prepare("UPDATE users SET password_hash = :hash, updated_at = NOW() WHERE id = :id");
+        $pwdStmt->execute([
+            ':hash' => $newHash,
+            ':id' => $userId
+        ]);
+
+        if (class_exists('AuditLog')) {
+            AuditLog::log($userId, 'USER_PASSWORD_CHANGE', "User {$currentUser['full_name']} updated their account password.", $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+        }
+
+        echo json_encode(['success' => true, 'message' => 'Your password has been updated successfully!']);
+        exit;
     }
 
+    // =========================================================================
+    // ACTION: UPDATE PROFILE INFORMATION
+    // =========================================================================
+    $fullName = trim($_POST['full_name'] ?? $_POST['fullName'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $contactNumber = trim($_POST['contact_number'] ?? $_POST['phone'] ?? '');
+    $officeAgency = trim($_POST['office_agency'] ?? $_POST['division'] ?? '');
+
+    if (empty($fullName)) {
+        echo json_encode(['success' => false, 'message' => 'Full name cannot be blank.']);
+        exit;
+    }
+
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['success' => false, 'message' => 'Please provide a valid email address.']);
+        exit;
+    }
+
+    // Check email uniqueness if email was changed
+    if (strtolower($email) !== strtolower($currentUser['email'])) {
+        $emailCheck = $db->prepare("SELECT id FROM users WHERE email = ? AND id != ? AND deleted_at IS NULL LIMIT 1");
+        $emailCheck->execute([$email, $userId]);
+        if ($emailCheck->fetch()) {
+            echo json_encode(['success' => false, 'message' => "The email '{$email}' is already taken by another user."]);
+            exit;
+        }
+    }
+
+    // Update real user columns in MySQL
     $updateStmt = $db->prepare("UPDATE users SET 
         full_name = :full_name,
         email = :email,
         contact_number = :contact_number,
-        position = :position,
-        division = :division,
-        date_hired = :date_hired,
-        employment_status = :employment_status,
-        immediate_supervisor = :immediate_supervisor,
-        station = :station,
-        alt_email = :alt_email,
-        emergency_contact = :emergency_contact,
-        landline = :landline,
-        extension = :extension,
-        building = :building,
-        desk = :desk,
-        show_gov_service = :show_gov_service,
-        pref_sms = :pref_sms,
-        pref_email_pass = :pref_email_pass,
-        pref_supervisor_cc = :pref_supervisor_cc,
+        office_agency = :office_agency,
         updated_at = NOW()
         WHERE id = :id");
 
     $updateStmt->execute([
         ':full_name' => $fullName,
         ':email' => $email,
-        ':contact_number' => $phone,
-        ':position' => $position,
-        ':division' => $division,
-        ':date_hired' => $dateHired,
-        ':employment_status' => $empStatus,
-        ':immediate_supervisor' => $supervisor,
-        ':station' => $station,
-        ':alt_email' => $altEmail,
-        ':emergency_contact' => $emergencyContact,
-        ':landline' => $landline,
-        ':extension' => $extension,
-        ':building' => $building,
-        ':desk' => $desk,
-        ':show_gov_service' => $showGovService ? 1 : 0,
-        ':pref_sms' => $prefSms ? 1 : 0,
-        ':pref_email_pass' => $prefEmailPass ? 1 : 0,
-        ':pref_supervisor_cc' => $prefSupervisorCc ? 1 : 0,
+        ':contact_number' => $contactNumber,
+        ':office_agency' => $officeAgency,
         ':id' => $userId
     ]);
 
+    // Keep session in sync
     $_SESSION['full_name'] = $fullName;
+    $_SESSION['email'] = $email;
+
+    if (class_exists('AuditLog')) {
+        AuditLog::log($userId, 'USER_PROFILE_UPDATE', "User [ID: {$userId}] updated profile information: {$fullName} ({$email}, {$officeAgency}).", $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1');
+    }
 
     echo json_encode([
         'success' => true,
-        'message' => 'Profile and workstation details saved successfully!',
+        'message' => 'Profile information updated successfully!',
         'data' => [
             'fullName' => $fullName,
             'email' => $email,
-            'phone' => $phone,
-            'altEmail' => $altEmail,
-            'emergencyContact' => $emergencyContact,
-            'landline' => $landline,
-            'extension' => $extension,
-            'building' => $building,
-            'desk' => $desk,
-            'showGovService' => $showGovService ? 1 : 0
+            'phone' => $contactNumber,
+            'officeAgency' => $officeAgency
         ]
     ]);
-} catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => 'Failed to update profile: ' . $e->getMessage()]);
+
+} catch (Throwable $e) {
+    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
