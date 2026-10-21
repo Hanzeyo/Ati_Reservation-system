@@ -103,7 +103,7 @@ $userInitials = getUserInitials($userFullName);
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
           <span>My Reservations</span>
-          <span class="nav-badge-count"><?= $totalUserRes ?></span>
+          <span class="nav-badge-count"><?= $currentUserResCount ?></span>
         </a>
 
         <a href="schedule.php" class="booking-nav-item">
@@ -228,7 +228,7 @@ $userInitials = getUserInitials($userFullName);
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
             </div>
             <span class="drawer-link-text">My Reservations</span>
-            <span class="drawer-badge-count"><?= $totalUserRes ?></span>
+            <span class="drawer-badge-count"><?= $currentUserResCount ?></span>
           </a>
           <a href="booking_history.php" class="drawer-nav-link">
             <div class="drawer-link-icon">

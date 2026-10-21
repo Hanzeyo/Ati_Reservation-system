@@ -33,18 +33,6 @@ if (!function_exists('isAdmin')) {
     }
 }
 
-// Calculate dynamic reservation count for the logged-in user
-$currentUserResCount = 0;
-if (isset($_SESSION['user_id']) && isset($db)) {
-    try {
-        $stmtCount = $db->prepare("SELECT COUNT(*) FROM reservations WHERE user_id = :uid AND deleted_at IS NULL");
-        $stmtCount->execute([':uid' => (int)$_SESSION['user_id']]);
-        $currentUserResCount = (int)$stmtCount->fetchColumn();
-    } catch (Exception $e) {
-        $currentUserResCount = 0;
-    }
-}
-
 // Automatically conclude approved reservations whose end_date has elapsed
 if (isset($db)) {
     try {
@@ -53,6 +41,19 @@ if (isset($db)) {
         $autoCompStmt->execute([':today' => $todayStr]);
     } catch (Exception $e) {
         // Silently skip if database or schema is migrating
+    }
+}
+
+// Calculate dynamic active reservation count for the logged-in user
+// Synchronized with my_reservations.php (Active reservations only: excludes Completed, Cancelled, Rejected)
+$currentUserResCount = 0;
+if (isset($_SESSION['user_id']) && isset($db)) {
+    try {
+        $stmtCount = $db->prepare("SELECT COUNT(*) FROM reservations WHERE user_id = :uid AND status NOT IN ('Completed', 'Cancelled', 'Rejected') AND deleted_at IS NULL");
+        $stmtCount->execute([':uid' => (int)$_SESSION['user_id']]);
+        $currentUserResCount = (int)$stmtCount->fetchColumn();
+    } catch (Exception $e) {
+        $currentUserResCount = 0;
     }
 }
 ?>
