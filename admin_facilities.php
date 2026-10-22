@@ -1265,6 +1265,80 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
   </div>
 
   <!-- ==========================================================================
+       MODAL: DELETE / ARCHIVE CONFIRMATION POPUP
+       ========================================================================== -->
+  <div class="admin-modal-overlay" id="deleteConfirmModal" role="dialog" aria-modal="true" style="display: none; z-index: 10500;">
+    <div class="admin-modal-card sm" style="max-width: 480px; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 45px rgba(0,0,0,0.22); border: 1.5px solid #fecaca;">
+      
+      <!-- Modal Header (Red/Crimson themed) -->
+      <div class="admin-modal-header" id="deleteModalHeader" style="background: linear-gradient(135deg, #b91c1c, #dc2626); color: #ffffff; padding: 1.25rem 1.4rem;">
+        <div class="modal-title-wrap" style="display: flex; align-items: center; gap: 0.65rem;">
+          <div id="deleteModalIconWrap" style="width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </div>
+          <div>
+            <h4 id="deleteModalTitle" style="color: #ffffff; font-size: 1.12rem; font-weight: 800; margin: 0; line-height: 1.2;">
+              Move Facility to Trash?
+            </h4>
+            <span id="deleteModalSubtitle" style="font-size: 0.76rem; color: #fee2e2;">
+              Archive Facility &amp; Asset Control
+            </span>
+          </div>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeDeleteConfirmModal()" aria-label="Close dialog" style="color: #ffffff; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="admin-modal-body" style="padding: 1.4rem 1.5rem 1.25rem; background: #ffffff;">
+        <!-- Target Item Highlight Box -->
+        <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 0.95rem 1.15rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.85rem;">
+          <div style="width: 40px; height: 40px; border-radius: 10px; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </div>
+          <div style="min-width: 0; flex: 1;">
+            <div id="deleteModalItemName" style="font-weight: 800; font-size: 0.98rem; color: #991b1b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              Facility Name
+            </div>
+            <div id="deleteModalItemMeta" style="font-size: 0.76rem; color: #b91c1c; margin-top: 2px;">
+              Venue / Dormitory Asset
+            </div>
+          </div>
+        </div>
+
+        <!-- Description / Warning Text -->
+        <p id="deleteModalMessage" style="font-size: 0.86rem; color: #475569; line-height: 1.5; margin: 0;">
+          Are you sure you want to move this facility to the Archive (Trash)? It will be hidden from applicants and the booking catalog, but can be restored anytime.
+        </p>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="admin-modal-footer" style="padding: 1rem 1.5rem; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: flex-end; gap: 0.65rem;">
+        <button type="button" class="btn-system-secondary" onclick="closeDeleteConfirmModal()" style="padding: 0.6rem 1.15rem; font-size: 0.85rem; font-weight: 700;">
+          Cancel
+        </button>
+        <button type="button" id="btnConfirmDeleteAction" class="btn-confirm-decline" style="padding: 0.6rem 1.25rem; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.45rem; background: #dc2626; border-color: #dc2626; color: #ffffff; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span id="btnConfirmDeleteText">Yes, Move to Archive</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
        MODAL: MAINTENANCE HOLD JUSTIFICATION
        ========================================================================== -->
   <div class="admin-modal-overlay" id="maintenanceModal" style="display: none;">

@@ -1345,30 +1345,38 @@ function toggleRoomMaintenance(roomId, isMaintenance) {
 }
 
 function handleDeleteRoom(roomId, roomNumber) {
-  const confirmed = confirm(`Sigurado ka bang nais mong burahin ang Room ${roomNumber}?`);
-  if (!confirmed) return;
+  openDeleteConfirmModal({
+    title: 'Delete Room / Unit?',
+    subtitle: 'Dormitory Inventory Management',
+    name: `Room ${roomNumber}`,
+    meta: `Room ID: #${roomId}`,
+    message: `Sigurado ka bang nais mong tanggalin ang <strong>Room ${escapeHtml(roomNumber)}</strong> mula sa pasilidad na ito?`,
+    btnText: 'Yes, Delete Room',
+    isPurge: true,
+    onConfirm: () => {
+      const facilityId = document.getElementById('currentManageFacilityId').value;
+      const formData = new FormData();
+      formData.append('action', 'delete_room');
+      formData.append('room_id', roomId);
 
-  const facilityId = document.getElementById('currentManageFacilityId').value;
-  const formData = new FormData();
-  formData.append('action', 'delete_room');
-  formData.append('room_id', roomId);
-
-  fetch('ajax/room_actions.php', {
-    method: 'POST',
-    body: formData
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        showAdminToast(data.message || `Room ${roomNumber} deleted.`, 'success');
-        loadFacilityRooms(facilityId);
-      } else {
-        showAdminToast(data.message || 'Hindi maaaring burahin ang kuwarto.', 'decline');
-      }
-    })
-    .catch(err => {
-      showAdminToast('Network error deleting room.', 'decline');
-    });
+      fetch('ajax/room_actions.php', {
+        method: 'POST',
+        body: formData
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            showAdminToast(data.message || `Room ${roomNumber} deleted.`, 'success');
+            loadFacilityRooms(facilityId);
+          } else {
+            showAdminToast(data.message || 'Hindi maaaring burahin ang kuwarto.', 'decline');
+          }
+        })
+        .catch(err => {
+          showAdminToast('Network error deleting room.', 'decline');
+        });
+    }
+  });
 }
 
 /* ==========================================================================
@@ -1608,13 +1616,23 @@ function handleQuickAddSetup(e) {
 }
 
 function deleteSetupItem(index) {
-  if (currentLoadedFacilitySetups[index]) {
-    const item = currentLoadedFacilitySetups[index];
-    const ok = confirm(`Sigurado ka bang nais mong tanggalin ang "${item.name}"?`);
-    if (!ok) return;
-    currentLoadedFacilitySetups.splice(index, 1);
-    renderSetupsGrid();
-  }
+  if (!currentLoadedFacilitySetups[index]) return;
+  const item = currentLoadedFacilitySetups[index];
+
+  openDeleteConfirmModal({
+    title: 'Remove Layout Setup?',
+    subtitle: 'Floor Plan Preset Configuration',
+    name: item.name,
+    meta: `Layout Preset #${index + 1}`,
+    message: `Sigurado ka bang nais mong tanggalin ang layout na <strong>${escapeHtml(item.name)}</strong> mula sa pasilidad na ito?`,
+    btnText: 'Yes, Remove Layout',
+    isPurge: false,
+    onConfirm: () => {
+      currentLoadedFacilitySetups.splice(index, 1);
+      renderSetupsGrid();
+      showAdminToast(`Removed "${item.name}" layout preset.`, 'success');
+    }
+  });
 }
 
 function resetSetupsToDefaults() {
@@ -1685,90 +1703,187 @@ function saveFacilitySetups() {
 }
 
 /* ==========================================================================
+   POP-UP DELETE CONFIRMATION MODAL CONTROLLER
+   ========================================================================== */
+let currentDeleteConfirmCallback = null;
+
+function openDeleteConfirmModal(options) {
+  const modal = document.getElementById('deleteConfirmModal');
+  if (!modal) return;
+
+  const titleEl = document.getElementById('deleteModalTitle');
+  const subEl = document.getElementById('deleteModalSubtitle');
+  const nameEl = document.getElementById('deleteModalItemName');
+  const metaEl = document.getElementById('deleteModalItemMeta');
+  const msgEl = document.getElementById('deleteModalMessage');
+  const btnEl = document.getElementById('btnConfirmDeleteAction');
+  const btnTxtEl = document.getElementById('btnConfirmDeleteText');
+  const headerEl = document.getElementById('deleteModalHeader');
+
+  if (titleEl) titleEl.textContent = options.title || 'Confirm Deletion';
+  if (subEl) subEl.textContent = options.subtitle || 'Asset & Inventory Control';
+  if (nameEl) nameEl.textContent = options.name || 'Selected Item';
+  if (metaEl) metaEl.textContent = options.meta || '';
+  if (msgEl) msgEl.innerHTML = options.message || 'Are you sure you want to proceed?';
+  if (btnTxtEl) btnTxtEl.textContent = options.btnText || 'Yes, Delete';
+
+  if (options.isPurge) {
+    if (headerEl) headerEl.style.background = 'linear-gradient(135deg, #7f1d1d, #991b1b)';
+    if (btnEl) {
+      btnEl.style.background = '#991b1b';
+      btnEl.style.borderColor = '#991b1b';
+    }
+  } else {
+    if (headerEl) headerEl.style.background = 'linear-gradient(135deg, #b91c1c, #dc2626)';
+    if (btnEl) {
+      btnEl.style.background = '#dc2626';
+      btnEl.style.borderColor = '#dc2626';
+    }
+  }
+
+  currentDeleteConfirmCallback = options.onConfirm || null;
+
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDeleteConfirmModal() {
+  const modal = document.getElementById('deleteConfirmModal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+  currentDeleteConfirmCallback = null;
+}
+
+// Global modal backdrop click listener
+document.addEventListener('click', function (e) {
+  const deleteModal = document.getElementById('deleteConfirmModal');
+  if (deleteModal && e.target === deleteModal) {
+    closeDeleteConfirmModal();
+  }
+});
+
+// Confirm button click handler
+document.addEventListener('DOMContentLoaded', function () {
+  const confirmBtn = document.getElementById('btnConfirmDeleteAction');
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', function () {
+      if (typeof currentDeleteConfirmCallback === 'function') {
+        const cb = currentDeleteConfirmCallback;
+        closeDeleteConfirmModal();
+        cb();
+      }
+    });
+  }
+});
+
+/* ==========================================================================
    FACILITY SOFT DELETE, RESTORE & PERMANENT PURGE
    ========================================================================== */
 function confirmDeleteFacility(id, name) {
-  if (!confirm(`Are you sure you want to move facility "${name}" to the Archive (Trash)?\n\nIt will be hidden from applicants and the booking catalog.`)) {
-    return;
-  }
+  openDeleteConfirmModal({
+    title: 'Move Facility to Archive (Trash)?',
+    subtitle: 'Institutional Asset Control',
+    name: name,
+    meta: `Asset ID: #${id} • Move to Trash`,
+    message: `Are you sure you want to move <strong>${escapeHtml(name)}</strong> to the Archive (Trash)?<br><br>It will be hidden from applicants and the booking catalog, but can be restored anytime from the Archive tab.`,
+    btnText: 'Yes, Move to Archive',
+    isPurge: false,
+    onConfirm: () => {
+      const formData = new FormData();
+      formData.append('action', 'delete');
+      formData.append('id', id);
 
-  const formData = new FormData();
-  formData.append('action', 'delete');
-  formData.append('id', id);
-
-  fetch('ajax/facility_actions.php', {
-    method: 'POST',
-    body: formData
-  })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        showAdminToast(data.message || `Facility "${name}" moved to archive.`, 'success');
-        setTimeout(() => window.location.reload(), 1000);
-      } else {
-        alert(data.message || 'Failed to archive facility.');
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      alert('A network error occurred while archiving the facility.');
-    });
+      fetch('ajax/facility_actions.php', {
+        method: 'POST',
+        body: formData
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            showAdminToast(data.message || `Facility "${name}" moved to archive.`, 'success');
+            setTimeout(() => window.location.reload(), 900);
+          } else {
+            showAdminToast(data.message || 'Failed to archive facility.', 'decline');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          showAdminToast('A network error occurred while archiving the facility.', 'decline');
+        });
+    }
+  });
 }
 
 function confirmRestoreFacility(id, name) {
-  if (!confirm(`Restore facility "${name}" back to the active catalog?`)) {
-    return;
-  }
+  openDeleteConfirmModal({
+    title: 'Restore Facility to Active Catalog?',
+    subtitle: 'Re-activate Monitored Asset',
+    name: name,
+    meta: `Asset ID: #${id} • Active Status Restoration`,
+    message: `Restore <strong>${escapeHtml(name)}</strong> back to the active catalog? It will immediately be available for reservations again.`,
+    btnText: 'Yes, Restore Facility',
+    isPurge: false,
+    onConfirm: () => {
+      const formData = new FormData();
+      formData.append('action', 'restore');
+      formData.append('id', id);
 
-  const formData = new FormData();
-  formData.append('action', 'restore');
-  formData.append('id', id);
-
-  fetch('ajax/facility_actions.php', {
-    method: 'POST',
-    body: formData
-  })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        showAdminToast(data.message || `Facility "${name}" restored.`, 'success');
-        setTimeout(() => window.location.reload(), 1000);
-      } else {
-        alert(data.message || 'Failed to restore facility.');
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      alert('A network error occurred while restoring the facility.');
-    });
+      fetch('ajax/facility_actions.php', {
+        method: 'POST',
+        body: formData
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            showAdminToast(data.message || `Facility "${name}" restored.`, 'success');
+            setTimeout(() => window.location.reload(), 900);
+          } else {
+            showAdminToast(data.message || 'Failed to restore facility.', 'decline');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          showAdminToast('A network error occurred while restoring the facility.', 'decline');
+        });
+    }
+  });
 }
 
 function confirmPermanentDeleteFacility(id, name) {
-  if (!confirm(`PERMANENTLY PURGE facility "${name}"?\n\nWARNING: This will permanently delete the facility record and its room configurations from the database. This action CANNOT be undone.`)) {
-    return;
-  }
+  openDeleteConfirmModal({
+    title: 'Permanently Purge Facility?',
+    subtitle: 'Permanent Database Deletion (Irreversible)',
+    name: name,
+    meta: `Asset ID: #${id} • Permanent Deletion`,
+    message: `<strong style="color: #b91c1c;">WARNING:</strong> This will permanently delete <strong>${escapeHtml(name)}</strong> and all of its room configurations from the database.<br><br>This action <strong style="color: #b91c1c;">CANNOT</strong> be undone.`,
+    btnText: 'Yes, Permanently Purge',
+    isPurge: true,
+    onConfirm: () => {
+      const formData = new FormData();
+      formData.append('action', 'purge');
+      formData.append('id', id);
 
-  const formData = new FormData();
-  formData.append('action', 'purge');
-  formData.append('id', id);
-
-  fetch('ajax/facility_actions.php', {
-    method: 'POST',
-    body: formData
-  })
-    .then(r => r.json())
-    .then(data => {
-      if (data.success) {
-        showAdminToast(data.message || `Facility "${name}" permanently deleted.`, 'success');
-        setTimeout(() => window.location.reload(), 1000);
-      } else {
-        alert(data.message || 'Failed to permanently delete facility.');
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      alert('A network error occurred while purging the facility.');
-    });
+      fetch('ajax/facility_actions.php', {
+        method: 'POST',
+        body: formData
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            showAdminToast(data.message || `Facility "${name}" permanently deleted.`, 'success');
+            setTimeout(() => window.location.reload(), 900);
+          } else {
+            showAdminToast(data.message || 'Failed to permanently delete facility.', 'decline');
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          showAdminToast('A network error occurred while purging the facility.', 'decline');
+        });
+    }
+  });
 }
 
 /* ==========================================================================

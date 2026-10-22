@@ -240,8 +240,22 @@ try {
             exit;
         }
 
-        $del = $db->prepare("DELETE FROM rooms WHERE id = ?");
-        $del->execute([$roomId]);
+        $db->beginTransaction();
+        try {
+            // Unlink room reference from any past completed/cancelled reservations
+            $unlink = $db->prepare("UPDATE reservations SET room_id = NULL WHERE room_id = ?");
+            $unlink->execute([$roomId]);
+
+            $del = $db->prepare("DELETE FROM rooms WHERE id = ?");
+            $del->execute([$roomId]);
+
+            $db->commit();
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            throw $e;
+        }
 
         // Audit Log
         try {

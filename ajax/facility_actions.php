@@ -476,7 +476,7 @@ try {
             exit;
         }
 
-        // Check if there are active reservations
+        // Check if there are active reservations (Pending or Approved)
         $chk = $db->prepare("SELECT COUNT(*) FROM reservations WHERE facility_id = ? AND status NOT IN ('Rejected', 'Cancelled', 'Completed') AND deleted_at IS NULL");
         $chk->execute([$id]);
         $activeCount = (int)$chk->fetchColumn();
@@ -484,27 +484,51 @@ try {
         if ($activeCount > 0) {
             echo json_encode([
                 'success' => false, 
-                'message' => "Cannot permanently purge '{$fac['name']}' because it has {$activeCount} active reservation(s)."
+                'message' => "Hindi maaaring i-purge ang '{$fac['name']}' dahil mayroon pa itong {$activeCount} aktibong reservation(s) (Pending/Approved). I-reject, i-cancel, o tapusin muna ang mga ito bago i-purge."
             ]);
             exit;
         }
 
-        // Delete associated rooms first
-        $delRooms = $db->prepare("DELETE FROM rooms WHERE facility_id = ?");
-        $delRooms->execute([$id]);
+        // Perform clean cascade deletion inside a database transaction
+        $db->beginTransaction();
 
-        // Permanent delete
-        $del = $db->prepare("DELETE FROM facilities WHERE id = ?");
-        $del->execute([$id]);
+        try {
+            // 1. Delete associated schedule blocks
+            $delBlocks = $db->prepare("DELETE FROM schedule_blocks WHERE facility_id = ? OR facility_name = ?");
+            $delBlocks->execute([(string)$id, $fac['name']]);
+
+            // 2. Unlink any room references in reservations first to prevent constraint conflicts
+            $unlinkRooms = $db->prepare("UPDATE reservations SET room_id = NULL WHERE facility_id = ? OR room_id IN (SELECT id FROM rooms WHERE facility_id = ?)");
+            $unlinkRooms->execute([$id, $id]);
+
+            // 3. Cascade delete associated historical reservations
+            $delRes = $db->prepare("DELETE FROM reservations WHERE facility_id = ?");
+            $delRes->execute([$id]);
+
+            // 4. Delete associated rooms
+            $delRooms = $db->prepare("DELETE FROM rooms WHERE facility_id = ?");
+            $delRooms->execute([$id]);
+
+            // 5. Delete the facility record itself
+            $del = $db->prepare("DELETE FROM facilities WHERE id = ?");
+            $del->execute([$id]);
+
+            $db->commit();
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            throw $e;
+        }
 
         // Log audit
         try {
-            AuditLog::log($userId, 'PURGE_FACILITY', "Permanently purged facility [FAC-{$id}] {$fac['name']} from database");
+            AuditLog::log($userId, 'PURGE_FACILITY', "Permanently purged facility [FAC-{$id}] {$fac['name']} and all associated records from database");
         } catch (Throwable $e) {}
 
         echo json_encode([
             'success' => true,
-            'message' => "Facility '{$fac['name']}' permanently purged from database."
+            'message' => "Facility '{$fac['name']}' at lahat ng kaugnay na configuration/records ay matagumpay na na-purge mula sa database."
         ]);
         exit;
     }
