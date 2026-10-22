@@ -163,13 +163,16 @@ try {
 
         $coolingType = trim($_POST['cooling_type'] ?? ($type === 'dorms' ? 'Fan Cooled (Non-Aircon)' : 'Full Climate Control'));
 
+        $maxOrder = (int)$db->query("SELECT COALESCE(MAX(display_order), 0) FROM facilities")->fetchColumn() + 1;
+
         $stmt = $db->prepare("INSERT INTO facilities 
-            (name, type, rate, capacity, beds, cooling_type, location, description, features, image, notes, gallery, status) 
-            VALUES (:name, :type, :rate, :capacity, :beds, :cooling_type, :location, :description, :features, :image, :notes, :gallery, 'available')");
+            (name, type, display_order, rate, capacity, beds, cooling_type, location, description, features, image, notes, gallery, status) 
+            VALUES (:name, :type, :display_order, :rate, :capacity, :beds, :cooling_type, :location, :description, :features, :image, :notes, :gallery, 'available')");
 
         $stmt->execute([
             ':name' => $name,
             ':type' => $type,
+            ':display_order' => $maxOrder,
             ':rate' => $rate,
             ':capacity' => $capacity,
             ':beds' => $beds,
@@ -611,6 +614,46 @@ try {
             'success' => true,
             'message' => 'Venue layout setups saved successfully.',
             'layouts' => $layoutsArray
+        ]);
+        exit;
+    }
+
+    if ($action === 'reorder_facilities') {
+        $rawOrder = $_POST['order'] ?? [];
+        $order = is_array($rawOrder) ? $rawOrder : json_decode($rawOrder, true);
+
+        if (!is_array($order) || empty($order)) {
+            echo json_encode(['success' => false, 'message' => 'Walang natanggap na sequence order list.']);
+            exit;
+        }
+
+        $db->beginTransaction();
+        try {
+            $stmt = $db->prepare("UPDATE facilities SET display_order = ? WHERE id = ?");
+            $pos = 1;
+            foreach ($order as $rawId) {
+                $facId = (int)$rawId;
+                if ($facId > 0) {
+                    $stmt->execute([$pos, $facId]);
+                    $pos++;
+                }
+            }
+            $db->commit();
+        } catch (Throwable $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            throw $e;
+        }
+
+        // Audit Log
+        try {
+            AuditLog::log($userId, 'REORDER_FACILITIES', "Inayos ang pagkakasunod-sunod ng " . count($order) . " pasilidad");
+        } catch (Throwable $e) {}
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Matagumpay na na-update ang pagkakasunod-sunod ng mga pasilidad.'
         ]);
         exit;
     }

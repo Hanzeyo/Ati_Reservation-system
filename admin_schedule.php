@@ -32,8 +32,8 @@ $pendingCount = (int)$pendingStmt->fetchColumn();
 $userCountStmt = $db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
 $totalUsersCount = (int)$userCountStmt->fetchColumn();
 
-// Fetch facilities
-$facStmt = $db->query("SELECT id, name, type, status, maintenance_reason, est_resume_date FROM facilities WHERE deleted_at IS NULL ORDER BY CASE WHEN type = 'halls' THEN 1 WHEN type = 'dining' THEN 2 WHEN type = 'dorms' THEN 3 ELSE 4 END ASC, id ASC");
+// Fetch facilities ordered by customized display sequence
+$facStmt = $db->query("SELECT id, name, type, status, maintenance_reason, est_resume_date FROM facilities WHERE deleted_at IS NULL ORDER BY display_order ASC, id ASC");
 $facilitiesList = $facStmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch all reservations

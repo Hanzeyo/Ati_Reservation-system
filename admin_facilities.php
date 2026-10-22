@@ -18,8 +18,8 @@ $pendingCount = (int)$pendingStmt->fetchColumn();
 $userCountStmt = $db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
 $totalUsersCount = (int)$userCountStmt->fetchColumn();
 
-// Fetch all facilities from DB grouped by type (Halls, Dining, Dormitories) so suites stay together
-$stmt = $db->query("SELECT * FROM facilities ORDER BY CASE WHEN type = 'halls' THEN 1 WHEN type = 'dining' THEN 2 WHEN type = 'dorms' THEN 3 ELSE 4 END ASC, id ASC");
+// Fetch all facilities from DB ordered by customized display sequence
+$stmt = $db->query("SELECT * FROM facilities ORDER BY display_order ASC, id ASC");
 $facilitiesList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $facilitiesData = [];
@@ -399,6 +399,27 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
           </div>
         </div>
 
+        <!-- Reorder Hint Banner -->
+        <div class="facility-reorder-hint-bar">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="reorder-grip-icon" title="Drag Grip Indicator">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="9" cy="5" r="1.5" fill="currentColor"></circle>
+                <circle cx="15" cy="5" r="1.5" fill="currentColor"></circle>
+                <circle cx="9" cy="12" r="1.5" fill="currentColor"></circle>
+                <circle cx="15" cy="12" r="1.5" fill="currentColor"></circle>
+                <circle cx="9" cy="19" r="1.5" fill="currentColor"></circle>
+                <circle cx="15" cy="19" r="1.5" fill="currentColor"></circle>
+              </svg>
+            </span>
+            <span class="reorder-hint-text">Hold at i-drag ang <strong>Drag Handle</strong> sa kahit anong card para i-arrange ang pagkakasunod-sunod ng mga dorms at function halls.</span>
+          </div>
+          <span class="reorder-status-badge" id="reorderStatusBadge" style="display: none;">
+            <span class="spinner-dot"></span>
+            <span>Saving order...</span>
+          </span>
+        </div>
+
         <!-- ==========================================================================
              ASSET CARDS GRID (DEFAULT VIEW)
              ========================================================================== -->
@@ -437,6 +458,17 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
               <div class="facility-card-body">
                 <div class="facility-card-header-row">
                   <h3 class="facility-card-title"><?= htmlspecialchars($item['name']) ?></h3>
+                  <div class="facility-drag-handle" title="Hold &amp; Drag to rearrange display sequence" aria-label="Drag to rearrange" draggable="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <circle cx="9" cy="5" r="1.5" fill="currentColor"></circle>
+                      <circle cx="15" cy="5" r="1.5" fill="currentColor"></circle>
+                      <circle cx="9" cy="12" r="1.5" fill="currentColor"></circle>
+                      <circle cx="15" cy="12" r="1.5" fill="currentColor"></circle>
+                      <circle cx="9" cy="19" r="1.5" fill="currentColor"></circle>
+                      <circle cx="15" cy="19" r="1.5" fill="currentColor"></circle>
+                    </svg>
+                    <span>Drag</span>
+                  </div>
                 </div>
                 <div class="facility-location-tag">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -637,6 +669,16 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                     <tr data-id="<?= htmlspecialchars($fid) ?>" data-category="<?= htmlspecialchars($item['category']) ?>" data-maintenance="<?= $item['maintenance'] ? 'true' : 'false' ?>" data-archived="<?= $item['isArchived'] ? 'true' : 'false' ?>" class="<?= $item['isArchived'] ? 'row-archived' : '' ?>">
                       <td>
                         <div class="facility-table-info-cell">
+                          <div class="facility-drag-handle table-handle" title="Hold &amp; Drag to rearrange display sequence" aria-label="Drag to rearrange" draggable="true">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                              <circle cx="9" cy="5" r="1.5" fill="currentColor"></circle>
+                              <circle cx="15" cy="5" r="1.5" fill="currentColor"></circle>
+                              <circle cx="9" cy="12" r="1.5" fill="currentColor"></circle>
+                              <circle cx="15" cy="12" r="1.5" fill="currentColor"></circle>
+                              <circle cx="9" cy="19" r="1.5" fill="currentColor"></circle>
+                              <circle cx="15" cy="19" r="1.5" fill="currentColor"></circle>
+                            </svg>
+                          </div>
                           <img src="<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="facility-table-thumb" onerror="this.src='assets/images/function_hall.jpg'">
                           <div class="facility-table-info-text">
                             <strong><?= htmlspecialchars($item['name']) ?></strong>

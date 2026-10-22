@@ -10,8 +10,8 @@ require_once __DIR__ . '/includes/facility_helpers.php';
 $reqCategory = isset($_GET['category']) ? strtolower(trim($_GET['category'])) : 'halls';
 $selectedFacilityId = isset($_GET['facility_id']) ? intval($_GET['facility_id']) : 0;
 
-// Fetch all active facilities dynamically from MySQL grouped by category so suites stay together
-$facStmt = $db->query("SELECT * FROM facilities WHERE status != 'inactive' AND deleted_at IS NULL ORDER BY CASE WHEN type = 'halls' THEN 1 WHEN type = 'dining' THEN 2 WHEN type = 'dorms' THEN 3 ELSE 4 END ASC, id ASC");
+// Fetch all active facilities dynamically from MySQL ordered by customized display sequence
+$facStmt = $db->query("SELECT * FROM facilities WHERE status != 'inactive' AND deleted_at IS NULL ORDER BY display_order ASC, id ASC");
 $dbFacilities = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
 // If facility_id is passed, align category with the requested facility

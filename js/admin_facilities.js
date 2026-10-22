@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initDateDisplay();
   updateKPICounters();
   applyCombinedFilters('all', '');
+  initFacilityDragAndDrop();
 
   // Restore desktop sidebar collapsed preference if previously saved
   if (window.innerWidth > 960 && localStorage.getItem('admin_sidebar_collapsed') === 'true') {
@@ -2056,5 +2057,235 @@ function closeOccupantModal() {
     modal.style.display = 'none';
   }, 220);
 }
+
+/* ==========================================================================
+   FACILITY DRAG-AND-DROP REORDER CONTROLLER
+   ========================================================================== */
+function initFacilityDragAndDrop() {
+  const gridContainer = document.getElementById('facilityCardsGrid');
+  const tableBody = document.getElementById('facilityTableBody');
+  if (!gridContainer && !tableBody) return;
+
+  let draggedItem = null;
+  let draggedType = null; // 'card' or 'row'
+  let previousOrder = getFacilitiesCurrentOrder();
+
+  function getFacilitiesCurrentOrder() {
+    return Array.from(document.querySelectorAll('#facilityCardsGrid .facility-card-item'))
+      .map(el => el.getAttribute('data-id'))
+      .filter(Boolean);
+  }
+
+  // -------------------------------------------------------------------------
+  // 1. GRID CARDS DRAG & DROP
+  // -------------------------------------------------------------------------
+  if (gridContainer) {
+    gridContainer.addEventListener('dragstart', function (e) {
+      const handle = e.target.closest('.facility-drag-handle');
+      const card = e.target.closest('.facility-card-item');
+      if (!card) return;
+
+      if (!handle && !card.hasAttribute('draggable')) {
+        e.preventDefault();
+        return;
+      }
+
+      draggedItem = card;
+      draggedType = 'card';
+      card.classList.add('is-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', card.getAttribute('data-id') || '');
+    });
+
+    gridContainer.addEventListener('dragover', function (e) {
+      if (!draggedItem || draggedType !== 'card') return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+
+      const targetCard = e.target.closest('.facility-card-item');
+      if (!targetCard || targetCard === draggedItem) return;
+
+      const rect = targetCard.getBoundingClientRect();
+      const relX = e.clientX - rect.left;
+      const relY = e.clientY - rect.top;
+      const isAfter = (relX > rect.width / 2) || (relY > rect.height / 2);
+
+      if (isAfter) {
+        targetCard.after(draggedItem);
+      } else {
+        targetCard.before(draggedItem);
+      }
+    });
+
+    gridContainer.addEventListener('dragend', function () {
+      if (!draggedItem) return;
+      draggedItem.classList.remove('is-dragging');
+      draggedItem.removeAttribute('draggable');
+      draggedItem = null;
+      draggedType = null;
+
+      const newOrder = getFacilitiesCurrentOrder();
+      if (JSON.stringify(newOrder) !== JSON.stringify(previousOrder)) {
+        previousOrder = [...newOrder];
+        syncTableOrder(newOrder);
+        saveFacilitiesOrder(newOrder);
+      }
+    });
+
+    // Enable dragging only when grabbing the handle
+    gridContainer.addEventListener('mousedown', function (e) {
+      const handle = e.target.closest('.facility-drag-handle');
+      if (handle) {
+        const card = handle.closest('.facility-card-item');
+        if (card) card.setAttribute('draggable', 'true');
+      }
+    });
+
+    gridContainer.addEventListener('mouseup', function () {
+      document.querySelectorAll('#facilityCardsGrid .facility-card-item').forEach(c => {
+        c.removeAttribute('draggable');
+      });
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // 2. TABLE ROWS DRAG & DROP
+  // -------------------------------------------------------------------------
+  if (tableBody) {
+    tableBody.addEventListener('dragstart', function (e) {
+      const handle = e.target.closest('.facility-drag-handle');
+      const row = e.target.closest('tr[data-id]');
+      if (!row) return;
+
+      if (!handle && !row.hasAttribute('draggable')) {
+        e.preventDefault();
+        return;
+      }
+
+      draggedItem = row;
+      draggedType = 'row';
+      row.classList.add('is-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', row.getAttribute('data-id') || '');
+    });
+
+    tableBody.addEventListener('dragover', function (e) {
+      if (!draggedItem || draggedType !== 'row') return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+
+      const targetRow = e.target.closest('tr[data-id]');
+      if (!targetRow || targetRow === draggedItem) return;
+
+      const rect = targetRow.getBoundingClientRect();
+      const isAfter = (e.clientY - rect.top) > (rect.height / 2);
+
+      if (isAfter) {
+        targetRow.after(draggedItem);
+      } else {
+        targetRow.before(draggedItem);
+      }
+    });
+
+    tableBody.addEventListener('dragend', function () {
+      if (!draggedItem) return;
+      draggedItem.classList.remove('is-dragging');
+      draggedItem.removeAttribute('draggable');
+      draggedItem = null;
+      draggedType = null;
+
+      const newOrder = Array.from(tableBody.querySelectorAll('tr[data-id]'))
+        .map(el => el.getAttribute('data-id'))
+        .filter(Boolean);
+
+      if (JSON.stringify(newOrder) !== JSON.stringify(previousOrder)) {
+        previousOrder = [...newOrder];
+        syncGridOrder(newOrder);
+        saveFacilitiesOrder(newOrder);
+      }
+    });
+
+    tableBody.addEventListener('mousedown', function (e) {
+      const handle = e.target.closest('.facility-drag-handle');
+      if (handle) {
+        const row = handle.closest('tr[data-id]');
+        if (row) row.setAttribute('draggable', 'true');
+      }
+    });
+
+    tableBody.addEventListener('mouseup', function () {
+      document.querySelectorAll('#facilityTableBody tr[data-id]').forEach(r => {
+        r.removeAttribute('draggable');
+      });
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // 3. SYNCHRONIZATION HELPERS
+  // -------------------------------------------------------------------------
+  function syncTableOrder(order) {
+    if (!tableBody) return;
+    order.forEach(id => {
+      const row = tableBody.querySelector(`tr[data-id="${id}"]`);
+      if (row) tableBody.appendChild(row);
+    });
+  }
+
+  function syncGridOrder(order) {
+    if (!gridContainer) return;
+    order.forEach(id => {
+      const card = gridContainer.querySelector(`.facility-card-item[data-id="${id}"]`);
+      if (card) gridContainer.appendChild(card);
+    });
+  }
+
+  // -------------------------------------------------------------------------
+  // 4. PERSIST TO DATABASE VIA AJAX
+  // -------------------------------------------------------------------------
+  function saveFacilitiesOrder(order) {
+    const badge = document.getElementById('reorderStatusBadge');
+    if (badge) {
+      badge.style.display = 'inline-flex';
+      badge.innerHTML = '<span class="spinner-dot"></span><span>Saving sequence...</span>';
+    }
+
+    const formData = new FormData();
+    formData.append('action', 'reorder_facilities');
+    formData.append('order', JSON.stringify(order));
+
+    fetch('ajax/facility_actions.php', {
+      method: 'POST',
+      body: formData
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (badge) {
+          if (data.success) {
+            badge.innerHTML = '<span>✓ Saved</span>';
+            setTimeout(() => {
+              badge.style.display = 'none';
+            }, 2000);
+          } else {
+            badge.innerHTML = '<span style="color: #dc2626;">✕ Error saving</span>';
+            setTimeout(() => {
+              badge.style.display = 'none';
+            }, 3000);
+          }
+        }
+
+        if (data.success) {
+          showAdminToast(data.message || 'Updated facility display sequence.', 'success');
+        } else {
+          showAdminToast(data.message || 'Failed to update order.', 'decline');
+        }
+      })
+      .catch(err => {
+        console.error('Error saving facility order:', err);
+        if (badge) badge.style.display = 'none';
+        showAdminToast('Network error while saving facility sequence.', 'decline');
+      });
+  }
+}
+
 
 

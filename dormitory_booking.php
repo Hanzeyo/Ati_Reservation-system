@@ -5,8 +5,8 @@ require_once __DIR__ . '/includes/facility_helpers.php';
 
 $selectedFacilityId = isset($_GET['facility_id']) ? intval($_GET['facility_id']) : 0;
 
-// Fetch active dormitory facilities from MySQL
-$dormStmt = $db->query("SELECT * FROM facilities WHERE type = 'dorms' AND status != 'inactive' AND deleted_at IS NULL ORDER BY id ASC");
+// Fetch active dormitory facilities from MySQL ordered by customized display sequence
+$dormStmt = $db->query("SELECT * FROM facilities WHERE type = 'dorms' AND status != 'inactive' AND deleted_at IS NULL ORDER BY display_order ASC, id ASC");
 $dbDorms = $dormStmt ? $dormStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 $dormCount = count($dbDorms);
 
