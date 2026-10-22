@@ -772,15 +772,17 @@ $dormCount = count($dbDorms);
               Purpose / Official Training Activity *</label>
             <input type="text" id="dormLodgingPurpose" class="step-text-input"
               placeholder="e.g. National Young Farmers Camp Trainees Accommodation"
-              value="Regional Agricultural Extension Trainees Accommodation"
+              value=""
               style="width: 100%; padding: 0.85rem; border: 1.5px solid #c9ded0; border-radius: 8px;">
+            <small class="field-error-msg" id="dormLodgingPurposeError" style="display: none; color: #dc2626; font-size: 0.78rem; font-weight: 600; margin-top: 0.35rem;">⚠️ Please enter the lodging purpose / official activity title.</small>
           </div>
 
           <div style="display: grid; grid-template-columns: minmax(160px, 200px) minmax(280px, 420px); gap: 1.25rem; margin-bottom: 1.15rem; align-items: start;">
             <div>
               <label for="dormGuestCount" class="auth-field-label">Total Guests Staying *</label>
-              <input type="number" id="dormGuestCount" class="step-text-input" value="16" min="1" max="48"
+              <input type="number" id="dormGuestCount" class="step-text-input" placeholder="e.g. 10" min="1" max="48"
                 style="width: 100%; padding: 0.55rem 0.85rem; font-size: 0.88rem; border: 1.5px solid #c9ded0; border-radius: 8px;">
+              <small class="field-error-msg" id="dormGuestCountError" style="display: none; color: #dc2626; font-size: 0.78rem; font-weight: 600; margin-top: 0.35rem;">⚠️ Please specify at least 1 guest.</small>
             </div>
             <div>
               <label for="dormDeptSelectTrigger" class="auth-field-label">Endorsing Division / Unit *</label>
@@ -820,7 +822,7 @@ $dormCount = count($dbDorms);
                     <div class="dept-option-item" data-value="ATI-RTC VI (Western Visayas)">ATI-RTC VI (Western Visayas)</div>
                     <div class="dept-option-item" data-value="ATI-RTC VII (Central Visayas)">ATI-RTC VII (Central Visayas)</div>
                     <div class="dept-option-item" data-value="ATI-RTC VIII (Eastern Visayas)">ATI-RTC VIII (Eastern Visayas)</div>
-                    <div class="dept-option-item" data-value="ATI-RTC IX (Zamboanga Peninsula)">ATI-RTC IX (Zamboanga Peninsula)</div>
+                    <div class="dept-option-item" data-value="ATI-RTC IX (Zambo Peninsula)">ATI-RTC IX (Zamboanga Peninsula)</div>
                     <div class="dept-option-item" data-value="ATI-RTC X (Northern Mindanao)">ATI-RTC X (Northern Mindanao)</div>
                     <div class="dept-option-item" data-value="ATI-RTC XI (Davao Region)">ATI-RTC XI (Davao Region)</div>
                     <div class="dept-option-item" data-value="ATI-RTC XII (SOCCSKSARGEN)">ATI-RTC XII (SOCCSKSARGEN)</div>
@@ -871,14 +873,14 @@ $dormCount = count($dbDorms);
               <label for="dormMaleCount"
                 style="display: block; font-weight: 700; font-size: 0.88rem; margin-bottom: 0.35rem; color: #1b3826;">Male
                 Delegates Count</label>
-              <input type="number" id="dormMaleCount" class="step-text-input" value="8" min="0" max="48"
+              <input type="number" id="dormMaleCount" class="step-text-input" placeholder="0" min="0" max="48"
                 style="width: 100%; padding: 0.85rem; border: 1.5px solid #c9ded0; border-radius: 8px;">
             </div>
             <div>
               <label for="dormFemaleCount"
                 style="display: block; font-weight: 700; font-size: 0.88rem; margin-bottom: 0.35rem; color: #1b3826;">Female
                 Delegates Count</label>
-              <input type="number" id="dormFemaleCount" class="step-text-input" value="8" min="0" max="48"
+              <input type="number" id="dormFemaleCount" class="step-text-input" placeholder="0" min="0" max="48"
                 style="width: 100%; padding: 0.85rem; border: 1.5px solid #c9ded0; border-radius: 8px;">
             </div>
           </div>
@@ -889,7 +891,7 @@ $dormCount = count($dbDorms);
               Custodian Requests / Linen &amp; Towel Requirements</label>
             <textarea id="dormSpecialRequests" rows="3"
               style="width: 100%; padding: 0.85rem; border: 1.5px solid #c9ded0; border-radius: 8px;"
-              placeholder="e.g. Linen turnover requested on arrival. Late check-in after 8:00 PM due to delayed flight from Mindanao.">Linens & towels requested. Gender-segregated rooms on 1st Floor.</textarea>
+              placeholder="e.g. Linen turnover requested on arrival. Late check-in after 8:00 PM due to delayed flight from Mindanao."></textarea>
           </div>
         </div>
       </div>
@@ -955,28 +957,21 @@ $dormCount = count($dbDorms);
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
-          <div
-            style="border: 2px dashed #9bcbb0; background: #fbfdfc; border-radius: 12px; padding: 2rem; text-align: center;">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#174d2f" stroke-width="1.8"
-              style="margin-bottom: 0.5rem;">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="12" y1="18" x2="12" y2="12"></line>
-              <line x1="9" y1="15" x2="15" y2="15"></line>
-            </svg>
-            <h4 style="font-size: 1rem; font-weight: 700; color: #164329; margin-bottom: 0.25rem;">Upload Official
-              Travel Order / Training List</h4>
-            <p style="font-size: 0.82rem; color: #5b7566; margin-bottom: 1rem;">PDF, DOCX, or scanned JPEG (Max 10MB)
-            </p>
-            <input type="file" id="dormDocUpload" style="display: none;">
-            <button type="button" onclick="document.getElementById('dormDocUpload').click()"
-              style="background: #174d2f; color: #fff; border: none; padding: 0.65rem 1.4rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; cursor: pointer;">Select
-              Document</button>
-            <p style="font-size: 0.78rem; color: #16a34a; margin-top: 0.75rem; font-weight: 600;">✓
-              Official_CDD_Trainee_Roster_Batch4.pdf (Attached)</p>
-          </div>
+        <div id="documentUploadZone"
+          style="border: 2px dashed #b8ccbe; border-radius: 12px; padding: 3rem 2rem; text-align: center; background: #fbfdfc; cursor: pointer; transition: all 0.25s ease;">
+          <input type="file" id="documentUploadInput" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" style="display: none;" required>
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="1.8"
+            style="margin-bottom: 0.75rem;" id="docUploadSvg">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <h4 id="documentUploadLabel" style="font-size: 1.1rem; color: #174d2f; margin-bottom: 0.35rem;">Click or Drag &amp; Drop File Here</h4>
+          <p id="documentUploadDesc" style="font-size: 0.85rem; color: #627b6c;">PDF, DOCX, or PNG formats up to 15MB</p>
         </div>
+        <small class="field-error-msg" id="documentUploadError" style="display: none; color: #dc2626; font-size: 0.82rem; font-weight: 700; margin-top: 0.65rem; text-align: center;">
+          ⚠️ Supporting document is required. Please upload your signed Reservation Form, Travel Order, Special Order, or Participant List.
+        </small>
       </div>
     </div>
 
@@ -995,7 +990,7 @@ $dormCount = count($dbDorms);
         </div>
 
         <h3 style="font-size: 1.45rem; font-weight: 800; color: #10331f; margin-bottom: 1.25rem;" id="dormReviewTitle">
-          Regional Agricultural Extension Trainees Accommodation</h3>
+          Official Lodging Accommodation</h3>
 
         <div
           style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; background: #f8faf9; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.75rem;">
@@ -1003,19 +998,19 @@ $dormCount = count($dbDorms);
             <span style="font-size: 0.76rem; text-transform: uppercase; color: #526f5e; font-weight: 700;">Dormitory
               Floor &amp; Rooms</span>
             <strong style="display: block; font-size: 0.95rem; color: #143522; margin-top: 0.2rem;"
-              id="dormReviewFloor">Suite 1 (2nd Floor)</strong>
+              id="dormReviewFloor">—</strong>
           </div>
           <div>
             <span style="font-size: 0.76rem; text-transform: uppercase; color: #526f5e; font-weight: 700;">Stay
               Window</span>
             <strong style="display: block; font-size: 0.95rem; color: #143522; margin-top: 0.2rem;"
-              id="dormReviewStay">Oct 15 - 18, 2026 (3 Nights)</strong>
+              id="dormReviewStay">—</strong>
           </div>
           <div>
             <span style="font-size: 0.76rem; text-transform: uppercase; color: #526f5e; font-weight: 700;">Delegates
               Count</span>
             <strong style="display: block; font-size: 0.95rem; color: #143522; margin-top: 0.2rem;"
-              id="dormReviewPax">16 Delegates (8M / 8F)</strong>
+              id="dormReviewPax">—</strong>
           </div>
           <div>
             <span style="font-size: 0.76rem; text-transform: uppercase; color: #526f5e; font-weight: 700;">Endorsing
