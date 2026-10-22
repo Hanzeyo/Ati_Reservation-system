@@ -12,7 +12,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=10">
+  <link rel="stylesheet" href="css/style.css?v=22">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=7">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
@@ -298,164 +298,200 @@
           <p class="section-subtitle">Choose from our available facilities for your reservation.</p>
         </div>
 
-        <div class="facilities-grid">
-          <!-- Facility 1: Carandang Hall -->
-          <article class="facility-card">
-            <div class="facility-img-wrapper">
-              <img src="assets/images/carandang_room.jpg" alt="Carandang Hall" loading="lazy">
-              <span class="facility-badge">Cap: 28 Pax</span>
-            </div>
-            <div class="facility-body">
-              <h3 class="facility-name">Carandang Hall</h3>
-              <p class="facility-desc">Executive boardroom equipped for high-level meetings, hybrid conferences, and
-                strategy sessions.</p>
-              <div class="facility-footer">
-                <span class="facility-meta">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                  28 Capacity
-                </span>
-                <button type="button" class="facility-btn js-view-facility" data-facility="carandang-hall">
-                  Details &rarr;
-                </button>
-              </div>
-            </div>
-          </article>
+        <!-- Vertical Animated Facilities Showcase -->
+        <div class="facilities-vertical-showcase" id="facilitiesShowcaseWrapper">
 
-          <!-- Facility 2: Orosa Hall -->
-          <article class="facility-card">
-            <div class="facility-img-wrapper">
-              <img src="assets/images/orosa_hall.jpg" alt="Orosa Hall" loading="lazy">
-              <span class="facility-badge">Cap: 80 Pax</span>
-            </div>
-            <div class="facility-body">
-              <h3 class="facility-name">Orosa Hall</h3>
-              <p class="facility-desc">Ideal for specialized seminars, workshops, and official institutional assemblies.
-              </p>
-              <div class="facility-footer">
-                <span class="facility-meta">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                  80 Capacity
-                </span>
-                <button type="button" class="facility-btn js-view-facility" data-facility="orosa-hall">
-                  Details &rarr;
-                </button>
-              </div>
-            </div>
-          </article>
+          <!-- Viewport with top/bottom fade mask -->
+          <div class="facilities-vert-viewport" id="facilitiesViewport" aria-label="Vertical facilities showcase">
+            <div class="facilities-vert-track" id="facilitiesTrack">
 
-          <!-- Facility 3: RDEC Training Hall 1 -->
-          <article class="facility-card">
-            <div class="facility-img-wrapper">
-              <img src="assets/images/rdec_training_1.jpg" alt="RDEC Training Hall 1" loading="lazy">
-              <span class="facility-badge">Cap: 100 Pax</span>
-            </div>
-            <div class="facility-body">
-              <h3 class="facility-name">RDEC Training Hall 1</h3>
-              <p class="facility-desc">Comprehensive training hall with dual display presentation systems and modular
-                workstations.</p>
-              <div class="facility-footer">
-                <span class="facility-meta">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                  </svg>
-                  100 Capacity
-                </span>
-                <button type="button" class="facility-btn js-view-facility" data-facility="rdec-training-1">
-                  Details &rarr;
-                </button>
-              </div>
-            </div>
-          </article>
+              <!-- Row 1: 3 cards (Carandang Hall, Orosa Hall, RDEC Training Hall 1) -->
+              <div class="facility-row active" data-row="0">
+                <!-- Card 1: Carandang Hall -->
+                <article class="facility-card-item" data-facility="carandang-hall">
+                  <div class="facility-card-media">
+                    <img src="assets/images/carandang_room.jpg" alt="Carandang Hall" loading="eager">
+                    <span class="facility-badge">Cap: 28 Pax</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Carandang Hall</h3>
+                    <p class="facility-card-desc">
+                      Executive boardroom equipped for high-level meetings, hybrid conferences, and strategy sessions.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="9" cy="7" r="4"></circle>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        28 Capacity
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility"
+                        data-facility="carandang-hall">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
 
-          <!-- Facility 4: RDEC Training Hall 2 -->
-          <article class="facility-card">
-            <div class="facility-img-wrapper">
-              <img src="assets/images/rdec_training_2.jpg" alt="RDEC Training Hall 2" loading="lazy">
-              <span class="facility-badge">Cap: 100 Pax</span>
-            </div>
-            <div class="facility-body">
-              <h3 class="facility-name">RDEC Training Hall 2</h3>
-              <p class="facility-desc">State-of-the-art interactive training hall for hands-on technical sessions and
-                demonstrations.</p>
-              <div class="facility-footer">
-                <span class="facility-meta">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                  </svg>
-                  100 Capacity
-                </span>
-                <button type="button" class="facility-btn js-view-facility" data-facility="rdec-training-2">
-                  Details &rarr;
-                </button>
-              </div>
-            </div>
-          </article>
+                <!-- Card 2: Orosa Hall -->
+                <article class="facility-card-item" data-facility="orosa-hall">
+                  <div class="facility-card-media">
+                    <img src="assets/images/orosa_hall.jpg" alt="Orosa Hall" loading="eager">
+                    <span class="facility-badge">Cap: 80 Pax</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Orosa Hall</h3>
+                    <p class="facility-card-desc">
+                      Ideal for specialized seminars, workshops, technical presentations, and official institutional
+                      assemblies.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="9" cy="7" r="4"></circle>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        80 Capacity
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="orosa-hall">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
 
-          <!-- Facility 5: Function Hall -->
-          <article class="facility-card">
-            <div class="facility-img-wrapper">
-              <img src="assets/images/function_hall.jpg" alt="Function Hall" loading="lazy">
-              <span class="facility-badge">Cap: 200 Pax</span>
-            </div>
-            <div class="facility-body">
-              <h3 class="facility-name">Function Hall</h3>
-              <p class="facility-desc">Premier venue for regional congresses, ceremonies, symposia, and large
-                institutional gatherings.</p>
-              <div class="facility-footer">
-                <span class="facility-meta">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                  200 Capacity
-                </span>
-                <button type="button" class="facility-btn js-view-facility" data-facility="function-hall">
-                  Details &rarr;
-                </button>
+                <!-- Card 3: RDEC Training Hall 1 -->
+                <article class="facility-card-item" data-facility="rdec-training-1">
+                  <div class="facility-card-media">
+                    <img src="assets/images/rdec_training_1.jpg" alt="RDEC Training Hall 1" loading="eager">
+                    <span class="facility-badge">Cap: 100 Pax</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">RDEC Training Hall 1</h3>
+                    <p class="facility-card-desc">
+                      Comprehensive training hall with dual display presentation systems and modular workstations.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        </svg>
+                        100 Capacity
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility"
+                        data-facility="rdec-training-1">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
               </div>
-            </div>
-          </article>
 
-          <!-- Facility 6: Serrano Hall -->
-          <article class="facility-card">
-            <div class="facility-img-wrapper">
-              <img src="assets/images/serrano_hall.jpg" alt="Serrano Hall" loading="lazy">
-              <span class="facility-badge">Cap: 80 Pax</span>
-            </div>
-            <div class="facility-body">
-              <h3 class="facility-name">Serrano Hall</h3>
-              <p class="facility-desc">Flexible multi-purpose auditorium and training facility for institutional
-                programs and seminars.</p>
-              <div class="facility-footer">
-                <span class="facility-meta">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                  </svg>
-                  80 Capacity
-                </span>
-                <button type="button" class="facility-btn js-view-facility" data-facility="serrano-hall">
-                  Details &rarr;
-                </button>
+              <!-- Row 2: 3 cards (RDEC Training Hall 2, Function Hall, Serrano Hall) -->
+              <div class="facility-row" data-row="1">
+                <!-- Card 4: RDEC Training Hall 2 -->
+                <article class="facility-card-item" data-facility="rdec-training-2">
+                  <div class="facility-card-media">
+                    <img src="assets/images/rdec_training_2.jpg" alt="RDEC Training Hall 2" loading="eager">
+                    <span class="facility-badge">Cap: 100 Pax</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">RDEC Training Hall 2</h3>
+                    <p class="facility-card-desc">
+                      Advanced multimedia training hall designed for interactive learning workshops and audio-visual
+                      conferences.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        </svg>
+                        100 Capacity
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility"
+                        data-facility="rdec-training-2">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Card 5: Function Hall -->
+                <article class="facility-card-item" data-facility="function-hall">
+                  <div class="facility-card-media">
+                    <img src="assets/images/function_hall.jpg" alt="Function Hall" loading="eager">
+                    <span class="facility-badge">Cap: 200 Pax</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Function Hall</h3>
+                    <p class="facility-card-desc">
+                      Premier venue for regional congresses, ceremonies, symposia, and large institutional gatherings
+                      with VIP stage.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="9" cy="7" r="4"></circle>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                        200 Capacity
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility"
+                        data-facility="function-hall">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Card 6: Serrano Hall -->
+                <article class="facility-card-item" data-facility="serrano-hall">
+                  <div class="facility-card-media">
+                    <img src="assets/images/serrano_hall.jpg" alt="Serrano Hall" loading="eager">
+                    <span class="facility-badge">Cap: 80 Pax</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Serrano Hall</h3>
+                    <p class="facility-card-desc">
+                      Multi-purpose auditorium setup providing flexible configurations for educational seminars and
+                      assemblies.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                        </svg>
+                        80 Capacity
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="serrano-hall">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
               </div>
+
             </div>
-          </article>
+            <!-- Stationary bottom frosted blur overlay - completely smooth & eye-friendly -->
+            <div class="facilities-bottom-blur" aria-hidden="true"></div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -863,7 +899,7 @@
     </div>
   </div>
 
-  <script src="js/main.js?v=6"></script>
+  <script src="js/main.js?v=17"></script>
 </body>
 
 </html>

@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initMobileMenu();
   initNavigationScrollSpy();
   initRealtimeOfficeHours();
+  initVerticalFacilitiesScroller();
 });
 
 /* ==========================================================================
@@ -331,37 +332,37 @@ function initModals() {
     }
   };
 
-  facilityDetailButtons.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const facilityKey = btn.dataset.facility;
-      const data = facilityData[facilityKey];
-      if (!data) return;
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.js-view-facility');
+    if (!btn) return;
+    e.preventDefault();
+    const facilityKey = btn.dataset.facility;
+    const data = facilityData[facilityKey];
+    if (!data) return;
 
-      const titleEl = document.getElementById('modalFacilityTitle');
-      const imgEl = document.getElementById('modalFacilityImg');
-      const descEl = document.getElementById('modalFacilityDesc');
-      const capEl = document.getElementById('modalFacilityCap');
-      const amenitiesEl = document.getElementById('modalFacilityAmenities');
+    const titleEl = document.getElementById('modalFacilityTitle');
+    const imgEl = document.getElementById('modalFacilityImg');
+    const descEl = document.getElementById('modalFacilityDesc');
+    const capEl = document.getElementById('modalFacilityCap');
+    const amenitiesEl = document.getElementById('modalFacilityAmenities');
 
-      if (titleEl) titleEl.textContent = data.title;
-      if (imgEl) imgEl.src = data.image;
-      if (descEl) descEl.textContent = data.desc;
-      if (capEl) capEl.textContent = data.capacity;
+    if (titleEl) titleEl.textContent = data.title;
+    if (imgEl) imgEl.src = data.image;
+    if (descEl) descEl.textContent = data.desc;
+    if (capEl) capEl.textContent = data.capacity;
 
-      if (amenitiesEl) {
-        amenitiesEl.innerHTML = data.features.map(f => `
-          <div class="amenity-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span>${f}</span>
-          </div>
-        `).join('');
-      }
+    if (amenitiesEl) {
+      amenitiesEl.innerHTML = data.features.map(f => `
+        <div class="amenity-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>${f}</span>
+        </div>
+      `).join('');
+    }
 
-      openModal(facilityModal);
-    });
+    openModal(facilityModal);
   });
 
   // Close modal when clicking outside of modal card
@@ -577,4 +578,153 @@ function initRealtimeOfficeHours() {
   // Real-time interval check every 15 seconds
   setInterval(updateOfficeStatus, 15000);
 }
+
+/* ==========================================================================
+   7. Vertical Animated Facilities Scroller (Infinite One-Way Loop with Blur)
+   ========================================================================== */
+function initVerticalFacilitiesScroller() {
+  const wrapper = document.getElementById('facilitiesShowcaseWrapper');
+  const viewport = document.getElementById('facilitiesViewport');
+  const track = document.getElementById('facilitiesTrack');
+  const originalRows = Array.from(track.querySelectorAll('.facility-row'));
+
+  if (!wrapper || !viewport || !track || originalRows.length < 2) return;
+
+  // Build infinite loop track: [Row1CloneBefore, Row0, Row1, Row0CloneAfter]
+  const row1CloneBefore = originalRows[1].cloneNode(true);
+  row1CloneBefore.classList.remove('active');
+  row1CloneBefore.setAttribute('aria-hidden', 'true');
+  track.insertBefore(row1CloneBefore, originalRows[0]);
+
+  const row0CloneAfter = originalRows[0].cloneNode(true);
+  row0CloneAfter.classList.remove('active');
+  row0CloneAfter.setAttribute('aria-hidden', 'true');
+  track.appendChild(row0CloneAfter);
+
+  const allRows = Array.from(track.querySelectorAll('.facility-row'));
+
+  let currentIndex = 1; // Start at Row 0 (original)
+  let isAnimating = false;
+  let autoTimer = null;
+  let isHovered = false;
+
+  function getTargetY(index) {
+    const row = allRows[index];
+    if (!row) return 0;
+    // Align active cards cleanly at top so blurred preview appears only on the bottom
+    const topPadding = 16;
+    return Math.round(topPadding - row.offsetTop);
+  }
+
+  function setClasses(activeIndex) {
+    allRows.forEach((row, idx) => {
+      const isActive = idx === activeIndex;
+      row.classList.toggle('active', isActive);
+      row.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+    });
+  }
+
+  function goTo(index, animate = true) {
+    currentIndex = index;
+    setClasses(currentIndex);
+
+    if (animate) {
+      isAnimating = true;
+      track.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.35, 1)';
+    } else {
+      track.style.transition = 'none';
+    }
+
+    track.style.transform = `translateY(${getTargetY(currentIndex)}px)`;
+
+    if (!animate) {
+      void track.offsetHeight; // Force reflow
+    }
+  }
+
+  // Seamless jump when reaching clones at the boundaries
+  track.addEventListener('transitionend', (e) => {
+    if (e.target !== track) return;
+    isAnimating = false;
+
+    // Reached clone after (index 3 -> identical to original Row 0 at index 1)
+    if (currentIndex === 3) {
+      goTo(1, false);
+    }
+    // Reached clone before (index 0 -> identical to original Row 1 at index 2)
+    else if (currentIndex === 0) {
+      goTo(2, false);
+    }
+  });
+
+  // Always scrolls forward in a continuous, one-directional loop
+  function next() {
+    if (isAnimating) return;
+    goTo(currentIndex + 1, true);
+  }
+
+  function prev() {
+    if (isAnimating) return;
+    goTo(currentIndex - 1, true);
+  }
+
+  // User manual scrolling disabled: preview runs purely on automatic loop
+  // Allowing natural page scroll when cursor or touch is over facilities viewport
+
+  // Auto-play scrolling (forward one-way loop every 4.5 seconds)
+  function startAuto() {
+    stopAuto();
+    autoTimer = setInterval(() => {
+      if (!isHovered && !isAnimating) {
+        next();
+      }
+    }, 4500);
+  }
+
+  function stopAuto() {
+    if (autoTimer) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+    }
+  }
+
+  function restartAuto() {
+    startAuto();
+  }
+
+  wrapper.addEventListener('mouseenter', () => { isHovered = true; });
+  wrapper.addEventListener('mouseleave', () => { isHovered = false; });
+
+  // Layout calculations & dynamic image loading handlers
+  const trackImgs = track.querySelectorAll('img');
+  trackImgs.forEach((img) => {
+    if (!img.complete) {
+      img.addEventListener('load', () => {
+        goTo(currentIndex, false);
+      }, { once: true });
+    }
+  });
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      goTo(currentIndex, false);
+    });
+  }
+
+  requestAnimationFrame(() => {
+    goTo(1, false);
+  });
+  setTimeout(() => { goTo(currentIndex, false); }, 150);
+  setTimeout(() => { goTo(currentIndex, false); }, 500);
+
+  window.addEventListener('load', () => {
+    goTo(currentIndex, false);
+  });
+  window.addEventListener('resize', () => {
+    goTo(currentIndex, false);
+  });
+
+  startAuto();
+}
+
 
