@@ -676,16 +676,16 @@ button {
   touch-action: pan-y;
 }
 
-/* Stationary bottom frosted preview overlay - zero flickering or blinking */
+/* Stationary bottom frosted preview overlay - gentle, refined peek without covering active cards */
 .facilities-bottom-blur {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 155px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.45) 30%, rgba(255, 255, 255, 0.96) 100%);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  height: 90px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.35) 40%, rgba(255, 255, 255, 0.9) 100%);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   pointer-events: none;
   z-index: 5;
   border-bottom-left-radius: 20px;
@@ -843,21 +843,76 @@ button {
   transform: translateX(3px);
 }
 
-@media (max-width: 992px) {
+@media (max-width: 992px) and (min-width: 769px) {
   .facility-row {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
   }
   .facilities-vert-viewport {
-    height: 760px;
+    height: 520px;
   }
 }
 
-@media (max-width: 680px) {
-  .facility-row {
-    grid-template-columns: 1fr;
+@media (max-width: 768px) {
+  .facilities-vertical-showcase {
+    margin-top: 1.25rem;
   }
   .facilities-vert-viewport {
-    height: 480px;
+    height: 485px;
+    padding: 0 4px;
+    border-radius: 16px;
+  }
+  .facilities-vert-track {
+    gap: 16px;
+  }
+  .facility-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .facility-card-item {
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(7, 35, 18, 0.06);
+  }
+  .facility-card-media {
+    height: 150px;
+  }
+  .facility-badge {
+    top: 10px;
+    right: 10px;
+    font-size: 0.7rem;
+    padding: 0.22rem 0.65rem;
+  }
+  .facility-card-body {
+    padding: 0.95rem 1.05rem 0.9rem;
+  }
+  .facility-card-title {
+    font-size: 1.15rem;
+    margin-bottom: 0.3rem;
+  }
+  .facility-card-desc {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin-bottom: 0.65rem;
+    min-height: unset;
+    -webkit-line-clamp: 2;
+  }
+  .facility-card-footer {
+    padding-top: 0.65rem;
+  }
+  .facility-footer-cap {
+    font-size: 0.8rem;
+  }
+  .facility-link-details {
+    font-size: 0.82rem;
+  }
+  /* Mobile bottom blur: soft, compact feathering that stays well below active card */
+  .facilities-bottom-blur {
+    height: 60px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.35) 35%, rgba(255, 255, 255, 0.9) 100%);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
   }
 }
 

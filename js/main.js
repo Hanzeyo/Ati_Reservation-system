@@ -602,26 +602,60 @@ function initVerticalFacilitiesScroller() {
   track.appendChild(row0CloneAfter);
 
   const allRows = Array.from(track.querySelectorAll('.facility-row'));
+  const allCards = Array.from(track.querySelectorAll('.facility-card-item'));
 
-  let currentIndex = 1; // Start at Row 0 (original)
+  const isMobile = () => window.innerWidth <= 768;
+  let wasMobile = isMobile();
+
+  // Desktop indexes: 1 = Row 0, 2 = Row 1 (Loop: 1 -> 2 -> 3 (jump to 1))
+  // Mobile indexes: 3 = Carandang, 4 = Orosa, 5 = RDEC 1, 6 = RDEC 2, 7 = Function, 8 = Serrano (Loop: 3..8 -> 9 (jump to 3))
+  let currentIndex = isMobile() ? 3 : 1;
   let isAnimating = false;
   let autoTimer = null;
   let isHovered = false;
 
+  function getElementTrackOffset(element) {
+    let top = 0;
+    let curr = element;
+    while (curr && curr !== track) {
+      top += curr.offsetTop;
+      curr = curr.offsetParent;
+    }
+    return top;
+  }
+
   function getTargetY(index) {
-    const row = allRows[index];
-    if (!row) return 0;
-    // Align active cards cleanly at top so blurred preview appears only on the bottom
-    const topPadding = 16;
-    return Math.round(topPadding - row.offsetTop);
+    if (isMobile()) {
+      const card = allCards[index];
+      if (!card) return 0;
+      const topPadding = 12;
+      return Math.round(topPadding - getElementTrackOffset(card));
+    } else {
+      const row = allRows[index];
+      if (!row) return 0;
+      const topPadding = 16;
+      return Math.round(topPadding - getElementTrackOffset(row));
+    }
   }
 
   function setClasses(activeIndex) {
-    allRows.forEach((row, idx) => {
-      const isActive = idx === activeIndex;
-      row.classList.toggle('active', isActive);
-      row.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-    });
+    if (isMobile()) {
+      allCards.forEach((card, idx) => {
+        const isActive = idx === activeIndex;
+        card.classList.toggle('active', isActive);
+        card.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      });
+      allRows.forEach((row) => {
+        row.classList.add('active');
+        row.removeAttribute('aria-hidden');
+      });
+    } else {
+      allRows.forEach((row, idx) => {
+        const isActive = idx === activeIndex;
+        row.classList.toggle('active', isActive);
+        row.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      });
+    }
   }
 
   function goTo(index, animate = true) {
@@ -647,13 +681,24 @@ function initVerticalFacilitiesScroller() {
     if (e.target !== track) return;
     isAnimating = false;
 
-    // Reached clone after (index 3 -> identical to original Row 0 at index 1)
-    if (currentIndex === 3) {
-      goTo(1, false);
-    }
-    // Reached clone before (index 0 -> identical to original Row 1 at index 2)
-    else if (currentIndex === 0) {
-      goTo(2, false);
+    if (isMobile()) {
+      // Reached clone after (index 9 -> identical to original Carandang at index 3)
+      if (currentIndex === 9) {
+        goTo(3, false);
+      }
+      // Reached clone before (index 2 -> identical to original Serrano at index 8)
+      else if (currentIndex === 2) {
+        goTo(8, false);
+      }
+    } else {
+      // Reached clone after (index 3 -> identical to original Row 0 at index 1)
+      if (currentIndex === 3) {
+        goTo(1, false);
+      }
+      // Reached clone before (index 0 -> identical to original Row 1 at index 2)
+      else if (currentIndex === 0) {
+        goTo(2, false);
+      }
     }
   });
 
@@ -667,9 +712,6 @@ function initVerticalFacilitiesScroller() {
     if (isAnimating) return;
     goTo(currentIndex - 1, true);
   }
-
-  // User manual scrolling disabled: preview runs purely on automatic loop
-  // Allowing natural page scroll when cursor or touch is over facilities viewport
 
   // Auto-play scrolling (forward one-way loop every 4.5 seconds)
   function startAuto() {
@@ -688,12 +730,10 @@ function initVerticalFacilitiesScroller() {
     }
   }
 
-  function restartAuto() {
-    startAuto();
-  }
-
   wrapper.addEventListener('mouseenter', () => { isHovered = true; });
   wrapper.addEventListener('mouseleave', () => { isHovered = false; });
+  wrapper.addEventListener('touchstart', () => { isHovered = true; }, { passive: true });
+  wrapper.addEventListener('touchend', () => { isHovered = false; }, { passive: true });
 
   // Layout calculations & dynamic image loading handlers
   const trackImgs = track.querySelectorAll('img');
@@ -712,7 +752,7 @@ function initVerticalFacilitiesScroller() {
   }
 
   requestAnimationFrame(() => {
-    goTo(1, false);
+    goTo(currentIndex, false);
   });
   setTimeout(() => { goTo(currentIndex, false); }, 150);
   setTimeout(() => { goTo(currentIndex, false); }, 500);
@@ -721,6 +761,11 @@ function initVerticalFacilitiesScroller() {
     goTo(currentIndex, false);
   });
   window.addEventListener('resize', () => {
+    const nowMobile = isMobile();
+    if (nowMobile !== wasMobile) {
+      wasMobile = nowMobile;
+      currentIndex = nowMobile ? 3 : 1;
+    }
     goTo(currentIndex, false);
   });
 
