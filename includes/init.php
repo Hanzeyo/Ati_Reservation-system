@@ -12,6 +12,7 @@ require_once __DIR__ . '/../classes/User.php';
 require_once __DIR__ . '/../classes/Facility.php';
 require_once __DIR__ . '/../classes/Reservation.php';
 require_once __DIR__ . '/../classes/AuditLog.php';
+require_once __DIR__ . '/../classes/SystemSetting.php';
 
 $database = new Database();
 $db = $database->getConnection();

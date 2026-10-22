@@ -69,3 +69,11 @@ CREATE TABLE audit_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
+
+CREATE TABLE system_settings (
+    setting_key VARCHAR(100) PRIMARY KEY,
+    setting_value LONGTEXT,
+    updated_by INT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+);

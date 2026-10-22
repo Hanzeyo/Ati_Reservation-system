@@ -254,7 +254,16 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
             <p>Configure hall capacities, manage dormitory bed inventories, inspect real-time operational availability, and implement administrative maintenance holds across ATI Central Office.</p>
           </div>
 
-          <div class="admin-header-actions">
+          <div class="admin-header-actions" style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap;">
+            <button type="button" class="btn-system-secondary" onclick="openManageFormTemplatesModal()" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #ffffff; color: #175432; border: 1.5px solid #a3c7b2; padding: 0.65rem 1.15rem; border-radius: 9px; font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: all 0.25s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+              </svg>
+              <span>Official Form Templates</span>
+            </button>
             <button type="button" class="btn-system-primary" onclick="openAddFacilityModal()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -1351,6 +1360,9 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
   <!-- Facility Multi-Photo Gallery & Specification Showcase Modal -->
   <?php include __DIR__ . '/includes/facility_gallery_modal.php'; ?>
 
+  <!-- Official Reservation Form Templates Manager Modal -->
+  <?php include __DIR__ . '/includes/admin_templates_modal.php'; ?>
+
   <!-- Toast Container -->
   <div class="admin-toast-container" id="adminToastContainer"></div>
 
@@ -1359,6 +1371,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
     window.initialFacilitiesData = <?= json_encode((object)$facilitiesData, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
   </script>
   <script src="js/facility_gallery.js?v=<?php echo time(); ?>"></script>
+  <script src="js/admin_templates.js?v=<?php echo time(); ?>"></script>
   <script src="js/admin_facilities.js?v=<?php echo time(); ?>"></script>
 </body>
 

@@ -1027,6 +1027,7 @@ $totalCount = count($dbFacilities);
 
         <!-- Official ATI Form Download Box -->
         <div style="background: linear-gradient(135deg, #f0fdf4 0%, #e6f7ec 100%); border: 1.5px solid #a3d9b5; border-radius: 12px; padding: 1.15rem 1.35rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+          <?php $activeFacilityTemplate = SystemSetting::getTemplateInfo('facility'); ?>
           <div style="display: flex; align-items: center; gap: 0.9rem;">
             <div style="width: 44px; height: 44px; border-radius: 10px; background: #175432; color: #facc15; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 10px rgba(23,84,50,0.2);">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -1037,23 +1038,41 @@ $totalCount = count($dbFacilities);
               </svg>
             </div>
             <div>
-              <div style="font-size: 0.92rem; font-weight: 800; color: #173822; margin-bottom: 0.2rem;">
-                Official ATI Facility Reservation Form &amp; Terms
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="font-size: 0.92rem; font-weight: 800; color: #173822;">
+                  Official ATI Facility Reservation Form &amp; Terms
+                </span>
+                <?php if (!empty($activeFacilityTemplate['is_custom'])): ?>
+                <span style="font-size: 0.68rem; font-weight: 700; background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 9999px; border: 1px solid #bbf7d0;">
+                  Official Admin File Active
+                </span>
+                <?php endif; ?>
               </div>
-              <div style="font-size: 0.8rem; color: #476652; line-height: 1.35;">
-                Need the official form? Download or print the 2-page reservation template with Terms &amp; Conditions, fill it out, and upload the signed copy below.
+              <div style="font-size: 0.8rem; color: #476652; line-height: 1.35; margin-top: 2px;">
+                <?php if (!empty($activeFacilityTemplate['is_custom'])): ?>
+                  Download the official <strong><?= htmlspecialchars($activeFacilityTemplate['file_name']) ?></strong> (<?= htmlspecialchars($activeFacilityTemplate['file_size_formatted']) ?>), fill it out with signatures, and upload below.
+                <?php else: ?>
+                  Need the official form? Download or print the 2-page reservation template with Terms &amp; Conditions, fill it out, and upload the signed copy below.
+                <?php endif; ?>
               </div>
             </div>
           </div>
 
-          <a href="download_form.php" target="_blank" class="btn-card-action primary" style="padding: 0.65rem 1.15rem; font-size: 0.84rem; text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.45rem; background: #175432; color: #ffffff; border-radius: 8px; font-weight: 700; box-shadow: 0 3px 8px rgba(23,84,50,0.25);">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            <span>Download Official Form</span>
-          </a>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+            <a href="download_form.php" target="_blank" class="btn-card-action primary" style="padding: 0.65rem 1.15rem; font-size: 0.84rem; text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.45rem; background: #175432; color: #ffffff; border-radius: 8px; font-weight: 700; box-shadow: 0 3px 8px rgba(23,84,50,0.25);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download Official Form</span>
+            </a>
+            <?php if (!empty($activeFacilityTemplate['is_custom'])): ?>
+            <a href="download_form.php?mode=html" target="_blank" style="font-size: 0.74rem; color: #175432; text-decoration: underline;">
+              View printable web slip
+            </a>
+            <?php endif; ?>
+          </div>
         </div>
 
         <div id="documentUploadZone"

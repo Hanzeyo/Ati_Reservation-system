@@ -1,6 +1,27 @@
 <?php
 require_once __DIR__ . '/includes/init.php';
 
+$mode = isset($_GET['mode']) ? strtolower(trim($_GET['mode'])) : '';
+$templateInfo = SystemSetting::getTemplateInfo('dormitory');
+
+if ($mode !== 'html' && !empty($templateInfo['is_custom']) && !empty($templateInfo['file_path'])) {
+    $absPath = __DIR__ . '/' . ltrim($templateInfo['file_path'], '/\\');
+    if (file_exists($absPath)) {
+        $downloadName = $templateInfo['file_name'] ?: 'Official_ATI_Dormitory_Reservation_Form.pdf';
+        $mime = $templateInfo['mime_type'] ?: 'application/octet-stream';
+        $isDownload = isset($_GET['download']) && $_GET['download'] === '1';
+        $disposition = $isDownload ? 'attachment' : 'inline';
+        
+        header('Content-Type: ' . $mime);
+        header('Content-Disposition: ' . $disposition . '; filename="' . rawurlencode($downloadName) . '"');
+        header('Content-Length: ' . filesize($absPath));
+        header('Cache-Control: private, max-age=0, must-revalidate');
+        header('Pragma: public');
+        readfile($absPath);
+        exit;
+    }
+}
+
 // Blank template variables (ready for manual filling / printing)
 $controlNo = '';
 $formDate = '';
@@ -395,7 +416,13 @@ $remarks = '';
       </a>
       <span style="font-weight: 700; font-size: 0.95rem;">Official ATI Dormitory Reservation Form (ATI-QF/DTS-22)</span>
     </div>
-    <div style="display: flex; gap: 10px;">
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <?php if (!empty($templateInfo['is_custom'])): ?>
+      <a href="download_dormitory_form.php?download=1" class="btn-print" style="background: #22c55e; color: #ffffff;" title="Download the uploaded official PDF/Doc file">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <span>Download Uploaded Official File</span>
+      </a>
+      <?php endif; ?>
       <button type="button" class="btn-print" onclick="window.print()">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
         <span>Print / Save as PDF</span>
