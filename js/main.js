@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initModals();
   initMobileMenu();
   initNavigationScrollSpy();
+  initRealtimeOfficeHours();
 });
 
 /* ==========================================================================
@@ -511,5 +512,69 @@ function initNavigationScrollSpy() {
       });
     }, 80);
   });
+}
+
+/* ==========================================================================
+   6. Real-time Office Hours Status (Auto-updates OPEN / CLOSED)
+   ========================================================================== */
+function initRealtimeOfficeHours() {
+  const statusEl = document.getElementById('officeStatusIndicator');
+  if (!statusEl) return;
+
+  function getPhilippineTime() {
+    try {
+      const now = new Date();
+      const dtf = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Manila',
+        weekday: 'short',
+        hour: 'numeric',
+        minute: 'numeric',
+        hour12: false
+      });
+      const parts = dtf.formatToParts(now);
+      const partMap = {};
+      parts.forEach(p => partMap[p.type] = p.value);
+      return {
+        weekday: partMap.weekday,
+        hour: parseInt(partMap.hour, 10),
+        minute: parseInt(partMap.minute, 10)
+      };
+    } catch (e) {
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const pht = new Date(utc + (3600000 * 8)); // UTC+8
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      return {
+        weekday: days[pht.getDay()],
+        hour: pht.getHours(),
+        minute: pht.getMinutes()
+      };
+    }
+  }
+
+  function updateOfficeStatus() {
+    const { weekday, hour, minute } = getPhilippineTime();
+    const isWeekday = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(weekday);
+    const totalMinutes = hour * 60 + minute;
+
+    // Regular ATI office hours: Monday to Friday, 8:00 AM (480 mins) to 5:00 PM (1020 mins)
+    const isOpen = isWeekday && (totalMinutes >= 480 && totalMinutes < 1020);
+
+    if (isOpen) {
+      statusEl.textContent = 'OPEN';
+      statusEl.className = 'office-status-tag open';
+      statusEl.title = 'ATI Office is currently OPEN (Regular hours: Mon-Fri 8:00 AM - 5:00 PM PST)';
+    } else {
+      statusEl.textContent = 'CLOSED';
+      statusEl.className = 'office-status-tag closed';
+      statusEl.title = 'ATI Office is currently CLOSED (Regular hours: Mon-Fri 8:00 AM - 5:00 PM PST)';
+    }
+  }
+
+  // Initial check
+  updateOfficeStatus();
+
+  // Real-time interval check every 15 seconds
+  setInterval(updateOfficeStatus, 15000);
 }
 
