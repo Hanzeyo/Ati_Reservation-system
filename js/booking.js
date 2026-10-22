@@ -307,7 +307,7 @@ function selectFacilityCard(card, openModal = true) {
   if (!card) return;
   if (card.dataset.status === 'maintenance' || card.classList.contains('under-maintenance')) {
     if (typeof showToast === 'function') {
-      showToast('Ang pasilidad na ito ay kasalukuyang under maintenance at hindi maaaring piliin.', 'warning');
+      showToast('This facility is currently under maintenance and cannot be selected.', 'warning');
     }
     return;
   }
@@ -407,7 +407,7 @@ function initFacilitySelection() {
         e.stopPropagation();
         if (isMaint) {
           if (typeof showToast === 'function') {
-            showToast('Ang pasilidad na ito ay kasalukuyang under maintenance at hindi maaaring piliin.', 'warning');
+            showToast('This facility is currently under maintenance and cannot be selected.', 'warning');
           }
           return;
         }
@@ -418,7 +418,7 @@ function initFacilitySelection() {
     card.addEventListener('click', () => {
       if (isMaint) {
         if (typeof showToast === 'function') {
-          showToast('Ang pasilidad na ito ay kasalukuyang under maintenance at hindi maaaring piliin.', 'warning');
+          showToast('This facility is currently under maintenance and cannot be selected.', 'warning');
         }
         return;
       }
@@ -477,8 +477,8 @@ function renderDormRoomsInModal(facilityId, data, roomsList) {
   if (!roomsList || roomsList.length === 0) {
     gridEl.innerHTML = `
       <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; background: #fbfdfc; border: 1.5px dashed #cde2d5; border-radius: 12px; color: #637f6f;">
-        <p style="margin: 0 0 0.4rem 0; font-weight: 700; color: #174d2f;">Walang nakatalang kuwarto para sa dormitoryong ito.</p>
-        <p style="margin: 0; font-size: 0.82rem;">Maaari itong i-configure ng Administrator sa Facilities Master Registry.</p>
+        <p style="margin: 0 0 0.4rem 0; font-weight: 700; color: #174d2f;">No rooms currently registered for this dormitory.</p>
+        <p style="margin: 0; font-size: 0.82rem;">An administrator can configure rooms in the Facilities Master Registry.</p>
       </div>
     `;
     return;
@@ -663,7 +663,7 @@ function openFacilityModal(facilityId) {
       gridEl.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #637f6f;">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; margin-bottom: 0.5rem;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
-          <div style="font-size: 0.9rem; font-weight: 600;">Kinukuha ang availability ng mga kuwarto...</div>
+          <div style="font-size: 0.9rem; font-weight: 600;">Checking room availability...</div>
         </div>
       `;
     }
@@ -687,7 +687,7 @@ function openFacilityModal(facilityId) {
           if (gridEl) {
             gridEl.innerHTML = `
               <div style="grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; color: #dc2626;">
-                ${resData.message || 'Hindi makuha ang mga kuwarto.'}
+                ${resData.message || 'Unable to retrieve room availability.'}
               </div>
             `;
           }
@@ -698,7 +698,7 @@ function openFacilityModal(facilityId) {
         if (gridEl) {
           gridEl.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; color: #dc2626;">
-              Nagkaroon ng problema sa koneksyon. Pakisubukan muli.
+              A network connection error occurred. Please try again.
             </div>
           `;
         }

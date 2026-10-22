@@ -730,7 +730,7 @@ function openDossierModal(ref) {
       actionBox.className = 'action-decision-box stage2';
       actionBox.innerHTML = `
         <h4 style="margin: 0 0 0.35rem 0; font-size: 1rem; font-weight: 800; color: #1d4ed8;">Action: Step 2 (Logistics Recommendation & Signing)</h4>
-        <p style="margin: 0 0 0.85rem 0; font-size: 0.85rem; color: #4b6354; line-height: 1.45;">Confirm room and equipment availability. Upang mai-forward sa Stage 3 Clearance, buksan ang reservation details at i-upload doon ang pirmadong dokumento.</p>
+        <p style="margin: 0 0 0.85rem 0; font-size: 0.85rem; color: #4b6354; line-height: 1.45;">Confirm room and equipment availability. To forward this booking to Stage 3 Clearance, open reservation details and upload the signed document.</p>
         
         <div class="action-decision-btn-group">
           <button type="button" class="btn-card-action" style="background:#ffffff; color:#b91c1c; border:1.5px solid #fca5a5;" onclick="openDisapproveModal('${item.ref}')">Decline / Return</button>
@@ -744,7 +744,7 @@ function openDossierModal(ref) {
       actionBox.className = 'action-decision-box stage3';
       actionBox.innerHTML = `
         <h4 style="margin: 0 0 0.35rem 0; font-size: 1rem; font-weight: 800; color: #047857;">Action: Step 3 (Director Final Approval & Signing)</h4>
-        <p style="margin: 0 0 0.85rem 0; font-size: 0.85rem; color: #4b6354; line-height: 1.45;">Bago mai-approve at mailabas ang permit, kailangang pirmahan at i-upload ang signed clearance document. Buksan ang details upang i-upload ang pirmadong kopya.</p>
+        <p style="margin: 0 0 0.85rem 0; font-size: 0.85rem; color: #4b6354; line-height: 1.45;">Before granting final approval and issuing the official permit, please sign and upload the clearance document. Open details to upload the signed copy.</p>
         <div class="action-decision-btn-group">
           <button type="button" class="btn-card-action" style="background:#ffffff; color:#b91c1c; border:1.5px solid #fca5a5;" onclick="openDisapproveModal('${item.ref}')">Decline / Return</button>
           <a href="admin_approval_details.php?ref=${encodeURIComponent(item.ref)}#actionSection" class="btn-system-primary" style="background:#10b981; color:#ffffff; text-decoration:none; display:inline-flex; align-items:center; gap:0.45rem; padding:0.65rem 1.15rem; font-weight:700; box-shadow:0 3px 10px rgba(16,185,129,0.3);">
@@ -790,7 +790,7 @@ async function submitDossierAction(actionType) {
     const hasNewFile = fileInput && fileInput.files && fileInput.files.length > 0;
 
     if (!hasExistingDoc && !hasNewFile) {
-      showAdminToast('Kailangan munang mag-upload ng pirmadong form/routing slip bago ma-recommend.', 'decline');
+      showAdminToast('A signed endorsement form / routing slip must be uploaded before recommending.', 'decline');
       if (fileInput) fileInput.focus();
       return;
     }

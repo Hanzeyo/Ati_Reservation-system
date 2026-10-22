@@ -139,7 +139,7 @@ try {
         $floor = trim($_POST['floor'] ?? '1st Floor');
 
         if ($facilityId <= 0 || empty($roomNumber)) {
-            echo json_encode(['success' => false, 'message' => 'Facility ID at Room Number ay kailangan.']);
+            echo json_encode(['success' => false, 'message' => 'Facility ID and Room Number are required.']);
             exit;
         }
 
@@ -147,7 +147,7 @@ try {
         $chk = $db->prepare("SELECT id FROM rooms WHERE facility_id = ? AND room_number = ? LIMIT 1");
         $chk->execute([$facilityId, $roomNumber]);
         if ($chk->fetch()) {
-            echo json_encode(['success' => false, 'message' => "Mayroon nang Room {$roomNumber} sa dormitory na ito."]);
+            echo json_encode(['success' => false, 'message' => "Room {$roomNumber} already exists in this dormitory."]);
             exit;
         }
 
@@ -166,7 +166,7 @@ try {
 
         echo json_encode([
             'success' => true,
-            'message' => "Matagumpay na naidagdag ang Room {$roomNumber}.",
+            'message' => "Room {$roomNumber} has been added successfully.",
             'room' => [
                 'id' => $newRoomId,
                 'facility_id' => $facilityId,
@@ -209,8 +209,8 @@ try {
         echo json_encode([
             'success' => true,
             'message' => $setMaintenance 
-                ? "Inilagay sa Maintenance Hold ang kuwarto." 
-                : "Ibinalik sa Available status ang kuwarto.",
+                ? "Room placed on Maintenance Hold." 
+                : "Room restored to Available status.",
             'status' => $newStatus,
             'is_maintenance' => $setMaintenance
         ]);
@@ -235,7 +235,7 @@ try {
         if ($activeCount > 0) {
             echo json_encode([
                 'success' => false, 
-                'message' => "Hindi maaaring burahin ang kuwartong ito dahil may {$activeCount} aktibong reservation(s) nakatala rito. Maaari itong i-set sa Maintenance Hold pansamantala."
+                'message' => "Cannot delete this room because it has {$activeCount} active reservation(s) assigned. You may set it to Maintenance Hold instead."
             ]);
             exit;
         }
@@ -268,7 +268,7 @@ try {
 
         echo json_encode([
             'success' => true,
-            'message' => 'Matagumpay na nabura ang kuwarto.'
+            'message' => 'Room deleted successfully.'
         ]);
         exit;
     }
