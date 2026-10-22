@@ -86,7 +86,7 @@ function initHeroSlider() {
 }
 
 /* ==========================================================================
-   2. Interactive Calendar & Availability Details
+   2. Interactive Calendar & Real-Time Availability Engine
    ========================================================================== */
 function initCalendar() {
   const daysGrid = document.getElementById('calendarDaysGrid');
@@ -105,17 +105,9 @@ function initCalendar() {
   let currentDate = new Date(_today.getFullYear(), _today.getMonth(), 1);
   let selectedDate = _today.getDate();
 
-  // Mock reservation schedules for display
-  const mockSchedules = {
-    '2026-09-02': { status: 'reserved', functionHall: 'Reserved (8:00 AM - 5:00 PM)', carandangHall: 'Reserved', orosaHall: 'Available' },
-    '2026-09-05': { status: 'available', functionHall: 'Available All Day', carandangHall: 'Available All Day', orosaHall: 'Available All Day' },
-    '2026-09-08': { status: 'pending', functionHall: 'Pending Approval (DA Staff)', carandangHall: 'Available', orosaHall: 'Available' },
-    '2026-09-12': { status: 'reserved', functionHall: 'Reserved (Training Group A)', carandangHall: 'Reserved', orosaHall: 'Reserved' },
-    '2026-09-15': { status: 'available', functionHall: 'Available All Day', carandangHall: 'Available All Day', orosaHall: 'Available All Day' },
-    '2026-09-21': { status: 'pending', functionHall: 'Available', carandangHall: 'Pending Review', orosaHall: 'Available' },
-    '2026-09-24': { status: 'reserved', functionHall: 'Annual Regional Assembly', carandangHall: 'Reserved', orosaHall: 'Reserved' },
-    '2026-09-29': { status: 'suspended', functionHall: 'Maintenance / Closed', carandangHall: 'Maintenance', orosaHall: 'Maintenance' },
-  };
+  // In-memory cache for real-time live availability from MySQL
+  let liveAvailabilityCache = {};
+  let isFetching = false;
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -126,9 +118,42 @@ function initCalendar() {
     'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
   ];
 
+  // Default facility list while API is loading
+  const defaultHalls = [
+    { facility_id: 12, facility_name: 'Function Hall', status: 'available', status_label: 'AVAILABLE', details: 'Available All Day' },
+    { facility_id: 8, facility_name: 'Carandang Room', status: 'available', status_label: 'AVAILABLE', details: 'Available All Day' },
+    { facility_id: 9, facility_name: 'Orosa Hall', status: 'available', status_label: 'AVAILABLE', details: 'Available All Day' },
+    { facility_id: 10, facility_name: 'RDEC Training Hall 1', status: 'available', status_label: 'AVAILABLE', details: 'Available All Day' },
+    { facility_id: 11, facility_name: 'RDEC Training Hall 2', status: 'available', status_label: 'AVAILABLE', details: 'Available All Day' },
+    { facility_id: 13, facility_name: 'Serrano Hall', status: 'available', status_label: 'AVAILABLE', details: 'Available All Day' }
+  ];
+
+  function fetchLiveAvailability(year, month, shouldRerender = true) {
+    const cacheKey = `${year}-${month + 1}`;
+    isFetching = true;
+
+    fetch(`ajax/get_realtime_availability.php?year=${year}&month=${month + 1}`)
+      .then(res => res.json())
+      .then(data => {
+        isFetching = false;
+        if (data && data.status === 'success') {
+          liveAvailabilityCache[cacheKey] = data;
+          if (shouldRerender) {
+            renderCalendar();
+          }
+        }
+      })
+      .catch(err => {
+        isFetching = false;
+        console.warn('Real-time availability fetch notice:', err);
+      });
+  }
+
   function renderCalendar() {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
+    const cacheKey = `${year}-${month + 1}`;
+    const liveData = liveAvailabilityCache[cacheKey];
 
     if (currentMonthLabel) {
       currentMonthLabel.textContent = `${monthNames[month]} ${year}`;
@@ -153,23 +178,25 @@ function initCalendar() {
       dayBtn.className = 'cal-day';
       dayBtn.textContent = day;
 
-      const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const schedule = mockSchedules[dateKey];
+      const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const daySchedule = liveData && liveData.days ? liveData.days[dateKey] : null;
 
-      if (schedule) {
-        dayBtn.classList.add('has-indicator', `status-${schedule.status}`);
+      // Real-time status indicator dot from MySQL database
+      if (daySchedule && daySchedule.overall_status) {
+        dayBtn.classList.add('has-indicator', `status-${daySchedule.overall_status}`);
       }
 
-      if (day === selectedDate && month === 9 && year === 2026) {
+      // Selected date state
+      if (selectedDate === day) {
         dayBtn.classList.add('selected');
-        updateDetailsPanel(day, month, year, schedule);
+        updateDetailsPanel(day, month, year, daySchedule);
       }
 
       dayBtn.addEventListener('click', () => {
         document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('selected'));
         dayBtn.classList.add('selected');
         selectedDate = day;
-        updateDetailsPanel(day, month, year, schedule);
+        updateDetailsPanel(day, month, year, daySchedule);
       });
 
       daysGrid.appendChild(dayBtn);
@@ -185,7 +212,7 @@ function initCalendar() {
     }
   }
 
-  function updateDetailsPanel(day, month, year, schedule) {
+  function updateDetailsPanel(day, month, year, daySchedule) {
     if (!emptyState || !activeState) return;
 
     emptyState.style.display = 'none';
@@ -198,68 +225,63 @@ function initCalendar() {
     if (activeDateTitle) activeDateTitle.textContent = formattedDate;
     if (activeDateDay) activeDateDay.textContent = `Schedule overview for ${dayName}`;
 
-    // Generate schedule overview items
-    const fStatus = schedule?.functionHall || 'Available All Day';
-    const cStatus = schedule?.carandangHall || 'Available All Day';
-    const oStatus = schedule?.orosaHall || 'Available All Day';
-
-    const getPillClass = (statusStr) => {
-      if (statusStr.includes('Reserved')) return 'reserved';
-      if (statusStr.includes('Pending')) return 'pending';
-      if (statusStr.includes('Maintenance')) return 'suspended';
-      return 'available';
-    };
-
     if (slotList) {
-      slotList.innerHTML = `
-        <div class="hall-slot-item">
-          <div>
-            <div class="slot-name">Function Hall</div>
-            <small style="color: #64748b;">${fStatus}</small>
+      let facilitiesToRender = [];
+
+      if (daySchedule && Array.isArray(daySchedule.facilities) && daySchedule.facilities.length) {
+        // Prioritize official institutional halls
+        const halls = daySchedule.facilities.filter(f => f.facility_type === 'halls');
+        facilitiesToRender = halls.length ? halls : daySchedule.facilities;
+      } else {
+        facilitiesToRender = defaultHalls;
+      }
+
+      slotList.innerHTML = facilitiesToRender.map(f => {
+        const pillClass = f.status || 'available';
+        const pillLabel = (f.status_label || pillClass).toUpperCase();
+        const details = f.details || 'Available All Day';
+
+        return `
+          <div class="hall-slot-item">
+            <div>
+              <div class="slot-name">${f.facility_name}</div>
+              <small style="color: #64748b;">${details}</small>
+            </div>
+            <span class="slot-status-pill ${pillClass}">
+              ${pillLabel}
+            </span>
           </div>
-          <span class="slot-status-pill ${getPillClass(fStatus)}">
-            ${getPillClass(fStatus).toUpperCase()}
-          </span>
-        </div>
-        <div class="hall-slot-item">
-          <div>
-            <div class="slot-name">Carandang Hall</div>
-            <small style="color: #64748b;">${cStatus}</small>
-          </div>
-          <span class="slot-status-pill ${getPillClass(cStatus)}">
-            ${getPillClass(cStatus).toUpperCase()}
-          </span>
-        </div>
-        <div class="hall-slot-item">
-          <div>
-            <div class="slot-name">Orosa Hall</div>
-            <small style="color: #64748b;">${oStatus}</small>
-          </div>
-          <span class="slot-status-pill ${getPillClass(oStatus)}">
-            ${getPillClass(oStatus).toUpperCase()}
-          </span>
-        </div>
-      `;
+        `;
+      }).join('');
     }
   }
 
   if (prevMonthBtn) {
     prevMonthBtn.addEventListener('click', () => {
       currentDate.setMonth(currentDate.getMonth() - 1);
-      selectedDate = null;
+      selectedDate = 1;
       renderCalendar();
+      fetchLiveAvailability(currentDate.getFullYear(), currentDate.getMonth());
     });
   }
 
   if (nextMonthBtn) {
     nextMonthBtn.addEventListener('click', () => {
       currentDate.setMonth(currentDate.getMonth() + 1);
-      selectedDate = null;
+      selectedDate = 1;
       renderCalendar();
+      fetchLiveAvailability(currentDate.getFullYear(), currentDate.getMonth());
     });
   }
 
+  // Initial render with defaults, then seamlessly stream live availability
   renderCalendar();
+  fetchLiveAvailability(currentDate.getFullYear(), currentDate.getMonth());
+
+  // Real-time synchronization: poll every 25 seconds for real-time changes
+  setInterval(() => {
+    fetchLiveAvailability(currentDate.getFullYear(), currentDate.getMonth(), true);
+  }, 25000);
 }
 
 /* ==========================================================================

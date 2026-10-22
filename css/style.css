@@ -1199,6 +1199,9 @@ button {
   flex-direction: column;
   gap: clamp(0.4rem, 0.8vh, 0.6rem);
   margin-bottom: clamp(0.75rem, 1.3vh, 1.15rem);
+  max-height: 290px;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 
 .hall-slot-item {
