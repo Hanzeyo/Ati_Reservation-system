@@ -274,10 +274,21 @@
   color: #174d2f;
 }
 
-.drawer-nav-link.active {
-  background: #ebf5ee;
-  color: #174d2f;
-  border-left: 3.5px solid #174d2f;
+.drawer-nav-link.active,
+.drawer-nav-link.active:hover,
+.drawer-nav-link.active:focus {
+  background: #ebf5ee !important;
+  color: #174d2f !important;
+  border-left: 3.5px solid #174d2f !important;
+  font-weight: 800;
+}
+
+.drawer-nav-link.active .drawer-link-icon svg {
+  stroke: #174d2f !important;
+}
+
+.drawer-nav-link.active .drawer-arrow {
+  stroke: #174d2f !important;
 }
 
 .drawer-link-icon {

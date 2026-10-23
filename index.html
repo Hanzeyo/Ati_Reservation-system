@@ -12,8 +12,8 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=51">
-  <link rel="stylesheet" href="css/mobile-drawer.css?v=7">
+  <link rel="stylesheet" href="css/style.css?v=57">
+  <link rel="stylesheet" href="css/mobile-drawer.css?v=8">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
 
@@ -45,7 +45,7 @@
         <li><a href="#home" class="nav-link active">Home</a></li>
         <li><a href="#facilities" class="nav-link">Facilities</a></li>
         <li><a href="#dormitories" class="nav-link">Dormitories</a></li>
-        <li><a href="#suite-room" class="nav-link">Suite Room</a></li>
+        <li><a href="#suite-room" class="nav-link">Suite Rooms</a></li>
         <li><a href="#guesthouses" class="nav-link">Guesthouses</a></li>
         <li><a href="#availability" class="nav-link">Availability</a></li>
         <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
@@ -569,87 +569,191 @@
           </p>
         </div>
 
-        <div class="facility-cards-grid">
-          <!-- Dorm Card 1: VIP Suite -->
-          <article class="facility-card-item" data-facility="dorm-vip-suite">
-            <div class="facility-card-media">
-              <img src="assets/images/dorm_vip_suite.jpg" alt="VIP Suite" loading="lazy">
-              <span class="facility-badge">Executive Suite</span>
-            </div>
-            <div class="facility-card-body">
-              <h3 class="facility-card-title">VIP Suite</h3>
-              <p class="facility-card-desc">
-                Executive VIP Suite located on the 4th floor featuring elegant wood panel accents, smart HDTV, personal
-                refrigerator, and private executive amenities.
-              </p>
-              <div class="facility-card-footer">
-                <span class="facility-footer-cap">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
-                  </svg>
-                  Private Suite
-                </span>
-                <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-vip-suite">
-                  <span>Details &rarr;</span>
-                </button>
-              </div>
-            </div>
-          </article>
+        <!-- Vertical Animated Dormitories Showcase -->
+        <div class="facilities-vertical-showcase dormitories-vertical-showcase" id="dormitoriesShowcaseWrapper">
 
-          <!-- Dorm Card 2: Dormitory Suite 1 -->
-          <article class="facility-card-item" data-facility="dorm-suite-1">
-            <div class="facility-card-media">
-              <img src="assets/images/dorm_suite_1.png" alt="Dormitory Suite 1" loading="lazy">
-              <span class="facility-badge">2nd Floor</span>
-            </div>
-            <div class="facility-card-body">
-              <h3 class="facility-card-title">Dormitory Suite 1</h3>
-              <p class="facility-card-desc">
-                Trainee dormitory suite located on the 2nd floor equipped with quiet air conditioning, individual
-                secured lockers, and dedicated study workstations.
-              </p>
-              <div class="facility-card-footer">
-                <span class="facility-footer-cap">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
-                  </svg>
-                  Trainee Quarters
-                </span>
-                <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-suite-1">
-                  <span>Details &rarr;</span>
-                </button>
-              </div>
-            </div>
-          </article>
+          <!-- Viewport with top/bottom fade mask -->
+          <div class="facilities-vert-viewport" id="dormitoriesViewport" aria-label="Vertical dormitories showcase">
+            <div class="facilities-vert-track" id="dormitoriesTrack">
 
-          <!-- Dorm Card 3: Dormitory Suite 2 -->
-          <article class="facility-card-item" data-facility="dorm-suite-2">
-            <div class="facility-card-media">
-              <img src="assets/images/dorm_suite_2.png" alt="Dormitory Suite 2" loading="lazy">
-              <span class="facility-badge">3rd Floor</span>
-            </div>
-            <div class="facility-card-body">
-              <h3 class="facility-card-title">Dormitory Suite 2</h3>
-              <p class="facility-card-desc">
-                Trainee dormitory suite located on the 3rd floor providing modern air conditioning, individual storage
-                closets, and ergonomic study desks.
-              </p>
-              <div class="facility-card-footer">
-                <span class="facility-footer-cap">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
-                  </svg>
-                  Trainee Quarters
-                </span>
-                <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-suite-2">
-                  <span>Details &rarr;</span>
-                </button>
+              <!-- Row 1: 3 cards (VIP Suite, Dormitory Suite 1, Dormitory Suite 2) -->
+              <div class="facility-row active" data-row="0">
+                <!-- Dorm Card 1: VIP Suite -->
+                <article class="facility-card-item" data-facility="dorm-vip-suite">
+                  <div class="facility-card-media">
+                    <img src="assets/images/dorm_vip_suite.jpg" alt="VIP Suite" loading="eager">
+                    <span class="facility-badge">Executive Suite</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">VIP Suite</h3>
+                    <p class="facility-card-desc">
+                      Executive VIP Suite located on the 4th floor featuring elegant wood panel accents, smart HDTV,
+                      personal
+                      refrigerator, and private executive amenities.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                        </svg>
+                        Private Suite
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility"
+                        data-facility="dorm-vip-suite">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Dorm Card 2: Dormitory Suite 1 -->
+                <article class="facility-card-item" data-facility="dorm-suite-1">
+                  <div class="facility-card-media">
+                    <img src="assets/images/dorm_suite_1.png" alt="Dormitory Suite 1" loading="eager">
+                    <span class="facility-badge">2nd Floor</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Dormitory Suite 1</h3>
+                    <p class="facility-card-desc">
+                      Trainee dormitory suite located on the 2nd floor equipped with quiet air conditioning, individual
+                      secured lockers, and dedicated study workstations.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                        </svg>
+                        Trainee Quarters
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-suite-1">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Dorm Card 3: Dormitory Suite 2 -->
+                <article class="facility-card-item" data-facility="dorm-suite-2">
+                  <div class="facility-card-media">
+                    <img src="assets/images/dorm_suite_2.png" alt="Dormitory Suite 2" loading="eager">
+                    <span class="facility-badge">3rd Floor</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Dormitory Suite 2</h3>
+                    <p class="facility-card-desc">
+                      Trainee dormitory suite located on the 3rd floor providing modern air conditioning, individual
+                      storage
+                      closets, and ergonomic study desks.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                        </svg>
+                        Trainee Quarters
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-suite-2">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
               </div>
+
+              <!-- Row 2: 3 cards (Dormitory Suite 3, Male Trainee Dormitory, Female Trainee Dormitory) -->
+              <div class="facility-row" data-row="1">
+                <!-- Dorm Card 4: Dormitory Suite 3 -->
+                <article class="facility-card-item" data-facility="dorm-suite-3">
+                  <div class="facility-card-media">
+                    <img src="assets/images/dormitory.jpg" alt="Dormitory Suite 3" loading="eager">
+                    <span class="facility-badge">4th Floor</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Dormitory Suite 3</h3>
+                    <p class="facility-card-desc">
+                      Executive trainee quarters located on the 4th floor equipped with individual study carrels,
+                      secured
+                      personal storage, and high-speed Wi-Fi.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                        </svg>
+                        Trainee Quarters
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-suite-3">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Dorm Card 5: Male Trainee Dormitory -->
+                <article class="facility-card-item" data-facility="dorm-male">
+                  <div class="facility-card-media">
+                    <img src="assets/images/dorm_suite_1.png" alt="Male Trainee Dormitory" loading="eager">
+                    <span class="facility-badge">Ground Floor</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Male Trainee Dormitory</h3>
+                    <p class="facility-card-desc">
+                      Dedicated multi-occupancy trainee wing on the ground floor with individual lockers, study
+                      stations,
+                      and immediate access to training halls.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                        </svg>
+                        Trainee Wing
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-male">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Dorm Card 6: Female Trainee Dormitory -->
+                <article class="facility-card-item" data-facility="dorm-female">
+                  <div class="facility-card-media">
+                    <img src="assets/images/dorm_suite_2.png" alt="Female Trainee Dormitory" loading="eager">
+                    <span class="facility-badge">2nd Floor</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Female Trainee Dormitory</h3>
+                    <p class="facility-card-desc">
+                      Quiet, secure trainee accommodation wing on the 2nd floor featuring ergonomic study desks,
+                      individual lockers, and full air-conditioning.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                        </svg>
+                        Trainee Wing
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-female">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
             </div>
-          </article>
+            <!-- Stationary bottom frosted blur overlay -->
+            <div class="facilities-bottom-blur" aria-hidden="true"></div>
+          </div>
+
         </div>
       </div>
     </section>
@@ -1266,7 +1370,8 @@
             <span>CONTACT</span>
           </h4>
 
-          <div class="footer-contact-item">
+          <a href="tel:09992200064" class="footer-contact-item footer-contact-phone-link"
+            aria-label="Call Official Phone Hotline 0999 220 0064" title="Call Hotline 0999 220 0064">
             <div class="contact-icon-bubble">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
                 stroke-linecap="round" stroke-linejoin="round">
@@ -1278,10 +1383,10 @@
             <div class="contact-text-block">
               <strong>Official Phone Hotline</strong>
               <div class="contact-links-group">
-                <a href="tel:09992200064" class="contact-link">0999 220 0064</a>
+                <span class="contact-link">0999 220 0064</span>
               </div>
             </div>
-          </div>
+          </a>
 
           <div class="footer-contact-item">
             <div class="contact-icon-bubble">
@@ -1378,7 +1483,7 @@
     </div>
   </div>
 
-  <script src="js/main.js?v=30"></script>
+  <script src="js/main.js?v=36"></script>
 </body>
 
 </html>

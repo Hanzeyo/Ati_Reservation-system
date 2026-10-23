@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initRealtimeOfficeHours();
   initVerticalFacilitiesScroller();
   initGmailSmartLink();
+  initPhoneHotlineDirectDial();
 });
 
 /* ==========================================================================
@@ -389,6 +390,27 @@ function initModals() {
       capacity: 'Air-Conditioned Trainee Suite • ₱500 / night',
       features: ['Full Air-Conditioning System', 'Individual Secured Steel Lockers', 'Study Workstations & Reading Lamps', 'High-Speed Wi-Fi & Lounge Access']
     },
+    'dorm-suite-3': {
+      title: 'Dormitory Suite 3',
+      image: 'assets/images/dormitory.jpg',
+      desc: 'Executive trainee quarters located on the 4th floor equipped with individual study carrels, secured personal storage, and high-speed Wi-Fi.',
+      capacity: 'Air-Conditioned Trainee Suite • ₱500 / night',
+      features: ['Full Air-Conditioning System', 'Individual Secured Steel Lockers', 'Personal Study Desks with Power Outlets', 'Shared Restroom & Common Lounge Access']
+    },
+    'dorm-male': {
+      title: 'Male Trainee Dormitory',
+      image: 'assets/images/dorm_suite_1.png',
+      desc: 'Dedicated multi-occupancy trainee wing on the ground floor with individual lockers, study stations, and immediate access to training halls.',
+      capacity: 'Air-Conditioned Trainee Wing • ₱400 / night',
+      features: ['Air-Conditioned Trainee Hall', 'Individual Personal Lockers', 'Study Desks & High-Speed Wi-Fi', 'Spacious Common Washrooms']
+    },
+    'dorm-female': {
+      title: 'Female Trainee Dormitory',
+      image: 'assets/images/dorm_suite_2.png',
+      desc: 'Quiet, secure trainee accommodation wing on the 2nd floor featuring ergonomic study desks, individual lockers, and full air-conditioning.',
+      capacity: 'Air-Conditioned Trainee Wing • ₱400 / night',
+      features: ['Air-Conditioned Trainee Hall', 'Individual Personal Lockers', 'Study Desks & High-Speed Wi-Fi', 'Spacious Common Washrooms']
+    },
     'guesthouse-1': {
       title: 'Guesthouse 1 (Presidential Villa)',
       image: 'assets/images/guesthouse.jpg',
@@ -506,12 +528,15 @@ function initModals() {
   }
 }
 
+let userSelectedDrawerId = null;
+
 /* ==========================================================================
    4. Mobile Navigation Drawer (Upper Left Hamburger & Off-Canvas)
    ========================================================================== */
 function initMobileMenu() {
   const toggleBtn = document.getElementById('mobileMenuToggle');
   const overlay = document.getElementById('mobileDrawerOverlay');
+  const drawer = document.getElementById('mobileNavDrawer');
   const closeBtn = document.getElementById('mobileDrawerClose');
   const drawerLinks = document.querySelectorAll('.js-drawer-link');
 
@@ -523,11 +548,10 @@ function initMobileMenu() {
       void overlay.offsetHeight; // force reflow for smooth slide-in
       overlay.classList.add('show');
       toggleBtn.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
     } else {
       overlay.classList.remove('show');
       toggleBtn.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
+      userSelectedDrawerId = null;
       setTimeout(() => {
         if (!overlay.classList.contains('show')) {
           overlay.style.display = 'none';
@@ -536,26 +560,77 @@ function initMobileMenu() {
     }
   }
 
+  // Prevent background drag scrolling through dark overlay
+  overlay.addEventListener('touchmove', (e) => {
+    if (e.target === overlay) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  // Tapping dark backdrop does NOT close drawer (strictly only X button exits)
+  overlay.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
+  if (drawer) {
+    drawer.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  }
+
   toggleBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     toggleDrawer(true);
   });
 
+  // ONLY exit the drawer when user presses the 'X' button
   if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
+    closeBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      userSelectedDrawerId = null;
       toggleDrawer(false);
     });
   }
 
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      toggleDrawer(false);
-    }
-  });
-
+  // Tapping a section: green tint STAYS, page scrolls behind drawer, drawer does NOT exit
   drawerLinks.forEach(link => {
-    link.addEventListener('click', () => {
-      toggleDrawer(false);
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const targetId = this.getAttribute('href');
+      userSelectedDrawerId = targetId;
+
+      // 1. Permanently maintain active green tint on the selected drawer section
+      drawerLinks.forEach(l => l.classList.remove('active'));
+      this.classList.add('active');
+
+      // 2. Smoothly scroll page to target section in the background
+      if (targetId && targetId.startsWith('#')) {
+        const targetSection = document.querySelector(targetId);
+        if (targetSection) {
+          const navOffset = 75;
+          const elementPosition = targetSection.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+
+        // Also synchronize desktop navigation links
+        document.querySelectorAll('.nav-link').forEach(nl => {
+          if (nl.getAttribute('href') === targetId) {
+            nl.classList.add('active');
+          } else {
+            nl.classList.remove('active');
+          }
+        });
+      }
+
+      // Drawer does NOT exit. It remains open until the user presses the 'X' button.
     });
   });
 
@@ -577,10 +652,35 @@ function initMobileMenu() {
    ========================================================================== */
 function initNavigationScrollSpy() {
   const navLinks = document.querySelectorAll('.nav-link');
+  const drawerNavLinks = document.querySelectorAll('.drawer-nav-link');
+  const overlay = document.getElementById('mobileDrawerOverlay');
   const sections = document.querySelectorAll('section[id], footer[id]');
 
   function setActiveLink(activeId) {
+    // 1. Always update desktop nav links
     navLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === `#${activeId}`) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+
+    // 2. When drawer is open and user tapped a section, keep that green tint locked!
+    if (overlay && overlay.classList.contains('show') && userSelectedDrawerId) {
+      drawerNavLinks.forEach(link => {
+        if (link.getAttribute('href') === userSelectedDrawerId) {
+          link.classList.add('active');
+        } else {
+          link.classList.remove('active');
+        }
+      });
+      return;
+    }
+
+    // 3. Otherwise update drawer links according to scroll position
+    drawerNavLinks.forEach(link => {
       const href = link.getAttribute('href');
       if (href === `#${activeId}`) {
         link.classList.add('active');
@@ -597,6 +697,14 @@ function initNavigationScrollSpy() {
       if (targetId && targetId.startsWith('#')) {
         navLinks.forEach(l => l.classList.remove('active'));
         this.classList.add('active');
+
+        drawerNavLinks.forEach(dl => {
+          if (dl.getAttribute('href') === targetId) {
+            dl.classList.add('active');
+          } else {
+            dl.classList.remove('active');
+          }
+        });
       }
     });
   });
@@ -758,7 +866,8 @@ function createVerticalShowcaseScroller({ wrapperId, viewportId, trackId, interv
           top += curr.offsetTop;
           curr = curr.offsetParent;
         }
-        cachedOffsets.push(Math.round(12 - top));
+        // Align card high on mobile to reveal preview card & deep frosted blur
+        cachedOffsets.push(Math.round(0 - top));
       });
     } else {
       allRows.forEach(row => {
@@ -768,7 +877,8 @@ function createVerticalShowcaseScroller({ wrapperId, viewportId, trackId, interv
           top += curr.offsetTop;
           curr = curr.offsetParent;
         }
-        cachedOffsets.push(Math.round(16 - top));
+        // Align active row high on desktop to reveal full preview card image & badge
+        cachedOffsets.push(Math.round(0 - top));
       });
     }
   }
@@ -887,6 +997,13 @@ function initVerticalFacilitiesScroller() {
   });
 
   createVerticalShowcaseScroller({
+    wrapperId: 'dormitoriesShowcaseWrapper',
+    viewportId: 'dormitoriesViewport',
+    trackId: 'dormitoriesTrack',
+    interval: 3500
+  });
+
+  createVerticalShowcaseScroller({
     wrapperId: 'guesthousesShowcaseWrapper',
     viewportId: 'guesthousesViewport',
     trackId: 'guesthousesTrack',
@@ -928,6 +1045,22 @@ function initGmailSmartLink() {
       // Desktop / PC: Open Gmail Web Compose in a new tab (never Outlook)
       window.open(webComposeUrl, '_blank', 'noopener,noreferrer');
     }
+  });
+}
+
+/* ==========================================================================
+   11. Official Phone Hotline (Direct One-Tap Phone Dialing on Mobile)
+   ========================================================================== */
+function initPhoneHotlineDirectDial() {
+  const hotlineLinks = document.querySelectorAll('.footer-contact-phone-link, a[href^="tel:"]');
+  hotlineLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      // In mobile web version, direct this number straight into the user's phone dialer
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 991;
+      if (isMobile) {
+        window.location.href = 'tel:09992200064';
+      }
+    });
   });
 }
 
