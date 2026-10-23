@@ -783,7 +783,7 @@ button {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 275px;
+  height: 320px;
   pointer-events: none;
   z-index: 5;
   border-bottom-left-radius: 20px;
@@ -792,30 +792,30 @@ button {
   -webkit-transform: translateZ(0);
   contain: paint;
   /* Deep, clear frosted glass blur */
-  -webkit-backdrop-filter: blur(32px) saturate(160%);
-  backdrop-filter: blur(32px) saturate(160%);
-  /* Quickly ramps up so it completely covers the upcoming preview cards */
+  -webkit-backdrop-filter: blur(36px) saturate(160%);
+  backdrop-filter: blur(36px) saturate(160%);
+  /* Rapidly ramps up so it completely veils the entire upcoming preview cards (badges, image, borders) */
   -webkit-mask-image: linear-gradient(to bottom,
     rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.40) 6%,
-    rgba(0, 0, 0, 0.82) 15%,
-    rgba(0, 0, 0, 0.96) 28%,
-    rgba(0, 0, 0, 1) 100%
+    rgba(0, 0, 0, 0.25) 5%,
+    rgba(0, 0, 0, 0.85) 12%,
+    rgba(0, 0, 1) 20%,
+    rgba(0, 0, 1) 100%
   );
   mask-image: linear-gradient(to bottom,
     rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.40) 6%,
-    rgba(0, 0, 0, 0.82) 15%,
-    rgba(0, 0, 0, 0.96) 28%,
-    rgba(0, 0, 0, 1) 100%
+    rgba(0, 0, 0, 0.25) 5%,
+    rgba(0, 0, 0, 0.85) 12%,
+    rgba(0, 0, 1) 20%,
+    rgba(0, 0, 1) 100%
   );
   /* Progressive frosted white gradient covering the upcoming preview */
   background: linear-gradient(to bottom,
     rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.35) 6%,
-    rgba(255, 255, 255, 0.65) 15%,
-    rgba(255, 255, 255, 0.86) 28%,
-    rgba(255, 255, 255, 0.96) 65%,
+    rgba(255, 255, 255, 0.35) 5%,
+    rgba(255, 255, 255, 0.75) 12%,
+    rgba(255, 255, 255, 0.92) 22%,
+    rgba(255, 255, 255, 0.98) 60%,
     #ffffff 100%
   );
 }
@@ -1017,7 +1017,7 @@ button {
   }
 
   .facilities-bottom-blur {
-    height: 250px;
+    height: 275px;
     border-bottom-left-radius: 16px;
     border-bottom-right-radius: 16px;
   }
@@ -1076,15 +1076,7 @@ button {
     font-size: 0.82rem;
   }
 
-  /* Mobile bottom blur: soft, compact feathering that stays well below active card */
-  .facilities-bottom-blur {
-    height: 60px;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.35) 35%, rgba(255, 255, 255, 0.9) 100%);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-    border-bottom-left-radius: 16px;
-    border-bottom-right-radius: 16px;
-  }
+  
 }
 
 /* ==========================================================================
@@ -1810,9 +1802,32 @@ button {
   margin-bottom: 1.15rem;
 }
 
-a.footer-contact-item.footer-contact-phone-link {
+/* Contact Item Blocks */
+.footer-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 1.15rem;
+}
+
+/* Phone Hotline: Clean, static item with clickable phone number */
+.footer-contact-phone-item .phone-link {
+  color: #ffffff;
   text-decoration: none;
   cursor: pointer;
+  display: inline-block;
+  font-weight: 700;
+  transition: color 0.15s ease;
+  -webkit-tap-highlight-color: rgba(34, 197, 94, 0.25);
+}
+
+.footer-contact-phone-item .phone-link:hover {
+  color: #86efac;
+  text-decoration: underline;
+}
+
+/* Email Item: Interactive animated element with glowing green icon and smooth transition */
+.footer-contact-email-item {
   border-radius: 10px;
   padding: 0.25rem 0.35rem;
   margin: -0.25rem -0.35rem 0.9rem;
@@ -1820,24 +1835,32 @@ a.footer-contact-item.footer-contact-phone-link {
   -webkit-tap-highlight-color: rgba(34, 197, 94, 0.25);
 }
 
-a.footer-contact-item.footer-contact-phone-link:hover,
-a.footer-contact-item.footer-contact-phone-link:active {
+.footer-contact-email-item:hover {
   background: rgba(255, 255, 255, 0.04);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
-a.footer-contact-item.footer-contact-phone-link:hover .contact-icon-bubble,
-a.footer-contact-item.footer-contact-phone-link:active .contact-icon-bubble {
+.footer-contact-email-item:hover .contact-icon-bubble {
   background: rgba(34, 197, 94, 0.28);
   border-color: rgba(74, 222, 128, 0.6);
   color: #86efac;
-  box-shadow: 0 0 14px rgba(74, 222, 128, 0.35);
+  transform: scale(1.08);
+  box-shadow: 0 0 16px rgba(74, 222, 128, 0.45);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s ease, box-shadow 0.2s ease;
 }
 
-a.footer-contact-item.footer-contact-phone-link:hover .contact-link,
-a.footer-contact-item.footer-contact-phone-link:active .contact-link {
+.footer-contact-email-item .email-link {
+  color: #86efac;
+  text-decoration: none;
+  display: inline-block;
+  transition: color 0.2s ease, text-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.footer-contact-email-item:hover .email-link {
   color: #86efac;
   text-decoration: underline;
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
+  transform: translateX(3px);
 }
 
 .contact-icon-bubble {
