@@ -624,7 +624,7 @@ function initMobileMenu() {
       if (targetId && targetId.startsWith('#')) {
         const targetSection = document.querySelector(targetId);
         if (targetSection) {
-          const navOffset = 75;
+          const navOffset = window.innerWidth <= 768 ? 68 : 75;
           const elementPosition = targetSection.getBoundingClientRect().top;
           const offsetPosition = elementPosition + window.pageYOffset - navOffset;
 
@@ -982,11 +982,38 @@ function createVerticalShowcaseScroller({ wrapperId, viewportId, trackId, interv
     isVisible = true;
   }
 
-  // Smooth pause when mouse hovers or touch begins
+  // Smooth pause when mouse hovers, and fluid touch swipe on mobile web
   wrapper.addEventListener('mouseenter', () => { isHovered = true; }, { passive: true });
   wrapper.addEventListener('mouseleave', () => { isHovered = false; }, { passive: true });
-  wrapper.addEventListener('touchstart', () => { isHovered = true; }, { passive: true });
-  wrapper.addEventListener('touchend', () => { isHovered = false; }, { passive: true });
+
+  let touchStartY = 0;
+  let touchDiffY = 0;
+
+  wrapper.addEventListener('touchstart', (e) => {
+    isHovered = true;
+    if (e.touches && e.touches.length === 1) {
+      touchStartY = e.touches[0].clientY;
+      touchDiffY = 0;
+    }
+  }, { passive: true });
+
+  wrapper.addEventListener('touchmove', (e) => {
+    if (e.touches && e.touches.length === 1) {
+      touchDiffY = e.touches[0].clientY - touchStartY;
+    }
+  }, { passive: true });
+
+  wrapper.addEventListener('touchend', () => {
+    isHovered = false;
+    if (Math.abs(touchDiffY) > 42 && !isAnimating) {
+      if (touchDiffY < 0) {
+        next();
+      } else {
+        goTo(currentIndex - 1, true);
+      }
+    }
+    touchDiffY = 0;
+  }, { passive: true });
 
   // Update layout offsets after fonts/images load
   function refreshLayout() {

@@ -396,3 +396,12 @@
   }
 }
 
+
+/* Eliminate 300ms mobile tap delay for instant touch response */
+.mobile-menu-toggle,
+.drawer-nav-link,
+.drawer-close-btn,
+.drawer-btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
