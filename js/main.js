@@ -723,33 +723,34 @@ function initNavigationScrollSpy() {
     });
   });
 
-  // 2. ScrollSpy: automatically track section as user scrolls
-  let isThrottled = false;
+  // 2. ScrollSpy: synchronized with requestAnimationFrame & passive scroll for buttery 120fps scrolling
+  let ticking = false;
   window.addEventListener('scroll', () => {
-    if (isThrottled) return;
-    isThrottled = true;
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const scrollPos = window.scrollY + 85;
 
-    setTimeout(() => {
-      isThrottled = false;
-      const scrollPos = window.scrollY + 85; // offset for sticky navbar
-
-      // Check if at the bottom of the page
-      if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
-        setActiveLink('about');
-        return;
-      }
-
-      sections.forEach(section => {
-        const top = section.offsetTop;
-        const height = section.offsetHeight;
-        const id = section.getAttribute('id');
-
-        if (scrollPos >= top && scrollPos < top + height) {
-          setActiveLink(id);
+        // Check if at the bottom of the page
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
+          setActiveLink('about');
+          ticking = false;
+          return;
         }
+
+        sections.forEach(section => {
+          const top = section.offsetTop;
+          const height = section.offsetHeight;
+          const id = section.getAttribute('id');
+
+          if (scrollPos >= top && scrollPos < top + height) {
+            setActiveLink(id);
+          }
+        });
+        ticking = false;
       });
-    }, 80);
-  });
+      ticking = true;
+    }
+  }, { passive: true });
 }
 
 /* ==========================================================================
@@ -907,7 +908,7 @@ function createVerticalShowcaseScroller({ wrapperId, viewportId, trackId, interv
 
     if (animate) {
       isAnimating = true;
-      track.style.transition = 'transform 0.95s cubic-bezier(0.25, 1, 0.35, 1)';
+      track.style.transition = 'transform 0.88s cubic-bezier(0.16, 1, 0.3, 1)';
     } else {
       track.style.transition = 'none';
     }
@@ -946,10 +947,12 @@ function createVerticalShowcaseScroller({ wrapperId, viewportId, trackId, interv
     goTo(currentIndex + 1, true);
   }
 
+  let isVisible = false;
   function startAuto() {
     stopAuto();
+    if (!isVisible) return;
     autoTimer = setInterval(() => {
-      if (!isHovered && !isAnimating) {
+      if (!isHovered && !isAnimating && isVisible) {
         next();
       }
     }, interval);
@@ -960,6 +963,23 @@ function createVerticalShowcaseScroller({ wrapperId, viewportId, trackId, interv
       clearInterval(autoTimer);
       autoTimer = null;
     }
+  }
+
+  // IntersectionObserver: automatically pauses carousel when offscreen to eliminate all lag
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        isVisible = entry.isIntersecting;
+        if (isVisible) {
+          startAuto();
+        } else {
+          stopAuto();
+        }
+      });
+    }, { threshold: 0.08 });
+    observer.observe(wrapper);
+  } else {
+    isVisible = true;
   }
 
   // Smooth pause when mouse hovers or touch begins
@@ -1007,21 +1027,21 @@ function initVerticalFacilitiesScroller() {
     wrapperId: 'facilitiesShowcaseWrapper',
     viewportId: 'facilitiesViewport',
     trackId: 'facilitiesTrack',
-    interval: 3500
+    interval: 3800
   });
 
   createVerticalShowcaseScroller({
     wrapperId: 'dormitoriesShowcaseWrapper',
     viewportId: 'dormitoriesViewport',
     trackId: 'dormitoriesTrack',
-    interval: 3500
+    interval: 4200
   });
 
   createVerticalShowcaseScroller({
     wrapperId: 'guesthousesShowcaseWrapper',
     viewportId: 'guesthousesViewport',
     trackId: 'guesthousesTrack',
-    interval: 3500
+    interval: 4600
   });
 }
 

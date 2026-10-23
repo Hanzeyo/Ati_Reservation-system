@@ -792,8 +792,8 @@ button {
   -webkit-transform: translateZ(0);
   contain: paint;
   /* Deep, clear frosted glass blur */
-  -webkit-backdrop-filter: blur(36px) saturate(160%);
-  backdrop-filter: blur(36px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(145%);
+  backdrop-filter: blur(28px) saturate(145%);
   /* Rapidly ramps up so it completely veils the entire upcoming preview cards (badges, image, borders) */
   -webkit-mask-image: linear-gradient(to bottom,
     rgba(0, 0, 0, 0) 0%,
@@ -4121,32 +4121,25 @@ button {
   background: linear-gradient(180deg, #ffffff 0%, #f4f9f6 100%);
   border: 1.5px solid #b8dac4;
   border-top: 4px solid #0c331d;
-  box-shadow: 0 10px 28px rgba(7, 35, 18, 0.16), 0 3px 10px rgba(7, 35, 18, 0.08);
+  box-shadow: 0 12px 30px rgba(7, 35, 18, 0.17), 0 3px 10px rgba(7, 35, 18, 0.08);
   position: relative;
-  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+  transform: translate3d(0, 0, 0);
+  -webkit-transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
 }
 
 /* Subtle breathing agricultural forest aura for active suite room cards */
-@keyframes suitePrestigePulse {
-  0%, 100% {
-    box-shadow: 0 10px 28px rgba(7, 35, 18, 0.16), 0 3px 10px rgba(7, 35, 18, 0.08);
-  }
-  50% {
-    box-shadow: 0 14px 34px rgba(7, 35, 18, 0.24), 0 0 18px rgba(23, 77, 47, 0.2);
-  }
-}
 
-.facility-row.active .facility-card-item.suite-room-card {
-  animation: suitePrestigePulse 4.5s ease-in-out infinite;
-}
 
 /* Distinctive Suite Room Hover Elevation & Deep Agricultural Forest Glow */
 .facility-card-item.suite-room-card:hover,
 .facility-row.active .facility-card-item.suite-room-card:hover {
-  transform: translateY(-6px);
+  transform: translate3d(0, -6px, 0);
+  -webkit-transform: translate3d(0, -6px, 0);
   border-color: #174d2f;
   box-shadow: 0 20px 42px rgba(7, 35, 18, 0.30), 0 0 24px rgba(32, 103, 64, 0.24);
-  animation: none;
 }
 
 /* Distinctive Agricultural Forest Green Badge on Media */
