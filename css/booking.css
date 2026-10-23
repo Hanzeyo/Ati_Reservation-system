@@ -1484,6 +1484,8 @@ body.booking-body {
   align-items: center;
   justify-content: flex-end;
   padding-top: 1.5rem;
+  padding-bottom: 5.5rem;
+  margin-bottom: 2rem;
   border-top: 1px solid #e2eae4;
 }
 

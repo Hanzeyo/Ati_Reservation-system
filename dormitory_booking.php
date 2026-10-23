@@ -408,7 +408,7 @@ $guesthousesCount = $ghStmt ? (int)$ghStmt->fetchColumn() : 7;
           <!-- 3 Category Switcher Tabs -->
           <div class="category-switch-pills" role="tablist" aria-label="Facility Categories">
             <!-- Halls Tab -->
-            <a href="booking.php?category=halls" class="category-pill-tab" title="Browse Function & Training Halls">
+            <a href="booking.php?category=halls" class="category-pill-tab" data-category="halls" title="Browse Function & Training Halls">
               <svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <line x1="4" y1="54" x2="60" y2="54" />
                 <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="2" />
@@ -431,7 +431,7 @@ $guesthousesCount = $ghStmt ? (int)$ghStmt->fetchColumn() : 7;
             </a>
 
             <!-- Dormitories Tab -->
-            <a href="dormitory_booking.php" class="category-pill-tab active tab-dorms" title="Browse Dormitory Lodging & Rooms">
+            <a href="dormitory_booking.php" class="category-pill-tab active tab-dorms" data-category="dormitories" title="Browse Dormitory Lodging & Rooms">
               <svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <line x1="4" y1="54" x2="60" y2="54" />
                 <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="2" />
@@ -454,7 +454,7 @@ $guesthousesCount = $ghStmt ? (int)$ghStmt->fetchColumn() : 7;
             </a>
 
             <!-- Guesthouses Tab -->
-            <a href="booking.php?category=guesthouses" class="category-pill-tab" title="Browse Guesthouse Villas & Cottages">
+            <a href="booking.php?category=guesthouses" class="category-pill-tab" data-category="guesthouses" title="Browse Guesthouse Villas & Cottages">
               <svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <line x1="4" y1="54" x2="60" y2="54" />
                 <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="2" />
@@ -522,9 +522,6 @@ $guesthousesCount = $ghStmt ? (int)$ghStmt->fetchColumn() : 7;
             $isMaint = ($f['status'] === 'maintenance');
             $isSelected = false;
             if ($selectedFacilityId > 0 && $f['id'] == $selectedFacilityId && !$isMaint) {
-              $isSelected = true;
-              $hasSelected = true;
-            } elseif (!$hasSelected && !$isMaint) {
               $isSelected = true;
               $hasSelected = true;
             }
@@ -641,7 +638,7 @@ $guesthousesCount = $ghStmt ? (int)$ghStmt->fetchColumn() : 7;
       </div>
 
       <!-- Selection Summary Preview -->
-      <div class="step1-selection-summary-card" id="step1SummaryCard" style="<?= $dormCount === 0 ? 'display: none;' : '' ?>">
+      <div class="step1-selection-summary-card" id="step1SummaryCard" style="<?= ($dormCount === 0 || !$hasSelected) ? 'display: none;' : '' ?>">
         <div class="summary-card-header">
           <div class="sch-left">
             <span class="sch-badge">SELECTED DORMITORY SUITE</span>
@@ -1120,7 +1117,7 @@ $guesthousesCount = $ghStmt ? (int)$ghStmt->fetchColumn() : 7;
         <span>Back</span>
       </button>
 
-      <button type="button" class="btn-proceed-step" id="btnProceedStep" style="<?= $dormCount === 0 ? 'display: none;' : '' ?>">
+      <button type="button" class="btn-proceed-step" id="btnProceedStep" style="<?= ($dormCount === 0 || !$hasSelected) ? 'display: none;' : '' ?>">
         <span>Proceed to Stay Dates</span>
         <svg viewBox="0 0 24 24" fill="none">
           <line x1="5" y1="12" x2="19" y2="12"></line>

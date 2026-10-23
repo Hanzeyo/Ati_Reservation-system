@@ -496,7 +496,7 @@ $totalCount = count($dbFacilities);
             </a>
 
             <!-- Dormitories Tab -->
-            <a href="dormitory_booking.php" class="category-pill-tab <?= $reqCategory === 'dormitories' ? 'active tab-dorms' : '' ?>" data-category="dormitories" title="Browse Dormitory Lodging & Rooms">
+            <a href="booking.php?category=dormitories" class="category-pill-tab <?= $reqCategory === 'dormitories' ? 'active tab-dorms' : '' ?>" data-category="dormitories" title="Browse Dormitory Lodging & Rooms">
               <svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <line x1="4" y1="54" x2="60" y2="54" />
                 <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="2" />
@@ -592,6 +592,10 @@ $totalCount = count($dbFacilities);
           
           $isMaint = ($f['status'] === 'maintenance');
           $isSelected = false;
+          if ($selectedFacilityId > 0 && $f['id'] == $selectedFacilityId && !$isMaint) {
+            $isSelected = true;
+            $hasSelectedCard = true;
+          }
           
           $cardSlug = 'facility-' . $f['id'];
           $lowerName = strtolower($f['name']);
@@ -838,7 +842,7 @@ $totalCount = count($dbFacilities);
       </div>
 
       <!-- Step 1 Reservation Summary Preview (Visible before proceeding) -->
-      <div class="step1-selection-summary-card" id="step1SummaryCard" style="<?= $initialEmpty ? 'display: none;' : '' ?>">
+      <div class="step1-selection-summary-card" id="step1SummaryCard" style="<?= ($initialEmpty || !$hasSelectedCard) ? 'display: none;' : '' ?>">
         <div class="summary-card-header">
           <div class="sch-left">
             <span class="sch-badge" id="summaryPreviewBadge">SELECTED VENUE</span>
@@ -1336,7 +1340,7 @@ $totalCount = count($dbFacilities);
         <span>Back</span>
       </button>
 
-      <button type="button" class="btn-proceed-step" id="btnProceedStep" style="<?= $initialEmpty ? 'display: none;' : '' ?>">
+      <button type="button" class="btn-proceed-step" id="btnProceedStep" style="<?= ($initialEmpty || !$hasSelectedCard) ? 'display: none;' : '' ?>">
         <span>Proceed to Date & Time Selection</span>
         <svg viewBox="0 0 24 24" fill="none">
           <line x1="5" y1="12" x2="19" y2="12"></line>

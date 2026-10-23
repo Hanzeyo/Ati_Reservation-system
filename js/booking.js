@@ -294,6 +294,35 @@ const hallLayoutData = {
 let currentModalFacilityId = null;
 let modalTempSelectedItem = null;
 
+function scrollScreenAllTheWayDown() {
+  setTimeout(() => {
+    // 1. Scroll window all the way down to maximum document height
+    const maxScroll = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight,
+      document.body.offsetHeight,
+      document.documentElement.offsetHeight
+    );
+    window.scrollTo({
+      top: maxScroll,
+      behavior: 'smooth'
+    });
+
+    // 2. Also ensure proceed button & bottom action bar are cleanly centered in viewport
+    const proceedBtn = document.getElementById('btnProceedStep');
+    const bottomBar = document.getElementById('bookingBottomActions');
+    if (proceedBtn) {
+      setTimeout(() => {
+        proceedBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 120);
+    } else if (bottomBar) {
+      setTimeout(() => {
+        bottomBar.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 120);
+    }
+  }, 100);
+}
+
 function selectFacilityCard(card, openModal = true) {
   if (!card) return;
   if (card.dataset.status === 'maintenance' || card.classList.contains('under-maintenance')) {
@@ -383,6 +412,7 @@ function selectFacilityCard(card, openModal = true) {
     if (typeof window.refreshLiveAvailabilityForCurrentFacility === 'function') {
       window.refreshLiveAvailabilityForCurrentFacility();
     }
+    scrollScreenAllTheWayDown();
   }
 }
 
@@ -1030,10 +1060,7 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
     window.refreshLiveAvailabilityForCurrentFacility();
   }
 
-  const summaryCard = document.getElementById('step1SummaryCard');
-  if (summaryCard) {
-    summaryCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
+  scrollScreenAllTheWayDown();
 }
 const confirmRoomSelection = confirmFacilitySelection;
 
@@ -1211,16 +1238,25 @@ function initFacilityFilters() {
   categoryPillTabs.forEach(tab => {
     tab.addEventListener('click', (e) => {
       const cat = tab.dataset.category || (tab.classList.contains('tab-guesthouses') ? 'guesthouses' : (tab.classList.contains('tab-dorms') ? 'dormitories' : 'halls'));
-      if (cat === 'dormitories' && tab.getAttribute('href')?.includes('dormitory_booking.php')) {
-        // Allow navigation to separate dormitory booking page if targeted
+      if (isDormPage && cat !== 'dormitories') {
+        // Direct navigation from dormitory_booking.php to booking.php
+        window.location.href = tab.getAttribute('href') || `booking.php?category=${cat}`;
         return;
       }
       e.preventDefault();
       switchCategory(cat, false);
       if (window.history && window.history.pushState) {
-        window.history.pushState(null, '', `booking.php?category=${cat}`);
+        window.history.pushState({ category: cat }, '', `booking.php?category=${cat}`);
       }
     });
+  });
+
+  // Handle browser Back/Forward navigation without requiring reload
+  window.addEventListener('popstate', (e) => {
+    if (isDormPage) return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const cat = urlParams.get('category') || (e.state && e.state.category) || 'halls';
+    switchCategory(cat, false);
   });
 
   // Check URL query parameters for pre-selected category (e.g. ?category=guesthouses)
