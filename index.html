@@ -12,7 +12,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=45">
+  <link rel="stylesheet" href="css/style.css?v=51">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=7">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
@@ -45,11 +45,17 @@
         <li><a href="#home" class="nav-link active">Home</a></li>
         <li><a href="#facilities" class="nav-link">Facilities</a></li>
         <li><a href="#dormitories" class="nav-link">Dormitories</a></li>
+        <li><a href="#suite-room" class="nav-link">Suite Room</a></li>
+        <li><a href="#guesthouses" class="nav-link">Guesthouses</a></li>
         <li><a href="#availability" class="nav-link">Availability</a></li>
         <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
         <li><a href="#about" class="nav-link">About</a></li>
-        <li><a href="login.php" class="btn-sign-in">Sign In</a></li>
       </ul>
+
+      <!-- Dedicated Desktop Sign In Action Button -->
+      <div class="nav-actions-desktop">
+        <a href="login.php" class="btn-sign-in">Sign In</a>
+      </div>
 
       <!-- Quick Sign In button for mobile viewport (Upper Right) -->
       <a href="login.php" class="mobile-topbar-signin" aria-label="Sign In to Account">
@@ -129,6 +135,33 @@
               </svg>
             </div>
             <span class="drawer-link-text">Dormitories</span>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+
+          <a href="#suite-room" class="drawer-nav-link js-drawer-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+              </svg>
+            </div>
+            <span class="drawer-link-text">Suite Room</span>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+
+          <a href="#guesthouses" class="drawer-nav-link js-drawer-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
+            <span class="drawer-link-text">Guesthouses</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -621,6 +654,327 @@
       </div>
     </section>
 
+    <!-- Our Suite Rooms Section -->
+    <section class="section suite-room-section" id="suite-room">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Our Suite Rooms</h2>
+          <div class="section-divider"></div>
+          <p class="section-subtitle">Executive and VIP private suites featuring dedicated amenities, ensuite baths, and
+            premium comfort.</p>
+        </div>
+
+        <div class="facility-cards-grid">
+          <!-- Suite Card 1: VIP Suite -->
+          <article class="facility-card-item" data-facility="dorm-vip-suite">
+            <div class="facility-card-media">
+              <img src="assets/images/dorm_vip_suite.jpg" alt="Executive VIP Suite" loading="eager">
+              <span class="facility-badge">Executive VIP Suite</span>
+            </div>
+            <div class="facility-card-body">
+              <h3 class="facility-card-title">VIP Suite</h3>
+              <p class="facility-card-desc">
+                Executive VIP Suite located on the 4th floor featuring elegant wood panel accents, smart HDTV, personal
+                refrigerator, ensuite hot shower, and private executive amenities.
+              </p>
+              <div class="facility-card-footer">
+                <span class="facility-footer-cap">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                  </svg>
+                  Private Suite
+                </span>
+                <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-vip-suite">
+                  <span>Details &rarr;</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Suite Card 2: Executive Suite 101 -->
+          <article class="facility-card-item" data-facility="dorm-vip-suite">
+            <div class="facility-card-media">
+              <img src="assets/images/dorm_vip_suite.jpg" alt="Executive Suite 101" loading="eager">
+              <span class="facility-badge">Deluxe Suite</span>
+            </div>
+            <div class="facility-card-body">
+              <h3 class="facility-card-title">Executive Suite 101</h3>
+              <p class="facility-card-desc">
+                Deluxe executive accommodation with a premium Queen-size bed, private study desk, climate control, and
+                complimentary hospitality amenities.
+              </p>
+              <div class="facility-card-footer">
+                <span class="facility-footer-cap">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                  </svg>
+                  Executive Suite
+                </span>
+                <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-vip-suite">
+                  <span>Details &rarr;</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Suite Card 3: Premier Suite 102 -->
+          <article class="facility-card-item" data-facility="dorm-vip-suite">
+            <div class="facility-card-media">
+              <img src="assets/images/dorm_vip_suite.jpg" alt="Premier Suite 102" loading="eager">
+              <span class="facility-badge">Twin Executive</span>
+            </div>
+            <div class="facility-card-body">
+              <h3 class="facility-card-title">Premier Suite 102</h3>
+              <p class="facility-card-desc">
+                Quiet executive twin suite tailored for visiting specialists, equipped with twin beds, workstations,
+                smart TV,
+                and private ensuite bath.
+              </p>
+              <div class="facility-card-footer">
+                <span class="facility-footer-cap">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                  </svg>
+                  Twin Suite
+                </span>
+                <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-vip-suite">
+                  <span>Details &rarr;</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- Our Guesthouses Section (7 Guesthouses) -->
+    <section class="section guesthouses-section" id="guesthouses">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Our Guesthouses</h2>
+          <div class="section-divider"></div>
+          <p class="section-subtitle">Private, residential-style accommodations for visiting dignitaries, officials, and
+            resource speakers.</p>
+        </div>
+
+        <!-- Vertical Animated Guesthouses Showcase -->
+        <div class="facilities-vertical-showcase guesthouses-vertical-showcase" id="guesthousesShowcaseWrapper">
+
+          <!-- Viewport with top/bottom fade mask -->
+          <div class="facilities-vert-viewport" id="guesthousesViewport" aria-label="Vertical guesthouses showcase">
+            <div class="facilities-vert-track" id="guesthousesTrack">
+
+              <!-- Row 1: 3 cards (Guesthouse 1, Guesthouse 2, Guesthouse 3) -->
+              <div class="facility-row active" data-row="0">
+                <!-- Guesthouse 1 -->
+                <article class="facility-card-item" data-facility="guesthouse-1">
+                  <div class="facility-card-media">
+                    <img src="assets/images/guesthouse.jpg" alt="Guesthouse 1 (Executive Villa)" loading="eager">
+                    <span class="facility-badge">Presidential Villa</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Guesthouse 1</h3>
+                    <p class="facility-card-desc">
+                      Premier executive villa featuring an elegant master bedroom, private ensuite bath, executive
+                      workstation, and scenic garden views.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        </svg>
+                        Presidential Villa
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="guesthouse-1">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Guesthouse 2 -->
+                <article class="facility-card-item" data-facility="guesthouse-2">
+                  <div class="facility-card-media">
+                    <img src="assets/images/guesthouse.jpg" alt="Guesthouse 2 (Director’s Lodge)" loading="eager">
+                    <span class="facility-badge">Director's Lodge</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Guesthouse 2</h3>
+                    <p class="facility-card-desc">
+                      Spacious residential lodge tailored for senior institutional officials and international
+                      delegations
+                      with a private veranda.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        </svg>
+                        Director's Lodge
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="guesthouse-2">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Guesthouse 3 -->
+                <article class="facility-card-item" data-facility="guesthouse-3">
+                  <div class="facility-card-media">
+                    <img src="assets/images/guesthouse.jpg" alt="Guesthouse 3 (Senior Cottage)" loading="eager">
+                    <span class="facility-badge">Senior Cottage</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Guesthouse 3</h3>
+                    <p class="facility-card-desc">
+                      Peaceful garden cottage equipped with plush bedding, dining nook, hot shower, high-speed Wi-Fi,
+                      and
+                      climate control.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        </svg>
+                        Senior Cottage
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="guesthouse-3">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+              <!-- Row 2: 4 cards (Guesthouse 4, Guesthouse 5, Guesthouse 6, Guesthouse 7) -->
+              <div class="facility-row guesthouse-row-four" data-row="1">
+                <!-- Guesthouse 4 -->
+                <article class="facility-card-item" data-facility="guesthouse-4">
+                  <div class="facility-card-media">
+                    <img src="assets/images/guesthouse.jpg" alt="Guesthouse 4 (Resource Residence)" loading="eager">
+                    <span class="facility-badge">Resource Residence</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Guesthouse 4</h3>
+                    <p class="facility-card-desc">
+                      Quiet, secluded accommodation ideal for training resource speakers, guest professors, and visiting
+                      technical specialists.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        </svg>
+                        Resource Residence
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="guesthouse-4">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Guesthouse 5 -->
+                <article class="facility-card-item" data-facility="guesthouse-5">
+                  <div class="facility-card-media">
+                    <img src="assets/images/guesthouse.jpg" alt="Guesthouse 5 (Delegates Home)" loading="eager">
+                    <span class="facility-badge">Delegates Home</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Guesthouse 5</h3>
+                    <p class="facility-card-desc">
+                      Comfortable multi-guest residential unit featuring two private bedrooms, living hall, personal
+                      refrigerator, and smart TV.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        </svg>
+                        Delegates Home
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="guesthouse-5">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Guesthouse 6 -->
+                <article class="facility-card-item" data-facility="guesthouse-6">
+                  <div class="facility-card-media">
+                    <img src="assets/images/guesthouse.jpg" alt="Guesthouse 6 (Fellows Lodge)" loading="eager">
+                    <span class="facility-badge">Fellows Lodge</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Guesthouse 6</h3>
+                    <p class="facility-card-desc">
+                      Cozy modern lodge featuring twin beds, private bath, dedicated writing desks, and relaxing views
+                      of the
+                      botanical landscape.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        </svg>
+                        Fellows Lodge
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="guesthouse-6">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Guesthouse 7 -->
+                <article class="facility-card-item" data-facility="guesthouse-7">
+                  <div class="facility-card-media">
+                    <img src="assets/images/guesthouse.jpg" alt="Guesthouse 7 (Lecturer Villa)" loading="eager">
+                    <span class="facility-badge">Lecturer Villa</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Guesthouse 7</h3>
+                    <p class="facility-card-desc">
+                      Executive guest villa with serene garden surroundings, Queen bed, modern work desk, and full
+                      hospitality
+                      amenities.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        </svg>
+                        Lecturer Villa
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility" data-facility="guesthouse-7">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+            </div>
+            <!-- Stationary bottom frosted blur overlay - completely smooth & eye-friendly -->
+            <div class="facilities-bottom-blur" aria-hidden="true"></div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
     <!-- Check Facility Availability Section -->
     <section class="section availability-section" id="availability">
       <div class="container">
@@ -922,11 +1276,9 @@
               </svg>
             </div>
             <div class="contact-text-block">
-              <strong>Official Phone Hotlines</strong>
+              <strong>Official Phone Hotline</strong>
               <div class="contact-links-group">
-                <a href="tel:09209462474" class="contact-link">0920-946-2474</a>
-                <span class="contact-sep">|</span>
-                <a href="tel:09999913955" class="contact-link">0999-991-3955</a>
+                <a href="tel:09992200064" class="contact-link">0999 220 0064</a>
               </div>
             </div>
           </div>
@@ -1026,7 +1378,7 @@
     </div>
   </div>
 
-  <script src="js/main.js?v=26"></script>
+  <script src="js/main.js?v=30"></script>
 </body>
 
 </html>

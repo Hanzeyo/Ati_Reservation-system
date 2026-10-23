@@ -18,8 +18,11 @@ $dbFacilities = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 if ($selectedFacilityId > 0) {
   foreach ($dbFacilities as $f) {
     if ($f['id'] == $selectedFacilityId) {
-      if (strtolower($f['type']) === 'dorms') {
+      $ftype = strtolower($f['type']);
+      if ($ftype === 'dorms') {
         $reqCategory = 'dormitories';
+      } elseif ($ftype === 'guesthouses') {
+        $reqCategory = 'guesthouses';
       } else {
         $reqCategory = 'halls';
       }
@@ -28,15 +31,19 @@ if ($selectedFacilityId > 0) {
   }
 }
 
-if (!in_array($reqCategory, ['halls', 'dormitories', 'all'])) {
+if (!in_array($reqCategory, ['halls', 'dormitories', 'guesthouses', 'all'])) {
   $reqCategory = 'halls';
 }
 
 $hallsCount = 0;
 $dormsCount = 0;
+$guesthousesCount = 0;
 foreach ($dbFacilities as $f) {
-  if (strtolower($f['type']) === 'dorms') {
+  $ftype = strtolower($f['type']);
+  if ($ftype === 'dorms') {
     $dormsCount++;
+  } elseif ($ftype === 'guesthouses') {
+    $guesthousesCount++;
   } else {
     $hallsCount++;
   }
@@ -449,8 +456,10 @@ $totalCount = count($dbFacilities);
             <span class="indicator-dot"></span>
             <span class="indicator-prefix">Viewing:</span>
             <span id="activeCategoryName"><?php
-            if ($reqCategory === 'dormitories')
-              echo 'Halls & Dormitories (' . $dormsCount . ' Suites)';
+            if ($reqCategory === 'guesthouses')
+              echo 'Guesthouses (' . $guesthousesCount . ' Villas)';
+            elseif ($reqCategory === 'dormitories')
+              echo 'Dormitories (' . $dormsCount . ' Suites)';
             elseif ($reqCategory === 'halls')
               echo 'Halls (' . $hallsCount . ' Available)';
             else
@@ -479,7 +488,9 @@ $totalCount = count($dbFacilities);
             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
           </svg>
           <span id="categorySectionHeading"><?php
-          if ($reqCategory === 'dormitories')
+          if ($reqCategory === 'guesthouses')
+            echo 'AVAILABLE GUESTHOUSE VILLAS (' . $guesthousesCount . '):';
+          elseif ($reqCategory === 'dormitories')
             echo 'AVAILABLE DORMITORY SUITES (' . $dormsCount . '):';
           elseif ($reqCategory === 'halls')
             echo 'AVAILABLE HALLS & VENUES (' . $hallsCount . '):';
@@ -495,13 +506,17 @@ $totalCount = count($dbFacilities);
         <?php 
         $hasSelectedCard = false;
         foreach ($dbFacilities as $index => $f): 
-          $isDorm = strtolower($f['type']) === 'dorms';
-          $cardCategory = $isDorm ? 'dormitories' : 'halls';
+          $ftype = strtolower($f['type']);
+          $isDorm = ($ftype === 'dorms');
+          $isGuesthouse = ($ftype === 'guesthouses');
+          $cardCategory = $isDorm ? 'dormitories' : ($isGuesthouse ? 'guesthouses' : 'halls');
           
           $displayStyle = '';
-          if ($reqCategory === 'halls' && $isDorm) {
+          if ($reqCategory === 'halls' && ($isDorm || $isGuesthouse)) {
             $displayStyle = 'display: none;';
           } elseif ($reqCategory === 'dormitories' && !$isDorm) {
+            $displayStyle = 'display: none;';
+          } elseif ($reqCategory === 'guesthouses' && !$isGuesthouse) {
             $displayStyle = 'display: none;';
           }
           
@@ -527,9 +542,11 @@ $totalCount = count($dbFacilities);
             $cardSlug = 'serrano-hall';
           } elseif (strpos($lowerName, 'rdec') !== false || strpos($lowerName, 'training') !== false) {
             $cardSlug = 'rdec-training';
+          } elseif (strpos($lowerName, 'guesthouse') !== false) {
+            $cardSlug = 'guesthouse-' . $f['id'];
           }
 
-          $imgSrc = !empty($f['image']) ? $f['image'] : ($isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg');
+          $imgSrc = !empty($f['image']) ? $f['image'] : ($isGuesthouse ? 'assets/images/guesthouse.jpg' : ($isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg'));
           $capDisplay = $isDorm ? ($f['capacity'] . ' PAX / ' . ($f['beds'] ?? 0) . ' BEDS') : ($f['capacity'] . ' PAX');
           if (stripos($f['capacity'], 'PAX') !== false) {
             $capDisplay = $f['capacity'];
@@ -539,10 +556,10 @@ $totalCount = count($dbFacilities);
           if (!empty($f['features'])) {
             $featuresList = array_map('trim', explode(',', $f['features']));
           } else {
-            $featuresList = $isDorm ? ['Air-conditioned', 'Single Bunks', 'Lockers', 'Study Area'] : ['Central Aircon', 'PA Sound System', 'HD Projector', 'Stage'];
+            $featuresList = $isGuesthouse ? ['Private Kitchenette', 'Hot & Cold Shower', 'Living Area', 'High-Speed Wi-Fi', 'Airconditioned'] : ($isDorm ? ['Air-conditioned', 'Single Bunks', 'Lockers', 'Study Area'] : ['Central Aircon', 'PA Sound System', 'HD Projector', 'Stage']);
           }
           
-          $categoryTag = strtoupper($f['type']) . ($isDorm ? ' &bull; DORMITORY SUITE' : ' &bull; VENUE & HALLS');
+          $categoryTag = strtoupper($f['type']) . ($isGuesthouse ? ' &bull; GUESTHOUSE VILLA' : ($isDorm ? ' &bull; DORMITORY SUITE' : ' &bull; VENUE & HALLS'));
           
           $galleryPhotos = getFacilityGallery($f);
           $modalPayload = [
@@ -563,7 +580,7 @@ $totalCount = count($dbFacilities);
           ];
           $jsonPayload = htmlspecialchars(json_encode($modalPayload, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8');
         ?>
-        <article class="facility-choice-card <?= $isDorm ? 'dorm-suite-card' : '' ?> <?= $isMaint ? 'under-maintenance' : ($isSelected ? 'selected' : '') ?>"
+        <article class="facility-choice-card <?= $isDorm ? 'dorm-suite-card' : '' ?> <?= $isGuesthouse ? 'guesthouse-card' : '' ?> <?= $isMaint ? 'under-maintenance' : ($isSelected ? 'selected' : '') ?>"
           data-id="<?= $cardSlug ?>"
           data-facility-db-id="<?= $f['id'] ?>"
           data-name="<?= htmlspecialchars($f['name']) ?>"

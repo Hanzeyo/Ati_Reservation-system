@@ -111,6 +111,8 @@ foreach ($facilitiesList as $row) {
     $categoryLabel = 'Training & Function Hall';
     if ($row['type'] === 'dorms') {
         $categoryLabel = 'Dormitory Suite';
+    } elseif ($row['type'] === 'guesthouses') {
+        $categoryLabel = 'Guesthouse Villa';
     } elseif ($row['type'] === 'dining') {
         $categoryLabel = 'Dining Facility';
     }
@@ -126,7 +128,7 @@ foreach ($facilitiesList as $row) {
         'cooling_type' => !empty($row['cooling_type']) ? $row['cooling_type'] : ($row['type'] === 'dorms' ? 'Fan Cooled (Non-Aircon)' : 'Full Climate Control'),
         'rate' => $row['rate'] ?? '',
         'location' => $row['location'] ?? 'ATI Central Office',
-        'image' => !empty($row['image']) ? $row['image'] : 'assets/images/function_hall.jpg',
+        'image' => !empty($row['image']) ? $row['image'] : ($row['type'] === 'guesthouses' ? 'assets/images/guesthouse.jpg' : ($row['type'] === 'dorms' ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg')),
         'features' => array_values($featuresArray),
         'status' => $status,
         'statusLabel' => $statusLabel,
@@ -148,6 +150,7 @@ $totalActiveAssets = count(array_filter($facilitiesData, fn($f) => !$f['isArchiv
 $archivedCount = count(array_filter($facilitiesData, fn($f) => $f['isArchived']));
 $hallsCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'halls' && !$f['isArchived']));
 $dormsCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'dorms' && !$f['isArchived']));
+$guesthousesCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'guesthouses' && !$f['isArchived']));
 $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 'dining' && !$f['isArchived']));
 ?>
 <!DOCTYPE html>
@@ -380,6 +383,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
               <button type="button" class="facility-filter-tab active" data-category="all" onclick="filterFacilitiesByCategory('all', this)">All Assets (<?= $totalActiveAssets ?>)</button>
               <button type="button" class="facility-filter-tab" data-category="halls" onclick="filterFacilitiesByCategory('halls', this)">Training &amp; Function Halls (<?= $hallsCount ?>)</button>
               <button type="button" class="facility-filter-tab" data-category="dorms" onclick="filterFacilitiesByCategory('dorms', this)">Dormitory Suites (<?= $dormsCount ?>)</button>
+              <button type="button" class="facility-filter-tab" data-category="guesthouses" onclick="filterFacilitiesByCategory('guesthouses', this)">Guesthouses (<?= $guesthousesCount ?>)</button>
               <button type="button" class="facility-filter-tab" data-category="dining" onclick="filterFacilitiesByCategory('dining', this)">Dining Pavilions (<?= $diningCount ?>)</button>
               <button type="button" class="facility-filter-tab" data-category="maintenance" onclick="filterFacilitiesByCategory('maintenance', this)">Maintenance Holds (<?= $maintenanceCount ?>)</button>
               <button type="button" class="facility-filter-tab" data-category="archived" onclick="filterFacilitiesByCategory('archived', this)" style="<?= $archivedCount > 0 ? 'color: #b91c1c; font-weight: 700;' : '' ?>">Trash / Archive (<?= $archivedCount ?>)</button>
@@ -853,6 +857,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
               <select id="editFacilityCategory" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
                 <option value="halls">Training & Function Hall</option>
                 <option value="dorms">Dormitory Suite</option>
+                <option value="guesthouses">Guesthouse Villa</option>
                 <option value="dining">Dining Facility</option>
               </select>
             </div>
@@ -893,6 +898,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
 
                   <select id="editFacilityPresetSelect" onchange="applyPresetImage(this.value, 'editFacilityImgPreview', 'editFacilityImageSrc')" style="padding: 0.38rem 0.65rem; border: 1.2px solid #dce8e0; border-radius: 6px; font-family: inherit; font-size: 0.78rem; color: #2e4738;">
                     <option value="">-- Choose official photo preset --</option>
+                    <option value="assets/images/guesthouse.jpg">Guesthouse Villa (Official Compound)</option>
                     <option value="assets/images/carandang_room.jpg">Carandang Room (Executive Boardroom)</option>
                     <option value="assets/images/orosa_hall.jpg">Orosa Hall</option>
                     <option value="assets/images/rdec_training_1.jpg">RDEC Training Hall 1</option>
@@ -1007,6 +1013,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
               <select id="addFacilityCategory" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
                 <option value="halls">Training & Function Hall</option>
                 <option value="dorms">Dormitory Suite</option>
+                <option value="guesthouses">Guesthouse Villa</option>
                 <option value="dining">Dining Facility</option>
               </select>
             </div>
@@ -1046,6 +1053,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                   <input type="hidden" id="addFacilityImageSrc" value="assets/images/function_hall.jpg">
 
                   <select id="addFacilityPresetSelect" onchange="applyPresetImage(this.value, 'addFacilityImgPreview', 'addFacilityImageSrc')" style="padding: 0.38rem 0.65rem; border: 1.2px solid #dce8e0; border-radius: 6px; font-family: inherit; font-size: 0.78rem; color: #2e4738;">
+                    <option value="assets/images/guesthouse.jpg">Guesthouse Villa (Official Compound)</option>
                     <option value="assets/images/carandang_room.jpg">Carandang Room (Executive Boardroom)</option>
                     <option value="assets/images/orosa_hall.jpg">Orosa Hall</option>
                     <option value="assets/images/rdec_training_1.jpg">RDEC Training Hall 1</option>

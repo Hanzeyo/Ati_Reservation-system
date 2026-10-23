@@ -388,6 +388,55 @@ function initModals() {
       desc: 'Modern trainee dormitory suite located on the 3rd floor offering quiet, air-conditioned accommodations with dedicated study desks and individual secured closets.',
       capacity: 'Air-Conditioned Trainee Suite • ₱500 / night',
       features: ['Full Air-Conditioning System', 'Individual Secured Steel Lockers', 'Study Workstations & Reading Lamps', 'High-Speed Wi-Fi & Lounge Access']
+    },
+    'guesthouse-1': {
+      title: 'Guesthouse 1 (Presidential Villa)',
+      image: 'assets/images/guesthouse.jpg',
+      desc: 'Premier executive guesthouse villa featuring an elegant master bedroom, private ensuite bathroom with hot shower, workstation desk, and direct views of the lush compound gardens.',
+      capacity: 'Executive Villa • ₱2,000 / night',
+      features: ['Full Air-Conditioning & Smart HDTV', 'Private Ensuite Restroom & Hot Shower', 'Mini Refrigerator & Beverage Bar', 'Executive Workstation & Fast Wi-Fi']
+    },
+    'guesthouse-2': {
+      title: 'Guesthouse 2 (Director’s Lodge)',
+      image: 'assets/images/guesthouse.jpg',
+      desc: 'Spacious residential lodge tailored for senior institutional officials and international delegations, equipped with comfortable seating, study desk, and private veranda.',
+      capacity: 'Executive Lodge • ₱2,000 / night',
+      features: ['Full Climate Control & Smart TV', 'Ensuite Restroom & Amenities Kit', 'Private Balcony Veranda Access', 'Executive Workstation & Wi-Fi']
+    },
+    'guesthouse-3': {
+      title: 'Guesthouse 3 (Senior Cottage)',
+      image: 'assets/images/guesthouse.jpg',
+      desc: 'Peaceful garden cottage equipped with plush bedding, dining nook, hot shower, high-speed Wi-Fi, and climate control in a private grove.',
+      capacity: 'Private Cottage • ₱1,800 / night',
+      features: ['Full Air-Conditioning', 'Private Restroom with Water Heater', 'Dining Nook & Refrigerator', 'Peaceful Botanical Garden View']
+    },
+    'guesthouse-4': {
+      title: 'Guesthouse 4 (Resource Residence)',
+      image: 'assets/images/guesthouse.jpg',
+      desc: 'Quiet, secluded accommodation ideal for training resource speakers, guest professors, and visiting technical specialists.',
+      capacity: 'Guest Residence • ₱1,800 / night',
+      features: ['Air Conditioning & Study Workstation', 'Private Restroom & Hot Shower', 'Smart Television & Wi-Fi', 'Quiet Courtyard Location']
+    },
+    'guesthouse-5': {
+      title: 'Guesthouse 5 (Delegates Home)',
+      image: 'assets/images/guesthouse.jpg',
+      desc: 'Comfortable multi-guest residential unit featuring two private bedrooms, living hall, personal refrigerator, and smart TV.',
+      capacity: 'Residential Unit • ₱1,800 / night',
+      features: ['Two Private Bedrooms', 'Shared Lounge & Smart TV', 'Private Bathroom & Hot Shower', 'High-Speed Wi-Fi Access']
+    },
+    'guesthouse-6': {
+      title: 'Guesthouse 6 (Fellows Lodge)',
+      image: 'assets/images/guesthouse.jpg',
+      desc: 'Cozy modern lodge featuring twin beds, private bath, dedicated writing desks, and relaxing views of the botanical landscape.',
+      capacity: 'Fellows Lodge • ₱1,500 / night',
+      features: ['Twin Bed Accommodation', 'Air-Conditioned Comfort', 'Private Restroom & Shower', 'Dedicated Writing Desks']
+    },
+    'guesthouse-7': {
+      title: 'Guesthouse 7 (Lecturer Villa)',
+      image: 'assets/images/guesthouse.jpg',
+      desc: 'Executive guest villa with serene garden surroundings, Queen bed, modern work desk, and full hospitality amenities.',
+      capacity: 'Lecturer Villa • ₱1,500 / night',
+      features: ['Executive Queen Bed', 'Full Air-Conditioning', 'Ensuite Restroom & Hot Water', 'Workstation & Wi-Fi Access']
     }
   };
 
@@ -423,7 +472,9 @@ function initModals() {
 
     const bookBtn = facilityModal ? facilityModal.querySelector('.btn-reserve-slot') : null;
     if (bookBtn) {
-      bookBtn.textContent = facilityKey.startsWith('dorm') ? 'Book this Dormitory' : 'Book this Facility';
+      const isGuesthouse = facilityKey.startsWith('guesthouse');
+      const isDorm = facilityKey.startsWith('dorm');
+      bookBtn.textContent = isGuesthouse ? 'Book this Guesthouse' : (isDorm ? 'Book this Dormitory' : 'Book this Facility');
     }
 
     openModal(facilityModal);
@@ -644,147 +695,140 @@ function initRealtimeOfficeHours() {
 }
 
 /* ==========================================================================
-   7. Vertical Animated Facilities Scroller (Infinite One-Way Loop with Blur)
+   7. Vertical Animated Facilities & Guesthouses Scroller (Silky Smooth Loop)
    ========================================================================== */
-function initVerticalFacilitiesScroller() {
-  const wrapper = document.getElementById('facilitiesShowcaseWrapper');
-  const viewport = document.getElementById('facilitiesViewport');
-  const track = document.getElementById('facilitiesTrack');
+function createVerticalShowcaseScroller({ wrapperId, viewportId, trackId, interval = 3500 }) {
+  const wrapper = document.getElementById(wrapperId);
+  const viewport = document.getElementById(viewportId);
+  const track = document.getElementById(trackId);
+  if (!wrapper || !viewport || !track) return;
   const originalRows = Array.from(track.querySelectorAll('.facility-row'));
+  if (originalRows.length < 2) return;
 
-  if (!wrapper || !viewport || !track || originalRows.length < 2) return;
+  // Build seamless loop track with full preview buffer:
+  // [LastRowCloneBefore, Row 0, ... Row N-1, FirstRowCloneAfter, SecondRowCloneAfter]
+  // Having both Row 0 and Row 1 clones at the end ensures the bottom frosted blur always
+  // displays the next preview row during loop reset with 100% pixel-perfect continuity.
+  const lastRowCloneBefore = originalRows[originalRows.length - 1].cloneNode(true);
+  lastRowCloneBefore.classList.remove('active');
+  lastRowCloneBefore.setAttribute('aria-hidden', 'true');
+  track.insertBefore(lastRowCloneBefore, originalRows[0]);
 
-  // Build infinite loop track: [Row1CloneBefore, Row0, Row1, Row0CloneAfter]
-  const row1CloneBefore = originalRows[1].cloneNode(true);
-  row1CloneBefore.classList.remove('active');
-  row1CloneBefore.setAttribute('aria-hidden', 'true');
-  track.insertBefore(row1CloneBefore, originalRows[0]);
+  const firstRowCloneAfter = originalRows[0].cloneNode(true);
+  firstRowCloneAfter.classList.remove('active');
+  firstRowCloneAfter.setAttribute('aria-hidden', 'true');
+  track.appendChild(firstRowCloneAfter);
 
-  const row0CloneAfter = originalRows[0].cloneNode(true);
-  row0CloneAfter.classList.remove('active');
-  row0CloneAfter.setAttribute('aria-hidden', 'true');
-  track.appendChild(row0CloneAfter);
+  const secondRowCloneAfter = originalRows[1].cloneNode(true);
+  secondRowCloneAfter.classList.remove('active');
+  secondRowCloneAfter.setAttribute('aria-hidden', 'true');
+  track.appendChild(secondRowCloneAfter);
 
   const allRows = Array.from(track.querySelectorAll('.facility-row'));
   const allCards = Array.from(track.querySelectorAll('.facility-card-item'));
 
+  const prependedCardCount = lastRowCloneBefore.querySelectorAll('.facility-card-item').length;
+  const totalOriginalCards = originalRows.reduce((sum, r) => sum + r.querySelectorAll('.facility-card-item').length, 0);
+
+  const firstOriginalCardIndex = prependedCardCount;
+  const lastOriginalCardIndex = prependedCardCount + totalOriginalCards - 1;
+  const cloneAfterFirstCardIndex = prependedCardCount + totalOriginalCards;
+
+  const firstOriginalRowIndex = 1;
+  const lastOriginalRowIndex = originalRows.length;
+  const cloneAfterRowIndex = originalRows.length + 1;
+
   const isMobile = () => window.innerWidth <= 768;
   let wasMobile = isMobile();
 
-  // Desktop indexes: 1 = Row 0, 2 = Row 1 (Loop: 1 -> 2 -> 3 (jump to 1))
-  // Mobile indexes: 3 = Carandang, 4 = Orosa, 5 = RDEC 1, 6 = RDEC 2, 7 = Function, 8 = Serrano (Loop: 3..8 -> 9 (jump to 3))
-  let currentIndex = isMobile() ? 3 : 1;
+  let currentIndex = isMobile() ? firstOriginalCardIndex : firstOriginalRowIndex;
   let isAnimating = false;
   let autoTimer = null;
   let isHovered = false;
 
-  function getElementTrackOffset(element) {
-    let top = 0;
-    let curr = element;
-    while (curr && curr !== track) {
-      top += curr.offsetTop;
-      curr = curr.offsetParent;
+  // Pre-calculate and cache all Y offsets to completely eliminate layout thrashing during animation
+  let cachedOffsets = [];
+  function updateOffsets() {
+    cachedOffsets = [];
+    if (isMobile()) {
+      allCards.forEach(card => {
+        let top = 0;
+        let curr = card;
+        while (curr && curr !== track) {
+          top += curr.offsetTop;
+          curr = curr.offsetParent;
+        }
+        cachedOffsets.push(Math.round(12 - top));
+      });
+    } else {
+      allRows.forEach(row => {
+        let top = 0;
+        let curr = row;
+        while (curr && curr !== track) {
+          top += curr.offsetTop;
+          curr = curr.offsetParent;
+        }
+        cachedOffsets.push(Math.round(16 - top));
+      });
     }
-    return top;
   }
 
   function getTargetY(index) {
-    if (isMobile()) {
-      const card = allCards[index];
-      if (!card) return 0;
-      const topPadding = 12;
-      return Math.round(topPadding - getElementTrackOffset(card));
-    } else {
-      const row = allRows[index];
-      if (!row) return 0;
-      const topPadding = 16;
-      return Math.round(topPadding - getElementTrackOffset(row));
-    }
-  }
-
-  function setClasses(activeIndex) {
-    if (isMobile()) {
-      allCards.forEach((card, idx) => {
-        const isActive = idx === activeIndex;
-        card.classList.toggle('active', isActive);
-        card.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-      });
-      allRows.forEach((row) => {
-        row.classList.add('active');
-        row.removeAttribute('aria-hidden');
-      });
-    } else {
-      allRows.forEach((row, idx) => {
-        const isActive = idx === activeIndex;
-        row.classList.toggle('active', isActive);
-        row.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-      });
-    }
+    return cachedOffsets[index] !== undefined ? cachedOffsets[index] : 0;
   }
 
   function goTo(index, animate = true) {
     currentIndex = index;
-    setClasses(currentIndex);
+    const targetY = getTargetY(currentIndex);
 
     if (animate) {
       isAnimating = true;
-      track.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.35, 1)';
+      track.style.transition = 'transform 0.95s cubic-bezier(0.25, 1, 0.35, 1)';
     } else {
       track.style.transition = 'none';
     }
 
-    track.style.transform = `translateY(${getTargetY(currentIndex)}px)`;
+    // Force hardware-accelerated 3D composition with subpixel smoothing
+    track.style.transform = `translate3d(0, ${targetY}px, 0)`;
 
     if (!animate) {
-      void track.offsetHeight; // Force reflow
+      // Synchronously flush styles to ensure instant, glitch-free loop reset
+      void track.offsetHeight;
     }
   }
 
-  // Seamless jump when reaching clones at the boundaries
+  // Seamless instant jump when reaching clones at the boundaries
   track.addEventListener('transitionend', (e) => {
-    if (e.target !== track) return;
+    if (e.target !== track || e.propertyName !== 'transform') return;
     isAnimating = false;
 
     if (isMobile()) {
-      // Reached clone after (index 9 -> identical to original Carandang at index 3)
-      if (currentIndex === 9) {
-        goTo(3, false);
-      }
-      // Reached clone before (index 2 -> identical to original Serrano at index 8)
-      else if (currentIndex === 2) {
-        goTo(8, false);
+      if (currentIndex === cloneAfterFirstCardIndex) {
+        goTo(firstOriginalCardIndex, false);
+      } else if (currentIndex === firstOriginalCardIndex - 1) {
+        goTo(lastOriginalCardIndex, false);
       }
     } else {
-      // Reached clone after (index 3 -> identical to original Row 0 at index 1)
-      if (currentIndex === 3) {
-        goTo(1, false);
-      }
-      // Reached clone before (index 0 -> identical to original Row 1 at index 2)
-      else if (currentIndex === 0) {
-        goTo(2, false);
+      if (currentIndex === cloneAfterRowIndex) {
+        goTo(firstOriginalRowIndex, false);
+      } else if (currentIndex === 0) {
+        goTo(lastOriginalRowIndex, false);
       }
     }
   });
 
-  // Always scrolls forward in a continuous, one-directional loop
   function next() {
     if (isAnimating) return;
     goTo(currentIndex + 1, true);
   }
 
-  function prev() {
-    if (isAnimating) return;
-    goTo(currentIndex - 1, true);
-  }
-
-  // Auto-play scrolling (forward one-way loop every 2.2 seconds)
   function startAuto() {
     stopAuto();
     autoTimer = setInterval(() => {
       if (!isHovered && !isAnimating) {
         next();
       }
-    }, 2200);
+    }, interval);
   }
 
   function stopAuto() {
@@ -794,46 +838,60 @@ function initVerticalFacilitiesScroller() {
     }
   }
 
-  wrapper.addEventListener('mouseenter', () => { isHovered = true; });
-  wrapper.addEventListener('mouseleave', () => { isHovered = false; });
+  // Smooth pause when mouse hovers or touch begins
+  wrapper.addEventListener('mouseenter', () => { isHovered = true; }, { passive: true });
+  wrapper.addEventListener('mouseleave', () => { isHovered = false; }, { passive: true });
   wrapper.addEventListener('touchstart', () => { isHovered = true; }, { passive: true });
   wrapper.addEventListener('touchend', () => { isHovered = false; }, { passive: true });
 
-  // Layout calculations & dynamic image loading handlers
+  // Update layout offsets after fonts/images load
+  function refreshLayout() {
+    updateOffsets();
+    goTo(currentIndex, false);
+  }
+
   const trackImgs = track.querySelectorAll('img');
   trackImgs.forEach((img) => {
     if (!img.complete) {
-      img.addEventListener('load', () => {
-        goTo(currentIndex, false);
-      }, { once: true });
+      img.addEventListener('load', refreshLayout, { once: true });
     }
   });
 
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(() => {
-      goTo(currentIndex, false);
-    });
+    document.fonts.ready.then(refreshLayout);
   }
 
-  requestAnimationFrame(() => {
-    goTo(currentIndex, false);
-  });
-  setTimeout(() => { goTo(currentIndex, false); }, 150);
-  setTimeout(() => { goTo(currentIndex, false); }, 500);
+  requestAnimationFrame(refreshLayout);
+  setTimeout(refreshLayout, 150);
+  setTimeout(refreshLayout, 450);
 
-  window.addEventListener('load', () => {
-    goTo(currentIndex, false);
-  });
+  window.addEventListener('load', refreshLayout);
   window.addEventListener('resize', () => {
     const nowMobile = isMobile();
     if (nowMobile !== wasMobile) {
       wasMobile = nowMobile;
-      currentIndex = nowMobile ? 3 : 1;
+      currentIndex = nowMobile ? firstOriginalCardIndex : firstOriginalRowIndex;
     }
-    goTo(currentIndex, false);
+    refreshLayout();
   });
 
   startAuto();
+}
+
+function initVerticalFacilitiesScroller() {
+  createVerticalShowcaseScroller({
+    wrapperId: 'facilitiesShowcaseWrapper',
+    viewportId: 'facilitiesViewport',
+    trackId: 'facilitiesTrack',
+    interval: 3500
+  });
+
+  createVerticalShowcaseScroller({
+    wrapperId: 'guesthousesShowcaseWrapper',
+    viewportId: 'guesthousesViewport',
+    trackId: 'guesthousesTrack',
+    interval: 3500
+  });
 }
 
 /* ==========================================================================

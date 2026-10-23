@@ -13,9 +13,13 @@ $allFacilities = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
 $hallsCount = 0;
 $dormsCount = 0;
+$guesthousesCount = 0;
 foreach ($allFacilities as $f) {
-  if (strtolower($f['type']) === 'dorms') {
+  $ftype = strtolower($f['type']);
+  if ($ftype === 'dorms') {
     $dormsCount++;
+  } elseif ($ftype === 'guesthouses') {
+    $guesthousesCount++;
   } else {
     $hallsCount++;
   }
@@ -154,9 +158,15 @@ $totalFacilities = count($allFacilities);
        ========================================================================== */
     .portal-category-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 1.25rem;
       margin-bottom: 0;
+    }
+
+    @media (max-width: 900px) {
+      .portal-category-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .portal-cat-card {
@@ -303,6 +313,63 @@ $totalFacilities = count($allFacilities);
     #cardCatDormitories .cat-card-desc {
       font-size: 0.84rem;
       color: #5c442a;
+      line-height: 1.45;
+      margin-bottom: 0;
+      flex-grow: 1;
+    }
+
+    /* ---------------- 3. GUESTHOUSES CARD (TEAL / EMERALD THEME) ---------------- */
+    #cardCatGuesthouses {
+      background: linear-gradient(165deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 253, 250, 0.97) 50%, rgba(230, 250, 246, 0.96) 100%);
+      border: 2px solid rgba(153, 246, 228, 0.9);
+      border-top: 4px solid #0f766e;
+      box-shadow: 0 12px 30px rgba(15, 118, 110, 0.15), 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    #cardCatGuesthouses:hover {
+      border-color: #0f766e;
+      background: linear-gradient(165deg, #ffffff 0%, #ecfdf5 100%);
+      transform: translateY(-5px);
+      box-shadow: 0 18px 45px rgba(15, 118, 110, 0.25), 0 0 0 2px rgba(15, 118, 110, 0.3);
+    }
+
+    #cardCatGuesthouses .cat-count-badge {
+      display: inline-flex;
+      align-items: center;
+      background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+      color: #ffffff;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 0.28rem 0.85rem;
+      border-radius: 9999px;
+      box-shadow: 0 3px 10px rgba(15, 118, 110, 0.24);
+      letter-spacing: 0.02em;
+    }
+
+    #cardCatGuesthouses .cat-icon-container {
+      background: linear-gradient(135deg, #ccfbf1 0%, #99f6e4 100%);
+      border: 1.5px solid #5eead4;
+      box-shadow: 0 6px 18px rgba(15, 118, 110, 0.1);
+    }
+
+    #cardCatGuesthouses:hover .cat-icon-container {
+      background: linear-gradient(135deg, #99f6e4 0%, #5eead4 100%);
+      transform: scale(1.03);
+      border-color: #0f766e;
+      box-shadow: 0 8px 22px rgba(15, 118, 110, 0.16);
+    }
+
+    #cardCatGuesthouses .cat-card-title {
+      font-family: var(--font-serif);
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #134e4a;
+      margin-bottom: 0.3rem;
+    }
+
+    #cardCatGuesthouses .cat-card-desc {
+      font-size: 0.84rem;
+      color: #234e49;
       line-height: 1.45;
       margin-bottom: 0;
       flex-grow: 1;
@@ -794,6 +861,22 @@ $totalFacilities = count($allFacilities);
         <h2 class="cat-card-title">Dormitories</h2>
         <p class="cat-card-desc">Executive VIP suites, shared trainee quarters, guest lecturer rooms &amp; twin
           accommodations.</p>
+      </a>
+
+      <!-- 3. Guesthouses Category Card -->
+      <a href="booking.php?category=guesthouses" class="portal-cat-card" id="cardCatGuesthouses" title="Explore ATI Guesthouses">
+        <div class="cat-card-header">
+          <span class="cat-count-badge"><?= $guesthousesCount ?> Guesthouses Available</span>
+        </div>
+        <div class="cat-icon-container">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" fill="#ccfbf1"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <h2 class="cat-card-title">Guesthouses</h2>
+        <p class="cat-card-desc">Private guest villas, executive staff quarters &amp; resource cottages with home comforts.</p>
       </a>
 
     </div>
