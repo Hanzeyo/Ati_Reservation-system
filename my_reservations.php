@@ -104,8 +104,8 @@ foreach ($reservationsList as $resItem) {
        ========================================================================== -->
   <header class="booking-topbar">
     <div class="booking-topbar-container">
-      <!-- Brand Logo & Title -->
-      <a href="home.php" class="booking-brand" style="text-decoration: none;" title="ATI Reservation Portal">
+      <!-- Brand Logo & Title (Scrolls to Top of Portal) -->
+      <a href="#top" class="booking-brand" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" style="text-decoration: none;" title="Scroll back to top of portal">
         <img src="assets/images/ATI_Logo.png" alt="Agricultural Training Institute Logo" class="booking-brand-logo">
         <div class="booking-brand-text">
           <h1>Agricultural Training Institute</h1>

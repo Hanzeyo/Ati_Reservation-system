@@ -91,16 +91,7 @@ const _formattedTodayDate = `${_padZero(_initMonth + 1)}/${_padZero(_initDay)}/$
 // Global state
 const bookingState = {
   currentStep: 1,
-  selectedFacility: {
-    id: 'function-hall',
-    name: 'Function Hall',
-    rate: '₱5,000/day',
-    capacity: '200 PAX',
-    type: 'halls',
-    setupName: 'Theater Setup',
-    setupCap: '200 PAX',
-    location: 'Main Administration Building • Ground Floor'
-  },
+  selectedFacility: null,
   selectedStartDate: { year: _initYear, month: _initMonth, day: _initDay },
   selectedEndDate: { year: _initYear, month: _initMonth, day: _initDay },
   selectedStartDay: _initDay,
@@ -313,14 +304,20 @@ function selectFacilityCard(card, openModal = true) {
   }
   const cards = document.querySelectorAll('.facility-choice-card');
   const isDorm = card.dataset.facilityType === 'dormitories' || (card.dataset.id && card.dataset.id.startsWith('dorm-floor-'));
+  const isGuesthouse = card.dataset.facilityType === 'guesthouses' || (card.dataset.id && card.dataset.id.startsWith('guesthouse-'));
 
   cards.forEach(c => {
     c.classList.remove('selected');
+    const badge = c.querySelector('.dorm-card-selected-room-badge');
+    if (badge) badge.style.display = 'none';
     const btn = c.querySelector('.btn-select-facility');
     if (btn) {
       const isCDorm = c.dataset.facilityType === 'dormitories' || (c.dataset.id && c.dataset.id.startsWith('dorm-floor-'));
+      const isCGuest = c.dataset.facilityType === 'guesthouses' || (c.dataset.id && c.dataset.id.startsWith('guesthouse-'));
       if (isCDorm) {
         btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Room &amp; View Floor Plan`;
+      } else if (isCGuest) {
+        btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Villa &amp; View Layout`;
       } else {
         btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Setup &amp; View Floor Plan`;
       }
@@ -335,7 +332,7 @@ function selectFacilityCard(card, openModal = true) {
   let setupRate = null;
   let location = null;
 
-  if (!isDorm) {
+  if (!isDorm && !isGuesthouse) {
     location = hallLayoutData[card.dataset.id]?.location || 'ATI Institutional Complex';
     setupRate = card.dataset.rate || null;
     if (bookingState.selectedFacility?.id === card.dataset.id && bookingState.selectedFacility?.setupName) {
@@ -361,9 +358,9 @@ function selectFacilityCard(card, openModal = true) {
     rate: card.dataset.rate,
     capacity: card.dataset.capacity,
     type: card.dataset.facilityType,
-    roomNumber: isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.roomNumber || null) : null) : null,
-    floor: isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.floor || null) : null) : null,
-    roomRate: isDorm ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.roomRate || null) : null) : null,
+    roomNumber: (isDorm || isGuesthouse) ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.roomNumber || null) : null) : null,
+    floor: (isDorm || isGuesthouse) ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.floor || null) : null) : null,
+    roomRate: (isDorm || isGuesthouse) ? (bookingState.selectedFacility?.id === card.dataset.id ? (bookingState.selectedFacility?.roomRate || null) : null) : null,
     setupId: setupId,
     setupName: setupName,
     setupCap: setupCap,
@@ -372,13 +369,7 @@ function selectFacilityCard(card, openModal = true) {
     occupiedOnDefaultDate: false
   };
 
-  if (!isDorm && setupName) {
-    const badge = card.querySelector('.hall-selected-setup-badge');
-    const badgeText = card.querySelector('.d-room-text');
-    if (badge && badgeText) {
-      badgeText.textContent = `✓ ${setupName} Selected (${setupCap || ''})`;
-      badge.style.display = 'flex';
-    }
+  if (!isDorm && !isGuesthouse && setupName) {
     const btn = card.querySelector('.btn-select-facility');
     if (btn) {
       btn.innerHTML = `✓ ${setupName} Selected (Click to change)`;
@@ -411,7 +402,7 @@ function initFacilitySelection() {
           }
           return;
         }
-        selectFacilityCard(card, true);
+        openFacilityModal(card.dataset.id);
       });
     }
 
@@ -422,7 +413,7 @@ function initFacilitySelection() {
         }
         return;
       }
-      selectFacilityCard(card, true);
+      openFacilityModal(card.dataset.id);
     });
   });
 
@@ -451,19 +442,36 @@ function initFacilitySelection() {
     }
   });
 
-  // Dynamically pre-initialize the currently selected card (or first visible AVAILABLE card)
-  const initialCard = document.querySelector('.facility-choice-card.selected:not(.under-maintenance):not([data-status="maintenance"])') || 
-                      document.querySelector('.facility-choice-card:not([style*="display: none"]):not(.under-maintenance):not([data-status="maintenance"])');
+  // Dynamically initialize only if a card was explicitly marked as selected in HTML
+  const initialCard = document.querySelector('.facility-choice-card.selected:not(.under-maintenance):not([data-status="maintenance"])');
   if (initialCard) {
     selectFacilityCard(initialCard, false);
   } else {
-    const emptyState = document.getElementById('bookingEmptyState');
     const step1Summary = document.getElementById('step1SummaryCard');
     const proceedBtn = document.getElementById('btnProceedStep');
-    if (emptyState) emptyState.style.display = 'block';
     if (step1Summary) step1Summary.style.display = 'none';
     if (proceedBtn) proceedBtn.style.display = 'none';
   }
+}
+
+const guesthouseDetailsMap = {
+  17: { badge: 'Presidential Villa', specs: 'Master Suite & Deluxe Quarters • Hot & Cold Shower • Garden Compound' },
+  18: { badge: "Director's Lodge", specs: 'Senior Executive Veranda & Suite • Study Desk • VIP Delegation Wing' },
+  19: { badge: 'Senior Cottage', specs: 'Garden Grove Cottage • Climate Control • Private Dining Nook' },
+  20: { badge: 'Resource Residence', specs: 'Visiting Specialist Accommodations • Quiet Secluded Enclave' },
+  21: { badge: 'Delegates Home', specs: 'Dual Private Bedrooms • Living Hall & Kitchenette • Airconditioned' },
+  22: { badge: 'Fellows Lodge', specs: 'Twin Bed Quarters • Writing Desks • Botanical Landscape Views' },
+  23: { badge: 'Lecturer Villa', specs: 'Queen Executive Suite • Garden Surroundings • Hospitality Amenities' }
+};
+
+function getGuesthouseInfo(facilityId, title, rate) {
+  const m = String(facilityId).match(/\d+/);
+  let id = m ? parseInt(m[0], 10) : 1;
+  if (id >= 1 && id <= 7) id = 16 + id;
+  return guesthouseDetailsMap[id] || {
+    badge: `${title || 'ATI Guesthouse'} Villa`,
+    specs: `Private Executive Residence • ${rate || 'Standard Rate'} • Scenic Compound Grounds`
+  };
 }
 
 function renderDormRoomsInModal(facilityId, data, roomsList) {
@@ -471,13 +479,14 @@ function renderDormRoomsInModal(facilityId, data, roomsList) {
   const feedbackBar = document.getElementById('modalRoomFeedback');
   if (!gridEl) return;
 
-  gridEl.className = 'modal-rooms-grid';
+  const isVilla = Boolean(data.isGuesthouse || String(facilityId).startsWith('guesthouse-'));
+  gridEl.className = isVilla ? 'modal-rooms-grid guesthouse-mode' : 'modal-rooms-grid';
   gridEl.innerHTML = '';
 
   if (!roomsList || roomsList.length === 0) {
     gridEl.innerHTML = `
       <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; background: #fbfdfc; border: 1.5px dashed #cde2d5; border-radius: 12px; color: #637f6f;">
-        <p style="margin: 0 0 0.4rem 0; font-weight: 700; color: #174d2f;">No rooms currently registered for this dormitory.</p>
+        <p style="margin: 0 0 0.4rem 0; font-weight: 700; color: #174d2f;">No rooms currently registered for this ${isVilla ? 'guesthouse villa' : 'dormitory'}.</p>
         <p style="margin: 0; font-size: 0.82rem;">An administrator can configure rooms in the Facilities Master Registry.</p>
       </div>
     `;
@@ -490,6 +499,13 @@ function renderDormRoomsInModal(facilityId, data, roomsList) {
     </svg>
   `;
 
+  const villaIconSvg = `
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      <polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  `;
+
   roomsList.forEach(r => {
     const isMaint = (r.status === 'maintenance') || (r.is_maintenance === true);
     const isAvail = !isMaint && (r.available === true || r.status === 'available');
@@ -497,7 +513,7 @@ function renderDormRoomsInModal(facilityId, data, roomsList) {
 
     const box = document.createElement('div');
     const stateClass = isMaint ? 'maintenance' : (isAvail ? 'available' : 'reserved');
-    box.className = `dorm-room-box ${stateClass}`;
+    box.className = `dorm-room-box ${isVilla ? 'guesthouse-unit-box' : ''} ${stateClass}`;
     box.dataset.item = r.num;
     box.dataset.available = isAvail ? 'true' : 'false';
     box.dataset.maintenance = isMaint ? 'true' : 'false';
@@ -516,9 +532,25 @@ function renderDormRoomsInModal(facilityId, data, roomsList) {
       hintClass = 'alt-date';
     }
 
+    let displayTitle = r.num;
+    let subtitleTag = '';
+    if (isVilla) {
+      const parenMatch = r.num.match(/^(.*?)\s*\((.*?)\)$/);
+      if (parenMatch) {
+        displayTitle = parenMatch[1];
+        subtitleTag = parenMatch[2];
+      } else if (r.num.includes('Full Villa') || r.num.includes('Full Lodge') || r.num.includes('Full Cottage') || r.num.includes('Full Residence')) {
+        const parts = r.num.split('-');
+        displayTitle = parts[parts.length - 1];
+        subtitleTag = 'Entire Property';
+      }
+    }
+
     box.innerHTML = `
-      <div class="dorm-bed-icon">${bedIconSvg}</div>
-      <div class="dorm-room-num">${r.num}</div>
+      <div class="dorm-bed-icon">${isVilla ? villaIconSvg : bedIconSvg}</div>
+      <div class="dorm-room-num">${displayTitle}</div>
+      ${subtitleTag ? `<div class="guesthouse-suite-tag">${subtitleTag}</div>` : ''}
+      ${isVilla && r.floor ? `<div class="guesthouse-wing-desc">${r.floor}</div>` : ''}
       <div class="dorm-room-status">${statusText}</div>
       <div class="dorm-room-hint ${hintClass}">${hintText}</div>
     `;
@@ -539,8 +571,8 @@ function renderDormRoomsInModal(facilityId, data, roomsList) {
           const fTitle = document.getElementById('modalFeedbackTitle');
           const fSub = document.getElementById('modalFeedbackSub');
           const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
-          if (fTitle) fTitle.textContent = `Room ${r.num} is Under Maintenance`;
-          if (fSub) fSub.textContent = `This room is temporarily on maintenance hold. Please choose another available room.`;
+          if (fTitle) fTitle.textContent = `${isVilla ? 'Villa Unit' : 'Room'} ${displayTitle} is Under Maintenance`;
+          if (fSub) fSub.textContent = `This ${isVilla ? 'villa unit' : 'room'} is temporarily on maintenance hold. Please choose another available unit.`;
           if (badgeOk) badgeOk.textContent = '⛔ Unavailable';
         }
         return;
@@ -557,14 +589,15 @@ function renderDormRoomsInModal(facilityId, data, roomsList) {
         const fSub = document.getElementById('modalFeedbackSub');
         const badgeOk = feedbackBar.querySelector('.badge-assigned-ok');
 
+        const unitLabel = isVilla ? `${displayTitle}${subtitleTag ? ' (' + subtitleTag + ')' : ''}` : `Room ${r.num}`;
         if (isOcc) {
-          if (fTitle) fTitle.textContent = `Room ${r.num} Selected (Occupied Today)`;
-          if (fSub) fSub.textContent = `${r.floor || data.floor} • Proceed to Step 2 to choose an available alternate date for this room.`;
+          if (fTitle) fTitle.textContent = `${unitLabel} Selected (Occupied Today)`;
+          if (fSub) fSub.textContent = `${r.floor || data.floor} • Proceed to Step 2 to choose an available alternate date for this selection.`;
           if (badgeOk) badgeOk.textContent = '📅 Pick Alternate Date';
         } else {
-          if (fTitle) fTitle.textContent = `Room ${r.num} Selected ✓`;
-          if (fSub) fSub.textContent = `${r.floor || data.floor} • ${data.title} (${data.rate}) • Room Assigned`;
-          if (badgeOk) badgeOk.textContent = '✓ Room Confirmed';
+          if (fTitle) fTitle.textContent = `${unitLabel} Selected ✓`;
+          if (fSub) fSub.textContent = `${r.floor || data.floor} • ${data.title} (${data.rate}) • Unit Assigned`;
+          if (badgeOk) badgeOk.textContent = isVilla ? '✓ Villa Stay Confirmed' : '✓ Room Confirmed';
         }
       }
 
@@ -582,7 +615,7 @@ function openFacilityModal(facilityId) {
   const dbFacilityId = card?.dataset.facilityDbId || String(facilityId).replace(/\D/g, '') || facilityId;
 
   // Load admin-configured custom layouts or auto-generate for custom/newly registered facilities
-  if (card && card.dataset.facilityType !== 'dormitories' && card.dataset.layouts) {
+  if (card && card.dataset.facilityType !== 'dormitories' && card.dataset.facilityType !== 'guesthouses' && card.dataset.layouts) {
     try {
       const parsed = JSON.parse(card.dataset.layouts);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -599,6 +632,7 @@ function openFacilityModal(facilityId) {
 
   if (!dormFloorData[facilityId] && !hallLayoutData[facilityId] && card) {
     const isDormType = card.dataset.facilityType === 'dormitories';
+    const isGuesthouseType = card.dataset.facilityType === 'guesthouses' || String(facilityId).startsWith('guesthouse-');
     if (isDormType) {
       const dormName = card.dataset.name || 'Dormitory Suite';
       dormFloorData[facilityId] = {
@@ -607,7 +641,21 @@ function openFacilityModal(facilityId) {
         desc: 'Air-conditioned rooms with single beds, personal lockers, and comfortable amenities.',
         rate: card.dataset.rate || '₱500 / night',
         rooms: [],
-        isDbLoaded: false
+        isDbLoaded: false,
+        isGuesthouse: false
+      };
+    } else if (isGuesthouseType) {
+      const villaName = card.dataset.name || 'Guesthouse Villa';
+      const capVal = card.dataset.capacity || '4 PAX';
+      const rateVal = card.dataset.rate || '₱2,000 / night';
+      dormFloorData[facilityId] = {
+        title: villaName,
+        floor: 'ATI Residential Compound • Guesthouse Villa',
+        desc: `Private executive residential villa with master bedroom, hot & cold bath, workstation, and serene garden compound views. Capacity: ${capVal}.`,
+        rate: rateVal,
+        rooms: [],
+        isDbLoaded: false,
+        isGuesthouse: true
       };
     } else {
       const hallName = card.dataset.name || 'Institutional Hall';
@@ -646,24 +694,47 @@ function openFacilityModal(facilityId) {
   const legendAvail = document.getElementById('modalLegendAvailText');
   const legendRes = document.getElementById('modalLegendResText');
 
+  const heroCard = document.getElementById('modalGuesthouseHeroCard');
+  const heroImg = document.getElementById('modalGuesthouseHeroImg');
+  const heroBadge = document.getElementById('modalGuesthouseBadgeText');
+  const heroSpecs = document.getElementById('modalGuesthouseSpecs');
+
   if (feedbackBar) feedbackBar.style.display = 'none';
 
   if (isDorm) {
     const data = dormFloorData[facilityId];
-    if (catPill) catPill.textContent = 'DORMITORY FLOOR PLAN & ROOM SELECTION';
-    if (titleEl) titleEl.textContent = data.title;
-    if (floorEl) floorEl.textContent = `${data.floor} • ${data.desc}`;
-    if (rateEl) rateEl.textContent = data.rate;
-    if (legendAvail) legendAvail.innerHTML = '<strong>Available:</strong> Click to assign for your stay';
-    if (legendRes) legendRes.innerHTML = '<strong>Reserved:</strong> Occupied by scheduled delegates';
+    const isVilla = Boolean(data.isGuesthouse || (card && card.dataset.facilityType === 'guesthouses') || String(facilityId).startsWith('guesthouse-'));
+
+    if (isVilla) {
+      if (heroCard) heroCard.style.display = 'block';
+      if (heroImg) heroImg.src = 'assets/images/guesthouse.jpg';
+      const ghInfo = getGuesthouseInfo(facilityId, data.title, data.rate);
+      if (heroBadge) heroBadge.textContent = ghInfo.badge;
+      if (heroSpecs) heroSpecs.textContent = ghInfo.specs;
+
+      if (catPill) catPill.textContent = 'GUESTHOUSE VILLA ALLOCATION & ROOM SELECTION';
+      if (titleEl) titleEl.textContent = data.title;
+      if (floorEl) floorEl.textContent = `${data.floor} • ${data.desc}`;
+      if (rateEl) rateEl.textContent = data.rate;
+      if (legendAvail) legendAvail.innerHTML = '<strong>Available:</strong> Click to assign villa room/suite';
+      if (legendRes) legendRes.innerHTML = '<strong>Reserved:</strong> Occupied by scheduled guests';
+    } else {
+      if (heroCard) heroCard.style.display = 'none';
+      if (catPill) catPill.textContent = 'DORMITORY FLOOR PLAN & ROOM SELECTION';
+      if (titleEl) titleEl.textContent = data.title;
+      if (floorEl) floorEl.textContent = `${data.floor} • ${data.desc}`;
+      if (rateEl) rateEl.textContent = data.rate;
+      if (legendAvail) legendAvail.innerHTML = '<strong>Available:</strong> Click to assign for your stay';
+      if (legendRes) legendRes.innerHTML = '<strong>Reserved:</strong> Occupied by scheduled delegates';
+    }
 
     // Show loading skeleton while fetching real room inventory from DB
     if (gridEl) {
-      gridEl.className = 'modal-rooms-grid';
+      gridEl.className = isVilla ? 'modal-rooms-grid guesthouse-mode' : 'modal-rooms-grid';
       gridEl.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #637f6f;">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite; margin-bottom: 0.5rem;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
-          <div style="font-size: 0.9rem; font-weight: 600;">Checking room availability...</div>
+          <div style="font-size: 0.9rem; font-weight: 600;">Checking ${isVilla ? 'villa room/suite' : 'room'} availability...</div>
         </div>
       `;
     }
@@ -704,6 +775,7 @@ function openFacilityModal(facilityId) {
         }
       });
   } else if (isHall) {
+    if (heroCard) heroCard.style.display = 'none';
     const data = hallLayoutData[facilityId];
     if (catPill) catPill.textContent = 'VENUE SETUP & FLOOR PLAN SELECTION';
     if (titleEl) titleEl.textContent = data.title;
@@ -813,6 +885,8 @@ function closeFacilityModal() {
     modal.style.display = 'none';
     document.body.style.overflow = '';
   }
+  currentModalFacilityId = null;
+  modalTempSelectedItem = null;
 }
 const closeRoomModal = closeFacilityModal;
 const openRoomModal = openFacilityModal;
@@ -829,14 +903,15 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
 
     const card = document.querySelector(`.facility-choice-card[data-id="${currentModalFacilityId}"]`);
     const dbFacilityId = card?.dataset.facilityDbId || (currentModalFacilityId ? String(currentModalFacilityId).replace(/\D/g, '') : currentModalFacilityId);
+    const isGuesthouse = Boolean(data.isGuesthouse || card?.dataset.facilityType === 'guesthouses' || String(currentModalFacilityId).startsWith('guesthouse-'));
 
     bookingState.selectedFacility = {
       id: currentModalFacilityId,
       dbId: dbFacilityId,
       name: data.title,
       rate: data.rate,
-      capacity: card?.dataset.capacity || '48 BEDS',
-      type: 'dormitories',
+      capacity: card?.dataset.capacity || (isGuesthouse ? '4 PAX' : '48 BEDS'),
+      type: isGuesthouse ? 'guesthouses' : 'dormitories',
       roomNumber: modalTempSelectedItem,
       floor: data.floor,
       roomRate: data.rate,
@@ -844,32 +919,48 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
     };
 
     if (card) {
-      document.querySelectorAll('.facility-choice-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('.facility-choice-card').forEach(c => {
+        c.classList.remove('selected');
+        const b = c.querySelector('.dorm-card-selected-room-badge');
+        if (b) b.style.display = 'none';
+        const selectBtn = c.querySelector('.btn-select-facility');
+        if (selectBtn) {
+          const isCDorm = c.dataset.facilityType === 'dormitories' || (c.dataset.id && c.dataset.id.startsWith('dorm-floor-'));
+          const isCGuest = c.dataset.facilityType === 'guesthouses' || (c.dataset.id && c.dataset.id.startsWith('guesthouse-'));
+          if (isCDorm) {
+            selectBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Room &amp; View Floor Plan`;
+          } else if (isCGuest) {
+            selectBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Villa &amp; View Layout`;
+          } else {
+            selectBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Setup &amp; View Floor Plan`;
+          }
+        }
+      });
       card.classList.add('selected');
 
-      const badge = card.querySelector('.dorm-card-selected-room-badge:not(.hall-selected-setup-badge)');
+      const badge = card.querySelector('.dorm-card-selected-room-badge');
       const badgeText = badge?.querySelector('.d-room-text');
       if (badge && badgeText) {
         if (isOccupiedOnDefaultDate) {
-          badgeText.textContent = `✓ Room ${modalTempSelectedItem} Selected (Occupied Today • Pick other date)`;
+          badgeText.textContent = `✓ ${modalTempSelectedItem} Selected (Occupied Today • Pick other date)`;
         } else {
-          badgeText.textContent = `✓ Room ${modalTempSelectedItem} Assigned (${data.floor})`;
+          badgeText.textContent = `✓ ${modalTempSelectedItem} Assigned (${data.floor})`;
         }
         badge.style.display = 'flex';
       }
 
       const btn = card.querySelector('.btn-select-facility');
       if (btn) {
-        btn.innerHTML = `✓ Room ${modalTempSelectedItem} Selected (Click to change)`;
+        btn.innerHTML = `✓ ${modalTempSelectedItem} Selected (Click to change)`;
       }
     }
 
     const proceedBtn = document.getElementById('btnProceedStep');
     if (proceedBtn) {
       if (isOccupiedOnDefaultDate) {
-        proceedBtn.innerHTML = `<span>Proceed to Choose Date (Room ${modalTempSelectedItem})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        proceedBtn.innerHTML = `<span>Proceed to Choose Date (${modalTempSelectedItem})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       } else {
-        proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (Room ${modalTempSelectedItem})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (${modalTempSelectedItem})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       }
       proceedBtn.style.display = 'inline-flex';
     }
@@ -897,19 +988,24 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
     };
 
     if (card) {
-      document.querySelectorAll('.facility-choice-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-
-      const badge = card.querySelector('.hall-selected-setup-badge');
-      const badgeText = badge?.querySelector('.d-room-text');
-      if (badge && badgeText) {
-        if (isOccupiedOnDefaultDate) {
-          badgeText.textContent = `✓ ${layout.name} Selected (Reserved Today • Pick other date)`;
-        } else {
-          badgeText.textContent = `✓ ${layout.name} Selected (${layout.cap})`;
+      document.querySelectorAll('.facility-choice-card').forEach(c => {
+        c.classList.remove('selected');
+        const b = c.querySelector('.dorm-card-selected-room-badge');
+        if (b) b.style.display = 'none';
+        const selectBtn = c.querySelector('.btn-select-facility');
+        if (selectBtn) {
+          const isCDorm = c.dataset.facilityType === 'dormitories' || (c.dataset.id && c.dataset.id.startsWith('dorm-floor-'));
+          const isCGuest = c.dataset.facilityType === 'guesthouses' || (c.dataset.id && c.dataset.id.startsWith('guesthouse-'));
+          if (isCDorm) {
+            selectBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Room &amp; View Floor Plan`;
+          } else if (isCGuest) {
+            selectBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Villa &amp; View Layout`;
+          } else {
+            selectBtn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Select Setup &amp; View Floor Plan`;
+          }
         }
-        badge.style.display = 'flex';
-      }
+      });
+      card.classList.add('selected');
 
       const btn = card.querySelector('.btn-select-facility');
       if (btn) {
@@ -969,9 +1065,13 @@ function initFacilityFilters() {
       }
     });
 
-    // 2. Update Filter Pills
+    // 2. Update Filter Pills and Category Switcher Tabs
     filterPills.forEach(pill => {
       pill.classList.toggle('active', pill.dataset.categoryFilter === catName);
+    });
+    document.querySelectorAll('.category-pill-tab').forEach(tab => {
+      const tabCat = tab.dataset.category || (tab.classList.contains('tab-guesthouses') ? 'guesthouses' : (tab.classList.contains('tab-dorms') ? 'dormitories' : 'halls'));
+      tab.classList.toggle('active', tabCat === catName);
     });
 
     // 3. Show/Hide Matching Facility Cards and count visible
@@ -999,6 +1099,8 @@ function initFacilityFilters() {
         activeCategoryName.textContent = `Halls (${visibleCount} Available)`;
       } else if (catName === 'dormitories') {
         activeCategoryName.textContent = isDormPage ? `Dormitories (${visibleCount} Suites Available)` : `Dormitories (${visibleCount} Suites)`;
+      } else if (catName === 'guesthouses') {
+        activeCategoryName.textContent = `Guesthouses (${visibleCount} Available)`;
       } else {
         activeCategoryName.textContent = `All Facilities (${visibleCount} Total)`;
       }
@@ -1007,6 +1109,8 @@ function initFacilityFilters() {
     if (sectionHeading) {
       if (catName === 'halls') {
         sectionHeading.textContent = `AVAILABLE HALLS & VENUES (${visibleCount}):`;
+      } else if (catName === 'guesthouses') {
+        sectionHeading.textContent = `AVAILABLE GUESTHOUSES (${visibleCount}):`;
       } else if (catName === 'dormitories') {
         sectionHeading.textContent = `AVAILABLE DORMITORY SUITES (${visibleCount}):`;
       } else {
@@ -1026,6 +1130,8 @@ function initFacilityFilters() {
         if (emptyTitle) {
           if (catName === 'halls') {
             emptyTitle.textContent = 'No Halls or Venues Available';
+          } else if (catName === 'guesthouses') {
+            emptyTitle.textContent = 'No Guesthouses Available';
           } else if (catName === 'dormitories') {
             emptyTitle.textContent = 'No Dormitory Suites Available';
           } else {
@@ -1035,6 +1141,8 @@ function initFacilityFilters() {
         if (emptyDesc) {
           if (catName === 'halls') {
             emptyDesc.textContent = 'There are currently no training halls or function venues available under this category. Try switching to Dormitories or Show All.';
+          } else if (catName === 'guesthouses') {
+            emptyDesc.textContent = 'There are currently no executive guesthouses available under this category. Try switching to Halls, Dormitories, or Show All.';
           } else if (catName === 'dormitories') {
             emptyDesc.textContent = 'There are currently no dormitory suites or rooms available under this category. Try switching to Halls or Show All.';
           } else {
@@ -1050,8 +1158,8 @@ function initFacilityFilters() {
       }
     }
 
-    // If current selected card is now hidden, select the first visible card quietly without opening the modal!
-    if (!currentSelectedVisible && firstVisibleCard) {
+    // If current selected card is now hidden, select the first visible card only if a facility was already selected
+    if (!currentSelectedVisible && firstVisibleCard && bookingState.selectedFacility && bookingState.selectedFacility.id && document.querySelector('.facility-choice-card.selected')) {
       selectFacilityCard(firstVisibleCard, false);
     }
 
@@ -1098,16 +1206,41 @@ function initFacilityFilters() {
     });
   }
 
-  // Check URL query parameters for pre-selected category (e.g. ?category=dormitories)
+  // Bind Category Pill Tabs (Halls, Dormitories, Guesthouses)
+  const categoryPillTabs = document.querySelectorAll('.category-pill-tab');
+  categoryPillTabs.forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      const cat = tab.dataset.category || (tab.classList.contains('tab-guesthouses') ? 'guesthouses' : (tab.classList.contains('tab-dorms') ? 'dormitories' : 'halls'));
+      if (cat === 'dormitories' && tab.getAttribute('href')?.includes('dormitory_booking.php')) {
+        // Allow navigation to separate dormitory booking page if targeted
+        return;
+      }
+      e.preventDefault();
+      switchCategory(cat, false);
+      if (window.history && window.history.pushState) {
+        window.history.pushState(null, '', `booking.php?category=${cat}`);
+      }
+    });
+  });
+
+  // Check URL query parameters for pre-selected category (e.g. ?category=guesthouses)
   const urlParams = new URLSearchParams(window.location.search);
   const requestedCat = urlParams.get('category');
-  if (requestedCat === 'dormitories' || requestedCat === 'halls' || requestedCat === 'all') {
+  if (requestedCat === 'dormitories' || requestedCat === 'halls' || requestedCat === 'guesthouses' || requestedCat === 'all') {
     switchCategory(requestedCat, false);
   } else if (isDormPage) {
     switchCategory('dormitories', false);
   } else {
+    const activeTab = document.querySelector('.category-pill-tab.active');
     const activePill = document.querySelector('.filter-pill.active');
-    const defaultCat = activePill ? activePill.dataset.categoryFilter : 'halls';
+    let defaultCat = 'halls';
+    if (activeTab && activeTab.dataset.category) {
+      defaultCat = activeTab.dataset.category;
+    } else if (activeTab && activeTab.classList.contains('tab-guesthouses')) {
+      defaultCat = 'guesthouses';
+    } else if (activePill && activePill.dataset.categoryFilter) {
+      defaultCat = activePill.dataset.categoryFilter;
+    }
     switchCategory(defaultCat, false);
   }
 }
@@ -1877,6 +2010,8 @@ window.showReservationSuccessModal = function (submitData) {
 function updateReviewSummary() {
   const isDorm = bookingState.selectedFacility?.type === 'dormitories' ||
     String(bookingState.selectedFacility?.id).startsWith('dorm-');
+  const isGuesthouse = bookingState.selectedFacility?.type === 'guesthouses' ||
+    String(bookingState.selectedFacility?.id).startsWith('guesthouse-');
   const roomNum = bookingState.selectedFacility?.roomNumber;
   const floorName = bookingState.selectedFacility?.floor || '';
   const hallSetup = bookingState.selectedFacility?.setupName;
@@ -1894,22 +2029,23 @@ function updateReviewSummary() {
   const prevUnitLabel = document.getElementById('summaryPreviewUnitLabel');
   const prevCap = document.getElementById('summaryPreviewCap');
 
-  if (prevBadge) prevBadge.textContent = isDorm ? 'DORMITORY ACCOMMODATION' : 'SELECTED VENUE';
+  if (prevBadge) prevBadge.textContent = isGuesthouse ? 'GUESTHOUSE VILLA' : (isDorm ? 'DORMITORY ACCOMMODATION' : 'SELECTED VENUE');
   if (prevTitle) prevTitle.textContent = facilityName;
   if (prevRate) prevRate.textContent = rateText;
   if (prevCap) prevCap.textContent = capText;
 
   if (prevRoomWrap && prevRoom) {
-    if (isDorm && roomNum) {
-      if (prevUnitLabel) prevUnitLabel.textContent = 'Assigned Room Unit:';
+    if ((isDorm || isGuesthouse) && roomNum) {
+      if (prevUnitLabel) prevUnitLabel.textContent = isGuesthouse ? 'Assigned Villa Unit / Suite:' : 'Assigned Room Unit:';
       prevRoomWrap.style.display = 'flex';
       const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
+      const displayUnit = isGuesthouse ? roomNum : `Room ${roomNum}`;
       if (isOcc) {
-        prevRoom.innerHTML = `Room ${roomNum} (${floorName}) <span style="display:inline-block; margin-left:6px; font-size:0.75rem; color:#dc2626; font-weight:700;">(Occupied Today • Pick alternate date in Step 2)</span>`;
+        prevRoom.innerHTML = `${displayUnit} (${floorName}) <span style="display:inline-block; margin-left:6px; font-size:0.75rem; color:#dc2626; font-weight:700;">(Occupied Today • Pick alternate date in Step 2)</span>`;
       } else {
-        prevRoom.textContent = `Room ${roomNum} (${floorName})`;
+        prevRoom.textContent = `${displayUnit} (${floorName})`;
       }
-    } else if (!isDorm && hallSetup) {
+    } else if (!isDorm && !isGuesthouse && hallSetup) {
       if (prevUnitLabel) prevUnitLabel.textContent = 'Assigned Setup & Layout:';
       prevRoomWrap.style.display = 'flex';
       const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
@@ -1936,20 +2072,21 @@ function updateReviewSummary() {
   const sumDate = document.getElementById('summaryReservationDate');
   const sumTime = document.getElementById('summaryTimeSlot');
 
-  if (sumBadge) sumBadge.textContent = isDorm ? 'DORMITORY ACCOMMODATION PARTICULARS' : 'OFFICIAL VENUE RESERVATION PARTICULARS';
+  if (sumBadge) sumBadge.textContent = isDorm ? 'DORMITORY ACCOMMODATION PARTICULARS' : (isGuesthouse ? 'GUESTHOUSE VILLA RESERVATION PARTICULARS' : 'OFFICIAL VENUE RESERVATION PARTICULARS');
   if (sumVenue) sumVenue.textContent = facilityName;
   if (sumRate) sumRate.textContent = rateText;
-  if (sumFacType) sumFacType.textContent = isDorm ? 'Trainee Dormitory Lodging' : 'Conference & Training Venue';
+  if (sumFacType) sumFacType.textContent = isDorm ? 'Trainee Dormitory Lodging' : (isGuesthouse ? 'Private Guesthouse Villa' : 'Conference & Training Venue');
   if (sumCap) sumCap.textContent = capText;
   if (sumDate) sumDate.textContent = bookingState.date || _formattedTodayDate;
-  if (sumTime) sumTime.textContent = isDorm ? 'Overnight Lodging Stay' : (bookingState.timeSlot || 'Whole Day (8:00 AM - 5:00 PM)');
+  if (sumTime) sumTime.textContent = (isDorm || isGuesthouse) ? 'Overnight Lodging Stay' : (bookingState.timeSlot || 'Whole Day (8:00 AM - 5:00 PM)');
 
   if (sumRoomWrap && sumRoom) {
-    if (isDorm && roomNum) {
-      if (sumRoomLabel) sumRoomLabel.textContent = 'Assigned Room Unit:';
+    if ((isDorm || isGuesthouse) && roomNum) {
+      if (sumRoomLabel) sumRoomLabel.textContent = isGuesthouse ? 'Assigned Villa Unit / Suite:' : 'Assigned Room Unit:';
       sumRoomWrap.style.display = 'flex';
-      sumRoom.textContent = `Room ${roomNum} (${floorName})`;
-    } else if (!isDorm && hallSetup) {
+      const displayUnit = isGuesthouse ? roomNum : `Room ${roomNum}`;
+      sumRoom.textContent = `${displayUnit} (${floorName})`;
+    } else if (!isDorm && !isGuesthouse && hallSetup) {
       if (sumRoomLabel) sumRoomLabel.textContent = 'Assigned Setup & Layout:';
       sumRoomWrap.style.display = 'flex';
       sumRoom.textContent = `${hallSetup} (${hallCap})`;

@@ -49,6 +49,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   margin-top: 0.55rem;
+  min-height: 38px;
+  box-sizing: border-box;
 }
 
 .btn-view-facility-details:hover {

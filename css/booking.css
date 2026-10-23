@@ -54,6 +54,16 @@ body.booking-body {
   gap: 0.75rem;
   flex-shrink: 0;
   text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.booking-brand:hover {
+  opacity: 0.92;
+}
+
+.booking-brand:active {
+  transform: scale(0.99);
 }
 
 .booking-brand-logo {
@@ -815,6 +825,275 @@ body.booking-body {
   gap: 0.5rem;
 }
 
+/* Category Switcher Tabs */
+.category-switch-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #f1f5f3;
+  padding: 0.25rem;
+  border-radius: 10px;
+  border: 1px solid #d1e2d7;
+}
+
+.category-pill-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #3b5745;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.category-pill-tab svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.category-pill-tab:hover svg {
+  transform: scale(1.12);
+}
+
+.category-pill-tab:hover {
+  background: rgba(255, 255, 255, 0.85);
+  color: #0c331d;
+}
+
+.category-pill-tab.active.tab-halls {
+  background: #174d2f;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(23, 77, 47, 0.25);
+}
+
+.category-pill-tab.active.tab-dorms {
+  background: #b45309;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(180, 83, 9, 0.25);
+}
+
+.category-pill-tab.active.tab-guesthouses {
+  background: #0f766e;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.25);
+}
+
+.guesthouse-hero-pill {
+  background: #f0fdfa !important;
+  border-color: #99f6e4 !important;
+  color: #0f766e !important;
+}
+
+.guesthouse-hero-pill .pulse-dot {
+  background: #0f766e !important;
+}
+
+/* ==========================================================================
+   Guesthouse Inspo Card Styling (Matching Index Showcase Exactly)
+   ========================================================================== */
+.facility-choice-card.guesthouse-card {
+  border: 1.5px solid #dbe8e0;
+  border-radius: 18px;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(18, 56, 32, 0.05);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.facility-choice-card.guesthouse-card:hover {
+  transform: translateY(-4px);
+  border-color: #174d2f;
+  box-shadow: 0 14px 32px rgba(18, 56, 32, 0.12);
+}
+
+.facility-choice-card.guesthouse-card.selected {
+  border-color: #174d2f !important;
+  box-shadow: 0 0 0 2px #174d2f, 0 12px 28px rgba(23, 77, 47, 0.18) !important;
+  background: #ffffff !important;
+}
+
+.facility-choice-card.guesthouse-card .facility-card-image {
+  position: relative;
+  height: 205px;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+  background: #0d2c1b;
+}
+
+.facility-choice-card.guesthouse-card .facility-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s ease;
+}
+
+.facility-choice-card.guesthouse-card:hover .facility-card-image img {
+  transform: scale(1.04);
+}
+
+.guesthouse-inspo-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #174d2f;
+  color: #ffffff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 0.3rem 0.85rem;
+  border-radius: 9999px;
+  box-shadow: 0 4px 12px rgba(23, 77, 47, 0.32);
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  z-index: 5;
+  white-space: nowrap;
+}
+
+.facility-choice-card.guesthouse-card .facility-card-content {
+  padding: 1.25rem 1.35rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.facility-choice-card.guesthouse-card .guesthouse-serif-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.38rem;
+  font-weight: 800;
+  color: #0c331d;
+  line-height: 1.25;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.guesthouse-card-desc {
+  font-size: 0.86rem;
+  color: #4b6354;
+  line-height: 1.5;
+  margin: 0 0 0.85rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 3.85rem;
+}
+
+.guesthouse-bottom-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(220, 235, 225, 0.85);
+  margin-top: auto;
+  margin-bottom: 0.85rem;
+}
+
+.guesthouse-meta-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: #244832;
+}
+
+.guesthouse-meta-left svg {
+  color: #174d2f;
+  flex-shrink: 0;
+}
+
+.guesthouse-meta-rate {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #175432;
+}
+
+.guesthouse-selected-badge {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border: 1.5px solid #86efac !important;
+  font-weight: 700;
+  font-size: 0.86rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 8px;
+  margin-bottom: 0.6rem;
+}
+
+.facility-choice-card.guesthouse-card .btn-select-facility {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  background: #f0f5f1;
+  color: #234331;
+  border: 1px solid #d5e3da;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin-top: 0.4rem;
+  min-height: 48px;
+  line-height: 1.25;
+  text-align: center;
+  box-sizing: border-box;
+  transition: var(--transition);
+  box-shadow: none;
+}
+
+.facility-choice-card.guesthouse-card .btn-select-facility:hover {
+  background: #e2ece5;
+  color: var(--primary-green);
+  border-color: #c4d9cb;
+  transform: none;
+  box-shadow: none;
+}
+
+.facility-choice-card.guesthouse-card.selected .btn-select-facility {
+  background: #175432;
+  color: #ffffff;
+  border-color: #175432;
+  box-shadow: 0 4px 12px rgba(23, 84, 50, 0.25);
+}
+
+@media (max-width: 768px) {
+  .facility-category-nav-header {
+    padding: 0.75rem 0.85rem;
+    gap: 0.65rem;
+  }
+  .category-nav-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .category-nav-right {
+    width: 100%;
+  }
+  .category-switch-pills {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .category-switch-pills::-webkit-scrollbar {
+    display: none;
+  }
+  .category-pill-tab {
+    flex: 1;
+    justify-content: center;
+    font-size: 0.74rem;
+    padding: 0.38rem 0.45rem;
+  }
+}
+
 .btn-switch-portal {
   display: inline-flex;
   align-items: center;
@@ -851,6 +1130,20 @@ body.booking-body {
   color: #ffffff;
   border-color: #065f46;
   box-shadow: 0 3px 8px rgba(6, 95, 70, 0.2);
+}
+
+.btn-switch-portal.to-guesthouses {
+  background: #f0fdfa;
+  color: #0f766e;
+  border-color: #99f6e4;
+  box-shadow: 0 1px 3px rgba(15, 118, 110, 0.06);
+}
+
+.btn-switch-portal.to-guesthouses:hover {
+  background: #0f766e;
+  color: #ffffff;
+  border-color: #0f766e;
+  box-shadow: 0 3px 8px rgba(15, 118, 110, 0.2);
 }
 
 .facility-header-status-row {
@@ -1021,6 +1314,8 @@ body.booking-body {
   display: flex;
   flex-direction: column;
   position: relative;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .facility-choice-card:hover {
@@ -1093,13 +1388,20 @@ body.booking-body {
   font-weight: 700;
   color: #142a1d;
   margin-bottom: 0.35rem;
+  min-height: 3.2rem;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .facility-rate-tag {
   font-size: 0.88rem;
   font-weight: 700;
   color: #175432;
-  margin-bottom: 1.15rem;
+  margin-bottom: 0.85rem;
+  line-height: 1.25;
 }
 
 /* Amenities Pills */
@@ -1109,8 +1411,9 @@ body.booking-body {
   align-content: flex-start;
   align-items: flex-start;
   gap: 0.4rem;
-  margin-bottom: 1.25rem;
-  min-height: 58px;
+  margin-bottom: 1.15rem;
+  height: 58px;
+  overflow: hidden;
 }
 
 .amenity-pill {
@@ -1154,6 +1457,10 @@ body.booking-body {
   justify-content: center;
   gap: 0.45rem;
   margin-top: auto;
+  min-height: 48px;
+  line-height: 1.25;
+  text-align: center;
+  box-sizing: border-box;
   transition: var(--transition);
 }
 
@@ -2529,10 +2836,117 @@ body.booking-body {
   background: #f9fbf9;
 }
 
+/* Guesthouse Modal Hero Card with Mock Image */
+.modal-guesthouse-hero-card {
+  margin-bottom: 1.25rem;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1.5px solid #cce5d6;
+  box-shadow: 0 4px 18px rgba(23, 77, 47, 0.08);
+  background: #fbfdfc;
+}
+
+.modal-guesthouse-hero-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 185px;
+  overflow: hidden;
+}
+
+.modal-guesthouse-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+  display: block;
+}
+
+.modal-guesthouse-hero-card:hover .modal-guesthouse-hero-img {
+  transform: scale(1.02);
+}
+
+.modal-guesthouse-hero-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(13, 46, 27, 0.92) 100%);
+  padding: 1.25rem 1.25rem 0.85rem;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.modal-guesthouse-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: #f1f8f4;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  width: fit-content;
+}
+
+.modal-guesthouse-specs {
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: #e8f5ed;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  line-height: 1.35;
+}
+
 .modal-rooms-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 0.85rem;
+}
+
+/* Guesthouse Villa Units Grid */
+.modal-rooms-grid.guesthouse-mode {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.dorm-room-box.guesthouse-unit-box {
+  padding: 1.25rem 0.85rem 1.1rem;
+  border-radius: 14px;
+}
+
+.dorm-room-box.guesthouse-unit-box .dorm-bed-icon {
+  margin-bottom: 0.4rem;
+}
+
+.dorm-room-box.guesthouse-unit-box .dorm-room-num {
+  font-size: 1.05rem;
+  margin-bottom: 0.25rem;
+  color: #123820;
+}
+
+.guesthouse-suite-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #15803d;
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  padding: 0.18rem 0.55rem;
+  border-radius: 6px;
+  margin-bottom: 0.45rem;
+  display: inline-block;
+}
+
+.guesthouse-wing-desc {
+  font-size: 0.72rem;
+  color: #557262;
+  margin-bottom: 0.4rem;
+  line-height: 1.25;
 }
 
 /* Room Box inside Modal */

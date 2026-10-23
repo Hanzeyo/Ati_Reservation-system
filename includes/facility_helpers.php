@@ -36,15 +36,33 @@ if (!function_exists('getFacilityGallery')) {
 
         // If gallery is still empty, compose an intelligent gallery based on type & name
         if (empty($gallery)) {
-            $isDorm = (strtolower($facility['type'] ?? '') === 'dorms' || stripos($facility['name'] ?? '', 'dorm') !== false);
-            $mainImg = !empty($facility['image']) ? $facility['image'] : ($isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg');
+            $ftype = strtolower($facility['type'] ?? '');
+            $isDorm = ($ftype === 'dorms' || stripos($facility['name'] ?? '', 'dorm') !== false);
+            $isGuesthouse = ($ftype === 'guesthouses' || stripos($facility['name'] ?? '', 'guesthouse') !== false);
+            $mainImg = !empty($facility['image']) ? $facility['image'] : ($isGuesthouse ? 'assets/images/guesthouse.jpg' : ($isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg'));
 
-            $gallery[] = [
-                'src' => $mainImg,
-                'caption' => $isDorm ? 'Main Room & Bunk Setup' : 'Full Hall & Conference Stage View'
-            ];
-
-            if ($isDorm) {
+            if ($isGuesthouse) {
+                $gallery[] = [
+                    'src' => 'assets/images/guesthouse.jpg',
+                    'caption' => 'Official Guesthouse Villa Exterior & Scenic Garden Surroundings'
+                ];
+                $gallery[] = [
+                    'src' => 'assets/images/guesthouse.jpg',
+                    'caption' => 'Master Bedroom & Ensuite Private Executive Bathroom'
+                ];
+                $gallery[] = [
+                    'src' => 'assets/images/guesthouse.jpg',
+                    'caption' => 'Airconditioned Living Area, Kitchenette & Workstation'
+                ];
+                $gallery[] = [
+                    'src' => 'assets/images/guesthouse.jpg',
+                    'caption' => 'ATI Institutional Complex & Villa Arrival Porch'
+                ];
+            } elseif ($isDorm) {
+                $gallery[] = [
+                    'src' => $mainImg,
+                    'caption' => 'Main Room & Bunk Setup'
+                ];
                 $gallery[] = [
                     'src' => 'assets/images/dorm_suite_1.png',
                     'caption' => 'Study Workstation, Writing Desks & Air Conditioning'

@@ -470,7 +470,7 @@ $peakDayPct = $totalInstitutionalCapacity > 0
               </svg>
               <span>Admin Portal</span>
             </div>
-            <h2>Facility & Dormitory Reservation Overview</h2>
+            <h2>Reservation Asset Management</h2>
             <p>Review and act on pending institutional requests, oversee auditorium & dormitory occupancy, and maintain
               live facility schedules for ATI Central Office.</p>
           </div>

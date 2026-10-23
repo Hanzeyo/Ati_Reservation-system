@@ -46,7 +46,7 @@ if (!empty($_SESSION['full_name'])) {
        ========================================================================== -->
   <header class="booking-topbar">
     <div class="booking-topbar-container">
-      <a href="home.php" class="booking-brand" title="ATI Reservation Portal">
+      <a href="#top" class="booking-brand" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" title="Scroll back to top of portal">
         <img src="assets/images/ATI_Logo.png" alt="ATI Official Logo" class="booking-brand-logo">
         <div class="booking-brand-text">
           <h1>Agricultural Training Institute</h1>

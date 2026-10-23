@@ -73,8 +73,8 @@ $totalCount = count($dbFacilities);
        ========================================================================== -->
   <header class="booking-topbar">
     <div class="booking-topbar-container">
-      <!-- Left: ATI Brand -->
-      <a href="home.php" class="booking-brand" title="Return to Home">
+      <!-- Left: ATI Brand (Scrolls to Top of Portal) -->
+      <a href="#top" class="booking-brand" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" title="Scroll back to top of portal">
         <img src="assets/images/ATI_Logo.png" alt="ATI Official Logo" class="booking-brand-logo">
         <div class="booking-brand-text">
           <h1>Agricultural Training Institute</h1>
@@ -379,14 +379,15 @@ $totalCount = count($dbFacilities);
        ========================================================================== -->
   <main class="booking-main-wrapper">
     <!-- Header Section (Without User Category / Rate Plan per instruction) -->
+    <!-- Header Section (Dynamic for Category) -->
     <section class="booking-header-section">
-      <div class="booking-assistant-pill">
+      <div class="booking-assistant-pill <?= $reqCategory === 'guesthouses' ? 'guesthouse-hero-pill' : '' ?>">
         <span class="pulse-dot"></span>
-        <span>Step-by-Step Booking Assistant</span>
+        <span><?= $reqCategory === 'guesthouses' ? 'Guesthouse Villa Booking Assistant' : 'Step-by-Step Booking Assistant' ?></span>
       </div>
-      <h2 class="booking-main-title">Reserve ATI Venue & Training Facilities</h2>
+      <h2 class="booking-main-title"><?= $reqCategory === 'guesthouses' ? 'Reserve ATI Guesthouse Villas' : 'Reserve ATI Venue &amp; Training Facilities' ?></h2>
       <p class="booking-main-subtitle">
-        Complete the required details below to submit an official reservation request for administrative approval.
+        <?= $reqCategory === 'guesthouses' ? 'Submit an official reservation request for executive staff quarters, guest lecturer cottages, and delegation villas.' : 'Complete the required details below to submit an official reservation request for administrative approval.' ?>
       </p>
     </section>
 
@@ -404,7 +405,7 @@ $totalCount = count($dbFacilities);
         </div>
         <div class="step-tab-btn" data-step="3" id="stepTabEventDetails">
           <span class="step-number">3</span>
-          <span id="stepTabEventName">Event Details</span>
+          <span id="stepTabEventName"><?= $reqCategory === 'guesthouses' ? 'Stay Details' : 'Event Details' ?></span>
         </div>
         <div class="step-tab-btn" data-step="4" id="stepTabDocuments">
           <span class="step-number">4</span>
@@ -450,7 +451,7 @@ $totalCount = count($dbFacilities);
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
-            <span>Change Category (Halls / Dorms)</span>
+            <span>Back to Categories</span>
           </a>
           <span class="active-category-indicator" id="activeCategoryBadge" title="Current category view">
             <span class="indicator-dot"></span>
@@ -469,15 +470,84 @@ $totalCount = count($dbFacilities);
         </div>
 
         <div class="category-nav-right">
-          <a href="dormitory_booking.php" class="btn-switch-portal" title="Switch to Dormitory Accommodations">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"></path>
-            </svg>
-            <span>Switch to Dormitories</span>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </a>
+          <!-- 3 Category Switcher Tabs -->
+          <div class="category-switch-pills" role="tablist" aria-label="Facility Categories">
+            <!-- Halls Tab -->
+            <a href="booking.php?category=halls" class="category-pill-tab <?= $reqCategory === 'halls' ? 'active tab-halls' : '' ?>" data-category="halls" title="Browse Function & Training Halls">
+              <svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="4" y1="54" x2="60" y2="54" />
+                <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="2" />
+                <path d="M11 54v-8" stroke-width="2.4" />
+                <path d="M11 36c-2.5 0-4.5 1.8-4.5 4 0 1.2.6 2.3 1.5 3-1 1-1.2 2.5-.2 3.8.7.9 1.8 1.4 3.2 1.4 1.4 0 2.5-.5 3.2-1.4 1-1.3.8-2.8-.2-3.8.9-.7 1.5-1.8 1.5-3 0-2.2-2-4-4.5-4z" fill="currentColor" fill-opacity="0.22" />
+                <path d="M53 54v-8" stroke-width="2.4" />
+                <path d="M53 36c-2.5 0-4.5 1.8-4.5 4 0 1.2.6 2.3 1.5 3-1 1-1.2 2.5-.2 3.8.7.9 1.8 1.4 3.2 1.4 1.4 0 2.5-.5 3.2-1.4 1-1.3.8-2.8-.2-3.8.9-.7 1.5-1.8 1.5-3 0-2.2-2-4-4.5-4z" fill="currentColor" fill-opacity="0.22" />
+                <polygon points="32,20 18,28 46,28" fill="currentColor" fill-opacity="0.22" />
+                <circle cx="32" cy="25" r="1.5" fill="currentColor" stroke="none" />
+                <line x1="18" y1="28" x2="46" y2="28" />
+                <line x1="21.5" y1="28" x2="21.5" y2="48" stroke-width="2.6" />
+                <line x1="28" y1="28" x2="28" y2="48" stroke-width="2.6" />
+                <line x1="36" y1="28" x2="36" y2="48" stroke-width="2.6" />
+                <line x1="42.5" y1="28" x2="42.5" y2="48" stroke-width="2.6" />
+                <path d="M30 48v-6a2 2 0 0 1 4 0v6" fill="currentColor" fill-opacity="0.35" />
+                <rect x="17" y="48" width="30" height="3" fill="currentColor" fill-opacity="0.22" />
+                <rect x="15" y="51" width="34" height="3" fill="currentColor" fill-opacity="0.22" />
+              </svg>
+              <span>Halls &amp; Venues (<?= $hallsCount ?>)</span>
+            </a>
+
+            <!-- Dormitories Tab -->
+            <a href="dormitory_booking.php" class="category-pill-tab <?= $reqCategory === 'dormitories' ? 'active tab-dorms' : '' ?>" data-category="dormitories" title="Browse Dormitory Lodging & Rooms">
+              <svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="4" y1="54" x2="60" y2="54" />
+                <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="2" />
+                <path d="M8 54c0-2.5 1.8-4.5 4-4.5s4 2 4 4.5" fill="currentColor" fill-opacity="0.22" />
+                <rect x="15" y="24" width="10" height="30" rx="1" fill="currentColor" fill-opacity="0.22" />
+                <rect x="25" y="16" width="16" height="38" rx="1.5" fill="currentColor" fill-opacity="0.22" />
+                <rect x="18" y="28" width="4" height="4" rx="0.5" />
+                <rect x="18" y="36" width="4" height="4" rx="0.5" />
+                <rect x="28" y="21" width="4" height="4" rx="0.5" />
+                <rect x="34" y="21" width="4" height="4" rx="0.5" />
+                <rect x="28" y="29" width="4" height="4" rx="0.5" />
+                <rect x="34" y="29" width="4" height="4" rx="0.5" />
+                <rect x="28" y="37" width="4" height="4" rx="0.5" />
+                <rect x="34" y="37" width="4" height="4" rx="0.5" />
+                <rect x="29" y="46" width="6" height="8" rx="1" fill="currentColor" fill-opacity="0.35" />
+                <path d="M50 54v-9" stroke-width="2.4" />
+                <path d="M50 27c-3 0-5.5 2-5.5 4.5 0 1 .4 2 1 2.8-1.5 1-2 2.7-1 4.2.8 1.2 2.2 1.8 3.5 1.8h4c2.5 0 4.5-1.8 4.5-4 0-1.5-.9-2.8-2.2-3.5.4-.6.7-1.4.7-2.3 0-2-2.2-3.5-5-3.5z" fill="currentColor" fill-opacity="0.22" />
+              </svg>
+              <span>Dormitories (<?= $dormsCount ?>)</span>
+            </a>
+
+            <!-- Guesthouses Tab -->
+            <a href="booking.php?category=guesthouses" class="category-pill-tab <?= $reqCategory === 'guesthouses' ? 'active tab-guesthouses' : '' ?>" data-category="guesthouses" title="Browse Guesthouse Villas & Cottages">
+              <svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="4" y1="54" x2="60" y2="54" />
+                <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="2" />
+                <circle cx="13" cy="13" r="2.8" fill="currentColor" fill-opacity="0.35" />
+                <line x1="13" y1="6.5" x2="13" y2="8" stroke-width="1.8" />
+                <line x1="13" y1="18" x2="13" y2="19.5" stroke-width="1.8" />
+                <line x1="6.5" y1="13" x2="8" y2="13" stroke-width="1.8" />
+                <line x1="18" y1="13" x2="19.5" y2="13" stroke-width="1.8" />
+                <line x1="8.5" y1="8.5" x2="9.6" y2="9.6" stroke-width="1.8" />
+                <line x1="16.4" y1="16.4" x2="17.5" y2="17.5" stroke-width="1.8" />
+                <line x1="8.5" y1="17.5" x2="9.6" y2="16.4" stroke-width="1.8" />
+                <line x1="16.4" y1="9.6" x2="17.5" y2="8.5" stroke-width="1.8" />
+                <path d="M14 28V20H18V24.5" fill="currentColor" fill-opacity="0.22" stroke-width="2.4" />
+                <path d="M12 33v21h22V33" fill="currentColor" fill-opacity="0.22" />
+                <path d="M8 34L23 21L38 34" stroke-width="2.6" />
+                <circle cx="23" cy="30" r="3.2" />
+                <line x1="19.8" y1="30" x2="26.2" y2="30" stroke-width="1.6" />
+                <line x1="23" y1="26.8" x2="23" y2="33.2" stroke-width="1.6" />
+                <rect x="19.5" y="41" width="7" height="13" rx="1" fill="currentColor" fill-opacity="0.35" />
+                <circle cx="24.8" cy="48" r="0.7" fill="currentColor" stroke="none" />
+                <path d="M44 54c0-4 1.2-8.5 1.2-12" stroke-width="2.4" />
+                <path d="M48.5 54c0-4-1.2-8.5-1.2-12" stroke-width="2.4" />
+                <path d="M47.5 45c2.5-1.5 4.5 0 4.5 0" stroke-width="1.8" />
+                <path d="M41 38c-3-1-4.2-3.3-3.8-6 .5-2.8 2.6-4.6 5-4.4.8-3.2 4-5.2 7.2-4.5 3 .6 5 3.2 5 6.2 2.4.5 4.2 2.3 4.2 4.8 0 2.8-2.3 5-5.2 5h-4" fill="currentColor" fill-opacity="0.22" stroke-width="2.4" />
+              </svg>
+              <span>Guesthouses (<?= $guesthousesCount ?>)</span>
+            </a>
+          </div>
         </div>
       </div>
 
@@ -489,7 +559,7 @@ $totalCount = count($dbFacilities);
           </svg>
           <span id="categorySectionHeading"><?php
           if ($reqCategory === 'guesthouses')
-            echo 'AVAILABLE GUESTHOUSE VILLAS (' . $guesthousesCount . '):';
+            echo 'AVAILABLE GUESTHOUSES (' . $guesthousesCount . '):';
           elseif ($reqCategory === 'dormitories')
             echo 'AVAILABLE DORMITORY SUITES (' . $dormsCount . '):';
           elseif ($reqCategory === 'halls')
@@ -522,13 +592,6 @@ $totalCount = count($dbFacilities);
           
           $isMaint = ($f['status'] === 'maintenance');
           $isSelected = false;
-          if ($selectedFacilityId > 0 && $f['id'] == $selectedFacilityId && !$isMaint) {
-            $isSelected = true;
-            $hasSelectedCard = true;
-          } elseif (!$hasSelectedCard && $displayStyle === '' && !$isMaint) {
-            $isSelected = true;
-            $hasSelectedCard = true;
-          }
           
           $cardSlug = 'facility-' . $f['id'];
           $lowerName = strtolower($f['name']);
@@ -546,7 +609,11 @@ $totalCount = count($dbFacilities);
             $cardSlug = 'guesthouse-' . $f['id'];
           }
 
-          $imgSrc = !empty($f['image']) ? $f['image'] : ($isGuesthouse ? 'assets/images/guesthouse.jpg' : ($isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg'));
+          if ($isGuesthouse) {
+            $imgSrc = 'assets/images/guesthouse.jpg';
+          } else {
+            $imgSrc = !empty($f['image']) ? $f['image'] : ($isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg');
+          }
           $capDisplay = $isDorm ? ($f['capacity'] . ' PAX / ' . ($f['beds'] ?? 0) . ' BEDS') : ($f['capacity'] . ' PAX');
           if (stripos($f['capacity'], 'PAX') !== false) {
             $capDisplay = $f['capacity'];
@@ -561,11 +628,59 @@ $totalCount = count($dbFacilities);
           
           $categoryTag = strtoupper($f['type']) . ($isGuesthouse ? ' &bull; GUESTHOUSE VILLA' : ($isDorm ? ' &bull; DORMITORY SUITE' : ' &bull; VENUE & HALLS'));
           
+          $ghInspoMap = [
+            17 => [
+              'badge' => 'Presidential Villa',
+              'title' => 'Guesthouse 1',
+              'desc'  => 'Premier executive villa featuring an elegant master bedroom, private ensuite bath, executive workstation, and scenic garden views.'
+            ],
+            18 => [
+              'badge' => "Director's Lodge",
+              'title' => 'Guesthouse 2',
+              'desc'  => 'Spacious residential lodge tailored for senior institutional officials and international delegations with a private veranda.'
+            ],
+            19 => [
+              'badge' => 'Senior Cottage',
+              'title' => 'Guesthouse 3',
+              'desc'  => 'Peaceful garden cottage equipped with plush bedding, dining nook, hot shower, high-speed Wi-Fi, and climate control.'
+            ],
+            20 => [
+              'badge' => 'Resource Residence',
+              'title' => 'Guesthouse 4',
+              'desc'  => 'Quiet, secluded accommodation ideal for training resource speakers, guest professors, and visiting technical specialists.'
+            ],
+            21 => [
+              'badge' => 'Delegates Home',
+              'title' => 'Guesthouse 5',
+              'desc'  => 'Comfortable multi-guest residential unit featuring two private bedrooms, living hall, personal refrigerator, and smart TV.'
+            ],
+            22 => [
+              'badge' => 'Fellows Lodge',
+              'title' => 'Guesthouse 6',
+              'desc'  => 'Cozy modern lodge featuring twin beds, private bath, dedicated writing desks, and relaxing views of the botanical landscape.'
+            ],
+            23 => [
+              'badge' => 'Lecturer Villa',
+              'title' => 'Guesthouse 7',
+              'desc'  => 'Executive guest villa with serene garden surroundings, Queen bed, modern work desk, and full hospitality amenities.'
+            ]
+          ];
+
+          $fid = (int)$f['id'];
+          $mappedKey = ($fid >= 1 && $fid <= 7) ? (16 + $fid) : $fid;
+          $ghInspo = $ghInspoMap[$mappedKey] ?? [
+            'badge' => 'Residential Villa',
+            'title' => $f['name'],
+            'desc'  => !empty($f['description']) ? $f['description'] : 'Executive guesthouse quarters with modern amenities, ensuite bathroom, and serene compound surroundings.'
+          ];
+          $cardTitle = $isGuesthouse ? $ghInspo['title'] : $f['name'];
+          $cardDesc = $isGuesthouse ? $ghInspo['desc'] : (!empty($f['description']) ? $f['description'] : (!empty($f['notes']) ? $f['notes'] : ''));
+
           $galleryPhotos = getFacilityGallery($f);
           $modalPayload = [
             'id' => $cardSlug,
             'dbId' => $f['id'],
-            'name' => $f['name'],
+            'name' => $isGuesthouse ? ($ghInspo['title'] . ' (' . $ghInspo['badge'] . ')') : $f['name'],
             'type' => $f['type'],
             'isDorm' => $isDorm,
             'rate' => $f['rate'],
@@ -573,7 +688,7 @@ $totalCount = count($dbFacilities);
             'beds' => (int)($f['beds'] ?? 0),
             'cooling_type' => $f['cooling_type'] ?? '',
             'location' => $f['location'] ?? 'ATI Institutional Complex',
-            'description' => !empty($f['description']) ? $f['description'] : (!empty($f['notes']) ? $f['notes'] : ''),
+            'description' => $cardDesc,
             'features' => $featuresList,
             'image' => $imgSrc,
             'photos' => $galleryPhotos
@@ -583,7 +698,7 @@ $totalCount = count($dbFacilities);
         <article class="facility-choice-card <?= $isDorm ? 'dorm-suite-card' : '' ?> <?= $isGuesthouse ? 'guesthouse-card' : '' ?> <?= $isMaint ? 'under-maintenance' : ($isSelected ? 'selected' : '') ?>"
           data-id="<?= $cardSlug ?>"
           data-facility-db-id="<?= $f['id'] ?>"
-          data-name="<?= htmlspecialchars($f['name']) ?>"
+          data-name="<?= htmlspecialchars($isGuesthouse ? ($ghInspo['title'] . ' (' . $ghInspo['badge'] . ')') : $f['name']) ?>"
           data-rate="<?= htmlspecialchars($f['rate']) ?>"
           data-capacity="<?= htmlspecialchars($capDisplay) ?>"
           data-facility-type="<?= $cardCategory ?>"
@@ -591,32 +706,66 @@ $totalCount = count($dbFacilities);
           data-layouts="<?= htmlspecialchars($f['layouts'] ?? '') ?>"
           style="<?= $displayStyle ?>">
           <div class="facility-card-image">
-            <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($f['name']) ?>" loading="lazy">
-            <span class="facility-cap-badge"><?= htmlspecialchars($capDisplay) ?></span>
-            <button type="button" class="facility-gallery-badge-btn" onclick="event.stopPropagation(); openFacilityGalleryModal(<?= $jsonPayload ?>)" title="View <?= count($galleryPhotos) ?> Photos &amp; Facility Specifications">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                <polyline points="21 15 16 10 5 21"></polyline>
-              </svg>
-              <span><?= count($galleryPhotos) ?> Photos &amp; Specs</span>
-            </button>
+            <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($cardTitle) ?>" loading="lazy">
+            <?php if ($isGuesthouse): ?>
+              <span class="guesthouse-inspo-badge"><?= htmlspecialchars($ghInspo['badge']) ?></span>
+            <?php else: ?>
+              <span class="facility-cap-badge"><?= htmlspecialchars($capDisplay) ?></span>
+              <button type="button" class="facility-gallery-badge-btn" onclick="event.stopPropagation(); openFacilityGalleryModal(<?= $jsonPayload ?>)" title="View <?= count($galleryPhotos) ?> Photos &amp; Facility Specifications">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <span><?= count($galleryPhotos) ?> Photos &amp; Specs</span>
+              </button>
+            <?php endif; ?>
             <?php if ($isMaint): ?>
               <span class="facility-maint-badge" style="position:absolute; top:10px; left:10px; background:#b45309; color:#fff; font-size:0.68rem; font-weight:800; padding:3px 8px; border-radius:6px; letter-spacing:0.5px; box-shadow:0 2px 6px rgba(0,0,0,0.25);">UNDER MAINTENANCE</span>
             <?php endif; ?>
           </div>
           <div class="facility-card-content">
-            <span class="facility-category-tag"><?= $categoryTag ?></span>
-            <h3 class="facility-title"><?= htmlspecialchars($f['name']) ?></h3>
-            <div class="facility-rate-tag">Standard Rate: <?= htmlspecialchars($f['rate']) ?></div>
-            <div class="facility-amenities-tags">
-              <?php foreach (array_slice($featuresList, 0, 4) as $feat): ?>
-                <span class="amenity-pill"><?= htmlspecialchars($feat) ?></span>
-              <?php endforeach; ?>
-            </div>
-            <div class="dorm-card-selected-room-badge <?= !$isDorm ? 'hall-selected-setup-badge' : '' ?>" style="<?= $isSelected ? 'display:flex;' : 'display:none;' ?>">
-              <span class="d-room-text"><?= $isDorm ? '✓ Room Assigned' : '✓ Standard Configuration Selected' ?></span>
-            </div>
+            <?php if (!$isGuesthouse): ?>
+              <span class="facility-category-tag"><?= $categoryTag ?></span>
+            <?php endif; ?>
+            <h3 class="facility-title <?= $isGuesthouse ? 'guesthouse-serif-title' : '' ?>"><?= htmlspecialchars($cardTitle) ?></h3>
+            <?php if (!$isGuesthouse): ?>
+              <div class="facility-rate-tag">Standard Rate: <?= htmlspecialchars($f['rate']) ?></div>
+            <?php endif; ?>
+            
+            <?php if ($isGuesthouse && !empty($cardDesc)): ?>
+              <p class="guesthouse-card-desc"><?= htmlspecialchars($cardDesc) ?></p>
+            <?php endif; ?>
+
+            <?php if (!$isGuesthouse): ?>
+              <div class="facility-amenities-tags">
+                <?php foreach (array_slice($featuresList, 0, 4) as $feat): ?>
+                  <span class="amenity-pill"><?= htmlspecialchars($feat) ?></span>
+                <?php endforeach; ?>
+              </div>
+            <?php endif; ?>
+
+            <?php if ($isGuesthouse): ?>
+              <div class="guesthouse-bottom-meta">
+                <div class="guesthouse-meta-left">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M2 20.5h20"></path>
+                    <path d="M3 11.5l5.5-5 5.5 5V20.5H3z"></path>
+                    <path d="M7 20.5v-4.5h3v4.5"></path>
+                    <path d="M18 16.5v4"></path>
+                    <path d="M15 14c-.6-1.8.5-3.8 2.3-4 1-1.4 2.8-1.4 3.7 0 1.3 0 2.2 1.3 1.8 2.6.7.7.7 1.9 0 2.6-.6.6-1.7.5-2.8.5"></path>
+                  </svg>
+                  <span><?= htmlspecialchars($ghInspo['badge']) ?></span>
+                </div>
+                <span class="guesthouse-meta-rate"><?= htmlspecialchars($f['rate']) ?></span>
+              </div>
+            <?php endif; ?>
+
+            <?php if ($isDorm): ?>
+              <div class="dorm-card-selected-room-badge" style="<?= $isSelected ? 'display:flex;' : 'display:none;' ?>">
+                <span class="d-room-text">✓ Room Assigned</span>
+              </div>
+            <?php endif; ?>
             <?php if ($isMaint): ?>
               <button type="button" class="btn-select-facility" disabled title="This facility is under maintenance">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -632,7 +781,7 @@ $totalCount = count($dbFacilities);
                   <line x1="3" y1="9" x2="21" y2="9"></line>
                   <line x1="9" y1="21" x2="9" y2="9"></line>
                 </svg>
-                <?= $isDorm ? 'Select Room &amp; View Floor Plan' : 'Select Setup &amp; View Floor Plan' ?>
+                <?= $isDorm ? 'Select Room &amp; View Floor Plan' : ($isGuesthouse ? 'Select Villa &amp; View Layout' : 'Select Setup &amp; View Floor Plan') ?>
               </button>
             <?php endif; ?>
 
@@ -654,11 +803,15 @@ $totalCount = count($dbFacilities);
         if ($reqCategory === 'halls' && $hallsCount === 0) {
           $initialEmpty = true;
           $initialEmptyTitle = "No Halls or Venues Available";
-          $initialEmptyDesc = "There are currently no training halls or function venues available in this category. You may switch to Dormitories or browse other options.";
+          $initialEmptyDesc = "There are currently no training halls or function venues available in this category. You may switch to Dormitories or Guesthouses.";
         } elseif ($reqCategory === 'dormitories' && $dormsCount === 0) {
           $initialEmpty = true;
           $initialEmptyTitle = "No Dormitory Suites Available";
-          $initialEmptyDesc = "There are currently no dormitory suites or rooms available in this category. You may switch to Halls or browse other options.";
+          $initialEmptyDesc = "There are currently no dormitory suites or rooms available in this category. You may switch to Halls or Guesthouses.";
+        } elseif ($reqCategory === 'guesthouses' && $guesthousesCount === 0) {
+          $initialEmpty = true;
+          $initialEmptyTitle = "No Guesthouse Villas Available";
+          $initialEmptyDesc = "There are currently no active guesthouse cottages available in this category. You may switch to Halls or Dormitories.";
         } elseif ($totalCount === 0) {
           $initialEmpty = true;
           $initialEmptyTitle = "No Facilities Available";
@@ -1232,8 +1385,25 @@ $totalCount = count($dbFacilities);
 
         <!-- Modal Body: Interactive Room Grid -->
         <div class="room-modal-body">
+          <!-- Guesthouse Villa Preview Hero Banner (Active for all 7 Guesthouses) -->
+          <div class="modal-guesthouse-hero-card" id="modalGuesthouseHeroCard" style="display: none;">
+            <div class="modal-guesthouse-hero-img-wrap">
+              <img id="modalGuesthouseHeroImg" src="assets/images/guesthouse.jpg" alt="ATI Guesthouse Villa Preview" class="modal-guesthouse-hero-img">
+              <div class="modal-guesthouse-hero-overlay">
+                <div class="modal-guesthouse-tag-badge">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                  </svg>
+                  <span id="modalGuesthouseBadgeText">ATI Residential Guesthouse Villa</span>
+                </div>
+                <div class="modal-guesthouse-specs" id="modalGuesthouseSpecs">Private Executive Villa • Master Suite &amp; Guest Quarters • Scenic Garden Compound</div>
+              </div>
+            </div>
+          </div>
+
           <div class="modal-rooms-grid" id="modalRoomsGrid">
-            <!-- Dynamically populated 12 room boxes -->
+            <!-- Dynamically populated 12 room boxes / villa units -->
           </div>
 
           <!-- Feedback Bar inside modal -->

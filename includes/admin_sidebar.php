@@ -131,15 +131,17 @@ if (!empty($_SESSION['user_id'])) {
 
         <div class="sidebar-section-title">FACILITY MANAGEMENT</div>
 
-        <!-- Facilities & Dorms: Visible to Endorsement Officer, Super Admin, and Officers -->
+        <!-- Accommodations: Visible to Endorsement Officer, Super Admin, and Officers -->
         <a href="admin_facilities.php" class="sidebar-menu-item <?= in_array($activeNav, ['facilities', 'admin_facilities']) ? 'active' : '' ?>">
           <div class="menu-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 4v16"></path>
+              <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+              <path d="M2 17h20"></path>
+              <path d="M6 8v9"></path>
             </svg>
           </div>
-          <span class="menu-label">Facilities &amp; Dorms</span>
+          <span class="menu-label">Accommodations</span>
         </a>
 
         <a href="admin_schedule.php" class="sidebar-menu-item <?= in_array($activeNav, ['schedule', 'admin_schedule']) ? 'active' : '' ?>">

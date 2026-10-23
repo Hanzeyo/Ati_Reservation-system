@@ -50,12 +50,25 @@ try {
     $stmt->execute([$facilityId]);
     $rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Auto-seed default rooms (101-106) if dormitory has no rooms yet
+    // Auto-seed default rooms if dormitory or guesthouse has no rooms yet
     if (empty($rooms) && ($facility['type'] === 'dorms' || $facility['type'] === 'dormitories')) {
         $defaultNums = ['101', '102', '103', '104', '105', '106'];
         $insStmt = $db->prepare("INSERT INTO rooms (facility_id, room_number, floor, status) VALUES (?, ?, '1st Floor', 'available')");
         foreach ($defaultNums as $dNum) {
             $insStmt->execute([$facilityId, $dNum]);
+        }
+        $stmt->execute([$facilityId]);
+        $rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } elseif (empty($rooms) && ($facility['type'] === 'guesthouses' || stripos($facility['name'], 'guesthouse') !== false)) {
+        $defaultVillaRooms = [
+            ['Master Suite (King Bed)', 'Main Villa Floor'],
+            ['Deluxe Guest Room (Queen Bed)', 'Garden Wing'],
+            ['Twin Bedroom (2 Single Beds)', 'Upper Wing'],
+            ['Full Villa Allotment (Entire Property)', 'Entire Villa']
+        ];
+        $insStmt = $db->prepare("INSERT INTO rooms (facility_id, room_number, floor, status) VALUES (?, ?, ?, 'available')");
+        foreach ($defaultVillaRooms as $vr) {
+            $insStmt->execute([$facilityId, $vr[0], $vr[1]]);
         }
         $stmt->execute([$facilityId]);
         $rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -209,7 +209,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
           </button>
 
           <div class="topbar-title-wrap">
-            <span class="topbar-breadcrumb">ATI Portal &rsaquo; Super Administrator &rsaquo; Asset Management</span>
+            <span class="topbar-breadcrumb">ATI Portal &rsaquo; Super Administrator &rsaquo; Reservation Asset Management</span>
             <h1 class="topbar-page-title">Facilities & Dormitories Master Registry</h1>
           </div>
         </div>
@@ -253,7 +253,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
               </svg>
               <span>Institutional Assets & Accommodation Control</span>
             </div>
-            <h2>Facility & Dormitory Asset Management</h2>
+            <h2>Reservation Asset Management</h2>
             <p>Configure hall capacities, manage dormitory bed inventories, inspect real-time operational availability, and implement administrative maintenance holds across ATI Central Office.</p>
           </div>
 

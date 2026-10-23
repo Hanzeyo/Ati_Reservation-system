@@ -190,18 +190,21 @@ $totalFacilities = count($allFacilities);
     }
 
     .cat-icon-container {
-      border-radius: 14px;
-      padding: 0.85rem;
+      border-radius: 20px;
+      padding: 1.25rem 1.4rem;
+      min-height: 122px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 0.75rem;
+      margin-bottom: 1.1rem;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .cat-icon-container svg {
-      width: 48px;
-      height: 48px;
+      width: 92px;
+      height: 92px;
+      display: block;
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.05));
     }
 
     /* ---------------- 1. HALLS CARD (FOREST EMERALD THEME) ---------------- */
@@ -537,8 +540,8 @@ $totalFacilities = count($allFacilities);
        ========================================================================== -->
   <header class="booking-topbar">
     <div class="booking-topbar-container">
-      <!-- Left: ATI Brand -->
-      <a href="home.php" class="booking-brand" title="ATI Reservation Portal">
+      <!-- Left: ATI Brand (Scrolls to Top of Portal) -->
+      <a href="#top" class="booking-brand" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" title="Scroll back to top of portal">
         <img src="assets/images/ATI_Logo.png" alt="ATI Official Logo" class="booking-brand-logo">
         <div class="booking-brand-text">
           <h1>Agricultural Training Institute</h1>
@@ -805,12 +808,12 @@ $totalFacilities = count($allFacilities);
       </div>
       <h1 class="cat-sec-title">OUR FACILITIES</h1>
       <p class="cat-sec-subtitle">Choose a category below to open a dedicated view of available function halls, training
-        rooms, and dormitory accommodations.</p>
+        rooms, dormitory accommodations, and private guesthouses.</p>
       <div class="cat-sec-divider"></div>
     </div>
 
     <!-- ==========================================================================
-         TWO MAIN CATEGORY CARDS (Halls vs Dormitories)
+         THREE MAIN CATEGORY CARDS (Halls, Dormitories & Guesthouses)
          ========================================================================== -->
     <div class="portal-category-grid">
 
@@ -820,16 +823,31 @@ $totalFacilities = count($allFacilities);
           <span class="cat-count-badge"><?= $hallsCount ?> Venues Available</span>
         </div>
         <div class="cat-icon-container">
-          <svg width="48" height="48" viewBox="0 0 64 64" fill="none" stroke="#174d2f" stroke-width="2.4"
-            stroke-linecap="round" stroke-linejoin="round">
-            <!-- Classical Hall Building with Pediment & Columns -->
-            <path d="M6 22L32 7L58 22H6Z" fill="#d7f0df" />
-            <path d="M10 22V26H54V22" />
-            <rect x="15" y="26" width="7" height="26" rx="2" fill="#d7f0df" />
-            <rect x="28.5" y="26" width="7" height="26" rx="2" fill="#d7f0df" />
-            <rect x="42" y="26" width="7" height="26" rx="2" fill="#d7f0df" />
-            <path d="M9 52H55V56H9V52Z" />
-            <path d="M5 56H59V60H5V56Z" />
+          <svg width="92" height="92" viewBox="0 0 64 64" fill="none" stroke="#174d2f" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <!-- Ground & Grass -->
+            <line x1="4" y1="54" x2="60" y2="54" stroke-width="2.2" />
+            <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="1.8" />
+            <!-- Left Tree -->
+            <path d="M11 54v-8" stroke-width="2" />
+            <path d="M11 36c-2.5 0-4.5 1.8-4.5 4 0 1.2.6 2.3 1.5 3-1 1-1.2 2.5-.2 3.8.7.9 1.8 1.4 3.2 1.4 1.4 0 2.5-.5 3.2-1.4 1-1.3.8-2.8-.2-3.8.9-.7 1.5-1.8 1.5-3 0-2.2-2-4-4.5-4z" fill="#d7f0df" />
+            <!-- Right Tree -->
+            <path d="M53 54v-8" stroke-width="2" />
+            <path d="M53 36c-2.5 0-4.5 1.8-4.5 4 0 1.2.6 2.3 1.5 3-1 1-1.2 2.5-.2 3.8.7.9 1.8 1.4 3.2 1.4 1.4 0 2.5-.5 3.2-1.4 1-1.3.8-2.8-.2-3.8.9-.7 1.5-1.8 1.5-3 0-2.2-2-4-4.5-4z" fill="#d7f0df" />
+            <!-- Classical Hall Building -->
+            <polygon points="32,20 18,28 46,28" fill="#d7f0df" />
+            <circle cx="32" cy="25" r="1.5" fill="#174d2f" stroke="none" />
+            <line x1="18" y1="28" x2="46" y2="28" />
+            <!-- Columns -->
+            <line x1="21.5" y1="28" x2="21.5" y2="48" stroke-width="2.4" />
+            <line x1="28" y1="28" x2="28" y2="48" stroke-width="2.4" />
+            <line x1="36" y1="28" x2="36" y2="48" stroke-width="2.4" />
+            <line x1="42.5" y1="28" x2="42.5" y2="48" stroke-width="2.4" />
+            <!-- Doorway -->
+            <path d="M30 48v-6a2 2 0 0 1 4 0v6" fill="#c2ebd0" />
+            <!-- Base Steps -->
+            <rect x="17" y="48" width="30" height="3" fill="#d7f0df" />
+            <rect x="15" y="51" width="34" height="3" fill="#d7f0df" />
           </svg>
         </div>
         <h2 class="cat-card-title">Halls</h2>
@@ -842,20 +860,30 @@ $totalFacilities = count($allFacilities);
           <span class="cat-count-badge"><?= $dormsCount ?> Room Types Available</span>
         </div>
         <div class="cat-icon-container">
-          <svg width="48" height="48" viewBox="0 0 64 64" fill="none" stroke="#b45309" stroke-width="2.4"
-            stroke-linecap="round" stroke-linejoin="round">
-            <!-- Multi-story Dormitory Accommodation Building -->
-            <rect x="23" y="10" width="18" height="46" rx="2" fill="#fef3c7" />
-            <rect x="9" y="22" width="14" height="34" rx="2" fill="#fef3c7" />
-            <rect x="41" y="22" width="14" height="34" rx="2" fill="#fef3c7" />
-            <rect x="13" y="28" width="6" height="6" rx="1" />
-            <rect x="13" y="40" width="6" height="6" rx="1" />
-            <rect x="45" y="28" width="6" height="6" rx="1" />
-            <rect x="45" y="40" width="6" height="6" rx="1" />
-            <rect x="28" y="16" width="8" height="6" rx="1" />
-            <rect x="28" y="28" width="8" height="6" rx="1" />
-            <rect x="28" y="44" width="8" height="12" rx="1" />
-            <line x1="5" y1="56" x2="59" y2="56" />
+          <svg width="92" height="92" viewBox="0 0 64 64" fill="none" stroke="#b45309" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <!-- Ground & Grass -->
+            <line x1="4" y1="54" x2="60" y2="54" stroke-width="2.2" />
+            <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="1.8" />
+            <!-- Left Bush -->
+            <path d="M8 54c0-2.5 1.8-4.5 4-4.5s4 2 4 4.5" fill="#fef3c7" />
+            <!-- Dormitory Building Block -->
+            <rect x="15" y="24" width="10" height="30" rx="1" fill="#fef3c7" />
+            <rect x="25" y="16" width="16" height="38" rx="1.5" fill="#fef3c7" />
+            <!-- Windows -->
+            <rect x="18" y="28" width="4" height="4" rx="0.5" />
+            <rect x="18" y="36" width="4" height="4" rx="0.5" />
+            <rect x="28" y="21" width="4" height="4" rx="0.5" />
+            <rect x="34" y="21" width="4" height="4" rx="0.5" />
+            <rect x="28" y="29" width="4" height="4" rx="0.5" />
+            <rect x="34" y="29" width="4" height="4" rx="0.5" />
+            <rect x="28" y="37" width="4" height="4" rx="0.5" />
+            <rect x="34" y="37" width="4" height="4" rx="0.5" />
+            <!-- Entrance Door -->
+            <rect x="29" y="46" width="6" height="8" rx="1" fill="#fde68a" />
+            <!-- Right Tree -->
+            <path d="M50 54v-9" stroke-width="2.2" />
+            <path d="M50 27c-3 0-5.5 2-5.5 4.5 0 1 .4 2 1 2.8-1.5 1-2 2.7-1 4.2.8 1.2 2.2 1.8 3.5 1.8h4c2.5 0 4.5-1.8 4.5-4 0-1.5-.9-2.8-2.2-3.5.4-.6.7-1.4.7-2.3 0-2-2.2-3.5-5-3.5z" fill="#fef3c7" />
           </svg>
         </div>
         <h2 class="cat-card-title">Dormitories</h2>
@@ -869,10 +897,38 @@ $totalFacilities = count($allFacilities);
           <span class="cat-count-badge"><?= $guesthousesCount ?> Guesthouses Available</span>
         </div>
         <div class="cat-icon-container">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" fill="#ccfbf1"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
+          <svg width="92" height="92" viewBox="0 0 64 64" fill="none" stroke="#0f766e" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <!-- Ground & Grass -->
+            <line x1="4" y1="54" x2="60" y2="54" stroke-width="2.2" />
+            <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="1.8" />
+            <!-- Sun in sky -->
+            <circle cx="13" cy="13" r="2.8" fill="#fef08a" />
+            <line x1="13" y1="6.5" x2="13" y2="8" stroke-width="1.6" />
+            <line x1="13" y1="18" x2="13" y2="19.5" stroke-width="1.6" />
+            <line x1="6.5" y1="13" x2="8" y2="13" stroke-width="1.6" />
+            <line x1="18" y1="13" x2="19.5" y2="13" stroke-width="1.6" />
+            <line x1="8.5" y1="8.5" x2="9.6" y2="9.6" stroke-width="1.6" />
+            <line x1="16.4" y1="16.4" x2="17.5" y2="17.5" stroke-width="1.6" />
+            <line x1="8.5" y1="17.5" x2="9.6" y2="16.4" stroke-width="1.6" />
+            <line x1="16.4" y1="9.6" x2="17.5" y2="8.5" stroke-width="1.6" />
+            <!-- Chimney -->
+            <path d="M14 28V20H18V24.5" fill="#ccfbf1" stroke-width="2.2" />
+            <!-- Cottage Body & Roof -->
+            <path d="M12 33v21h22V33" fill="#ccfbf1" />
+            <path d="M8 34L23 21L38 34" stroke-width="2.4" />
+            <!-- Round Attic Window with Cross -->
+            <circle cx="23" cy="30" r="3.2" />
+            <line x1="19.8" y1="30" x2="26.2" y2="30" stroke-width="1.5" />
+            <line x1="23" y1="26.8" x2="23" y2="33.2" stroke-width="1.5" />
+            <!-- Cottage Door -->
+            <rect x="19.5" y="41" width="7" height="13" rx="1" fill="#99f6e4" />
+            <circle cx="24.8" cy="48" r="0.7" fill="#0f766e" stroke="none" />
+            <!-- Lush Tree beside Cottage -->
+            <path d="M44 54c0-4 1.2-8.5 1.2-12" stroke-width="2.2" />
+            <path d="M48.5 54c0-4-1.2-8.5-1.2-12" stroke-width="2.2" />
+            <path d="M47.5 45c2.5-1.5 4.5 0 4.5 0" stroke-width="1.6" />
+            <path d="M41 38c-3-1-4.2-3.3-3.8-6 .5-2.8 2.6-4.6 5-4.4.8-3.2 4-5.2 7.2-4.5 3 .6 5 3.2 5 6.2 2.4.5 4.2 2.3 4.2 4.8 0 2.8-2.3 5-5.2 5h-4" fill="#ccfbf1" stroke-width="2.2" />
           </svg>
         </div>
         <h2 class="cat-card-title">Guesthouses</h2>
