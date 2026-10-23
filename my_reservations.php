@@ -590,15 +590,26 @@ foreach ($reservationsList as $resItem) {
               </svg>
             </div>
 
+            <div class="facility-option" data-value="guesthouse" role="option">
+              <span class="opt-bullet" style="background:#0f766e;"></span>
+              <span class="opt-name">All Guesthouses &amp; Villas</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+
             <?php if (!empty($filterFacilities)): ?>
               <div style="height: 1px; background: #e5ede7; margin: 4px 8px;"></div>
               <?php foreach ($filterFacilities as $f): 
                 $fType = strtolower($f['type'] ?? '');
+                $isGhType = ($fType === 'guesthouses' || $fType === 'guesthouse');
                 $isDormType = ($fType === 'dormitories' || $fType === 'dorms');
-                $bulletClass = $isDormType ? 'dorm-bullet' : '';
+                $bulletClass = $isGhType ? 'guesthouse-bullet' : ($isDormType ? 'dorm-bullet' : '');
+                $bulletStyle = $isGhType ? 'style="background:#0f766e;"' : '';
               ?>
                 <div class="facility-option" data-value="<?= htmlspecialchars($f['name']) ?>" data-facility-id="<?= (int)$f['id'] ?>" role="option">
-                  <span class="opt-bullet <?= $bulletClass ?>"></span>
+                  <span class="opt-bullet <?= $bulletClass ?>" <?= $bulletStyle ?>></span>
                   <span class="opt-name"><?= htmlspecialchars($f['name']) ?></span>
                   <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2.5">
@@ -666,8 +677,9 @@ foreach ($reservationsList as $resItem) {
 
         <?php foreach ($reservationsList as $item): 
           $statusLower = strtolower($item['status'] ?? 'pending');
-          $isDorm = ($item['facility_type'] === 'dormitories') || !empty($item['room_id']);
-          $category = $isDorm ? 'dormitory' : 'facility';
+          $isGuesthouse = ($item['facility_type'] === 'guesthouses') || str_starts_with($item['reference_no'] ?? '', 'ATI-GH');
+          $isDorm = !$isGuesthouse && (($item['facility_type'] === 'dormitories') || !empty($item['room_id']));
+          $category = $isGuesthouse ? 'guesthouse' : ($isDorm ? 'dormitory' : 'facility');
           
           $venueName = $item['facility_name'] ?? 'Facility';
           $facilityImgRaw = trim($item['facility_image'] ?? '');
@@ -681,6 +693,8 @@ foreach ($reservationsList as $resItem) {
               $slug = 'mess-hall';
           } elseif (stripos($venueName, 'serrano') !== false) {
               $slug = 'serrano-hall';
+          } elseif ($isGuesthouse) {
+              $slug = 'guesthouse';
           } elseif ($isDorm) {
               $slug = 'dormitory';
           }
@@ -709,6 +723,8 @@ foreach ($reservationsList as $resItem) {
                   $venueThumb = 'assets/images/rdec_training_1.jpg';
               } elseif (stripos($venueName, 'serrano') !== false) {
                   $venueThumb = 'assets/images/serrano_hall.jpg';
+              } elseif ($isGuesthouse) {
+                  $venueThumb = 'assets/images/guesthouse_1.jpg';
               } elseif ($isDorm) {
                   $venueThumb = 'assets/images/dormitory.jpg';
               } else {
@@ -720,13 +736,23 @@ foreach ($reservationsList as $resItem) {
           $endTs = strtotime($item['end_date'] ?: $item['start_date']);
           $daysCount = max(1, round(($endTs - $startTs) / 86400) + 1);
           $daysSuffix = $daysCount . ($daysCount > 1 ? ' Days' : ' Day');
-          if ($startTs === $endTs) {
-              $formattedDates = date('M d, Y', $startTs) . " (1 Day)";
+          if ($isGuesthouse || $isDorm) {
+              $nightsCount = max(1, $daysCount - 1);
+              $nightsSuffix = $daysCount === 1 ? '1 Night (Overnight)' : $nightsCount . ' Nights';
+              if ($startTs === $endTs) {
+                  $formattedDates = date('M d, Y', $startTs) . " (Overnight)";
+              } else {
+                  $formattedDates = date('M d', $startTs) . ' – ' . date('M d, Y', $endTs) . " ({$nightsSuffix})";
+              }
           } else {
-              $formattedDates = date('M d', $startTs) . ' – ' . date('M d, Y', $endTs) . " ({$daysSuffix})";
+              if ($startTs === $endTs) {
+                  $formattedDates = date('M d, Y', $startTs) . " (1 Day)";
+              } else {
+                  $formattedDates = date('M d', $startTs) . ' – ' . date('M d, Y', $endTs) . " ({$daysSuffix})";
+              }
           }
 
-          $paxText = ($item['pax_count'] ?: 0) . ' Attendees';
+          $paxText = ($item['pax_count'] ?: 0) . (($isGuesthouse || $isDorm) ? ' Guests' : ' Attendees');
           $divisionText = $item['office_agency'] ?: 'ATI Personnel';
           $eventTitle = $item['event_title'] ?: 'Official Institutional Activity';
           $timeSlotText = $item['time_slot'] ?: '08:00 AM – 05:00 PM';
@@ -864,14 +890,14 @@ foreach ($reservationsList as $resItem) {
           data-clearance-doc="<?= htmlspecialchars($item['clearance_doc_path'] ?? '') ?>">
 
           <div class="res-card-media">
-            <img src="<?= htmlspecialchars($venueThumb) ?>" alt="<?= htmlspecialchars($venueName) ?>" onerror="this.onerror=null; this.src='<?= $isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg' ?>';">
-            <span class="venue-thumb-pill <?= $isDorm ? 'dorm-pill' : '' ?>"><?= htmlspecialchars($venueName) ?></span>
+            <img src="<?= htmlspecialchars($venueThumb) ?>" alt="<?= htmlspecialchars($venueName) ?>" onerror="this.onerror=null; this.src='<?= $isGuesthouse ? 'assets/images/guesthouse_1.jpg' : ($isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg') ?>';">
+            <span class="venue-thumb-pill <?= $isGuesthouse ? 'guesthouse-pill' : ($isDorm ? 'dorm-pill' : '') ?>"><?= htmlspecialchars($venueName) ?></span>
           </div>
 
           <div class="res-card-main">
             <div class="res-main-top">
               <div class="res-ref-group">
-                <span class="res-ref-tag <?= $isDorm ? 'dorm-ref' : '' ?>"><?= htmlspecialchars($item['reference_no']) ?></span>
+                <span class="res-ref-tag <?= $isGuesthouse ? 'guesthouse-ref' : ($isDorm ? 'dorm-ref' : '') ?>"><?= htmlspecialchars($item['reference_no']) ?></span>
                 <button type="button" class="btn-copy-ref" data-ref="<?= htmlspecialchars($item['reference_no']) ?>" title="Copy Reference Code">
                   <svg viewBox="0 0 24 24" fill="none">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -1579,6 +1605,9 @@ foreach ($reservationsList as $resItem) {
       }
     }
   </style>
+
+  <!-- Toast Notifications Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
   <!-- Scripts -->
   <script src="js/my_reservations.js?v=<?php echo time(); ?>"></script>

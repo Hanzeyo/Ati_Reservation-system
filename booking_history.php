@@ -34,7 +34,6 @@ $query = "SELECT r.*,
           LEFT JOIN users u_rec ON r.recommended_by = u_rec.id
           LEFT JOIN users u_clr ON r.cleared_by = u_clr.id
           WHERE r.user_id = :user_id 
-            AND r.status IN ('Completed', 'Cancelled', 'Rejected')
             AND r.deleted_at IS NULL
           ORDER BY r.id DESC";
 
@@ -48,18 +47,24 @@ $filterFacilities = $facFilterStmt ? $facFilterStmt->fetchAll(PDO::FETCH_ASSOC) 
 
 // Calculate dynamic stats for KPI summary
 $statsHistoryTotal = count($historyList);
+$statsPending = 0;
+$statsApproved = 0;
 $statsCompleted = 0;
 $statsCancelled = 0;
 
 foreach ($historyList as $item) {
-    $st = $item['status'] ?? '';
-    if ($st === 'Completed') {
+    $st = $item['status'] ?? 'Pending';
+    if ($st === 'Approved') {
+        $statsApproved++;
+    } elseif ($st === 'Completed') {
         $statsCompleted++;
     } elseif (in_array($st, ['Cancelled', 'Rejected'])) {
         $statsCancelled++;
+    } else {
+        $statsPending++;
     }
 }
-$statsArchive = $statsHistoryTotal;
+$statsArchive = $statsCompleted;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -445,12 +450,39 @@ $statsArchive = $statsHistoryTotal;
         </div>
       </div>
 
-      <!-- Completed Events & Stays -->
-      <div class="my-res-stat-card" data-filter="completed">
+      <!-- Pending Clearances -->
+      <div class="my-res-stat-card" data-filter="pending">
+        <div class="stat-icon-box amber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value" id="kpiPending"><?= $statsPending ?></span>
+          <span class="stat-label">Pending Clearances</span>
+        </div>
+      </div>
+
+      <!-- Confirmed & Approved -->
+      <div class="my-res-stat-card" data-filter="approved">
         <div class="stat-icon-box green">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
             <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-value" id="kpiApproved"><?= $statsApproved ?></span>
+          <span class="stat-label">Approved &amp; Confirmed</span>
+        </div>
+      </div>
+
+      <!-- Completed Events & Stays -->
+      <div class="my-res-stat-card" data-filter="completed">
+        <div class="stat-icon-box slate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
         </div>
         <div class="stat-content">
@@ -471,23 +503,6 @@ $statsArchive = $statsHistoryTotal;
         <div class="stat-content">
           <span class="stat-value" id="kpiCancelled"><?= $statsCancelled ?></span>
           <span class="stat-label">Cancelled / Disapproved</span>
-        </div>
-      </div>
-
-      <!-- Archived Downloadable Slips -->
-      <div class="my-res-stat-card" data-filter="all">
-        <div class="stat-icon-box slate">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <span class="stat-value" id="kpiArchive"><?= $statsArchive ?></span>
-          <span class="stat-label">Archived Official Slips</span>
         </div>
       </div>
     </section>
@@ -539,6 +554,22 @@ $statsArchive = $statsHistoryTotal;
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
             </div>
+            <div class="facility-option" data-value="pending" role="option">
+              <span class="opt-bullet" style="background: #f59e0b;"></span>
+              <span class="opt-name">Pending Review Only</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="approved" role="option">
+              <span class="opt-bullet" style="background: #16a34a;"></span>
+              <span class="opt-name">Confirmed &amp; Approved Only</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
             <div class="facility-option" data-value="completed" role="option">
               <span class="opt-bullet"></span>
               <span class="opt-name">Completed Activities Only</span>
@@ -566,6 +597,14 @@ $statsArchive = $statsHistoryTotal;
             <div class="facility-option" data-value="dormitory" role="option">
               <span class="opt-bullet dorm-bullet"></span>
               <span class="opt-name">Dormitories &amp; Lodgings</span>
+              <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </div>
+            <div class="facility-option" data-value="guesthouse" role="option">
+              <span class="opt-bullet" style="background: #0f766e;"></span>
+              <span class="opt-name">Guesthouses &amp; Villas</span>
               <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="2.5">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -650,14 +689,17 @@ $statsArchive = $statsHistoryTotal;
           $isRejected = ($rawStatus === 'Rejected');
           
           $filterStatus = $isCompleted ? 'completed' : 'cancelled';
-          $isDorm = (($item['facility_type'] ?? '') === 'dormitories') || !empty($item['room_id']);
-          $category = $isDorm ? 'dormitory' : 'facility';
+          $isGuesthouse = (($item['facility_type'] ?? '') === 'guesthouses') || str_starts_with($item['reference_no'] ?? '', 'ATI-GH');
+          $isDorm = !$isGuesthouse && ((($item['facility_type'] ?? '') === 'dormitories') || !empty($item['room_id']));
+          $category = $isGuesthouse ? 'guesthouse' : ($isDorm ? 'dormitory' : 'facility');
 
-          $venueName = $item['facility_name'] ?: ($isDorm ? 'ATI Dormitory' : 'Official Venue');
+          $venueName = $item['facility_name'] ?: ($isGuesthouse ? 'Guesthouse Villa' : ($isDorm ? 'ATI Dormitory' : 'Official Venue'));
           $facilityImgRaw = trim($item['facility_image'] ?? '');
           
           $slug = 'facility';
-          if ($isDorm) {
+          if ($isGuesthouse) {
+              $slug = 'guesthouse';
+          } elseif ($isDorm) {
               $slug = 'dormitory';
           } elseif (stripos($venueName, 'boardroom') !== false) {
               $slug = 'boardroom';
@@ -680,39 +722,123 @@ $statsArchive = $statsHistoryTotal;
               }
           }
           if (empty($venueThumb)) {
-              $venueThumb = $isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg';
+              if ($isGuesthouse) {
+                  $venueThumb = 'assets/images/guesthouse_1.jpg';
+              } elseif ($isDorm) {
+                  $venueThumb = 'assets/images/dormitory.jpg';
+              } else {
+                  $venueThumb = 'assets/images/function_hall.jpg';
+              }
           }
 
           $startTs = strtotime($item['start_date']);
           $endTs = strtotime($item['end_date'] ?: $item['start_date']);
           $daysCount = max(1, round(($endTs - $startTs) / 86400) + 1);
           $daysSuffix = $daysCount . ($daysCount > 1 ? ' Days' : ' Day');
-          if ($startTs === $endTs) {
-              $formattedDates = date('M d, Y', $startTs) . " (1 Day)";
+          if ($isGuesthouse || $isDorm) {
+              $nightsCount = max(1, $daysCount - 1);
+              $nightsSuffix = $daysCount === 1 ? '1 Night (Overnight)' : $nightsCount . ' Nights';
+              if ($startTs === $endTs) {
+                  $formattedDates = date('M d, Y', $startTs) . " (Overnight)";
+              } else {
+                  $formattedDates = date('M d', $startTs) . ' – ' . date('M d, Y', $endTs) . " ({$nightsSuffix})";
+              }
           } else {
-              $formattedDates = date('M d', $startTs) . ' – ' . date('M d, Y', $endTs) . " ({$daysSuffix})";
+              if ($startTs === $endTs) {
+                  $formattedDates = date('M d, Y', $startTs) . " (1 Day)";
+              } else {
+                  $formattedDates = date('M d', $startTs) . ' – ' . date('M d, Y', $endTs) . " ({$daysSuffix})";
+              }
           }
 
-          $paxText = ($item['pax_count'] ?: 0) . ' Attendees';
+          $paxText = ($item['pax_count'] ?: 0) . (($isGuesthouse || $isDorm) ? ' Guests' : ' Attendees');
           $divisionText = $item['office_agency'] ?: 'ATI Personnel';
           $eventTitle = $item['event_title'] ?: 'Official Institutional Activity';
           $timeSlotText = $item['time_slot'] ?: '08:00 AM – 05:00 PM';
           
           $concludedDateTs = !empty($item['updated_at']) ? strtotime($item['updated_at']) : strtotime($item['created_at']);
           $concludedDateText = date('M d, Y', $concludedDateTs);
+          $createdDateText = date('M d, Y', strtotime($item['created_at']));
 
-          if ($isCompleted) {
+          $filterStatus = 'pending';
+          $isApproved = ($rawStatus === 'Approved');
+          $isPending = in_array($rawStatus, ['Pending', 'Pending Recommendation', 'Pending Clearance']);
+
+          if ($rawStatus === 'Approved') {
+              $filterStatus = 'approved';
+              $statusBadgeClass = 'approved';
+              $statusBadgeText = 'Confirmed & Approved';
+              $statusPrefix = 'Approved ' . $concludedDateText;
+          } elseif ($rawStatus === 'Completed') {
+              $filterStatus = 'completed';
               $statusBadgeClass = 'completed';
               $statusBadgeText = 'Completed & Concluded';
               $statusPrefix = 'Concluded ' . $concludedDateText;
-          } elseif ($isCancelled) {
+          } elseif ($rawStatus === 'Cancelled') {
+              $filterStatus = 'cancelled';
               $statusBadgeClass = 'cancelled';
               $statusBadgeText = 'Cancelled by Requestor';
               $statusPrefix = 'Cancelled ' . $concludedDateText;
-          } else {
-              $statusBadgeClass = 'cancelled';
+          } elseif ($rawStatus === 'Rejected') {
+              $filterStatus = 'rejected';
+              $statusBadgeClass = 'rejected';
               $statusBadgeText = 'Disapproved / Returned';
               $statusPrefix = 'Disapproved ' . $concludedDateText;
+          } elseif ($rawStatus === 'Pending Recommendation') {
+              $statusBadgeClass = 'pending recommendation';
+              $statusBadgeText = 'Stage 2: Awaiting Recommendation';
+              $statusPrefix = 'Submitted ' . $createdDateText;
+          } elseif ($rawStatus === 'Pending Clearance') {
+              $statusBadgeClass = 'pending clearance';
+              $statusBadgeText = 'Stage 3: Awaiting Clearance';
+              $statusPrefix = 'Submitted ' . $createdDateText;
+          } else {
+              $statusBadgeClass = 'pending endorsement';
+              $statusBadgeText = 'Stage 1: Awaiting Endorsement';
+              $statusPrefix = 'Submitted ' . $createdDateText;
+          }
+
+          // Stepper calculations for pending/active requests in booking history
+          $s1Done = in_array($rawStatus, ['Pending Recommendation', 'Pending Clearance', 'Approved', 'Completed']) || !empty($item['endorsed_at']);
+          $s2Done = in_array($rawStatus, ['Pending Clearance', 'Approved', 'Completed']) || !empty($item['recommended_at']);
+          $s3Done = in_array($rawStatus, ['Approved', 'Completed']) || !empty($item['cleared_at']);
+
+          if ($isRejected) {
+              $step1State = 'rejected';
+              $step2State = 'pending';
+              $step3State = 'pending';
+              $currentStageLabel = 'Disapproved';
+              $currentStageColor = '#dc2626';
+          } elseif ($isCancelled) {
+              $step1State = 'cancelled';
+              $step2State = 'cancelled';
+              $step3State = 'cancelled';
+              $currentStageLabel = 'Cancelled';
+              $currentStageColor = '#64748b';
+          } elseif ($rawStatus === 'Approved') {
+              $step1State = 'done';
+              $step2State = 'done';
+              $step3State = 'done';
+              $currentStageLabel = 'Clearance Complete';
+              $currentStageColor = '#16a34a';
+          } elseif ($rawStatus === 'Pending Clearance') {
+              $step1State = 'done';
+              $step2State = 'done';
+              $step3State = 'active';
+              $currentStageLabel = 'Stage 3: Directorate Clearance';
+              $currentStageColor = '#047857';
+          } elseif ($rawStatus === 'Pending Recommendation') {
+              $step1State = 'done';
+              $step2State = 'active';
+              $step3State = 'pending';
+              $currentStageLabel = 'Stage 2: Logistics Recommendation';
+              $currentStageColor = '#2563eb';
+          } else {
+              $step1State = 'active';
+              $step2State = 'pending';
+              $step3State = 'pending';
+              $currentStageLabel = 'Stage 1: Division Endorsement';
+              $currentStageColor = '#d97706';
           }
 
           $venueTitleFull = $venueName . (!empty($item['room_number']) ? ' - Room ' . $item['room_number'] : '');
@@ -751,14 +877,14 @@ $statsArchive = $statsHistoryTotal;
           data-clearance-doc="<?= htmlspecialchars($item['clearance_doc_path'] ?? '') ?>">
 
           <div class="res-card-media">
-            <img src="<?= htmlspecialchars($venueThumb) ?>" alt="<?= htmlspecialchars($venueName) ?>" onerror="this.onerror=null; this.src='<?= $isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg' ?>';">
-            <span class="venue-thumb-pill <?= $isDorm ? 'dorm-pill' : '' ?>"><?= htmlspecialchars($venueName) ?></span>
+            <img src="<?= htmlspecialchars($venueThumb) ?>" alt="<?= htmlspecialchars($venueName) ?>" onerror="this.onerror=null; this.src='<?= $isGuesthouse ? 'assets/images/guesthouse_1.jpg' : ($isDorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg') ?>';">
+            <span class="venue-thumb-pill <?= $isGuesthouse ? 'guesthouse-pill' : ($isDorm ? 'dorm-pill' : '') ?>"><?= htmlspecialchars($venueName) ?></span>
           </div>
 
           <div class="res-card-main">
             <div class="res-main-top">
               <div class="res-ref-group">
-                <span class="res-ref-tag <?= $isDorm ? 'dorm-ref' : '' ?>"><?= htmlspecialchars($item['reference_no']) ?></span>
+                <span class="res-ref-tag <?= $isGuesthouse ? 'guesthouse-ref' : ($isDorm ? 'dorm-ref' : '') ?>"><?= htmlspecialchars($item['reference_no']) ?></span>
                 <button type="button" class="btn-copy-ref" data-ref="<?= htmlspecialchars($item['reference_no']) ?>" title="Copy Reference Code">
                   <svg viewBox="0 0 24 24" fill="none">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -809,20 +935,117 @@ $statsArchive = $statsHistoryTotal;
               </div>
             </div>
 
-            <?php if ($isCompleted): ?>
+            <?php if ($rawStatus === 'Completed'): ?>
               <div class="res-concluded-summary">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 <span><?= !empty($item['admin_remarks']) ? htmlspecialchars($item['admin_remarks']) : 'Activity successfully conducted. Facility inspection cleared &amp; venue turned over. Record permanently archived.' ?></span>
               </div>
-            <?php else: ?>
+            <?php elseif (in_array($rawStatus, ['Cancelled', 'Rejected'])): ?>
               <div class="res-cancellation-notice">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                <span><strong><?= $isCancelled ? 'Cancellation Notice:' : 'Disapproval Notice:' ?></strong> <?= !empty($item['admin_remarks']) ? htmlspecialchars($item['admin_remarks']) : ($isCancelled ? 'Reservation was cancelled by the applicant. Schedule was released back to availability.' : 'Application was disapproved / returned during administrative review.') ?></span>
+                <span><strong><?= $rawStatus === 'Cancelled' ? 'Cancellation Notice:' : 'Disapproval Notice:' ?></strong> <?= !empty($item['admin_remarks']) ? htmlspecialchars($item['admin_remarks']) : ($rawStatus === 'Cancelled' ? 'Reservation was cancelled by the applicant. Schedule was released back to availability.' : 'Application was disapproved / returned during administrative review.') ?></span>
+              </div>
+            <?php else: ?>
+              <!-- 3-STAGE GOVERNANCE ROUTING TRACKER FOR PENDING / APPROVED BOOKINGS -->
+              <div class="res-mini-routing">
+                <div class="routing-stepper-header">
+                  <div class="stepper-header-left">
+                    <span class="stepper-badge-icon">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                      </svg>
+                    </span>
+                    <span class="stepper-title">GOVERNANCE ROUTING TRACKER</span>
+                  </div>
+                  <span class="stepper-stage-chip" style="color: <?= $currentStageColor ?>; border-color: <?= $currentStageColor ?>44; background: <?= $currentStageColor ?>14;">
+                    <?= htmlspecialchars($currentStageLabel) ?>
+                  </span>
+                </div>
+
+                <div class="routing-stepper-track">
+                  <div class="stepper-step step-<?= $step1State ?>" title="Stage 1: Division Chief Endorsement">
+                    <div class="step-circle">
+                      <?php if ($step1State === 'done'): ?>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <?php elseif ($step1State === 'active'): ?>
+                        <span class="step-pulse-dot"></span>
+                        <span class="step-num">1</span>
+                      <?php else: ?>
+                        <span class="step-num">1</span>
+                      <?php endif; ?>
+                    </div>
+                    <div class="step-labels">
+                      <span class="step-name">1. Endorsement</span>
+                      <span class="step-desc">Division Chief</span>
+                    </div>
+                  </div>
+
+                  <div class="stepper-connector <?= $step1State === 'done' ? 'completed' : ($step2State === 'active' ? 'active' : '') ?>"></div>
+
+                  <div class="stepper-step step-<?= $step2State ?>" title="Stage 2: Property & Logistics Recommendation">
+                    <div class="step-circle">
+                      <?php if ($step2State === 'done'): ?>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <?php elseif ($step2State === 'active'): ?>
+                        <span class="step-pulse-dot"></span>
+                        <span class="step-num">2</span>
+                      <?php else: ?>
+                        <span class="step-num">2</span>
+                      <?php endif; ?>
+                    </div>
+                    <div class="step-labels">
+                      <span class="step-name">2. Recommendation</span>
+                      <span class="step-desc">Logistics &amp; Property</span>
+                    </div>
+                  </div>
+
+                  <div class="stepper-connector <?= $step2State === 'done' ? 'completed' : ($step3State === 'active' ? 'active' : '') ?>"></div>
+
+                  <div class="stepper-step step-<?= $step3State ?>" title="Stage 3: Directorate Final Clearance">
+                    <div class="step-circle">
+                      <?php if ($step3State === 'done'): ?>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <?php elseif ($step3State === 'active'): ?>
+                        <span class="step-pulse-dot"></span>
+                        <span class="step-num">3</span>
+                      <?php else: ?>
+                        <span class="step-num">3</span>
+                      <?php endif; ?>
+                    </div>
+                    <div class="step-labels">
+                      <span class="step-name">3. Clearance</span>
+                      <span class="step-desc">Directorate IV</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="routing-status-label">
+                  <?php if ($rawStatus === 'Approved'): ?>
+                    <span class="routing-step-desc"><strong style="color: #15803d;">Governance Complete:</strong> Approved on Master Schedule &bull; Security Gate Pass ready</span>
+                  <?php elseif ($rawStatus === 'Pending Clearance'): ?>
+                    <span class="routing-step-desc"><strong>Director IV:</strong> Transmitted for final executive clearance and gate pass issuance</span>
+                  <?php elseif ($rawStatus === 'Pending Recommendation'): ?>
+                    <span class="routing-step-desc"><strong>Property Unit:</strong> Facilities and equipment readiness inspection active</span>
+                  <?php else: ?>
+                    <span class="routing-step-desc"><strong>Stage 1:</strong> Awaiting Division Chief review and endorsement</span>
+                  <?php endif; ?>
+                </div>
               </div>
             <?php endif; ?>
           </div>
 
           <div class="res-card-side-actions">
+            <?php if ($isApproved): ?>
+              <button type="button" class="btn-card-action primary btn-gatepass-qr" onclick="showGatePassModal('<?= htmlspecialchars($item['reference_no']) ?>', '<?= htmlspecialchars($eventTitle) ?>', '<?= htmlspecialchars($venueTitleFull) ?>', '<?= htmlspecialchars($formattedDates) ?>')">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Gate Pass &amp; QR</span>
+              </button>
+            <?php endif; ?>
             <button type="button" class="btn-card-action secondary js-view-details">
               <svg viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -837,8 +1060,18 @@ $statsArchive = $statsHistoryTotal;
                 <polyline points="7 10 12 15 17 10"></polyline>
                 <line x1="12" y1="15" x2="12" y2="3"></line>
               </svg>
-              <span><?= $isCompleted ? 'Archived Slip' : 'Notice Slip' ?></span>
+              <span><?= $isCompleted ? 'Archived Slip' : ($isPending ? 'Official Slip' : 'Notice Slip') ?></span>
             </button>
+            <?php if ($isPending): ?>
+              <button type="button" class="btn-card-action danger-outline js-cancel-res" data-ref="<?= htmlspecialchars($item['reference_no']) ?>" title="Cancel Request">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="15" y1="9" x2="9" y2="15"></line>
+                  <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                <span>Cancel Request</span>
+              </button>
+            <?php endif; ?>
           </div>
         </article>
         <?php endforeach; ?>
@@ -859,13 +1092,45 @@ $statsArchive = $statsHistoryTotal;
             </thead>
             <tbody>
               <?php foreach ($historyList as $item): 
-                $rawStatus = $item['status'] ?? 'Completed';
+                $rawStatus = $item['status'] ?? 'Pending';
                 $isCompleted = ($rawStatus === 'Completed');
                 $isCancelled = ($rawStatus === 'Cancelled');
-                $filterStatus = $isCompleted ? 'completed' : 'cancelled';
-                $isDorm = (($item['facility_type'] ?? '') === 'dormitories') || !empty($item['room_id']);
-                $category = $isDorm ? 'dormitory' : 'facility';
-                $venueName = $item['facility_name'] ?: ($isDorm ? 'ATI Dormitory' : 'Official Venue');
+                $isRejected = ($rawStatus === 'Rejected');
+                $isApproved = ($rawStatus === 'Approved');
+                $isPending = in_array($rawStatus, ['Pending', 'Pending Recommendation', 'Pending Clearance']);
+
+                $filterStatus = 'pending';
+                if ($rawStatus === 'Approved') {
+                    $filterStatus = 'approved';
+                    $statusBadgeClass = 'approved';
+                    $statusBadgeText = 'Confirmed & Approved';
+                } elseif ($rawStatus === 'Completed') {
+                    $filterStatus = 'completed';
+                    $statusBadgeClass = 'completed';
+                    $statusBadgeText = 'Completed & Concluded';
+                } elseif ($rawStatus === 'Cancelled') {
+                    $filterStatus = 'cancelled';
+                    $statusBadgeClass = 'cancelled';
+                    $statusBadgeText = 'Cancelled by Requestor';
+                } elseif ($rawStatus === 'Rejected') {
+                    $filterStatus = 'rejected';
+                    $statusBadgeClass = 'rejected';
+                    $statusBadgeText = 'Disapproved / Returned';
+                } elseif ($rawStatus === 'Pending Recommendation') {
+                    $statusBadgeClass = 'pending recommendation';
+                    $statusBadgeText = 'Stage 2: Recommendation';
+                } elseif ($rawStatus === 'Pending Clearance') {
+                    $statusBadgeClass = 'pending clearance';
+                    $statusBadgeText = 'Stage 3: Clearance';
+                } else {
+                    $statusBadgeClass = 'pending endorsement';
+                    $statusBadgeText = 'Stage 1: Endorsement';
+                }
+
+                $isGuesthouse = (($item['facility_type'] ?? '') === 'guesthouses') || str_starts_with($item['reference_no'] ?? '', 'ATI-GH');
+                $isDorm = !$isGuesthouse && ((($item['facility_type'] ?? '') === 'dormitories') || !empty($item['room_id']));
+                $category = $isGuesthouse ? 'guesthouse' : ($isDorm ? 'dormitory' : 'facility');
+                $venueName = $item['facility_name'] ?: ($isGuesthouse ? 'Guesthouse Villa' : ($isDorm ? 'ATI Dormitory' : 'Official Venue'));
                 $venueTitleFull = $venueName . (!empty($item['room_number']) ? ' - Room ' . $item['room_number'] : '');
                 $startTs = strtotime($item['start_date']);
                 $endTs = strtotime($item['end_date'] ?: $item['start_date']);
@@ -873,18 +1138,7 @@ $statsArchive = $statsHistoryTotal;
                 $timeSlotText = $item['time_slot'] ?: '08:00 AM – 05:00 PM';
                 $eventTitle = $item['event_title'] ?: 'Official Institutional Activity';
                 $divisionText = $item['office_agency'] ?: 'ATI Personnel';
-                $paxText = ($item['pax_count'] ?: 0) . ' Attendees';
-
-                if ($isCompleted) {
-                    $statusBadgeClass = 'completed';
-                    $statusBadgeText = 'Completed & Concluded';
-                } elseif ($isCancelled) {
-                    $statusBadgeClass = 'cancelled';
-                    $statusBadgeText = 'Cancelled by Requestor';
-                } else {
-                    $statusBadgeClass = 'cancelled';
-                    $statusBadgeText = 'Disapproved / Returned';
-                }
+                $paxText = ($item['pax_count'] ?: 0) . (($isGuesthouse || $isDorm) ? ' Guests' : ' Attendees');
               ?>
               <tr class="res-table-row" 
                 data-status="<?= htmlspecialchars($filterStatus) ?>" 

@@ -104,6 +104,16 @@ const bookingState = {
   division: 'Career Development Division (CDD)'
 };
 
+function isDormitorySelected() {
+  return bookingState.selectedFacility?.type === 'dormitories' ||
+    String(bookingState.selectedFacility?.id).startsWith('dorm-');
+}
+
+function isGuesthouseSelected() {
+  return bookingState.selectedFacility?.type === 'guesthouses' ||
+    String(bookingState.selectedFacility?.id).startsWith('guesthouse-');
+}
+
 /* ==========================================================================
    1. Facility Selection & Dormitory Room Floor Data (Modal Popup)
    ========================================================================== */
@@ -960,27 +970,29 @@ function confirmFacilitySelection(isOccupiedOnDefaultDate = false) {
 
       const badge = card.querySelector('.dorm-card-selected-room-badge');
       const badgeText = badge?.querySelector('.d-room-text');
+      const unitLabel = isGuesthouse ? modalTempSelectedItem : (String(modalTempSelectedItem).toLowerCase().includes('room') ? modalTempSelectedItem : `Room ${modalTempSelectedItem}`);
       if (badge && badgeText) {
         if (isOccupiedOnDefaultDate) {
-          badgeText.textContent = `✓ ${modalTempSelectedItem} Selected (Occupied Today • Pick other date)`;
+          badgeText.textContent = `✓ ${unitLabel} Selected (Occupied Today • Pick other date)`;
         } else {
-          badgeText.textContent = `✓ ${modalTempSelectedItem} Assigned (${data.floor})`;
+          badgeText.textContent = `✓ ${unitLabel} Assigned (${data.floor})`;
         }
         badge.style.display = 'flex';
       }
 
       const btn = card.querySelector('.btn-select-facility');
       if (btn) {
-        btn.innerHTML = `✓ ${modalTempSelectedItem} Selected (Click to change)`;
+        btn.innerHTML = `✓ ${unitLabel} Selected (Click to change)`;
       }
     }
 
     const proceedBtn = document.getElementById('btnProceedStep');
     if (proceedBtn) {
+      const unitLabel = isGuesthouse ? modalTempSelectedItem : (String(modalTempSelectedItem).toLowerCase().includes('room') ? modalTempSelectedItem : `Room ${modalTempSelectedItem}`);
       if (isOccupiedOnDefaultDate) {
-        proceedBtn.innerHTML = `<span>Proceed to Choose Date (${modalTempSelectedItem})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        proceedBtn.innerHTML = `<span>Proceed to Choose Date (${unitLabel})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       } else {
-        proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (${modalTempSelectedItem})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (${unitLabel})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       }
       proceedBtn.style.display = 'inline-flex';
     }
@@ -1123,6 +1135,46 @@ function initFacilityFilters() {
       } else {
         activeCategoryName.textContent = `All Facilities (${visibleCount} Total)`;
       }
+    }
+
+    // 4b. Contextualize Header Hero Pill, Main Title, Subtitle and Stepper Tabs
+    const pillEl = document.getElementById('bookingAssistantPill');
+    const pillTextEl = document.getElementById('bookingAssistantPillText');
+    const mainTitleEl = document.getElementById('bookingMainTitle');
+    const mainSubtitleEl = document.getElementById('bookingMainSubtitle');
+    const stepTabFacilityName = document.getElementById('stepTabFacilityName');
+    const stepTabEventName = document.getElementById('stepTabEventName');
+
+    if (catName === 'guesthouses') {
+      if (pillEl) {
+        pillEl.classList.add('guesthouse-hero-pill');
+        pillEl.classList.remove('dorm-hero-pill');
+      }
+      if (pillTextEl) pillTextEl.textContent = 'Guesthouse Villa Booking Assistant';
+      if (mainTitleEl) mainTitleEl.textContent = 'Reserve ATI Guesthouse Villas';
+      if (mainSubtitleEl) mainSubtitleEl.textContent = 'Submit an official reservation request for executive staff quarters, guest lecturer cottages, and delegation villas.';
+      if (stepTabFacilityName) stepTabFacilityName.textContent = 'Villa Selection';
+      if (stepTabEventName) stepTabEventName.textContent = 'Stay Details';
+    } else if (catName === 'dormitories') {
+      if (pillEl) {
+        pillEl.classList.remove('guesthouse-hero-pill');
+        pillEl.classList.add('dorm-hero-pill');
+      }
+      if (pillTextEl) pillTextEl.textContent = 'Dormitory Lodging Assistant';
+      if (mainTitleEl) mainTitleEl.textContent = 'Reserve ATI Dormitory Accommodations';
+      if (mainSubtitleEl) mainSubtitleEl.textContent = 'Reserve comfortable and secure trainee lodging, air-conditioned bunk suites, and VIP guest rooms.';
+      if (stepTabFacilityName) stepTabFacilityName.textContent = 'Dorm Selection';
+      if (stepTabEventName) stepTabEventName.textContent = 'Accommodation Details';
+    } else {
+      if (pillEl) {
+        pillEl.classList.remove('guesthouse-hero-pill');
+        pillEl.classList.remove('dorm-hero-pill');
+      }
+      if (pillTextEl) pillTextEl.textContent = 'Step-by-Step Booking Assistant';
+      if (mainTitleEl) mainTitleEl.textContent = 'Reserve ATI Venue & Training Facilities';
+      if (mainSubtitleEl) mainSubtitleEl.textContent = 'Complete the required details below to submit an official reservation request for administrative approval.';
+      if (stepTabFacilityName) stepTabFacilityName.textContent = 'Facility';
+      if (stepTabEventName) stepTabEventName.textContent = 'Event Details';
     }
 
     if (sectionHeading) {
@@ -1286,16 +1338,85 @@ function initStepperNavigation() {
       String(bookingState.selectedFacility?.id).startsWith('dorm-');
   }
 
+  function isGuesthouseSelected() {
+    return bookingState.selectedFacility?.type === 'guesthouses' ||
+      String(bookingState.selectedFacility?.id).startsWith('guesthouse-');
+  }
+
+  function updateStep2TimeInputs(isGuesthouse, isDorm) {
+    const isLodging = isGuesthouse || isDorm;
+    const startLabel = document.getElementById('startTimeLabel');
+    const endLabel = document.getElementById('endTimeLabel');
+    const startTimeSelect = document.getElementById('startTimeSelect');
+    const endTimeSelect = document.getElementById('endTimeSelect');
+
+    if (startLabel) {
+      startLabel.textContent = isLodging ? 'CHECK-IN TIME' : 'START TIME';
+    }
+    if (endLabel) {
+      endLabel.textContent = isLodging ? 'CHECK-OUT TIME' : 'END TIME';
+    }
+
+    if (startTimeSelect) {
+      if (isLodging && !startTimeSelect.dataset.isLodging) {
+        startTimeSelect.dataset.isLodging = 'true';
+        startTimeSelect.innerHTML = `
+          <option value="02:00 PM (Standard Check-in)">02:00 PM (Standard Check-in)</option>
+          <option value="01:00 PM">01:00 PM (Early Check-in)</option>
+          <option value="03:00 PM">03:00 PM</option>
+          <option value="06:00 PM (Late Arrival)">06:00 PM (Late Arrival)</option>
+        `;
+      } else if (!isLodging && startTimeSelect.dataset.isLodging) {
+        delete startTimeSelect.dataset.isLodging;
+        startTimeSelect.innerHTML = `
+          <option value="08:00 AM (Morning)">08:00 AM (Morning)</option>
+          <option value="09:00 AM">09:00 AM</option>
+          <option value="01:00 PM">01:00 PM (Afternoon)</option>
+          <option value="06:00 PM">06:00 PM (Evening)</option>
+        `;
+      }
+    }
+
+    if (endTimeSelect) {
+      if (isLodging && !endTimeSelect.dataset.isLodging) {
+        endTimeSelect.dataset.isLodging = 'true';
+        endTimeSelect.innerHTML = `
+          <option value="12:00 PM (Standard Check-out)">12:00 PM (Standard Check-out)</option>
+          <option value="11:00 AM">11:00 AM</option>
+          <option value="01:00 PM (Late Check-out)">01:00 PM (Late Check-out)</option>
+        `;
+      } else if (!isLodging && endTimeSelect.dataset.isLodging) {
+        delete endTimeSelect.dataset.isLodging;
+        endTimeSelect.innerHTML = `
+          <option value="05:00 PM (Full Day)">05:00 PM (Full Day)</option>
+          <option value="12:00 PM">12:00 PM (Half Day)</option>
+          <option value="06:00 PM">06:00 PM</option>
+          <option value="09:00 PM">09:00 PM (Extended)</option>
+        `;
+      }
+    }
+  }
+
   function updateStepperMode() {
     const isDorm = isDormitorySelected();
+    const isGuesthouse = isGuesthouseSelected();
     const stepTabEvent = document.getElementById('stepTabEventDetails');
     const stepTabDocs = document.getElementById('stepTabDocuments');
     const stepTabRev = document.getElementById('stepTabReview');
     const dotEvent = document.getElementById('mobileDotEventDetails');
     const dotDocs = document.getElementById('mobileDotDocuments');
     const dotRev = document.getElementById('mobileDotReview');
+    const stepTabFacilityName = document.getElementById('stepTabFacilityName');
+    const stepTabEventName = document.getElementById('stepTabEventName');
 
-    // Both Halls and Dormitories always show all 5 steps (including Event Details)!
+    if (stepTabFacilityName) {
+      stepTabFacilityName.textContent = isGuesthouse ? 'Villa Selection' : (isDorm ? 'Dorm Selection' : 'Facility');
+    }
+    if (stepTabEventName) {
+      stepTabEventName.textContent = isGuesthouse ? 'Stay Details' : (isDorm ? 'Accommodation Details' : 'Event Details');
+    }
+
+    // All categories show all 5 steps
     if (stepTabEvent) stepTabEvent.style.display = '';
     if (dotEvent) dotEvent.style.display = '';
     if (stepTabDocs) {
@@ -1309,7 +1430,7 @@ function initStepperNavigation() {
     if (dotDocs) dotDocs.textContent = '4';
     if (dotRev) dotRev.textContent = '5';
 
-    // Contextualize Step 3 Form labels & placeholders for Dormitory vs Hall
+    // Contextualize Step 3 Form labels & placeholders for Guesthouse vs Dormitory vs Hall
     const step3Title = document.getElementById('step3FormTitle');
     const step3Desc = document.getElementById('step3FormDesc');
     const eventTitleLabel = document.getElementById('eventTitleLabel');
@@ -1319,16 +1440,33 @@ function initStepperNavigation() {
     const specialNotesLabel = document.getElementById('specialNotesLabel');
     const specialNotes = document.getElementById('specialNotes');
 
-    if (isDorm) {
+    if (isGuesthouse) {
+      if (step3Title) step3Title.textContent = 'Step 3: Guest & Stay Details';
+      if (step3Desc) step3Desc.textContent = 'Provide particulars regarding visiting officials, lecturers, dignitaries, and specific villa accommodation requirements.';
+      if (eventTitleLabel) eventTitleLabel.innerHTML = 'Purpose of Stay / Official Activity <span style="color: #dc2626;">*</span>';
+      if (eventTitleInput && (!eventTitleInput.value || eventTitleInput.value.includes('Regional Agricultural Extension Coordinators Training'))) {
+        eventTitleInput.placeholder = 'e.g. Official Lodging for DA Regional Directors & Technical Delegation';
+      }
+      if (eventPaxLabel) eventPaxLabel.innerHTML = 'Number of Guests Staying <span style="color: #dc2626;">*</span>';
+      if (eventPaxInput && (!eventPaxInput.value || eventPaxInput.value === '120')) {
+        eventPaxInput.placeholder = 'e.g. 2';
+        eventPaxInput.max = '6';
+      }
+      if (specialNotesLabel) specialNotesLabel.textContent = 'Villa Requests & Accommodation Notes (Optional)';
+      if (specialNotes && (!specialNotes.value || specialNotes.value.includes('wireless microphones'))) {
+        specialNotes.placeholder = 'e.g. Late check-in after 6:00 PM; airport transfer coordination; extra pillows and towels.';
+      }
+    } else if (isDorm) {
       if (step3Title) step3Title.textContent = 'Step 3: Event & Accommodation Details';
       if (step3Desc) step3Desc.textContent = 'Provide details regarding your training activity or event, trainees/guests lodging, and specific accommodation requirements.';
-      if (eventTitleLabel) eventTitleLabel.textContent = 'Training Activity / Event Purpose';
+      if (eventTitleLabel) eventTitleLabel.innerHTML = 'Training Activity / Event Purpose <span style="color: #dc2626;">*</span>';
       if (eventTitleInput && !eventTitleInput.value) {
         eventTitleInput.placeholder = 'e.g. Regional Agricultural Extension Training Delegates Lodging';
       }
-      if (eventPaxLabel) eventPaxLabel.textContent = 'Number of Trainees / Guests Staying';
+      if (eventPaxLabel) eventPaxLabel.innerHTML = 'Number of Trainees / Guests Staying <span style="color: #dc2626;">*</span>';
       if (eventPaxInput && !eventPaxInput.value) {
         eventPaxInput.placeholder = 'e.g. 12';
+        eventPaxInput.max = '100';
       }
       if (specialNotesLabel) specialNotesLabel.textContent = 'Accommodation Requests & Room Notes (Optional)';
       if (specialNotes && !specialNotes.value) {
@@ -1337,42 +1475,70 @@ function initStepperNavigation() {
     } else {
       if (step3Title) step3Title.textContent = 'Step 3: Event & Activity Information';
       if (step3Desc) step3Desc.textContent = 'Provide details regarding the nature of your activity, participants, and specific requirements.';
-      if (eventTitleLabel) eventTitleLabel.textContent = 'Activity / Event Title';
+      if (eventTitleLabel) eventTitleLabel.innerHTML = 'Activity / Event Title <span style="color: #dc2626;">*</span>';
       if (eventTitleInput && !eventTitleInput.value) {
         eventTitleInput.placeholder = 'e.g. Regional Agricultural Extension Coordinators Training 2026';
       }
-      if (eventPaxLabel) eventPaxLabel.textContent = 'Estimated Number of Attendees';
+      if (eventPaxLabel) eventPaxLabel.innerHTML = 'Estimated Attendees <span style="color: #dc2626;">*</span>';
       if (eventPaxInput && !eventPaxInput.value) {
         eventPaxInput.placeholder = 'e.g. 120';
+        eventPaxInput.max = '1000';
       }
       if (specialNotesLabel) specialNotesLabel.textContent = 'Special Equipment / Setup Notes (Optional)';
       if (specialNotes && !specialNotes.value) {
         specialNotes.placeholder = 'e.g. Needs 4 wireless microphones, podium banner stand, and registration tables.';
       }
     }
+
+    // Contextualize Step 2 Time window dropdowns (Check-in/Check-out for Guesthouses & Dorms vs Start/End time for Halls)
+    updateStep2TimeInputs(isGuesthouse, isDorm);
   }
 
   goToStep = function (stepNumber) {
     if (stepNumber < 1 || stepNumber > 5) return;
 
     const isDorm = isDormitorySelected();
+    const isGuesthouse = isGuesthouseSelected();
 
-    // Requirement: When reserving, user MUST select a room or hall setup unit before proceeding to Step 2
+    // Requirement: When reserving, user MUST select a room/unit or hall setup before proceeding to Step 2
     if (stepNumber === 2 && bookingState.currentStep === 1) {
-      if (isDorm && !bookingState.selectedFacility?.roomNumber) {
-        alert('Please choose a room unit (e.g. Room 101, 102, 103) inside your chosen dormitory floor before proceeding to Date & Time Selection.');
-        const selectedCard = document.querySelector('.facility-choice-card.selected');
-        if (selectedCard) {
-          selectedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+      if (isGuesthouse && !bookingState.selectedFacility?.roomNumber) {
+        showValidationModal(
+          'Villa Unit Selection Required',
+          'Please choose a villa room/suite (or Full Villa Allotment) inside your chosen guesthouse before proceeding to Date & Time Selection.',
+          () => {
+            const selectedCard = document.querySelector('.facility-choice-card.selected');
+            if (selectedCard) {
+              selectedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        );
         return;
       }
-      if (!isDorm && !bookingState.selectedFacility?.setupName) {
-        alert('Please choose a venue layout & setup (e.g. Theater Setup, Classroom Setup, Banquet Dining) before proceeding to Date & Time Selection.');
-        const selectedCard = document.querySelector('.facility-choice-card.selected');
-        if (selectedCard) {
-          selectedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+      if (isDorm && !bookingState.selectedFacility?.roomNumber) {
+        showValidationModal(
+          'Room Selection Required',
+          'Please choose a room unit (e.g. Room 101, 102, 103) inside your chosen dormitory floor before proceeding to Date & Time Selection.',
+          () => {
+            const selectedCard = document.querySelector('.facility-choice-card.selected');
+            if (selectedCard) {
+              selectedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        );
+        return;
+      }
+      if (!isDorm && !isGuesthouse && !bookingState.selectedFacility?.setupName) {
+        showValidationModal(
+          'Venue Layout Required',
+          'Please choose a venue layout & setup (e.g. Theater Setup, Classroom Setup, Banquet Dining) before proceeding to Date & Time Selection.',
+          () => {
+            const selectedCard = document.querySelector('.facility-choice-card.selected');
+            if (selectedCard) {
+              selectedCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        );
         return;
       }
     }
@@ -1471,13 +1637,19 @@ function initStepperNavigation() {
         const dormRoom = bookingState.selectedFacility?.roomNumber;
         const hallSetup = bookingState.selectedFacility?.setupName;
         const isOcc = bookingState.selectedFacility?.occupiedOnDefaultDate;
-        if (isDorm && dormRoom) {
+        if (isGuesthouse && dormRoom) {
+          if (isOcc) {
+            proceedBtn.innerHTML = `<span>Proceed to Choose Date (${dormRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+          } else {
+            proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (${dormRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+          }
+        } else if (isDorm && dormRoom) {
           if (isOcc) {
             proceedBtn.innerHTML = `<span>Proceed to Choose Date (Room ${dormRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
           } else {
             proceedBtn.innerHTML = `<span>Proceed to Date &amp; Time (Room ${dormRoom})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
           }
-        } else if (!isDorm && hallSetup) {
+        } else if (!isDorm && !isGuesthouse && hallSetup) {
           if (isOcc) {
             proceedBtn.innerHTML = `<span>Proceed to Choose Date (${hallSetup})</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
           } else {
@@ -1488,10 +1660,10 @@ function initStepperNavigation() {
         }
       } else if (stepNumber === 2) {
         proceedBtn.style.display = 'inline-flex';
-        proceedBtn.innerHTML = `<span>Proceed to ${isDorm ? 'Lodging Details' : 'Event Details'}</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        proceedBtn.innerHTML = `<span>Proceed to ${isGuesthouse ? 'Stay Details' : (isDorm ? 'Lodging Details' : 'Event Details')}</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       } else if (stepNumber === 3) {
         proceedBtn.style.display = 'inline-flex';
-        proceedBtn.innerHTML = `<span>Proceed to ${isDorm ? 'Roster &amp; Authority' : 'Document Upload'}</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
+        proceedBtn.innerHTML = `<span>Proceed to ${isGuesthouse ? 'Document Upload' : (isDorm ? 'Roster &amp; Authority' : 'Document Upload')}</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
       } else if (stepNumber === 4) {
         proceedBtn.style.display = 'inline-flex';
         proceedBtn.innerHTML = `<span>Review &amp; Confirm Details</span> <svg viewBox="0 0 24 24" fill="none"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>`;
@@ -1624,7 +1796,19 @@ function initStepperNavigation() {
   if (proceedBtn) {
     proceedBtn.addEventListener('click', () => {
       const isDorm = isDormitorySelected();
+      const isGuesthouse = isGuesthouseSelected();
       if (bookingState.currentStep === 1) {
+        if (isGuesthouse && !bookingState.selectedFacility?.roomNumber) {
+          showValidationModal(
+            'Villa Unit Selection Required',
+            'Please choose a villa room/suite (or Full Villa Allotment) inside your chosen guesthouse before proceeding to Date & Time Selection.',
+            () => {
+              const card = document.querySelector('.facility-choice-card.selected');
+              if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          );
+          return;
+        }
         if (isDorm && !bookingState.selectedFacility?.roomNumber) {
           showValidationModal(
             'Room Selection Required',
@@ -1636,7 +1820,7 @@ function initStepperNavigation() {
           );
           return;
         }
-        if (!isDorm && !bookingState.selectedFacility?.setupName) {
+        if (!isDorm && !isGuesthouse && !bookingState.selectedFacility?.setupName) {
           showValidationModal(
             'Venue Layout Required',
             'Please choose a venue layout & setup (e.g. Theater Setup, Classroom Setup, Banquet Dining) before proceeding to Date & Time Selection.',
@@ -1649,12 +1833,16 @@ function initStepperNavigation() {
         }
         goToStep(2);
       } else if (bookingState.currentStep === 2) {
-        goToStep(3); // Proceeds to Event Details for BOTH dormitories and halls!
+        goToStep(3); // Proceeds to Stay/Event Details
       } else if (bookingState.currentStep === 3) {
         if (!validateStep3Inputs()) {
           showValidationModal(
-            'Event Details Incomplete',
-            'Please fill out all required fields marked with an asterisk (*) — Activity Title, Estimated Attendees, and Division/Unit.'
+            isGuesthouse ? 'Stay Details Incomplete' : (isDorm ? 'Accommodation Details Incomplete' : 'Event Details Incomplete'),
+            isGuesthouse
+              ? 'Please fill out all required fields marked with an asterisk (*) — Purpose of Stay, Number of Guests Staying, and Division/Unit.'
+              : (isDorm
+                  ? 'Please fill out all required fields marked with an asterisk (*) — Training Purpose, Number of Trainees/Guests, and Division/Unit.'
+                  : 'Please fill out all required fields marked with an asterisk (*) — Activity Title, Estimated Attendees, and Division/Unit.')
           );
           return; // Block advancement if required fields are missing
         }
@@ -1675,12 +1863,13 @@ function initStepperNavigation() {
           if (docErr) {
             docErr.style.display = 'block';
           }
-          const isDormBooking = bookingState.selectedFacility?.type === 'dormitories' || Boolean(document.getElementById('dormLodgingPurpose'));
           showValidationModal(
             'Supporting Document Required',
-            isDormBooking
-              ? 'Please upload your signed Reservation Form, Travel Order, Special Order, or Participant List before proceeding to Review & Confirmation.'
-              : 'Please upload your approved Activity Design, Special Order, or Official Request Memo before proceeding to Review & Confirmation.'
+            isGuesthouse
+              ? 'Please upload your approved Travel Order, Special Order, Guest Endorsement Memo, or Official Request before proceeding to Review & Confirmation.'
+              : (isDorm
+                  ? 'Please upload your signed Reservation Form, Travel Order, Special Order, or Participant List before proceeding to Review & Confirmation.'
+                  : 'Please upload your approved Activity Design, Special Order, or Official Request Memo before proceeding to Review & Confirmation.')
           );
           return;
         }
@@ -1891,24 +2080,34 @@ function initStepperNavigation() {
   const finalSubmitBtn = document.getElementById('btnSubmitFinalReservation');
   if (finalSubmitBtn) {
     finalSubmitBtn.addEventListener('click', () => {
+      const isDorm = isDormitorySelected();
+      const isGuesthouse = isGuesthouseSelected();
       if (!validateStep3Inputs()) {
-        showValidationModal('Event Details Incomplete', 'Please complete all required fields (Event Title, Attendees, Division) before submitting.', () => {
-          goToStep(3);
-        });
+        showValidationModal(
+          isGuesthouse ? 'Stay Details Incomplete' : (isDorm ? 'Lodging Details Incomplete' : 'Event Details Incomplete'),
+          isGuesthouse
+            ? 'Please complete all required fields (Purpose of Stay, Number of Guests, Division) before submitting.'
+            : (isDorm
+                ? 'Please complete all required fields (Lodging Purpose, Guests Count, Division) before submitting.'
+                : 'Please complete all required fields (Event Title, Attendees, Division) before submitting.'),
+          () => {
+            goToStep(3);
+          }
+        );
         return;
       }
-      const refNum = `ATI-RES-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-      const isDorm = isDormitorySelected();
+      const refPrefix = isGuesthouse ? 'ATI-GH' : (isDorm ? 'ATI-BK' : 'ATI-RES');
+      const refNum = `${refPrefix}-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
       const curDivision = getEffectiveDivision();
       const facId = bookingState.selectedFacility?.dbId || bookingState.selectedFacility?.facilityDbId || (bookingState.selectedFacility?.id ? String(bookingState.selectedFacility.id).replace(/\D/g, '') : '');
 
       const formData = new FormData();
       formData.append('reference_no', refNum);
       formData.append('facility_id', facId);
-      formData.append('facility_name', bookingState.selectedFacility?.name || 'Function Hall');
-      formData.append('facility_type', isDorm ? 'dormitories' : 'halls');
-      formData.append('rate', bookingState.selectedFacility?.rate || 'N/A');
-      formData.append('capacity', bookingState.selectedFacility?.capacity || 'N/A');
+      formData.append('facility_name', bookingState.selectedFacility?.name || (isGuesthouse ? 'Guesthouse Villa' : (isDorm ? 'Suite 1' : 'Function Hall')));
+      formData.append('facility_type', isGuesthouse ? 'guesthouses' : (isDorm ? 'dormitories' : 'halls'));
+      formData.append('rate', bookingState.selectedFacility?.roomRate || bookingState.selectedFacility?.setupRate || bookingState.selectedFacility?.rate || (isGuesthouse ? '₱1,800/night' : 'N/A'));
+      formData.append('capacity', bookingState.selectedFacility?.capacity || (isGuesthouse ? '4 PERSONS PAX' : 'N/A'));
       if (bookingState.selectedFacility?.roomNumber) {
         formData.append('room_number', bookingState.selectedFacility.roomNumber);
       }
@@ -1923,7 +2122,10 @@ function initStepperNavigation() {
 
       const timeSelect = document.getElementById('startTimeSelect');
       const endTimeSelect = document.getElementById('endTimeSelect');
-      const timeSlot = (timeSelect ? timeSelect.value : '') + ' - ' + (endTimeSelect ? endTimeSelect.value : '');
+      let timeSlot = (timeSelect ? timeSelect.value : '') + ' - ' + (endTimeSelect ? endTimeSelect.value : '');
+      if ((isDorm || isGuesthouse) && (!timeSlot || timeSlot.trim() === '-' || timeSlot.trim() === '')) {
+        timeSlot = '02:00 PM Check-in - 12:00 PM Check-out';
+      }
       formData.append('time_slot', timeSlot);
 
       const specialNotes = document.getElementById('specialNotes') ? document.getElementById('specialNotes').value : '';
@@ -1935,22 +2137,25 @@ function initStepperNavigation() {
 
       // Disable button UI state
       const origText = finalSubmitBtn.innerHTML;
-      finalSubmitBtn.innerHTML = '<span>Submitting Please Wait...</span>';
+      finalSubmitBtn.innerHTML = isGuesthouse
+        ? '<span>Submitting Guesthouse Request...</span>'
+        : (isDorm ? '<span>Submitting Lodging Request...</span>' : '<span>Submitting Please Wait...</span>');
       finalSubmitBtn.disabled = true;
 
       const currentUserName = window.currentUserFullName || 'Authorized Staff';
       const submitData = {
         isDorm: isDorm,
+        isGuesthouse: isGuesthouse,
         refNum: refNum,
-        facilityName: bookingState.selectedFacility?.name || (isDorm ? 'Suite 1' : 'Function Hall'),
-        setup: isDorm 
-          ? (bookingState.selectedFacility?.roomNumber ? `Room ${bookingState.selectedFacility.roomNumber}` : 'Standard Dormitory Beds')
+        facilityName: bookingState.selectedFacility?.name || (isGuesthouse ? 'Guesthouse Villa' : (isDorm ? 'Suite 1' : 'Function Hall')),
+        setup: (isDorm || isGuesthouse)
+          ? (bookingState.selectedFacility?.roomNumber ? (isGuesthouse ? bookingState.selectedFacility.roomNumber : `Room ${bookingState.selectedFacility.roomNumber}`) : (isGuesthouse ? 'Full Villa Allotment' : 'Standard Dormitory Beds'))
           : (bookingState.selectedFacility?.setupName || 'Theater Setup (200 PAX)'),
-        rate: bookingState.selectedFacility?.rate || '₱5,000 / day',
+        rate: bookingState.selectedFacility?.roomRate || bookingState.selectedFacility?.setupRate || bookingState.selectedFacility?.rate || (isGuesthouse ? '₱1,800 / night' : (isDorm ? '₱500 / night' : '₱5,000 / day')),
         schedule: bookingState.date || 'Selected Schedule',
-        time: timeSlot || 'Whole Day (8:00 AM - 5:00 PM)',
-        pax: bookingState.participants || '200',
-        purpose: bookingState.eventTitle || 'Regional Agricultural Extension Activity',
+        time: timeSlot || ((isDorm || isGuesthouse) ? '02:00 PM Check-in - 12:00 PM Check-out' : 'Whole Day (8:00 AM - 5:00 PM)'),
+        pax: bookingState.participants || (isGuesthouse ? '4' : '200'),
+        purpose: bookingState.eventTitle || (isGuesthouse ? 'Official Guest Lodging' : (isDorm ? 'Official Training Accommodation' : 'Regional Agricultural Extension Activity')),
         requestedBy: `${currentUserName} (${curDivision})`
       };
 
@@ -2015,11 +2220,11 @@ window.showReservationSuccessModal = function (submitData) {
       ref: submitData.refNum,
       title: submitData.purpose,
       facility: submitData.facilityName,
-      facilityKey: submitData.isDorm ? 'dormitory' : 'function-hall',
+      facilityKey: submitData.isGuesthouse ? 'guesthouse' : (submitData.isDorm ? 'dormitory' : 'function-hall'),
       date: typeof bookingState !== 'undefined' && bookingState.selectedStartDate ? `${bookingState.selectedStartDate.year}-${String(bookingState.selectedStartDate.month + 1).padStart(2, '0')}-${String(bookingState.selectedStartDate.day).padStart(2, '0')}` : new Date().toISOString().split('T')[0],
       time: submitData.time,
       division: submitData.requestedBy,
-      attendees: `${submitData.pax} Participants`,
+      attendees: (submitData.isGuesthouse || submitData.isDorm) ? `${submitData.pax} Guests` : `${submitData.pax} Participants`,
       status: 'Pending'
     });
     localStorage.setItem('ati_system_reservations', JSON.stringify(list));
@@ -2176,10 +2381,25 @@ function updateReviewSummary() {
   const curTitle = eventTitleInput?.value?.trim() || bookingState.eventTitle || '';
   const curPax = eventPaxInput?.value?.trim() || bookingState.participants || '';
 
-  if (sumEventLabel) sumEventLabel.textContent = isDorm ? 'Training / Stay Purpose:' : 'Activity / Event Title:';
+  if (sumEventLabel) sumEventLabel.textContent = isGuesthouse ? 'Purpose of Stay / Official Activity:' : (isDorm ? 'Training / Stay Purpose:' : 'Activity / Event Title:');
   if (sumEventTitle) sumEventTitle.textContent = curTitle || '—';
-  if (sumPaxLabel) sumPaxLabel.textContent = isDorm ? 'Trainees / Lodgers:' : 'Participants / Attendees:';
+  if (sumPaxLabel) sumPaxLabel.textContent = isGuesthouse ? 'Number of Guests Staying:' : (isDorm ? 'Trainees / Lodgers:' : 'Participants / Attendees:');
   if (sumPaxValue) sumPaxValue.textContent = curPax || '—';
+
+  // Step 5 final submit button styling & text according to category
+  const finalBtnEl = document.getElementById('btnSubmitFinalReservation');
+  if (finalBtnEl) {
+    if (isGuesthouse) {
+      finalBtnEl.style.background = '#0f766e';
+      finalBtnEl.innerHTML = '<span>Submit Guesthouse Reservation Request</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else if (isDorm) {
+      finalBtnEl.style.background = '#b45309';
+      finalBtnEl.innerHTML = '<span>Submit Dormitory Reservation Request</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else {
+      finalBtnEl.style.background = '#175432';
+      finalBtnEl.innerHTML = '<span>Submit Official Reservation Request</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+    }
+  }
 
   // Support for dormitory-specific review cards (dormitory_booking.php)
   const dormReviewTitle = document.getElementById('dormReviewTitle');
@@ -2418,10 +2638,25 @@ function initDateSlotInteractions() {
         statusTitle.textContent = 'Selected Slot Available!';
       }
       if (statusDesc) {
+        const isGh = isGuesthouseSelected();
+        const isDm = isDormitorySelected();
         if (durationDays === 1) {
-          statusDesc.textContent = `No venue conflicts detected for 1 day duration (${formatDisplayDate(selectedStart)}).`;
+          if (isGh) {
+            statusDesc.textContent = `No villa accommodation conflicts detected for 1 night stay (${formatDisplayDate(selectedStart)}).`;
+          } else if (isDm) {
+            statusDesc.textContent = `No dormitory lodging conflicts detected for 1 night stay (${formatDisplayDate(selectedStart)}).`;
+          } else {
+            statusDesc.textContent = `No venue conflicts detected for 1 day duration (${formatDisplayDate(selectedStart)}).`;
+          }
         } else {
-          statusDesc.textContent = `No venue conflicts detected for ${durationDays} days duration (${formatDisplayDate(selectedStart)} – ${formatDisplayDate(selectedEnd)}).`;
+          const nightCount = durationDays - 1;
+          if (isGh) {
+            statusDesc.textContent = `No villa accommodation conflicts detected for ${nightCount} ${nightCount === 1 ? 'night' : 'nights'} stay (${formatDisplayDate(selectedStart)} – ${formatDisplayDate(selectedEnd)}).`;
+          } else if (isDm) {
+            statusDesc.textContent = `No dormitory lodging conflicts detected for ${nightCount} ${nightCount === 1 ? 'night' : 'nights'} stay (${formatDisplayDate(selectedStart)} – ${formatDisplayDate(selectedEnd)}).`;
+          } else {
+            statusDesc.textContent = `No venue conflicts detected for ${durationDays} days duration (${formatDisplayDate(selectedStart)} – ${formatDisplayDate(selectedEnd)}).`;
+          }
         }
       }
     }

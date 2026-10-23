@@ -21,6 +21,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const layout = document.querySelector('.admin-layout-container');
     if (layout) layout.classList.add('sidebar-collapsed');
   }
+
+  // Auto-open reservation modal if ref parameter is provided in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetRef = urlParams.get('ref');
+  if (targetRef && typeof viewReservationDetails === 'function' && reservationsData[targetRef]) {
+    setTimeout(() => {
+      viewReservationDetails(targetRef);
+    }, 200);
+  }
 });
 
 function initSmoothSidebarScrolling() {

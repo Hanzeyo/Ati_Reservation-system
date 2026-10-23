@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCancellationWorkflow();
   initCopyButtons();
   initDownloadSlip();
+  initRealtimeReservationsSync();
 });
 
 /* ==========================================================================
@@ -213,7 +214,7 @@ function applyAllFilters() {
     let matchesVenue = false;
     if (activeVenueFilter === 'all') {
       matchesVenue = true;
-    } else if (activeVenueFilter === 'facility' || activeVenueFilter === 'dormitory') {
+    } else if (activeVenueFilter === 'facility' || activeVenueFilter === 'dormitory' || activeVenueFilter === 'guesthouse') {
       matchesVenue = (cardCat === activeVenueFilter);
     } else if (activeVenueFilter === 'completed' || activeVenueFilter === 'cancelled') {
       matchesVenue = (cardStatus === activeVenueFilter);
@@ -244,7 +245,7 @@ function applyAllFilters() {
 
   tableRows.forEach(row => {
     const rowStatus = row.dataset.status;
-    const rowCat = row.dataset.category || (row.dataset.venue === 'dormitory' ? 'dormitory' : 'facility');
+    const rowCat = row.dataset.category || (row.dataset.venue === 'dormitory' ? 'dormitory' : (row.dataset.venue === 'guesthouse' ? 'guesthouse' : 'facility'));
     const rowVenue = row.dataset.venue;
     const rowText = row.textContent.toLowerCase();
 
@@ -253,7 +254,7 @@ function applyAllFilters() {
     let matchesVenue = false;
     if (activeVenueFilter === 'all') {
       matchesVenue = true;
-    } else if (activeVenueFilter === 'facility' || activeVenueFilter === 'dormitory') {
+    } else if (activeVenueFilter === 'facility' || activeVenueFilter === 'dormitory' || activeVenueFilter === 'guesthouse') {
       matchesVenue = (rowCat === activeVenueFilter);
     } else if (activeVenueFilter === 'completed' || activeVenueFilter === 'cancelled') {
       matchesVenue = (rowStatus === activeVenueFilter);
@@ -513,25 +514,41 @@ function escapeHtml(str) {
    ========================================================================== */
 function initCardModals() {
   const modal = document.getElementById('resDetailsModal');
-  const closeBtns = document.querySelectorAll('.js-close-res-modal');
-  const detailBtns = document.querySelectorAll('.js-view-details');
-
   if (!modal) return;
 
-  detailBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      let card = btn.closest('.res-card');
-      if (!card) {
-        const row = btn.closest('.res-table-row');
-        if (row) {
-          const ref = row.querySelector('.res-ref-tag')?.textContent.trim();
-          if (ref) {
-            card = document.querySelector(`.res-card[data-ref="${ref}"]`);
-          }
-          if (!card) card = row;
+  // Delegated click for opening modal on any card or table row
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.js-view-details');
+    if (!btn) return;
+
+    let card = btn.closest('.res-card');
+    if (!card) {
+      const row = btn.closest('.res-table-row');
+      if (row) {
+        const ref = row.querySelector('.res-ref-tag')?.textContent.trim();
+        if (ref) {
+          card = document.querySelector(`.res-card[data-ref="${ref}"]`);
         }
+        if (!card) card = row;
       }
-      if (!card) return;
+    }
+    if (card) {
+      openCardDetailsModal(card);
+    }
+  });
+
+  // Delegated close modal listener
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.js-close-res-modal') || (e.target.classList && e.target.classList.contains('modal-overlay'))) {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
+      document.body.style.overflow = '';
+    }
+  });
+}
+
+function openCardDetailsModal(card) {
+  const modal = document.getElementById('resDetailsModal');
+  if (!modal || !card) return;
 
       // Extract metadata from card
       const ref = card.dataset.ref || 'ATI-RES-2026-1042';
@@ -884,27 +901,8 @@ function initCardModals() {
         routingList.innerHTML = stepsHtml;
       }
 
-      modal.classList.add('show');
-      document.body.style.overflow = 'hidden';
-    });
-  });
-
-  closeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
-      document.body.style.overflow = '';
-    });
-  });
-
-  // Close on backdrop click
-  document.querySelectorAll('.modal-overlay').forEach(m => {
-    m.addEventListener('click', (e) => {
-      if (e.target === m) {
-        m.classList.remove('show');
-        document.body.style.overflow = '';
-      }
-    });
-  });
+  modal.classList.add('show');
+  document.body.style.overflow = 'hidden';
 }
 
 /* ==========================================================================
@@ -929,24 +927,25 @@ window.showGatePassModal = function (ref, title, venue, dates) {
 let cardToCancel = null;
 
 function initCancellationWorkflow() {
-  const cancelBtns = document.querySelectorAll('.js-cancel-res');
   const cancelModal = document.getElementById('cancelConfirmModal');
   const btnConfirmCancel = document.getElementById('btnConfirmCancel');
 
-  cancelBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      cardToCancel = btn.closest('.res-card');
-      const ref = cardToCancel?.dataset.ref || 'ATI-RES-2026-1042';
-      const title = cardToCancel?.querySelector('.res-event-title')?.textContent || 'this activity';
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.js-cancel-res');
+    if (!btn) return;
+    cardToCancel = btn.closest('.res-card');
+    const ref = cardToCancel?.dataset.ref || btn.dataset.ref || 'ATI-RES-2026-1042';
+    const title = cardToCancel?.querySelector('.res-event-title')?.textContent || 'this activity';
 
-      document.getElementById('cancelResRef').textContent = ref;
-      document.getElementById('cancelResTitle').textContent = title;
+    const refEl = document.getElementById('cancelResRef');
+    const titleEl = document.getElementById('cancelResTitle');
+    if (refEl) refEl.textContent = ref;
+    if (titleEl) titleEl.textContent = title;
 
-      if (cancelModal) {
-        cancelModal.classList.add('show');
-        document.body.style.overflow = 'hidden';
-      }
-    });
+    if (cancelModal) {
+      cancelModal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
   });
 
   if (btnConfirmCancel) {
@@ -1014,19 +1013,17 @@ function initCancellationWorkflow() {
    7. Copy Reference Button
    ========================================================================== */
 function initCopyButtons() {
-  const copyBtns = document.querySelectorAll('.btn-copy-ref');
-
-  copyBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const ref = btn.dataset.ref;
-      if (ref) {
-        navigator.clipboard.writeText(ref).then(() => {
-          showToast(`Copied reference ID: ${ref}`);
-        }).catch(() => {
-          showToast(`Reference ID: ${ref}`);
-        });
-      }
-    });
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-copy-ref');
+    if (!btn) return;
+    const ref = btn.dataset.ref;
+    if (ref) {
+      navigator.clipboard.writeText(ref).then(() => {
+        showToast(`Copied reference ID: ${ref}`);
+      }).catch(() => {
+        showToast(`Reference ID: ${ref}`);
+      });
+    }
   });
 }
 
@@ -1182,3 +1179,787 @@ function initMobileDrawer() {
     }
   });
 }
+
+/* ==========================================================================
+   11. Real-Time Booking & Reservation Synchronization Engine
+   ========================================================================== */
+let realtimeSyncInterval = null;
+let lastReservationHash = null;
+let previousStatusMap = {};
+let isCheckingRealtime = false;
+
+function initRealtimeReservationsSync() {
+  // Populate initial statuses from DOM cards
+  document.querySelectorAll('.res-card').forEach(card => {
+    const ref = card.dataset.ref;
+    const raw = card.dataset.rawStatus || card.dataset.status;
+    if (ref) previousStatusMap[ref] = raw;
+  });
+
+  // Initial check to fetch hash
+  checkRealtimeUpdates(true);
+
+  // Poll server every 4 seconds for instantaneous real-time responsiveness
+  if (realtimeSyncInterval) clearInterval(realtimeSyncInterval);
+  realtimeSyncInterval = setInterval(() => {
+    checkRealtimeUpdates(false);
+  }, 4000);
+
+  // Re-check immediately when tab becomes visible or user switches back to window
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkRealtimeUpdates(false);
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    checkRealtimeUpdates(false);
+  });
+}
+
+function checkRealtimeUpdates(isInitialCheck = false) {
+  if (isCheckingRealtime) return;
+  isCheckingRealtime = true;
+
+  fetch('ajax/get_user_reservations.php', { cache: 'no-store' })
+    .then(res => res.json())
+    .then(data => {
+      isCheckingRealtime = false;
+      if (!data || !data.success) return;
+
+      if (isInitialCheck || lastReservationHash === null) {
+        lastReservationHash = data.hash;
+        if (Array.isArray(data.reservations)) {
+          data.reservations.forEach(r => {
+            if (r.reference_no && !previousStatusMap[r.reference_no]) {
+              previousStatusMap[r.reference_no] = r.raw_status;
+            }
+          });
+        }
+        if (data.counts) {
+          updateDashboardCounts(data.counts);
+        }
+        return;
+      }
+
+      // Check if hash changed (i.e. status, endorsement, or approval altered by admin)
+      if (data.hash === lastReservationHash) {
+        return;
+      }
+
+      const isHistoryPage = window.location.pathname.includes('booking_history') || 
+                            document.body.classList.contains('booking-history-page') || 
+                            document.title.includes('Booking History');
+
+      // Compare statuses against previous status map and trigger sleek toasts
+      if (Array.isArray(data.reservations)) {
+        data.reservations.forEach(r => {
+          const prev = previousStatusMap[r.reference_no];
+          if (prev && prev !== r.raw_status) {
+            notifyStatusChange(r, prev, r.raw_status, isHistoryPage);
+          }
+          previousStatusMap[r.reference_no] = r.raw_status;
+        });
+      }
+
+      lastReservationHash = data.hash;
+
+      // Update KPIs, cards, table, and active modal
+      if (data.counts) {
+        updateDashboardCounts(data.counts);
+      }
+      if (Array.isArray(data.reservations)) {
+        syncCardsWithRealtimeData(data.reservations, isHistoryPage);
+        syncOpenModalIfViewing(data.reservations);
+      }
+    })
+    .catch(err => {
+      isCheckingRealtime = false;
+    });
+}
+
+function notifyStatusChange(r, oldStatus, newStatus, isHistoryPage) {
+  const ref = r.reference_no;
+  const title = r.event_title || r.venue_name || 'Reservation';
+
+  if (newStatus === 'Approved') {
+    showRealtimeNotification(
+      'Reservation Approved! 🎉',
+      `Reference #${ref} for "${title}" has been granted Directorate clearance. Security Gate Pass and QR code are ready!`,
+      'success'
+    );
+  } else if (newStatus === 'Pending Recommendation') {
+    showRealtimeNotification(
+      'Stage 1 Endorsed ✓',
+      `Reference #${ref} was endorsed by Division Chief and transmitted to Property & Logistics.`,
+      'info'
+    );
+  } else if (newStatus === 'Pending Clearance') {
+    showRealtimeNotification(
+      'Stage 2 Recommended ✓',
+      `Reference #${ref} was recommended by Logistics and routed to Director IV for final executive clearance.`,
+      'info'
+    );
+  } else if (newStatus === 'Completed') {
+    showRealtimeNotification(
+      'Activity Concluded',
+      `Reference #${ref} for "${title}" has completed and is now permanently recorded in Booking History.`,
+      'info'
+    );
+  } else if (newStatus === 'Cancelled') {
+    showRealtimeNotification(
+      'Reservation Cancelled',
+      `Reference #${ref} has been cancelled.`,
+      'warning'
+    );
+  } else if (newStatus === 'Rejected') {
+    showRealtimeNotification(
+      'Request Disapproved / Returned',
+      `Reference #${ref} was returned. Note: "${r.admin_remarks || 'Please check remarks for details'}".`,
+      'danger'
+    );
+  } else {
+    showRealtimeNotification(
+      'Status Updated',
+      `Reference #${ref} status is now: ${newStatus}`,
+      'info'
+    );
+  }
+}
+
+function updateDashboardCounts(counts) {
+  const isHistoryPage = window.location.pathname.includes('booking_history') || 
+                        document.body.classList.contains('booking-history-page') || 
+                        document.title.includes('Booking History');
+
+  const kpiTotal = document.getElementById('kpiTotal');
+  const kpiPending = document.getElementById('kpiPending');
+  const kpiApproved = document.getElementById('kpiApproved');
+  const kpiCompleted = document.getElementById('kpiCompleted');
+  const kpiCancelled = document.getElementById('kpiCancelled');
+  const kpiArchive = document.getElementById('kpiArchive');
+
+  if (isHistoryPage) {
+    if (kpiTotal) kpiTotal.textContent = counts.total ?? (counts.active + counts.history);
+    if (kpiPending) kpiPending.textContent = counts.pending;
+    if (kpiApproved) kpiApproved.textContent = counts.approved;
+    if (kpiCompleted) kpiCompleted.textContent = counts.completed;
+    if (kpiCancelled) kpiCancelled.textContent = counts.cancelled;
+    if (kpiArchive) kpiArchive.textContent = counts.completed;
+  } else {
+    if (kpiTotal) kpiTotal.textContent = counts.active;
+    if (kpiPending) kpiPending.textContent = counts.pending;
+    if (kpiApproved) kpiApproved.textContent = counts.approved;
+    if (kpiCompleted) kpiCompleted.textContent = counts.completed;
+  }
+
+  // Update Category Segmented Badges on both pages
+  document.querySelectorAll('.seg-count-badge:not(.blue)').forEach(el => {
+    el.textContent = counts.active;
+  });
+  document.querySelectorAll('.seg-count-badge.blue').forEach(el => {
+    el.textContent = counts.total ?? (counts.active + counts.history);
+  });
+
+  // Update Top Navigation Badges
+  document.querySelectorAll('.nav-badge-count, #navBadgeFacilityCount').forEach(el => {
+    el.textContent = counts.active;
+  });
+  document.querySelectorAll('.drawer-badge-count').forEach(el => {
+    el.textContent = counts.active;
+  });
+}
+
+function syncCardsWithRealtimeData(reservations, isHistoryPage) {
+  const container = document.getElementById('reservationsList');
+  if (!container) return;
+
+  const relevantItems = isHistoryPage ? reservations : reservations.filter(r => !r.is_history);
+  const relevantRefs = new Set(relevantItems.map(r => r.reference_no));
+
+  // 1. Remove or fade out cards no longer in this view
+  const currentCards = container.querySelectorAll('.res-card');
+  currentCards.forEach(card => {
+    const ref = card.dataset.ref;
+    if (!relevantRefs.has(ref)) {
+      card.style.transition = 'all 0.35s ease';
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(-12px)';
+      setTimeout(() => {
+        card.remove();
+        checkZeroState(container);
+        applyAllFilters();
+      }, 360);
+    }
+  });
+
+  // 2. Update existing cards or prepend new cards
+  relevantItems.forEach(r => {
+    let card = container.querySelector(`.res-card[data-ref="${r.reference_no}"]`);
+    if (card) {
+      // Update data attributes
+      card.dataset.status = r.filter_status;
+      card.dataset.rawStatus = r.raw_status;
+      card.dataset.category = r.category;
+      card.dataset.venue = r.slug;
+      card.dataset.venueId = r.facility_id;
+      card.dataset.venueName = r.venue_name;
+      card.dataset.venueTitle = r.venue_title_full;
+      card.dataset.venueImage = r.venue_thumb;
+      card.dataset.dates = r.formatted_dates;
+      card.dataset.time = r.time_slot;
+      card.dataset.pax = r.pax_text;
+      card.dataset.division = r.division;
+      card.dataset.applicantName = r.applicant_name;
+      card.dataset.createdAt = r.created_at_text;
+      card.dataset.statusText = r.status_badge_text;
+      card.dataset.specialNotes = r.special_notes || '';
+      card.dataset.remarks = r.admin_remarks || '';
+      card.dataset.docPath = r.document_path || '';
+      card.dataset.endorsedBy = r.endorsed_by || '';
+      card.dataset.endorsedAt = r.endorsed_at || '';
+      card.dataset.endorsementRemarks = r.endorsement_remarks || '';
+      card.dataset.recommendedBy = r.recommended_by || '';
+      card.dataset.recommendedAt = r.recommended_at || '';
+      card.dataset.recommendationRemarks = r.recommendation_remarks || '';
+      card.dataset.recommendationDoc = r.recommendation_doc_path || '';
+      card.dataset.clearedBy = r.cleared_by || '';
+      card.dataset.clearedAt = r.cleared_at || '';
+      card.dataset.clearanceRemarks = r.clearance_remarks || '';
+      card.dataset.clearanceDoc = r.clearance_doc_path || '';
+
+      // Update Status Badge
+      const badge = card.querySelector('.res-status-badge');
+      if (badge) {
+        badge.className = `res-status-badge ${r.status_badge_class}`;
+        badge.innerHTML = `<span class="status-dot-pulse"></span><span>${escapeHtml(r.status_badge_text)}</span>`;
+      }
+
+      // Update Middle Section (Routing Stepper vs Concluded Summary vs Cancellation Notice)
+      const mainDiv = card.querySelector('.res-card-main');
+      if (mainDiv) {
+        if (r.raw_status === 'Completed') {
+          let summary = mainDiv.querySelector('.res-concluded-summary');
+          const oldStepper = mainDiv.querySelector('.res-mini-routing');
+          const oldNotice = mainDiv.querySelector('.res-cancellation-notice');
+          if (oldStepper) oldStepper.remove();
+          if (oldNotice) oldNotice.remove();
+          if (!summary) {
+            summary = document.createElement('div');
+            summary.className = 'res-concluded-summary';
+            mainDiv.appendChild(summary);
+          }
+          summary.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg><span>${escapeHtml(r.admin_remarks || 'Activity successfully conducted. Facility inspection cleared & venue turned over. Record permanently archived.')}</span>`;
+        } else if (['Cancelled', 'Rejected'].includes(r.raw_status)) {
+          let notice = mainDiv.querySelector('.res-cancellation-notice');
+          const oldStepper = mainDiv.querySelector('.res-mini-routing');
+          const oldSummary = mainDiv.querySelector('.res-concluded-summary');
+          if (oldStepper) oldStepper.remove();
+          if (oldSummary) oldSummary.remove();
+          if (!notice) {
+            notice = document.createElement('div');
+            notice.className = 'res-cancellation-notice';
+            mainDiv.appendChild(notice);
+          }
+          const isCanc = (r.raw_status === 'Cancelled');
+          notice.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><span><strong>${isCanc ? 'Cancellation Notice:' : 'Disapproval Notice:'}</strong> ${escapeHtml(r.admin_remarks || (isCanc ? 'Reservation was cancelled by the applicant. Schedule was released back to availability.' : 'Application was disapproved / returned during administrative review.'))}</span>`;
+        } else {
+          // Pending or Approved: show 3-Stage Governance routing tracker
+          const oldSummary = mainDiv.querySelector('.res-concluded-summary');
+          const oldNotice = mainDiv.querySelector('.res-cancellation-notice');
+          if (oldSummary) oldSummary.remove();
+          if (oldNotice) oldNotice.remove();
+          let stepper = mainDiv.querySelector('.res-mini-routing');
+          if (!stepper) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = `
+              <div class="res-mini-routing">
+                <div class="routing-stepper-header">
+                  <div class="stepper-header-left">
+                    <span class="stepper-badge-icon">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                      </svg>
+                    </span>
+                    <span class="stepper-title">GOVERNANCE ROUTING TRACKER</span>
+                  </div>
+                  <span class="stepper-stage-chip" style="color: ${r.current_stage_color}; border-color: ${r.current_stage_color}44; background: ${r.current_stage_color}14;">
+                    ${escapeHtml(r.current_stage_label)}
+                  </span>
+                </div>
+                <div class="routing-stepper-track">
+                  <div class="stepper-step step-${r.step1_state}" title="Stage 1: Division Chief Endorsement">
+                    <div class="step-circle">${getStepCircleSvg(r.step1_state, 1)}</div>
+                    <div class="step-labels">
+                      <span class="step-name">1. Endorsement</span>
+                      <span class="step-desc">Division Chief</span>
+                    </div>
+                  </div>
+                  <div class="stepper-connector ${r.step1_state === 'done' ? 'completed' : (r.step2_state === 'active' ? 'active' : '')}"></div>
+                  <div class="stepper-step step-${r.step2_state}" title="Stage 2: Property & Logistics Recommendation">
+                    <div class="step-circle">${getStepCircleSvg(r.step2_state, 2)}</div>
+                    <div class="step-labels">
+                      <span class="step-name">2. Recommendation</span>
+                      <span class="step-desc">Logistics &amp; Property</span>
+                    </div>
+                  </div>
+                  <div class="stepper-connector ${r.step2_state === 'done' ? 'completed' : (r.step3_state === 'active' ? 'active' : '')}"></div>
+                  <div class="stepper-step step-${r.step3_state}" title="Stage 3: Directorate Final Clearance">
+                    <div class="step-circle">${getStepCircleSvg(r.step3_state, 3)}</div>
+                    <div class="step-labels">
+                      <span class="step-name">3. Clearance</span>
+                      <span class="step-desc">Directorate IV</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="routing-status-label">
+                  <span class="routing-step-desc"><strong>${escapeHtml(r.current_stage_label)}</strong></span>
+                </div>
+              </div>`;
+            stepper = tempDiv.firstElementChild;
+            mainDiv.appendChild(stepper);
+          }
+          updateCardStepper(card, r);
+        }
+      }
+
+      // Update Side Actions (inject Gate Pass & QR if Approved, remove Cancel if no longer pending)
+      const sideActions = card.querySelector('.res-card-side-actions');
+      if (sideActions) {
+        let gatePassBtn = sideActions.querySelector('.btn-gatepass-qr');
+        if (r.raw_status === 'Approved' && !gatePassBtn) {
+          const btnHtml = document.createElement('button');
+          btnHtml.type = 'button';
+          btnHtml.className = 'btn-card-action primary btn-gatepass-qr';
+          btnHtml.onclick = () => showGatePassModal(r.reference_no, r.event_title, r.venue_title_full, r.formatted_dates);
+          btnHtml.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>Gate Pass &amp; QR</span>
+          `;
+          sideActions.prepend(btnHtml);
+        } else if (r.raw_status !== 'Approved' && gatePassBtn) {
+          gatePassBtn.remove();
+        }
+
+        const cancelBtn = sideActions.querySelector('.js-cancel-res');
+        const canCancel = ['Pending', 'Pending Recommendation', 'Pending Clearance'].includes(r.raw_status);
+        if (canCancel && !cancelBtn) {
+          const cBtn = document.createElement('button');
+          cBtn.type = 'button';
+          cBtn.className = 'btn-card-action danger-outline js-cancel-res';
+          cBtn.dataset.ref = r.reference_no;
+          cBtn.title = 'Cancel Request';
+          cBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <span>Cancel Request</span>
+          `;
+          sideActions.appendChild(cBtn);
+        } else if (!canCancel && cancelBtn) {
+          cancelBtn.remove();
+        }
+      }
+
+      // Also sync Table View row if present
+      const tableRow = document.querySelector(`.res-table-row[data-ref="${r.reference_no}"]`);
+      if (tableRow) {
+        tableRow.dataset.status = r.filter_status;
+        tableRow.dataset.rawStatus = r.raw_status;
+        tableRow.dataset.statusText = r.status_badge_text;
+        const statusCell = tableRow.querySelector('td[data-label="Archive Status"], td[data-label="Status"]');
+        if (statusCell) {
+          statusCell.innerHTML = `<span class="res-status-badge ${r.status_badge_class}"><span class="status-dot-pulse"></span><span>${escapeHtml(r.status_badge_text)}</span></span>`;
+        }
+      }
+    } else {
+      // Create and prepend new card
+      const newCard = createReservationCardElement(r, isHistoryPage);
+      newCard.style.opacity = '0';
+      newCard.style.transform = 'translateY(12px)';
+      newCard.style.transition = 'all 0.35s ease';
+
+      const zeroState = document.getElementById('zeroReservationsState');
+      if (zeroState) zeroState.style.display = 'none';
+
+      const firstCard = container.querySelector('.res-card');
+      if (firstCard) {
+        container.insertBefore(newCard, firstCard);
+      } else {
+        container.appendChild(newCard);
+      }
+
+      requestAnimationFrame(() => {
+        newCard.style.opacity = '1';
+        newCard.style.transform = 'translateY(0)';
+      });
+    }
+  });
+
+  checkZeroState(container);
+  applyAllFilters();
+}
+
+function checkZeroState(container) {
+  const zeroState = document.getElementById('zeroReservationsState');
+  if (!zeroState) return;
+  const remaining = container.querySelectorAll('.res-card');
+  if (remaining.length === 0) {
+    zeroState.style.display = 'block';
+  } else {
+    zeroState.style.display = 'none';
+  }
+}
+
+function syncOpenModalIfViewing(reservations) {
+  const modal = document.getElementById('resDetailsModal');
+  if (!modal || !modal.classList.contains('show')) return;
+  const currentRef = document.getElementById('modalResRef')?.textContent?.trim();
+  if (!currentRef) return;
+
+  const card = document.querySelector(`.res-card[data-ref="${currentRef}"]`);
+  if (card) {
+    openCardDetailsModal(card);
+  }
+}
+
+function getStepCircleSvg(state, stepNum) {
+  if (state === 'done') {
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+  } else if (state === 'active') {
+    return `<span class="step-pulse-dot"></span><span class="step-num">${stepNum}</span>`;
+  } else if (state === 'rejected' || state === 'cancelled') {
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+  } else {
+    return `<span class="step-num">${stepNum}</span>`;
+  }
+}
+
+function updateCardStepper(card, r) {
+  const stepper = card.querySelector('.res-mini-routing');
+  if (!stepper) return;
+
+  const stageChip = stepper.querySelector('.stepper-stage-chip');
+  if (stageChip) {
+    stageChip.style.color = r.current_stage_color;
+    stageChip.style.borderColor = `${r.current_stage_color}44`;
+    stageChip.style.backgroundColor = `${r.current_stage_color}14`;
+    stageChip.textContent = r.current_stage_label;
+  }
+
+  const steps = stepper.querySelectorAll('.stepper-step');
+  if (steps.length >= 3) {
+    // Step 1
+    steps[0].className = `stepper-step step-${r.step1_state}`;
+    const circle1 = steps[0].querySelector('.step-circle');
+    if (circle1) circle1.innerHTML = getStepCircleSvg(r.step1_state, 1);
+
+    // Step 2
+    steps[1].className = `stepper-step step-${r.step2_state}`;
+    const circle2 = steps[1].querySelector('.step-circle');
+    if (circle2) circle2.innerHTML = getStepCircleSvg(r.step2_state, 2);
+
+    // Step 3
+    steps[2].className = `stepper-step step-${r.step3_state}`;
+    const circle3 = steps[2].querySelector('.step-circle');
+    if (circle3) circle3.innerHTML = getStepCircleSvg(r.step3_state, 3);
+  }
+
+  const connectors = stepper.querySelectorAll('.stepper-connector');
+  if (connectors.length >= 2) {
+    connectors[0].className = `stepper-connector ${r.step1_state === 'done' ? 'completed' : (r.step2_state === 'active' ? 'active' : '')}`;
+    connectors[1].className = `stepper-connector ${r.step2_state === 'done' ? 'completed' : (r.step3_state === 'active' ? 'active' : '')}`;
+  }
+
+  const routingDesc = stepper.querySelector('.routing-status-label');
+  if (routingDesc) {
+    if (r.raw_status === 'Approved') {
+      routingDesc.innerHTML = `<span class="routing-step-desc"><strong style="color: #15803d;">Governance Complete:</strong> Approved on Master Schedule &bull; Security Gate Pass ready</span>`;
+    } else if (r.raw_status === 'Cancelled') {
+      routingDesc.innerHTML = `<span class="routing-step-desc"><strong style="color: #64748b;">Notice:</strong> Booking request cancelled by applicant</span>`;
+    } else if (r.raw_status === 'Completed') {
+      routingDesc.innerHTML = `<span class="routing-step-desc"><strong style="color: #475569;">Concluded:</strong> Event successfully executed &bull; Turn-over complete</span>`;
+    } else if (r.raw_status === 'Rejected') {
+      routingDesc.innerHTML = `<span class="routing-step-desc"><strong style="color: #dc2626;">Disapproved:</strong> Application returned during review</span>`;
+    } else if (r.raw_status === 'Pending Clearance') {
+      routingDesc.innerHTML = `<span class="routing-step-desc"><strong>Director IV:</strong> Final approval and gate pass generation</span>`;
+    } else if (r.raw_status === 'Pending Recommendation') {
+      routingDesc.innerHTML = `<span class="routing-step-desc"><strong>Property Unit:</strong> Venue inspection and facilities readiness</span>`;
+    } else {
+      routingDesc.innerHTML = `<span class="routing-step-desc"><strong>Stage 1:</strong> Verification by Division Chief</span>`;
+    }
+  }
+}
+
+function createReservationCardElement(r, isHistoryPage) {
+  const article = document.createElement('article');
+  article.className = 'res-card';
+  article.dataset.status = r.filter_status;
+  article.dataset.rawStatus = r.raw_status;
+  article.dataset.category = r.category;
+  article.dataset.venue = r.slug;
+  article.dataset.venueId = r.facility_id;
+  article.dataset.venueName = r.venue_name;
+  article.dataset.ref = r.reference_no;
+  article.dataset.venueTitle = r.venue_title_full;
+  article.dataset.venueImage = r.venue_thumb;
+  article.dataset.dates = r.formatted_dates;
+  article.dataset.time = r.time_slot;
+  article.dataset.pax = r.pax_text;
+  article.dataset.division = r.division;
+  article.dataset.applicantName = r.applicant_name;
+  article.dataset.createdAt = r.created_at_text;
+  article.dataset.statusText = r.status_badge_text;
+  article.dataset.specialNotes = r.special_notes || '';
+  article.dataset.remarks = r.admin_remarks || '';
+  article.dataset.docPath = r.document_path || '';
+  article.dataset.endorsedBy = r.endorsed_by || '';
+  article.dataset.endorsedAt = r.endorsed_at || '';
+  article.dataset.endorsementRemarks = r.endorsement_remarks || '';
+  article.dataset.recommendedBy = r.recommended_by || '';
+  article.dataset.recommendedAt = r.recommended_at || '';
+  article.dataset.recommendationRemarks = r.recommendation_remarks || '';
+  article.dataset.recommendationDoc = r.recommendation_doc_path || '';
+  article.dataset.clearedBy = r.cleared_by || '';
+  article.dataset.clearedAt = r.cleared_at || '';
+  article.dataset.clearanceRemarks = r.clearance_remarks || '';
+  article.dataset.clearanceDoc = r.clearance_doc_path || '';
+
+  const pillClass = r.is_guesthouse ? 'guesthouse-pill' : (r.is_dorm ? 'dorm-pill' : '');
+  const refClass = r.is_guesthouse ? 'guesthouse-ref' : (r.is_dorm ? 'dorm-ref' : '');
+  const fallbackImg = r.is_guesthouse ? 'assets/images/guesthouse_1.jpg' : (r.is_dorm ? 'assets/images/dormitory.jpg' : 'assets/images/function_hall.jpg');
+
+  let middleHtml = '';
+  if (r.raw_status === 'Completed') {
+    middleHtml = `
+      <div class="res-concluded-summary">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span>${escapeHtml(r.admin_remarks || 'Activity successfully conducted. Facility inspection cleared & venue turned over. Record permanently archived.')}</span>
+      </div>`;
+  } else if (['Cancelled', 'Rejected'].includes(r.raw_status)) {
+    const isCanc = (r.raw_status === 'Cancelled');
+    middleHtml = `
+      <div class="res-cancellation-notice">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span><strong>${isCanc ? 'Cancellation Notice:' : 'Disapproval Notice:'}</strong> ${escapeHtml(r.admin_remarks || (isCanc ? 'Reservation was cancelled by the applicant. Schedule was released back to availability.' : 'Application was disapproved / returned during administrative review.'))}</span>
+      </div>`;
+  } else {
+    // 3-Stage Governance Routing Tracker for Pending & Approved
+    middleHtml = `
+      <div class="res-mini-routing">
+        <div class="routing-stepper-header">
+          <div class="stepper-header-left">
+            <span class="stepper-badge-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+            </span>
+            <span class="stepper-title">GOVERNANCE ROUTING TRACKER</span>
+          </div>
+          <span class="stepper-stage-chip" style="color: ${r.current_stage_color}; border-color: ${r.current_stage_color}44; background: ${r.current_stage_color}14;">
+            ${escapeHtml(r.current_stage_label)}
+          </span>
+        </div>
+        <div class="routing-stepper-track">
+          <div class="stepper-step step-${r.step1_state}" title="Stage 1: Division Chief Endorsement">
+            <div class="step-circle">${getStepCircleSvg(r.step1_state, 1)}</div>
+            <div class="step-labels">
+              <span class="step-name">1. Endorsement</span>
+              <span class="step-desc">Division Chief</span>
+            </div>
+          </div>
+          <div class="stepper-connector ${r.step1_state === 'done' ? 'completed' : (r.step2_state === 'active' ? 'active' : '')}"></div>
+          <div class="stepper-step step-${r.step2_state}" title="Stage 2: Property & Logistics Recommendation">
+            <div class="step-circle">${getStepCircleSvg(r.step2_state, 2)}</div>
+            <div class="step-labels">
+              <span class="step-name">2. Recommendation</span>
+              <span class="step-desc">Logistics &amp; Property</span>
+            </div>
+          </div>
+          <div class="stepper-connector ${r.step2_state === 'done' ? 'completed' : (r.step3_state === 'active' ? 'active' : '')}"></div>
+          <div class="stepper-step step-${r.step3_state}" title="Stage 3: Directorate Final Clearance">
+            <div class="step-circle">${getStepCircleSvg(r.step3_state, 3)}</div>
+            <div class="step-labels">
+              <span class="step-name">3. Clearance</span>
+              <span class="step-desc">Directorate IV</span>
+            </div>
+          </div>
+        </div>
+        <div class="routing-status-label">
+          <span class="routing-step-desc"><strong>${escapeHtml(r.current_stage_label)}</strong></span>
+        </div>
+      </div>`;
+  }
+
+  let gatepassBtn = '';
+  if (r.raw_status === 'Approved') {
+    gatepassBtn = `
+      <button type="button" class="btn-card-action primary btn-gatepass-qr" onclick="showGatePassModal('${escapeHtml(r.reference_no)}', '${escapeHtml(r.event_title)}', '${escapeHtml(r.venue_title_full)}', '${escapeHtml(r.formatted_dates)}')">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span>Gate Pass &amp; QR</span>
+      </button>`;
+  }
+
+  let cancelBtn = '';
+  if (['Pending', 'Pending Recommendation', 'Pending Clearance'].includes(r.raw_status)) {
+    cancelBtn = `
+      <button type="button" class="btn-card-action danger-outline js-cancel-res" data-ref="${escapeHtml(r.reference_no)}" title="Cancel Request">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+        <span>Cancel Request</span>
+      </button>`;
+  }
+
+  const slipLabel = r.raw_status === 'Completed' ? 'Archived Slip' : (['Cancelled', 'Rejected'].includes(r.raw_status) ? 'Notice Slip' : 'Download Slip');
+
+  const sideActionsHtml = `
+    ${gatepassBtn}
+    <button type="button" class="btn-card-action secondary js-view-details">
+      <svg viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <span>${isHistoryPage ? 'View Details' : 'View Details &amp; Routing'}</span>
+    </button>
+    <button type="button" class="btn-card-action secondary js-download-slip" data-ref="${escapeHtml(r.reference_no)}" title="Download Official Slip">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+      <span>${slipLabel}</span>
+    </button>
+    ${cancelBtn}
+  `;
+
+  article.innerHTML = `
+    <div class="res-card-media">
+      <img src="${escapeHtml(r.venue_thumb)}" alt="${escapeHtml(r.venue_name)}" onerror="this.onerror=null; this.src='${fallbackImg}';">
+      <span class="venue-thumb-pill ${pillClass}">${escapeHtml(r.venue_name)}</span>
+    </div>
+    <div class="res-card-main">
+      <div class="res-main-top">
+        <div class="res-ref-group">
+          <span class="res-ref-tag ${refClass}">${escapeHtml(r.reference_no)}</span>
+          <button type="button" class="btn-copy-ref" data-ref="${escapeHtml(r.reference_no)}" title="Copy Reference Code">
+            <svg viewBox="0 0 24 24" fill="none">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+          <span class="res-timestamp">&bull; ${escapeHtml(r.status_prefix || r.created_date)}</span>
+        </div>
+        <div class="res-status-badge ${r.status_badge_class}">
+          <span class="status-dot-pulse"></span>
+          <span>${escapeHtml(r.status_badge_text)}</span>
+        </div>
+      </div>
+      <h3 class="res-event-title">${escapeHtml(r.event_title)}</h3>
+      <div class="res-details-chips">
+        <div class="res-chip-item">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span>${escapeHtml(r.formatted_dates)}</span>
+        </div>
+        <div class="res-chip-item">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>${escapeHtml(r.time_slot)}</span>
+        </div>
+        <div class="res-chip-item">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          </svg>
+          <span>${escapeHtml(r.venue_title_full)}</span>
+        </div>
+        <div class="res-chip-item">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          <span>${escapeHtml(r.pax_text)} &bull; ${escapeHtml(r.division)}</span>
+        </div>
+      </div>
+      ${middleHtml}
+    </div>
+    <div class="res-card-side-actions">
+      ${sideActionsHtml}
+    </div>
+  `;
+
+  return article;
+}
+
+function showRealtimeNotification(title, message, type = 'info') {
+  let container = document.getElementById('toastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast-notice ${type}`;
+  toast.setAttribute('role', 'alert');
+  toast.style.cursor = 'pointer';
+
+  let iconSvg = '';
+  if (type === 'success') {
+    iconSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#86efac" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+  } else if (type === 'danger') {
+    iconSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fca5a5" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+  } else if (type === 'warning') {
+    iconSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fde68a" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+  } else {
+    iconSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5eead4" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+  }
+
+  toast.innerHTML = `
+    ${iconSvg}
+    <div style="flex: 1; min-width: 0;">
+      <div style="font-weight: 800; font-size: 0.92rem; margin-bottom: 2px;">${escapeHtml(title)}</div>
+      <div style="font-size: 0.8rem; opacity: 0.95; line-height: 1.35;">${escapeHtml(message)}</div>
+    </div>
+  `;
+
+  toast.addEventListener('click', () => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  });
+
+  container.appendChild(toast);
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 350);
+  }, 4500);
+}
+

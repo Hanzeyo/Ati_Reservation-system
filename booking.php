@@ -19,7 +19,7 @@ if ($selectedFacilityId > 0) {
   foreach ($dbFacilities as $f) {
     if ($f['id'] == $selectedFacilityId) {
       $ftype = strtolower($f['type']);
-      if ($ftype === 'dorms') {
+      if ($ftype === 'dorms' || $ftype === 'dormitories') {
         $reqCategory = 'dormitories';
       } elseif ($ftype === 'guesthouses') {
         $reqCategory = 'guesthouses';
@@ -40,7 +40,7 @@ $dormsCount = 0;
 $guesthousesCount = 0;
 foreach ($dbFacilities as $f) {
   $ftype = strtolower($f['type']);
-  if ($ftype === 'dorms') {
+  if ($ftype === 'dorms' || $ftype === 'dormitories') {
     $dormsCount++;
   } elseif ($ftype === 'guesthouses') {
     $guesthousesCount++;
@@ -381,13 +381,13 @@ $totalCount = count($dbFacilities);
     <!-- Header Section (Without User Category / Rate Plan per instruction) -->
     <!-- Header Section (Dynamic for Category) -->
     <section class="booking-header-section">
-      <div class="booking-assistant-pill <?= $reqCategory === 'guesthouses' ? 'guesthouse-hero-pill' : '' ?>">
+      <div class="booking-assistant-pill <?= $reqCategory === 'guesthouses' ? 'guesthouse-hero-pill' : ($reqCategory === 'dormitories' ? 'dorm-hero-pill' : '') ?>" id="bookingAssistantPill">
         <span class="pulse-dot"></span>
-        <span><?= $reqCategory === 'guesthouses' ? 'Guesthouse Villa Booking Assistant' : 'Step-by-Step Booking Assistant' ?></span>
+        <span id="bookingAssistantPillText"><?= $reqCategory === 'guesthouses' ? 'Guesthouse Villa Booking Assistant' : ($reqCategory === 'dormitories' ? 'Dormitory Lodging Assistant' : 'Step-by-Step Booking Assistant') ?></span>
       </div>
-      <h2 class="booking-main-title"><?= $reqCategory === 'guesthouses' ? 'Reserve ATI Guesthouse Villas' : 'Reserve ATI Venue &amp; Training Facilities' ?></h2>
-      <p class="booking-main-subtitle">
-        <?= $reqCategory === 'guesthouses' ? 'Submit an official reservation request for executive staff quarters, guest lecturer cottages, and delegation villas.' : 'Complete the required details below to submit an official reservation request for administrative approval.' ?>
+      <h2 class="booking-main-title" id="bookingMainTitle"><?= $reqCategory === 'guesthouses' ? 'Reserve ATI Guesthouse Villas' : ($reqCategory === 'dormitories' ? 'Reserve ATI Dormitory Accommodations' : 'Reserve ATI Venue &amp; Training Facilities') ?></h2>
+      <p class="booking-main-subtitle" id="bookingMainSubtitle">
+        <?= $reqCategory === 'guesthouses' ? 'Submit an official reservation request for executive staff quarters, guest lecturer cottages, and delegation villas.' : ($reqCategory === 'dormitories' ? 'Reserve comfortable and secure trainee lodging, air-conditioned bunk suites, and VIP guest rooms.' : 'Complete the required details below to submit an official reservation request for administrative approval.') ?>
       </p>
     </section>
 
@@ -397,7 +397,7 @@ $totalCount = count($dbFacilities);
       <div class="stepper-grid">
         <div class="step-tab-btn active" data-step="1">
           <span class="step-number">1</span>
-          <span>Facility</span>
+          <span id="stepTabFacilityName"><?= $reqCategory === 'guesthouses' ? 'Villa Selection' : ($reqCategory === 'dormitories' ? 'Dorm Selection' : 'Facility') ?></span>
         </div>
         <div class="step-tab-btn" data-step="2">
           <span class="step-number">2</span>
@@ -405,7 +405,7 @@ $totalCount = count($dbFacilities);
         </div>
         <div class="step-tab-btn" data-step="3" id="stepTabEventDetails">
           <span class="step-number">3</span>
-          <span id="stepTabEventName"><?= $reqCategory === 'guesthouses' ? 'Stay Details' : 'Event Details' ?></span>
+          <span id="stepTabEventName"><?= $reqCategory === 'guesthouses' ? 'Stay Details' : ($reqCategory === 'dormitories' ? 'Accommodation Details' : 'Event Details') ?></span>
         </div>
         <div class="step-tab-btn" data-step="4" id="stepTabDocuments">
           <span class="step-number">4</span>
@@ -577,7 +577,7 @@ $totalCount = count($dbFacilities);
         $hasSelectedCard = false;
         foreach ($dbFacilities as $index => $f): 
           $ftype = strtolower($f['type']);
-          $isDorm = ($ftype === 'dorms');
+          $isDorm = ($ftype === 'dorms' || $ftype === 'dormitories');
           $isGuesthouse = ($ftype === 'guesthouses');
           $cardCategory = $isDorm ? 'dormitories' : ($isGuesthouse ? 'guesthouses' : 'halls');
           
@@ -1030,7 +1030,7 @@ $totalCount = count($dbFacilities);
             <!-- Time Window Row -->
             <div class="dt-time-row">
               <div class="dt-field-group">
-                <label class="dt-field-label" for="startTimeSelect">START TIME</label>
+                <label class="dt-field-label" for="startTimeSelect" id="startTimeLabel">START TIME</label>
                 <div class="dt-select-wrap">
                   <select id="startTimeSelect">
                     <option value="08:00 AM (Morning)">08:00 AM (Morning)</option>
@@ -1045,7 +1045,7 @@ $totalCount = count($dbFacilities);
               </div>
 
               <div class="dt-field-group">
-                <label class="dt-field-label" for="endTimeSelect">END TIME</label>
+                <label class="dt-field-label" for="endTimeSelect" id="endTimeLabel">END TIME</label>
                 <div class="dt-select-wrap">
                   <select id="endTimeSelect">
                     <option value="05:00 PM (Full Day)">05:00 PM (Full Day)</option>

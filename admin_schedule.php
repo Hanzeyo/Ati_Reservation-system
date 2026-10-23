@@ -36,6 +36,22 @@ $totalUsersCount = (int)$userCountStmt->fetchColumn();
 $facStmt = $db->query("SELECT id, name, type, status, maintenance_reason, est_resume_date FROM facilities WHERE deleted_at IS NULL ORDER BY display_order ASC, id ASC");
 $facilitiesList = $facStmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Segregate facilities by category (Halls, Dorms, Guesthouses)
+$hallsList = [];
+$dormsList = [];
+$guesthousesList = [];
+
+foreach ($facilitiesList as $f) {
+    $fType = strtolower($f['type'] ?? '');
+    if ($fType === 'guesthouses') {
+        $guesthousesList[] = $f;
+    } elseif ($fType === 'dormitories' || $fType === 'dorms') {
+        $dormsList[] = $f;
+    } else {
+        $hallsList[] = $f;
+    }
+}
+
 // Fetch all reservations
 $resQuery = "SELECT r.*, 
                     f.name AS facility_name, 
@@ -68,42 +84,64 @@ $dbBlocks = $blockStmt ? $blockStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
 $calendarEvents = [];
 
-// 1. Process reservations
+// 1. Process reservations aligned with 3-Stage Governance Workflow & Category Types
 foreach ($dbReservations as $row) {
     $st = $row['status'] ?? 'Pending';
     
-    $colorClass = 'status-pending-rec';
-    $statusKey = 'pending_rec';
-    $statusLabel = 'Stage 1 Pending Recommendation';
+    $isGuesthouse = ($row['facility_type'] === 'guesthouses') || str_starts_with($row['reference_no'] ?? '', 'ATI-GH');
+    $isDorm = !$isGuesthouse && (($row['facility_type'] === 'dormitories' || $row['facility_type'] === 'dorms') || !empty($row['room_id']));
+    $category = $isGuesthouse ? 'guesthouses' : ($isDorm ? 'dormitories' : 'halls');
 
+    // 3-Stage Status Classification
     if (in_array($st, ['Approved', 'Completed'])) {
         $colorClass = 'status-cleared';
         $statusKey = 'cleared';
-        $statusLabel = 'Stage 2 Cleared (Confirmed)';
+        $statusLabel = 'Approved & Confirmed (Master Schedule)';
     } elseif (in_array($st, ['Pending Clearance', 'Awaiting Clearance'])) {
         $colorClass = 'status-pending-clear';
         $statusKey = 'pending_clear';
-        $statusLabel = 'Stage 2 Pending Final Clearance';
-    } else {
+        $statusLabel = 'Stage 3: Pending Directorate Clearance';
+    } elseif (in_array($st, ['Pending Recommendation', 'Awaiting Recommendation'])) {
         $colorClass = 'status-pending-rec';
         $statusKey = 'pending_rec';
-        $statusLabel = 'Stage 1 Pending Recommendation';
+        $statusLabel = 'Stage 2: Pending Property Recommendation';
+    } else {
+        $colorClass = 'status-pending-endorsement';
+        $statusKey = 'pending_endorsement';
+        $statusLabel = 'Stage 1: Pending Division Endorsement';
     }
 
-    $facName = $row['facility_name'] ?: 'General Facility';
+    $facName = $row['facility_name'] ?: ($isGuesthouse ? 'Guesthouse Villa' : ($isDorm ? 'ATI Dormitory' : 'General Facility'));
     if (!empty($row['room_number'])) {
-        $facName .= " (Room {$row['room_number']})";
+        $facName .= $isGuesthouse ? " - {$row['room_number']}" : " (Room {$row['room_number']})";
     }
 
     $timeSlot = !empty($row['time_slot']) ? $row['time_slot'] : '08:00 AM - 05:00 PM';
     $applicantName = $row['applicant_name'] ?: 'Official Applicant';
     $agency = $row['applicant_agency'] ?: 'Department of Agriculture';
 
+    $venueTag = 'HALL';
+    if ($isGuesthouse) {
+        $venueTag = 'VILLA';
+    } elseif ($isDorm) {
+        $venueTag = 'DORM';
+    } elseif (stripos($facName, 'boardroom') !== false) {
+        $venueTag = 'BOARD';
+    } elseif (stripos($facName, 'training') !== false) {
+        $venueTag = 'TRAIN';
+    } elseif (stripos($facName, 'mess') !== false) {
+        $venueTag = 'MESS';
+    }
+
     $calendarEvents[] = [
         'ref' => $row['reference_no'],
         'title' => !empty($row['event_title']) ? $row['event_title'] : 'Official Activity',
         'facility' => (string)$row['facility_id'],
         'facilityName' => $facName,
+        'facilityType' => $row['facility_type'] ?? 'halls',
+        'category' => $category,
+        'isGuesthouse' => $isGuesthouse,
+        'isDorm' => $isDorm,
         'startDate' => $row['start_date'],
         'endDate' => !empty($row['end_date']) ? $row['end_date'] : $row['start_date'],
         'time' => $timeSlot,
@@ -112,11 +150,14 @@ foreach ($dbReservations as $row) {
         'email' => $row['applicant_email'] ?: '',
         'phone' => $row['applicant_phone'] ?: '',
         'pax' => (int)($row['pax_count'] ?? 0),
+        'rawStatus' => $st,
         'status' => $statusKey,
         'statusLabel' => $statusLabel,
         'colorClass' => $colorClass,
-        'stage1Reviewer' => !empty($row['endorsed_by_name']) ? "Endorsed: {$row['endorsed_by_name']}" : (!empty($row['recommended_by_name']) ? "Recommended: {$row['recommended_by_name']}" : 'Pending Review'),
-        'stage2Reviewer' => !empty($row['cleared_by_name']) ? "Cleared: {$row['cleared_by_name']}" : 'Pending Clearance'
+        'venueTag' => $venueTag,
+        'stage1Reviewer' => !empty($row['endorsed_by_name']) ? "Endorsed: {$row['endorsed_by_name']}" : 'Pending Endorsement',
+        'stage2Reviewer' => !empty($row['recommended_by_name']) ? "Recommended: {$row['recommended_by_name']}" : 'Pending Recommendation',
+        'stage3Reviewer' => !empty($row['cleared_by_name']) ? "Cleared: {$row['cleared_by_name']}" : 'Pending Directorate Clearance'
     ];
 }
 
@@ -127,6 +168,10 @@ foreach ($dbBlocks as $blk) {
         'title' => $blk['title'],
         'facility' => (string)$blk['facility_id'],
         'facilityName' => $blk['facility_name'] ?: 'All ATI Facilities (Blackout)',
+        'facilityType' => 'all',
+        'category' => 'all',
+        'isGuesthouse' => false,
+        'isDorm' => false,
         'startDate' => $blk['start_date'],
         'endDate' => !empty($blk['end_date']) ? $blk['end_date'] : $blk['start_date'],
         'time' => 'Full Day Administrative Hold',
@@ -135,11 +180,14 @@ foreach ($dbBlocks as $blk) {
         'email' => 'admin@ati.da.gov.ph',
         'phone' => 'Loc 101',
         'pax' => 0,
+        'rawStatus' => 'Blackout',
         'status' => 'blackout',
         'statusLabel' => 'Administrative Hold (' . ($blk['reason'] ?: 'Hold') . ')',
         'colorClass' => 'status-blackout',
+        'venueTag' => 'HOLD',
         'stage1Reviewer' => !empty($blk['memo_ref']) ? "Memo: {$blk['memo_ref']}" : 'Executive Administrative Order',
-        'stage2Reviewer' => 'Official Calendar Blackout'
+        'stage2Reviewer' => 'Logistics Hold Verification',
+        'stage3Reviewer' => 'Official Calendar Blackout'
     ];
 }
 
@@ -151,6 +199,10 @@ foreach ($facilitiesList as $fac) {
             'title' => 'Maintenance Hold: ' . $fac['name'],
             'facility' => (string)$fac['id'],
             'facilityName' => $fac['name'],
+            'facilityType' => $fac['type'] ?? 'halls',
+            'category' => ($fac['type'] === 'guesthouses') ? 'guesthouses' : (($fac['type'] === 'dorms' || $fac['type'] === 'dormitories') ? 'dormitories' : 'halls'),
+            'isGuesthouse' => ($fac['type'] === 'guesthouses'),
+            'isDorm' => ($fac['type'] === 'dorms' || $fac['type'] === 'dormitories'),
             'startDate' => date('Y-m-01'),
             'endDate' => !empty($fac['est_resume_date']) ? $fac['est_resume_date'] : date('Y-m-t'),
             'time' => 'Facility Under Maintenance',
@@ -159,11 +211,14 @@ foreach ($facilitiesList as $fac) {
             'email' => 'gsu@ati.da.gov.ph',
             'phone' => 'Loc 104',
             'pax' => 0,
+            'rawStatus' => 'Maintenance',
             'status' => 'blackout',
             'statusLabel' => 'Facility Maintenance Hold (' . ($fac['maintenance_reason'] ?: 'Scheduled Servicing') . ')',
             'colorClass' => 'status-blackout',
+            'venueTag' => 'MAINT',
             'stage1Reviewer' => 'Facility Maintenance Directive',
-            'stage2Reviewer' => 'General Services Unit'
+            'stage2Reviewer' => 'General Services Unit Inspection',
+            'stage3Reviewer' => 'Logistics Maintenance Authorization'
         ];
     }
 }
@@ -269,7 +324,7 @@ foreach ($facilitiesList as $fac) {
               <span>Institutional Master Calendar & Asset Occupancy</span>
             </div>
             <h2>Master Schedule & Calendar Operations Desk</h2>
-            <p>Real-time institution-wide calendar across all training halls, executive boardrooms, and dormitory wings. Monitor confirmed bookings, review pending reservation collisions, and apply administrative date blocks or maintenance blackouts.</p>
+            <p>Real-time institution-wide calendar across all training halls, executive boardrooms, dormitory wings, and guesthouses &amp; executive villas. Monitor confirmed bookings, review pending reservation collisions, and apply administrative date blocks or maintenance blackouts.</p>
           </div>
 
           <div class="admin-header-actions">
@@ -388,33 +443,79 @@ foreach ($facilitiesList as $fac) {
             <button type="button" class="btn-today-pill" onclick="goToToday()">Today</button>
           </div>
 
-          <!-- Status Legend Bar -->
+          <!-- Status Legend Bar (Aligned with 3-Stage Governance Workflow) -->
           <div class="status-legend-bar">
-            <div class="legend-item">
+            <div class="legend-item" title="Directorate cleared & confirmed schedule">
               <span class="legend-dot green"></span>
-              <span>Stage 2 Cleared (Confirmed)</span>
+              <span>Confirmed &amp; Cleared</span>
             </div>
-            <div class="legend-item">
-              <span class="legend-dot amber"></span>
-              <span>Pending Final Clearance</span>
+            <div class="legend-item" title="Recommended by Logistics, awaiting Directorate clearance">
+              <span class="legend-dot teal"></span>
+              <span>Stage 3: Pending Clearance</span>
             </div>
-            <div class="legend-item">
+            <div class="legend-item" title="Endorsed by Division, awaiting Logistics recommendation">
               <span class="legend-dot blue"></span>
-              <span>Pending Recommendation</span>
+              <span>Stage 2: Pending Recommendation</span>
             </div>
-            <div class="legend-item">
+            <div class="legend-item" title="Initial submission, awaiting Division Chief endorsement">
+              <span class="legend-dot orange"></span>
+              <span>Stage 1: Pending Endorsement</span>
+            </div>
+            <div class="legend-item" title="Executive administrative hold or facility maintenance">
               <span class="legend-dot red"></span>
-              <span>Administrative Blackout / Hold</span>
+              <span>Administrative Hold</span>
             </div>
           </div>
+        </div>
+
+        <!-- Primary Category Filter Segmented Tabs -->
+        <div class="category-filter-segmented" role="tablist" aria-label="Facility Category Filter">
+          <button type="button" class="cat-seg-btn active" onclick="filterCalendarByCategory('all', this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>All Categories (<?= count($facilitiesList) ?>)</span>
+          </button>
+          <button type="button" class="cat-seg-btn" onclick="filterCalendarByCategory('halls', this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            </svg>
+            <span>Training &amp; Function Halls (<?= count($hallsList) ?>)</span>
+          </button>
+          <button type="button" class="cat-seg-btn dorm-seg-btn" onclick="filterCalendarByCategory('dormitories', this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M2 4v16"></path>
+              <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+              <path d="M2 17h20"></path>
+              <path d="M6 8v9"></path>
+            </svg>
+            <span>Dormitories &amp; Lodgings (<?= count($dormsList) ?>)</span>
+          </button>
+          <button type="button" class="cat-seg-btn guesthouse-seg-btn" onclick="filterCalendarByCategory('guesthouses', this)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span>Guesthouses &amp; Villas (<?= count($guesthousesList) ?>)</span>
+          </button>
         </div>
 
         <!-- Facility Filter Pills Row -->
         <div class="admin-calendar-filter-row">
           <div class="facility-filter-pills" id="facilityFilterPills">
-            <button type="button" class="fac-pill active" onclick="filterCalendarByFacility('all', this)">All Facilities</button>
-            <?php foreach ($facilitiesList as $f): ?>
-              <button type="button" class="fac-pill" onclick="filterCalendarByFacility('<?= htmlspecialchars($f['id']) ?>', this)"><?= htmlspecialchars($f['name']) ?></button>
+            <button type="button" class="fac-pill active" data-category="all" onclick="filterCalendarByFacility('all', this)">All Facilities</button>
+            <?php foreach ($facilitiesList as $f): 
+              $fType = strtolower($f['type'] ?? '');
+              $catClass = ($fType === 'guesthouses') ? 'guesthouses' : (($fType === 'dormitories' || $fType === 'dorms') ? 'dormitories' : 'halls');
+              $bulletClass = ($fType === 'guesthouses') ? 'guesthouse' : (($fType === 'dormitories' || $fType === 'dorms') ? 'dorm' : 'hall');
+            ?>
+              <button type="button" class="fac-pill" data-category="<?= htmlspecialchars($catClass) ?>" onclick="filterCalendarByFacility('<?= htmlspecialchars($f['id']) ?>', this)">
+                <span class="cat-pill-bullet <?= $bulletClass ?>"></span>
+                <span><?= htmlspecialchars($f['name']) ?></span>
+              </button>
             <?php endforeach; ?>
           </div>
         </div>
@@ -574,9 +675,27 @@ foreach ($facilitiesList as $fac) {
             <label style="font-size: 0.82rem; font-weight: 700; color: #153321; display: block; margin-bottom: 0.35rem;">Target Facility / Scope</label>
             <select id="blockFacilitySelect" style="width: 100%; padding: 0.65rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem;">
               <option value="all">All ATI Facilities (Institution-Wide Blackout)</option>
-              <?php foreach ($facilitiesList as $f): ?>
-                <option value="<?= htmlspecialchars($f['id']) ?>"><?= htmlspecialchars($f['name']) ?></option>
-              <?php endforeach; ?>
+              <?php if (!empty($hallsList)): ?>
+                <optgroup label="Training &amp; Function Halls">
+                  <?php foreach ($hallsList as $f): ?>
+                    <option value="<?= htmlspecialchars($f['id']) ?>"><?= htmlspecialchars($f['name']) ?></option>
+                  <?php endforeach; ?>
+                </optgroup>
+              <?php endif; ?>
+              <?php if (!empty($dormsList)): ?>
+                <optgroup label="Dormitories &amp; Lodgings">
+                  <?php foreach ($dormsList as $f): ?>
+                    <option value="<?= htmlspecialchars($f['id']) ?>"><?= htmlspecialchars($f['name']) ?></option>
+                  <?php endforeach; ?>
+                </optgroup>
+              <?php endif; ?>
+              <?php if (!empty($guesthousesList)): ?>
+                <optgroup label="Guesthouses &amp; Executive Villas">
+                  <?php foreach ($guesthousesList as $f): ?>
+                    <option value="<?= htmlspecialchars($f['id']) ?>"><?= htmlspecialchars($f['name']) ?></option>
+                  <?php endforeach; ?>
+                </optgroup>
+              <?php endif; ?>
             </select>
           </div>
 

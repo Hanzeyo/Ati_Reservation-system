@@ -1,6 +1,6 @@
 /**
  * Agriculture Training Institute - Master Schedule Admin Controller
- * Multi-Facility Operational Calendar with Dual-Stage Reservation Statuses
+ * Multi-Facility Operational Calendar with 3-Stage Governance Workflow & Category Filtering
  */
 
 // Calendar Database initialized from database or fallback
@@ -11,13 +11,25 @@ let calendarEvents = (typeof initialDbCalendarEvents !== 'undefined' && Array.is
 const _adminNow = new Date();
 let currentYear = _adminNow.getFullYear();
 let currentMonth = _adminNow.getMonth(); // 0-indexed
+let activeCategoryFilter = 'all'; // 'all', 'halls', 'dormitories', 'guesthouses'
 let activeFacilityFilter = 'all';
 let activeStatusFilter = 'all';
 let isOpenBookingHighlighted = false;
 
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   initDateDisplay();
   renderCalendar();
+  initScheduleRealtimeSync();
 
   // Restore desktop sidebar collapsed preference if previously saved
   if (window.innerWidth > 960 && localStorage.getItem('admin_sidebar_collapsed') === 'true') {
@@ -104,6 +116,14 @@ function isDateAvailableForBooking(dateStr) {
       return dateStr >= ev.startDate && dateStr <= ev.endDate;
     });
     return !isBooked;
+  } else if (activeCategoryFilter !== 'all') {
+    // Selected category: unavailable if blackout or all facilities in category are booked
+    const hasCategoryHold = calendarEvents.some(ev => {
+      return (ev.status === 'cleared' || ev.status === 'blackout') && 
+             (ev.facility === 'all' || ev.category === activeCategoryFilter) && 
+             dateStr >= ev.startDate && dateStr <= ev.endDate;
+    });
+    return !hasCategoryHold;
   } else {
     // All facilities view: unavailable if institution-wide blackout is in place
     const hasGlobalHold = calendarEvents.some(ev => {
@@ -177,9 +197,16 @@ function renderCalendar() {
 
     // Get matching events
     const matchingEvents = calendarEvents.filter(ev => {
+      // Category Filter (Halls, Dorms, Guesthouses)
+      if (activeCategoryFilter !== 'all') {
+        if (ev.category !== 'all' && ev.category !== activeCategoryFilter) {
+          return false;
+        }
+      }
+
       // Status Filter
       if (activeStatusFilter === 'pending') {
-        if (ev.status !== 'pending_rec' && ev.status !== 'pending_clear') return false;
+        if (ev.status !== 'pending_endorsement' && ev.status !== 'pending_rec' && ev.status !== 'pending_clear') return false;
       } else if (activeStatusFilter === 'cleared') {
         if (ev.status !== 'cleared') return false;
       }
@@ -199,20 +226,29 @@ function renderCalendar() {
 
     let eventsHtml = '';
     matchingEvents.forEach(ev => {
-      let venueCode = 'VENUE';
+      let venueCode = ev.venueTag || 'VENUE';
+      let tagClass = 'hall';
       if (ev.status === 'blackout' || ev.facility === 'all') {
         venueCode = 'HOLD';
+        tagClass = 'hold';
+      } else if (ev.isGuesthouse) {
+        venueCode = 'VILLA';
+        tagClass = 'villa';
+      } else if (ev.isDorm) {
+        venueCode = 'DORM';
+        tagClass = 'dorm';
       } else if (ev.facilityName) {
         const parts = ev.facilityName.trim().split(/\s+/);
         venueCode = parts[0].toUpperCase();
+        tagClass = 'hall';
       }
 
       const timeSnippet = ev.time ? ev.time.split(' ')[0] : 'ALL-DAY';
 
       eventsHtml += `
         <div class="calendar-event-chip ${ev.colorClass}" onclick="openAdminEventDetailsModal('${ev.ref}')" title="${ev.ref}: ${ev.title} (${ev.statusLabel})">
-          <span class="chip-venue-tag">${venueCode} &bull; ${timeSnippet}</span>
-          <span class="chip-title-text">${ev.title}</span>
+          <span class="chip-venue-tag ${tagClass}">${venueCode} &bull; ${timeSnippet}</span>
+          <span class="chip-title-text">${escapeHtml(ev.title)}</span>
         </div>
       `;
     });
@@ -259,8 +295,11 @@ function updateMonthKPIs(daysInMonth) {
   const today = new Date();
   const todayDateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-  // Filter events in current month respecting facility filter
+  // Filter events in current month respecting category and facility filter
   const monthEvents = calendarEvents.filter(ev => {
+    if (activeCategoryFilter !== 'all' && ev.category !== 'all' && ev.category !== activeCategoryFilter) {
+      return false;
+    }
     if (activeFacilityFilter !== 'all' && ev.facility !== 'all') {
       const facStr = String(ev.facility).toLowerCase();
       const activeStr = String(activeFacilityFilter).toLowerCase();
@@ -272,7 +311,7 @@ function updateMonthKPIs(daysInMonth) {
   });
 
   const confirmed = monthEvents.filter(e => e.status === 'cleared').length;
-  const pending = monthEvents.filter(e => e.status === 'pending_rec' || e.status === 'pending_clear').length;
+  const pending = monthEvents.filter(e => e.status === 'pending_endorsement' || e.status === 'pending_rec' || e.status === 'pending_clear').length;
   const holds = monthEvents.filter(e => e.status === 'blackout').length;
 
   // Calculate booked days for occupancy
@@ -355,6 +394,34 @@ function goToToday() {
   renderCalendar();
 }
 
+function filterCalendarByCategory(category, btnEl) {
+  activeCategoryFilter = category;
+
+  if (btnEl) {
+    document.querySelectorAll('.cat-seg-btn').forEach(btn => btn.classList.remove('active'));
+    btnEl.classList.add('active');
+  }
+
+  // Filter facility pills
+  const pills = document.querySelectorAll('#facilityFilterPills .fac-pill');
+  pills.forEach(pill => {
+    const pillCat = pill.getAttribute('data-category');
+    if (category === 'all' || pillCat === 'all' || pillCat === category) {
+      pill.style.display = '';
+    } else {
+      pill.style.display = 'none';
+    }
+    pill.classList.remove('active');
+  });
+
+  // Reset facility filter to 'all' and activate All Facilities pill
+  activeFacilityFilter = 'all';
+  const allPill = document.querySelector('#facilityFilterPills .fac-pill[data-category="all"]');
+  if (allPill) allPill.classList.add('active');
+
+  renderCalendar();
+}
+
 function filterCalendarByFacility(facilityKey, btnEl) {
   if (btnEl) {
     document.querySelectorAll('.fac-pill').forEach(b => b.classList.remove('active'));
@@ -431,6 +498,7 @@ function highlightOpenBookingDates(cardEl) {
    EVENT DETAILS MODAL (ADMIN REVIEW DIRECT ACCESS / LIFT BLOCK)
    ========================================================================== */
 let currentActiveViewedRef = null;
+let currentBlockRef = null;
 
 function openAdminEventDetailsModal(refId) {
   const ev = calendarEvents.find(e => e.ref === refId);
@@ -448,13 +516,14 @@ function openAdminEventDetailsModal(refId) {
   document.getElementById('modalEventAgency').textContent = `${ev.applicant} (${ev.agency})`;
   document.getElementById('modalEventAttendees').textContent = ev.pax > 0 ? `${ev.pax} Participants` : 'Staff / GSU';
   document.getElementById('modalEventStatus').textContent = ev.statusLabel;
-  document.getElementById('modalEventReviewers').textContent = `Stage 1: ${ev.stage1Reviewer} | Stage 2: ${ev.stage2Reviewer}`;
+  document.getElementById('modalEventReviewers').textContent = `Stage 1: ${ev.stage1Reviewer} | Stage 2: ${ev.stage2Reviewer} | Stage 3: ${ev.stage3Reviewer || 'Pending Directorate'}`;
 
   const avatarCircle = document.getElementById('modalEventAvatarCircle');
   const btnDesk = document.getElementById('btnModalOpenDesk');
   const btnLift = document.getElementById('btnModalLiftBlock');
 
   if (ev.status === 'blackout') {
+    currentBlockRef = ev.ref;
     if (avatarCircle) {
       avatarCircle.style.background = '#dc2626';
       avatarCircle.textContent = 'HLD';
@@ -462,14 +531,23 @@ function openAdminEventDetailsModal(refId) {
     if (btnDesk) btnDesk.style.display = 'none';
     if (btnLift) btnLift.style.display = 'inline-flex';
   } else {
+    currentBlockRef = null;
     if (avatarCircle) {
-      avatarCircle.style.background = '#174d2f';
-      const initials = ev.applicant.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-      avatarCircle.textContent = initials || 'EV';
+      if (ev.isGuesthouse) {
+        avatarCircle.style.background = '#0f766e';
+        avatarCircle.textContent = 'GH';
+      } else if (ev.isDorm) {
+        avatarCircle.style.background = '#5b21b6';
+        avatarCircle.textContent = 'DM';
+      } else {
+        avatarCircle.style.background = '#174d2f';
+        const initials = ev.applicant ? ev.applicant.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'EV';
+        avatarCircle.textContent = initials || 'EV';
+      }
     }
     if (btnDesk) {
       btnDesk.style.display = 'inline-flex';
-      btnDesk.href = `admin_dashboard.php#reservationsSection`;
+      btnDesk.href = `admin_reservations.php?ref=${encodeURIComponent(ev.ref)}`;
     }
     if (btnLift) btnLift.style.display = 'none';
   }
@@ -483,12 +561,16 @@ function closeAdminEventDetailsModal() {
   if (modal) modal.style.display = 'none';
   document.body.classList.remove('admin-modal-open');
   currentActiveViewedRef = null;
+  currentBlockRef = null;
 }
 
 function confirmLiftCurrentBlock() {
-  if (!currentActiveViewedRef) return;
-  liftHoldByRef(currentActiveViewedRef);
-  closeAdminEventDetailsModal();
+  const refToLift = currentBlockRef || currentActiveViewedRef;
+  if (!refToLift) return;
+  if (confirm('Are you sure you want to lift this blackout hold? This will immediately make these dates available for reservation.')) {
+    liftHoldByRef(refToLift);
+    closeAdminEventDetailsModal();
+  }
 }
 
 function liftHoldByRef(refId) {
@@ -736,34 +818,71 @@ function showAdminToast(message, type = 'success') {
   }, 4000);
 }
 
-let currentBlockRef = null;
+/* ==========================================================================
+   REAL-TIME SCHEDULE SYNCHRONIZATION (BACKGROUND POLLING)
+   ========================================================================== */
+let scheduleSyncInterval = null;
+let lastScheduleHash = null;
+let isCheckingSchedule = false;
 
-function confirmLiftCurrentBlock() {
-  if (!currentBlockRef) return;
-  if (confirm('Are you sure you want to lift this blackout hold? This will immediately make these dates available for reservation.')) {
-    liftHoldByRef(currentBlockRef);
-    closeAdminEventDetailsModal();
-  }
+function initScheduleRealtimeSync() {
+  checkScheduleUpdates(true);
+
+  if (scheduleSyncInterval) clearInterval(scheduleSyncInterval);
+  scheduleSyncInterval = setInterval(() => {
+    checkScheduleUpdates(false);
+  }, 4000);
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      checkScheduleUpdates(false);
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    checkScheduleUpdates(false);
+  });
 }
 
-// Hook into openAdminEventDetailsModal to capture current block ref
-const originalOpenModal = openAdminEventDetailsModal;
-openAdminEventDetailsModal = function(refId) {
-  const actualEv = calendarEvents.find(e => e.ref === refId);
-  const liftBtn = document.getElementById('btnModalLiftBlock');
-  const deskBtn = document.getElementById('btnModalOpenDesk');
-  
-  if (actualEv && actualEv.status === 'blackout') {
-    currentBlockRef = actualEv.ref;
-    if(liftBtn) liftBtn.style.display = 'inline-flex';
-    if(deskBtn) deskBtn.style.display = 'none';
-  } else {
-    currentBlockRef = null;
-    if(liftBtn) liftBtn.style.display = 'none';
-    if(deskBtn) deskBtn.style.display = 'inline-flex';
-  }
-  originalOpenModal(refId);
-};
+function checkScheduleUpdates(isInitialCheck = false) {
+  if (isCheckingSchedule) return;
+  isCheckingSchedule = true;
+
+  fetch('ajax/get_schedule_events.php', { cache: 'no-store' })
+    .then(res => res.json())
+    .then(data => {
+      isCheckingSchedule = false;
+      if (!data || !data.success) return;
+
+      if (isInitialCheck || lastScheduleHash === null) {
+        lastScheduleHash = data.hash;
+        if (Array.isArray(data.events)) {
+          calendarEvents = data.events;
+          renderCalendar();
+          updateHoldsKPICounter();
+        }
+        return;
+      }
+
+      if (data.hash === lastScheduleHash) {
+        return;
+      }
+
+      // Hash changed -> reload new calendar events and re-render
+      lastScheduleHash = data.hash;
+      if (Array.isArray(data.events)) {
+        calendarEvents = data.events;
+        renderCalendar();
+        updateHoldsKPICounter();
+        renderActiveHoldsList();
+        showAdminToast('Master schedule updated with latest reservations & holds.', 'info');
+      }
+    })
+    .catch(err => {
+      isCheckingSchedule = false;
+      console.warn('Real-time schedule sync error:', err);
+    });
+}
 
 // ESC key listener to close any open schedule modals
 document.addEventListener('keydown', function (e) {

@@ -73,6 +73,59 @@
   border-color: #175432;
 }
 
+/* Primary Category Filter Segmented Tabs */
+.category-filter-segmented {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #ffffff;
+  padding: 0.45rem 0.6rem;
+  border-radius: 12px;
+  border: 1.2px solid #dce8e0;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(18, 48, 28, 0.03);
+}
+
+.cat-seg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.95rem;
+  border-radius: 8px;
+  border: 1.2px solid transparent;
+  background: transparent;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #4b6354;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.cat-seg-btn:hover {
+  background: #f1f7f3;
+  color: #174d2f;
+}
+
+.cat-seg-btn.active {
+  background: #174d2f;
+  color: #ffffff;
+  border-color: #174d2f;
+  box-shadow: 0 2px 6px rgba(23, 77, 47, 0.2);
+}
+
+.cat-seg-btn.dorm-seg-btn.active {
+  background: #5b21b6;
+  border-color: #5b21b6;
+  box-shadow: 0 2px 6px rgba(91, 33, 182, 0.2);
+}
+
+.cat-seg-btn.guesthouse-seg-btn.active {
+  background: #0f766e;
+  border-color: #0f766e;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.2);
+}
+
 /* Facility & Status Filter Pills */
 .admin-calendar-filter-row {
   display: flex;
@@ -101,6 +154,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
 }
 
 .fac-pill:hover {
@@ -114,6 +169,31 @@
   color: #ffffff;
   border-color: #174d2f;
   box-shadow: 0 2px 8px rgba(23, 77, 47, 0.22);
+}
+
+.fac-pill .cat-pill-bullet {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.4rem;
+  flex-shrink: 0;
+}
+
+.fac-pill .cat-pill-bullet.hall {
+  background: #16a34a;
+}
+
+.fac-pill .cat-pill-bullet.dorm {
+  background: #7c3aed;
+}
+
+.fac-pill .cat-pill-bullet.guesthouse {
+  background: #0d9488;
+}
+
+.fac-pill.active .cat-pill-bullet {
+  background: #ffffff;
 }
 
 .status-legend-bar {
@@ -136,18 +216,27 @@
   width: 9px;
   height: 9px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .legend-dot.green {
   background: #16a34a;
 }
 
-.legend-dot.amber {
-  background: #d97706;
+.legend-dot.teal {
+  background: #0d9488;
 }
 
 .legend-dot.blue {
   background: #2563eb;
+}
+
+.legend-dot.orange {
+  background: #ea580c;
+}
+
+.legend-dot.amber {
+  background: #d97706;
 }
 
 .legend-dot.red {
@@ -315,7 +404,7 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
-/* Event Color Varieties */
+/* Event Color Varieties Aligned with 3-Stage Governance */
 .calendar-event-chip.status-cleared {
   background: #dcfce7;
   color: #14532d;
@@ -323,15 +412,21 @@
 }
 
 .calendar-event-chip.status-pending-clear {
-  background: #fef3c7;
-  color: #78350f;
-  border-left-color: #d97706;
+  background: #ccfbf1;
+  color: #0f766e;
+  border-left-color: #0d9488;
 }
 
 .calendar-event-chip.status-pending-rec {
   background: #e0f2fe;
   color: #0369a1;
   border-left-color: #0284c7;
+}
+
+.calendar-event-chip.status-pending-endorsement {
+  background: #fff7ed;
+  color: #9a3412;
+  border-left-color: #ea580c;
 }
 
 .calendar-event-chip.status-blackout {
@@ -346,7 +441,23 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  opacity: 0.85;
+  opacity: 0.9;
+}
+
+.chip-venue-tag.villa {
+  color: #0f766e;
+}
+
+.chip-venue-tag.dorm {
+  color: #6b21a8;
+}
+
+.chip-venue-tag.hall {
+  color: #15803d;
+}
+
+.chip-venue-tag.hold {
+  color: #b91c1c;
 }
 
 .chip-title-text {

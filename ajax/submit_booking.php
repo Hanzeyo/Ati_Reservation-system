@@ -71,6 +71,13 @@ if ($room_number && $room_number !== 'null') {
     $stmt->execute([$facility_id, $room_number]);
     $room = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$room) {
+        // Try partial match if room title has formatting
+        $likeParam = '%' . $room_number . '%';
+        $stmtLike = $conn->prepare("SELECT id FROM rooms WHERE facility_id = ? AND room_number LIKE ? LIMIT 1");
+        $stmtLike->execute([$facility_id, $likeParam]);
+        $room = $stmtLike->fetch(PDO::FETCH_ASSOC);
+    }
+    if (!$room) {
         $stmt = $conn->prepare("INSERT INTO rooms (facility_id, room_number) VALUES (?, ?)");
         $stmt->execute([$facility_id, $room_number]);
         $room_id = (int)$conn->lastInsertId();
@@ -85,7 +92,7 @@ $pax_count = (int) ($_POST['pax_count'] ?? 0);
 if (empty($event_title) || strlen($event_title) < 3) {
     echo json_encode([
         'success' => false,
-        'message' => 'Please enter the Activity / Event Title (minimum 3 characters).'
+        'message' => 'Please enter the Activity / Purpose of Stay (minimum 3 characters).'
     ]);
     exit;
 }
@@ -100,7 +107,14 @@ if ($pax_count <= 0) {
 
 // Generate / verify truly unique reference_no
 $rawRef = trim($_POST['reference_no'] ?? '');
-$prefix = (isset($_POST['facility_type']) && in_array(strtolower($_POST['facility_type']), ['dormitories', 'dorms'])) ? 'ATI-BK' : 'ATI-RES';
+$fTypeLower = strtolower($_POST['facility_type'] ?? '');
+if (in_array($fTypeLower, ['guesthouses', 'guesthouse'])) {
+    $prefix = 'ATI-GH';
+} elseif (in_array($fTypeLower, ['dormitories', 'dorms', 'dormitory'])) {
+    $prefix = 'ATI-BK';
+} else {
+    $prefix = 'ATI-RES';
+}
 
 $checkStmt = $conn->prepare("SELECT id FROM reservations WHERE reference_no = ? LIMIT 1");
 $checkStmt->execute([$rawRef]);
