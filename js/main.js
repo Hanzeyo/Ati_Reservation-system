@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavigationScrollSpy();
   initRealtimeOfficeHours();
   initVerticalFacilitiesScroller();
+  initGmailSmartLink();
 });
 
 /* ==========================================================================
@@ -792,6 +793,43 @@ function initVerticalFacilitiesScroller() {
   });
 
   startAuto();
+}
+
+/* ==========================================================================
+   10. Smart Gmail Link (Direct to Compose for Web on PC & App on Mobile)
+   ========================================================================== */
+function initGmailSmartLink() {
+  const emailLink = document.getElementById('footerEmailLink');
+  if (!emailLink) return;
+
+  emailLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    const email = 'dormitory.co@ati.da.gov.ph';
+    const webComposeUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}`;
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (isMobile) {
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isIOS) {
+        // Deep-link directly into iOS Gmail App compose view
+        const appUrl = `googlegmail:///co?to=${encodeURIComponent(email)}`;
+        window.location.href = appUrl;
+        setTimeout(() => {
+          window.location.href = webComposeUrl;
+        }, 1200);
+      } else {
+        // Deep-link directly into Android Gmail App compose view (bypasses Outlook)
+        const androidIntent = `intent://co?to=${encodeURIComponent(email)}#Intent;scheme=googlegmail;package=com.google.android.gm;end`;
+        window.location.href = androidIntent;
+        setTimeout(() => {
+          window.location.href = webComposeUrl;
+        }, 1200);
+      }
+    } else {
+      // Desktop / PC: Open Gmail Web Compose in a new tab (never Outlook)
+      window.open(webComposeUrl, '_blank', 'noopener,noreferrer');
+    }
+  });
 }
 
 
