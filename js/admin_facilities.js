@@ -1158,8 +1158,8 @@ function loadFacilityRooms(facilityId) {
       if (rooms.length === 0) {
         grid.innerHTML = `
           <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; background: #fbfdfc; border: 1.5px dashed #cde2d5; border-radius: 12px; color: #637f6f;">
-            <p style="margin: 0 0 0.5rem 0; font-weight: 700; color: #174d2f;">Walang nakatalang kuwarto para sa dormitoryong ito.</p>
-            <p style="margin: 0; font-size: 0.82rem;">Gamitin ang form sa itaas upang magdagdag ng unang kuwarto.</p>
+            <p style="margin: 0 0 0.5rem 0; font-weight: 700; color: #174d2f;">No rooms currently registered for this dormitory.</p>
+            <p style="margin: 0; font-size: 0.82rem;">Use the quick registration form above to add the first room.</p>
           </div>
         `;
         return;
@@ -1255,7 +1255,7 @@ function loadFacilityRooms(facilityId) {
       console.error('Error fetching rooms:', err);
       grid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 2rem 1rem; color: #dc2626;">
-          Nagkaroon ng network error habang kinukuha ang mga kuwarto.
+          A network error occurred while retrieving rooms.
         </div>
       `;
     });
@@ -1272,7 +1272,7 @@ function handleQuickAddRoom(event) {
   const floor = floorSelect ? floorSelect.value : '1st Floor';
 
   if (!roomNum) {
-    alert('Pakilagay ang Room Number.');
+    alert('Please enter a Room Number.');
     return;
   }
 
@@ -1306,7 +1306,7 @@ function handleQuickAddRoom(event) {
         if (numInput) numInput.value = '';
         loadFacilityRooms(facilityId);
       } else {
-        showAdminToast(data.message || 'Hindi maidadagdag ang kuwarto.', 'decline');
+        showAdminToast(data.message || 'Unable to add room.', 'decline');
       }
     })
     .catch(err => {
@@ -1351,7 +1351,7 @@ function handleDeleteRoom(roomId, roomNumber) {
     subtitle: 'Dormitory Inventory Management',
     name: `Room ${roomNumber}`,
     meta: `Room ID: #${roomId}`,
-    message: `Sigurado ka bang nais mong tanggalin ang <strong>Room ${escapeHtml(roomNumber)}</strong> mula sa pasilidad na ito?`,
+    message: `Are you sure you want to remove <strong>Room ${escapeHtml(roomNumber)}</strong> from this facility?`,
     btnText: 'Yes, Delete Room',
     isPurge: true,
     onConfirm: () => {
@@ -1370,7 +1370,7 @@ function handleDeleteRoom(roomId, roomNumber) {
             showAdminToast(data.message || `Room ${roomNumber} deleted.`, 'success');
             loadFacilityRooms(facilityId);
           } else {
-            showAdminToast(data.message || 'Hindi maaaring burahin ang kuwarto.', 'decline');
+            showAdminToast(data.message || 'Unable to delete room.', 'decline');
           }
         })
         .catch(err => {
@@ -1508,8 +1508,8 @@ function renderSetupsGrid() {
   if (totalCount === 0) {
     grid.innerHTML = `
       <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; background: #fbfdfc; border: 1.5px dashed #cde2d5; border-radius: 12px; color: #637f6f;">
-        <p style="margin: 0 0 0.5rem 0; font-weight: 700; color: #174d2f;">Walang naka-set na layout para sa venue na ito.</p>
-        <span style="font-size: 0.8rem;">Magdagdag sa itaas o pindutin ang "Reset to Standard 4 Presets" sa ibaba.</span>
+        <p style="margin: 0 0 0.5rem 0; font-weight: 700; color: #174d2f;">No custom setups currently defined for this venue.</p>
+        <span style="font-size: 0.8rem;">Add a layout setup above or click "Reset to Standard 4 Presets" below.</span>
       </div>
     `;
     return;
@@ -1588,7 +1588,7 @@ function handleQuickAddSetup(e) {
   const presetKey = presetSelect ? presetSelect.value : 'custom';
 
   if (!name) {
-    showAdminToast('Ilagay ang pangalan ng layout setup.', 'warning');
+    showAdminToast('Please enter a name for the layout setup.', 'warning');
     return;
   }
 
@@ -1612,7 +1612,7 @@ function handleQuickAddSetup(e) {
   if (descInput) descInput.value = '';
   if (presetSelect) presetSelect.value = 'custom';
 
-  showAdminToast(`Layout "${name}" added to list. I-click ang "Save Setups Changes" para ma-save.`, 'success');
+  showAdminToast(`Layout "${name}" added to list. Click "Save Setups Changes" to persist.`, 'success');
   renderSetupsGrid();
 }
 
@@ -1625,7 +1625,7 @@ function deleteSetupItem(index) {
     subtitle: 'Floor Plan Preset Configuration',
     name: item.name,
     meta: `Layout Preset #${index + 1}`,
-    message: `Sigurado ka bang nais mong tanggalin ang layout na <strong>${escapeHtml(item.name)}</strong> mula sa pasilidad na ito?`,
+    message: `Are you sure you want to remove the <strong>${escapeHtml(item.name)}</strong> layout preset from this venue?`,
     btnText: 'Yes, Remove Layout',
     isPurge: false,
     onConfirm: () => {
@@ -1637,7 +1637,7 @@ function deleteSetupItem(index) {
 }
 
 function resetSetupsToDefaults() {
-  const ok = confirm('Nais mo bang ibalik ang setups sa 4 standard defaults (Theater, Classroom, Workshop, Banquet)?');
+  const ok = confirm('Reset layout setups to the 4 standard institutional presets (Theater, Classroom, Workshop, Banquet)?');
   if (!ok) return;
 
   const capVal = currentFacilityMeta?.capacity ? (currentFacilityMeta.capacity.includes('PAX') ? currentFacilityMeta.capacity : currentFacilityMeta.capacity + ' PAX') : '50 PAX';
@@ -1650,7 +1650,7 @@ function resetSetupsToDefaults() {
   ];
 
   renderSetupsGrid();
-  showAdminToast('Naibalik sa 4 standard layout presets. I-click ang "Save Setups Changes" para ma-save.', 'info');
+  showAdminToast('Reset to 4 standard layout presets. Click "Save Setups Changes" to persist.', 'info');
 }
 
 function saveFacilitySetups() {
@@ -1658,7 +1658,7 @@ function saveFacilitySetups() {
   const saveBtn = document.getElementById('btnSaveSetupsSubmit');
 
   if (!facilityId) {
-    showAdminToast('Walang napiling pasilidad.', 'decline');
+    showAdminToast('No facility selected.', 'decline');
     return;
   }
 
@@ -1683,7 +1683,7 @@ function saveFacilitySetups() {
         saveBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg><span>Save Setups Changes</span>`;
       }
       if (data.success) {
-        showAdminToast('Matagumpay na na-save ang Venue Setups! Live na ito sa booking portal.', 'success');
+        showAdminToast('Venue setups saved successfully! Now live on the reservation portal.', 'success');
         if (window.initialFacilitiesData && window.initialFacilitiesData[facilityId]) {
           window.initialFacilitiesData[facilityId].layouts = JSON.stringify(currentLoadedFacilitySetups);
         }
@@ -1691,7 +1691,7 @@ function saveFacilitySetups() {
           closeManageSetupsModal();
         }, 600);
       } else {
-        showAdminToast(data.message || 'Hindi na-save ang setups.', 'decline');
+        showAdminToast(data.message || 'Failed to save venue setups.', 'decline');
       }
     })
     .catch(err => {

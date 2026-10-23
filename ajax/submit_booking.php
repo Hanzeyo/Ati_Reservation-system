@@ -131,7 +131,7 @@ if (!$reservation->checkAvailability($facility_id, $start_date, $end_date, $room
     echo json_encode([
         'success' => false,
         'conflict' => true,
-        'message' => "Paumanhin, ang {$targetName} ay may naaprubahan nang reservation para sa napiling petsa ({$start_date} hanggang {$end_date}). Mangyaring pumili ng ibang petsa o ibang pasilidad."
+        'message' => "Sorry, {$targetName} already has an approved reservation for the selected date ({$start_date} to {$end_date}). Please choose another date or a different facility."
     ]);
     exit;
 }

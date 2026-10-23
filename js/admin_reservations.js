@@ -527,7 +527,7 @@ function viewReservationDetails(refId) {
     // No file uploaded
     if (docLink) docLink.style.display = 'none';
     if (docTitle) docTitle.textContent = 'No Document Attached';
-    if (docSub) docSub.textContent = 'Walang nakalakip na dokumento';
+    if (docSub) docSub.textContent = 'No document attached';
     if (docLabel) {
       docLabel.textContent = 'Original Client Supporting Document (Letter of Intent / Request Memo)';
     }

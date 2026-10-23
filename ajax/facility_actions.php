@@ -487,7 +487,7 @@ try {
         if ($activeCount > 0) {
             echo json_encode([
                 'success' => false, 
-                'message' => "Hindi maaaring i-purge ang '{$fac['name']}' dahil mayroon pa itong {$activeCount} aktibong reservation(s) (Pending/Approved). I-reject, i-cancel, o tapusin muna ang mga ito bago i-purge."
+                'message' => "Cannot permanently purge '{$fac['name']}' because it has {$activeCount} active reservation(s) (Pending/Approved). Please reject, cancel, or complete them first."
             ]);
             exit;
         }
@@ -531,7 +531,7 @@ try {
 
         echo json_encode([
             'success' => true,
-            'message' => "Facility '{$fac['name']}' at lahat ng kaugnay na configuration/records ay matagumpay na na-purge mula sa database."
+            'message' => "Facility '{$fac['name']}' and all associated configurations/records have been permanently purged from the database."
         ]);
         exit;
     }
@@ -623,7 +623,7 @@ try {
         $order = is_array($rawOrder) ? $rawOrder : json_decode($rawOrder, true);
 
         if (!is_array($order) || empty($order)) {
-            echo json_encode(['success' => false, 'message' => 'Walang natanggap na sequence order list.']);
+            echo json_encode(['success' => false, 'message' => 'No sequence order list received.']);
             exit;
         }
 
@@ -648,12 +648,12 @@ try {
 
         // Audit Log
         try {
-            AuditLog::log($userId, 'REORDER_FACILITIES', "Inayos ang pagkakasunod-sunod ng " . count($order) . " pasilidad");
+            AuditLog::log($userId, 'REORDER_FACILITIES', "Reordered display arrangement of " . count($order) . " facilities/dormitories");
         } catch (Throwable $e) {}
 
         echo json_encode([
             'success' => true,
-            'message' => 'Matagumpay na na-update ang pagkakasunod-sunod ng mga pasilidad.'
+            'message' => 'Facility display sequence successfully updated.'
         ]);
         exit;
     }

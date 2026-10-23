@@ -412,7 +412,7 @@ $diningCount = count(array_filter($facilitiesData, fn($f) => $f['category'] === 
                 <circle cx="15" cy="19" r="1.5" fill="currentColor"></circle>
               </svg>
             </span>
-            <span class="reorder-hint-text">Hold at i-drag ang <strong>Drag Handle</strong> sa kahit anong card para i-arrange ang pagkakasunod-sunod ng mga dorms at function halls.</span>
+            <span class="reorder-hint-text">Hold and drag the <strong>Drag Handle</strong> on any card or table row to customize the display sequence of dormitories and halls.</span>
           </div>
           <span class="reorder-status-badge" id="reorderStatusBadge" style="display: none;">
             <span class="spinner-dot"></span>
