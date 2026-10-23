@@ -855,7 +855,7 @@ $totalFacilities = count($allFacilities);
       </a>
 
       <!-- 2. Dormitories Category Card -->
-      <a href="dormitory_booking.php" class="portal-cat-card" id="cardCatDormitories" title="Explore ATI Dormitories">
+      <a href="booking.php?category=dormitories" class="portal-cat-card" id="cardCatDormitories" title="Explore ATI Dormitories">
         <div class="cat-card-header">
           <span class="cat-count-badge"><?= $dormsCount ?> Room Types Available</span>
         </div>

@@ -473,7 +473,7 @@ $totalCount = count($dbFacilities);
           <!-- 3 Category Switcher Tabs -->
           <div class="category-switch-pills" role="tablist" aria-label="Facility Categories">
             <!-- Halls Tab -->
-            <a href="booking.php?category=halls" class="category-pill-tab <?= $reqCategory === 'halls' ? 'active tab-halls' : '' ?>" data-category="halls" title="Browse Function & Training Halls">
+            <a href="booking.php?category=halls" class="category-pill-tab tab-halls <?= $reqCategory === 'halls' ? 'active' : '' ?>" data-category="halls" title="Browse Function & Training Halls">
               <svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <line x1="4" y1="54" x2="60" y2="54" />
                 <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="2" />
@@ -496,7 +496,7 @@ $totalCount = count($dbFacilities);
             </a>
 
             <!-- Dormitories Tab -->
-            <a href="booking.php?category=dormitories" class="category-pill-tab <?= $reqCategory === 'dormitories' ? 'active tab-dorms' : '' ?>" data-category="dormitories" title="Browse Dormitory Lodging & Rooms">
+            <a href="booking.php?category=dormitories" class="category-pill-tab tab-dorms <?= $reqCategory === 'dormitories' ? 'active' : '' ?>" data-category="dormitories" title="Browse Dormitory Lodging & Rooms">
               <svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <line x1="4" y1="54" x2="60" y2="54" />
                 <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="2" />
@@ -519,7 +519,7 @@ $totalCount = count($dbFacilities);
             </a>
 
             <!-- Guesthouses Tab -->
-            <a href="booking.php?category=guesthouses" class="category-pill-tab <?= $reqCategory === 'guesthouses' ? 'active tab-guesthouses' : '' ?>" data-category="guesthouses" title="Browse Guesthouse Villas & Cottages">
+            <a href="booking.php?category=guesthouses" class="category-pill-tab tab-guesthouses <?= $reqCategory === 'guesthouses' ? 'active' : '' ?>" data-category="guesthouses" title="Browse Guesthouse Villas & Cottages">
               <svg width="22" height="22" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <line x1="4" y1="54" x2="60" y2="54" />
                 <path d="M6 54l2-3.5m1 3.5l1.5-2.5 M54 54l2-3.5m1 3.5l1.5-2.5" stroke-width="2" />
@@ -611,6 +611,12 @@ $totalCount = count($dbFacilities);
             $cardSlug = 'rdec-training';
           } elseif (strpos($lowerName, 'guesthouse') !== false) {
             $cardSlug = 'guesthouse-' . $f['id'];
+          } elseif (strpos($lowerName, 'suite 1') !== false || strpos($lowerName, 'sampaguita') !== false || strpos($lowerName, '2nd') !== false) {
+            $cardSlug = 'dorm-floor-2';
+          } elseif (strpos($lowerName, 'suite 2') !== false || strpos($lowerName, 'ilang-ilang') !== false || strpos($lowerName, 'gumamela') !== false || strpos($lowerName, '3rd') !== false) {
+            $cardSlug = 'dorm-floor-3';
+          } elseif (strpos($lowerName, 'vip') !== false || strpos($lowerName, 'rosas') !== false || strpos($lowerName, 'rosal') !== false || strpos($lowerName, '4th') !== false) {
+            $cardSlug = 'dorm-floor-4';
           }
 
           if ($isGuesthouse) {

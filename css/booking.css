@@ -868,22 +868,26 @@ body.booking-body {
   color: #0c331d;
 }
 
-.category-pill-tab.active.tab-halls {
-  background: #174d2f;
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(23, 77, 47, 0.25);
+.category-pill-tab.active {
+  background: #174d2f !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(23, 77, 47, 0.25) !important;
 }
 
-.category-pill-tab.active.tab-dorms {
-  background: #b45309;
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(180, 83, 9, 0.25);
+.category-pill-tab.active svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
+.category-pill-tab.active span {
+  color: #ffffff !important;
+}
+
+.category-pill-tab.active.tab-halls,
+.category-pill-tab.active.tab-dorms,
 .category-pill-tab.active.tab-guesthouses {
-  background: #0f766e;
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.25);
+  background: #174d2f !important;
+  color: #ffffff !important;
 }
 
 .guesthouse-hero-pill {

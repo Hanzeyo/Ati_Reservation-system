@@ -3,6 +3,11 @@ require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/auth_guard.php';
 require_once __DIR__ . '/includes/facility_helpers.php';
 
+// Seamlessly forward to unified reservation portal under dormitories category
+$qs = !empty($_SERVER['QUERY_STRING']) ? '&' . $_SERVER['QUERY_STRING'] : '';
+header("Location: booking.php?category=dormitories" . $qs);
+exit();
+
 $selectedFacilityId = isset($_GET['facility_id']) ? intval($_GET['facility_id']) : 0;
 
 // Fetch active dormitory facilities from MySQL ordered by customized display sequence

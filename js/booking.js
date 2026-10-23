@@ -295,8 +295,7 @@ let currentModalFacilityId = null;
 let modalTempSelectedItem = null;
 
 function scrollScreenAllTheWayDown() {
-  setTimeout(() => {
-    // 1. Scroll window all the way down to maximum document height
+  const scrollToAbsoluteBottom = () => {
     const maxScroll = Math.max(
       document.body.scrollHeight,
       document.documentElement.scrollHeight,
@@ -307,20 +306,12 @@ function scrollScreenAllTheWayDown() {
       top: maxScroll,
       behavior: 'smooth'
     });
+  };
 
-    // 2. Also ensure proceed button & bottom action bar are cleanly centered in viewport
-    const proceedBtn = document.getElementById('btnProceedStep');
-    const bottomBar = document.getElementById('bookingBottomActions');
-    if (proceedBtn) {
-      setTimeout(() => {
-        proceedBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 120);
-    } else if (bottomBar) {
-      setTimeout(() => {
-        bottomBar.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }, 120);
-    }
-  }, 100);
+  // Immediate scroll call plus layout reflow follow-ups
+  setTimeout(scrollToAbsoluteBottom, 60);
+  setTimeout(scrollToAbsoluteBottom, 200);
+  setTimeout(scrollToAbsoluteBottom, 400);
 }
 
 function selectFacilityCard(card, openModal = true) {
@@ -1098,7 +1089,9 @@ function initFacilityFilters() {
     });
     document.querySelectorAll('.category-pill-tab').forEach(tab => {
       const tabCat = tab.dataset.category || (tab.classList.contains('tab-guesthouses') ? 'guesthouses' : (tab.classList.contains('tab-dorms') ? 'dormitories' : 'halls'));
-      tab.classList.toggle('active', tabCat === catName);
+      const isTarget = (tabCat === catName);
+      tab.classList.toggle('active', isTarget);
+      tab.setAttribute('aria-selected', isTarget ? 'true' : 'false');
     });
 
     // 3. Show/Hide Matching Facility Cards and count visible
@@ -1108,7 +1101,7 @@ function initFacilityFilters() {
 
     facilityCards.forEach(card => {
       const type = card.dataset.facilityType;
-      const isVisible = (catName === 'all' || type === catName || isDormPage);
+      const isVisible = (catName === 'all' || type === catName);
       card.style.display = isVisible ? 'flex' : 'none';
 
       if (isVisible) {
@@ -1125,7 +1118,7 @@ function initFacilityFilters() {
       if (catName === 'halls') {
         activeCategoryName.textContent = `Halls (${visibleCount} Available)`;
       } else if (catName === 'dormitories') {
-        activeCategoryName.textContent = isDormPage ? `Dormitories (${visibleCount} Suites Available)` : `Dormitories (${visibleCount} Suites)`;
+        activeCategoryName.textContent = `Dormitories (${visibleCount} Suites Available)`;
       } else if (catName === 'guesthouses') {
         activeCategoryName.textContent = `Guesthouses (${visibleCount} Available)`;
       } else {
@@ -1167,11 +1160,11 @@ function initFacilityFilters() {
         }
         if (emptyDesc) {
           if (catName === 'halls') {
-            emptyDesc.textContent = 'There are currently no training halls or function venues available under this category. Try switching to Dormitories or Show All.';
+            emptyDesc.textContent = 'There are currently no training halls or function venues available under this category. Try switching to Dormitories or Guesthouses.';
           } else if (catName === 'guesthouses') {
-            emptyDesc.textContent = 'There are currently no executive guesthouses available under this category. Try switching to Halls, Dormitories, or Show All.';
+            emptyDesc.textContent = 'There are currently no executive guesthouses available under this category. Try switching to Halls or Dormitories.';
           } else if (catName === 'dormitories') {
-            emptyDesc.textContent = 'There are currently no dormitory suites or rooms available under this category. Try switching to Halls or Show All.';
+            emptyDesc.textContent = 'There are currently no dormitory suites or rooms available under this category. Try switching to Halls or Guesthouses.';
           } else {
             emptyDesc.textContent = 'There are currently no active facilities or rooms listed in the system. Please check back later or contact administration.';
           }
@@ -1180,8 +1173,9 @@ function initFacilityFilters() {
         if (proceedBtn) proceedBtn.style.display = 'none';
       } else {
         emptyState.style.display = 'none';
-        if (step1Summary) step1Summary.style.display = 'block';
-        if (proceedBtn) proceedBtn.style.display = 'inline-flex';
+        const hasSelected = Boolean(bookingState.selectedFacility && bookingState.selectedFacility.id && document.querySelector('.facility-choice-card.selected'));
+        if (step1Summary) step1Summary.style.display = hasSelected ? 'block' : 'none';
+        if (proceedBtn) proceedBtn.style.display = hasSelected ? 'inline-flex' : 'none';
       }
     }
 
@@ -1237,13 +1231,8 @@ function initFacilityFilters() {
   const categoryPillTabs = document.querySelectorAll('.category-pill-tab');
   categoryPillTabs.forEach(tab => {
     tab.addEventListener('click', (e) => {
-      const cat = tab.dataset.category || (tab.classList.contains('tab-guesthouses') ? 'guesthouses' : (tab.classList.contains('tab-dorms') ? 'dormitories' : 'halls'));
-      if (isDormPage && cat !== 'dormitories') {
-        // Direct navigation from dormitory_booking.php to booking.php
-        window.location.href = tab.getAttribute('href') || `booking.php?category=${cat}`;
-        return;
-      }
       e.preventDefault();
+      const cat = tab.dataset.category || (tab.classList.contains('tab-guesthouses') ? 'guesthouses' : (tab.classList.contains('tab-dorms') ? 'dormitories' : 'halls'));
       switchCategory(cat, false);
       if (window.history && window.history.pushState) {
         window.history.pushState({ category: cat }, '', `booking.php?category=${cat}`);
@@ -1253,7 +1242,6 @@ function initFacilityFilters() {
 
   // Handle browser Back/Forward navigation without requiring reload
   window.addEventListener('popstate', (e) => {
-    if (isDormPage) return;
     const urlParams = new URLSearchParams(window.location.search);
     const cat = urlParams.get('category') || (e.state && e.state.category) || 'halls';
     switchCategory(cat, false);
