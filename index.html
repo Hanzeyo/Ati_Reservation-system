@@ -12,7 +12,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=37">
+  <link rel="stylesheet" href="css/style.css?v=45">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=7">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
@@ -44,6 +44,7 @@
       <ul class="nav-menu" id="navMenu">
         <li><a href="#home" class="nav-link active">Home</a></li>
         <li><a href="#facilities" class="nav-link">Facilities</a></li>
+        <li><a href="#dormitories" class="nav-link">Dormitories</a></li>
         <li><a href="#availability" class="nav-link">Availability</a></li>
         <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
         <li><a href="#about" class="nav-link">About</a></li>
@@ -115,6 +116,19 @@
               </svg>
             </div>
             <span class="drawer-link-text">Facilities</span>
+            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </a>
+
+          <a href="#dormitories" class="drawer-nav-link js-drawer-link">
+            <div class="drawer-link-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"></path>
+              </svg>
+            </div>
+            <span class="drawer-link-text">Dormitories</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -257,9 +271,9 @@
 
         <div class="hero-showcase">
           <div class="hero-card" id="heroShowcaseCard">
-            <div class="showcase-status-badge">
+            <div class="showcase-status-badge" id="heroStatusBadge">
               <span class="status-pulse-dot"></span>
-              <span>Featured Facility</span>
+              <span id="showcaseStatusText">Featured Facility</span>
             </div>
             <div class="showcase-slider">
               <div class="showcase-slide active">
@@ -281,6 +295,19 @@
               </div>
               <div class="showcase-slide">
                 <img src="assets/images/serrano_hall.jpg" alt="Serrano Hall - Agriculture Training Institute">
+              </div>
+              <!-- Dormitories -->
+              <div class="showcase-slide">
+                <img src="assets/images/dorm_vip_suite.jpg"
+                  alt="Executive VIP Suite - Agriculture Training Institute Dormitory">
+              </div>
+              <div class="showcase-slide">
+                <img src="assets/images/dorm_suite_1.png"
+                  alt="Dormitory Suite 1 - Agriculture Training Institute Dormitory">
+              </div>
+              <div class="showcase-slide">
+                <img src="assets/images/dorm_suite_2.png"
+                  alt="Dormitory Suite 2 - Agriculture Training Institute Dormitory">
               </div>
             </div>
           </div>
@@ -495,6 +522,101 @@
             <div class="facilities-bottom-blur" aria-hidden="true"></div>
           </div>
 
+        </div>
+      </div>
+    </section>
+
+    <!-- Our Dormitories Section -->
+    <section class="section dormitories-section" id="dormitories">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Our Dormitories</h2>
+          <div class="section-divider"></div>
+          <p class="section-subtitle">Comfortable, fully air-conditioned accommodation for trainees and visiting guests.
+          </p>
+        </div>
+
+        <div class="facility-cards-grid">
+          <!-- Dorm Card 1: VIP Suite -->
+          <article class="facility-card-item" data-facility="dorm-vip-suite">
+            <div class="facility-card-media">
+              <img src="assets/images/dorm_vip_suite.jpg" alt="VIP Suite" loading="lazy">
+              <span class="facility-badge">Executive Suite</span>
+            </div>
+            <div class="facility-card-body">
+              <h3 class="facility-card-title">VIP Suite</h3>
+              <p class="facility-card-desc">
+                Executive VIP Suite located on the 4th floor featuring elegant wood panel accents, smart HDTV, personal
+                refrigerator, and private executive amenities.
+              </p>
+              <div class="facility-card-footer">
+                <span class="facility-footer-cap">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                  </svg>
+                  Private Suite
+                </span>
+                <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-vip-suite">
+                  <span>Details &rarr;</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Dorm Card 2: Dormitory Suite 1 -->
+          <article class="facility-card-item" data-facility="dorm-suite-1">
+            <div class="facility-card-media">
+              <img src="assets/images/dorm_suite_1.png" alt="Dormitory Suite 1" loading="lazy">
+              <span class="facility-badge">2nd Floor</span>
+            </div>
+            <div class="facility-card-body">
+              <h3 class="facility-card-title">Dormitory Suite 1</h3>
+              <p class="facility-card-desc">
+                Trainee dormitory suite located on the 2nd floor equipped with quiet air conditioning, individual
+                secured lockers, and dedicated study workstations.
+              </p>
+              <div class="facility-card-footer">
+                <span class="facility-footer-cap">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                  </svg>
+                  Trainee Quarters
+                </span>
+                <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-suite-1">
+                  <span>Details &rarr;</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <!-- Dorm Card 3: Dormitory Suite 2 -->
+          <article class="facility-card-item" data-facility="dorm-suite-2">
+            <div class="facility-card-media">
+              <img src="assets/images/dorm_suite_2.png" alt="Dormitory Suite 2" loading="lazy">
+              <span class="facility-badge">3rd Floor</span>
+            </div>
+            <div class="facility-card-body">
+              <h3 class="facility-card-title">Dormitory Suite 2</h3>
+              <p class="facility-card-desc">
+                Trainee dormitory suite located on the 3rd floor providing modern air conditioning, individual storage
+                closets, and ergonomic study desks.
+              </p>
+              <div class="facility-card-footer">
+                <span class="facility-footer-cap">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                  </svg>
+                  Trainee Quarters
+                </span>
+                <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-suite-2">
+                  <span>Details &rarr;</span>
+                </button>
+              </div>
+            </div>
+          </article>
         </div>
       </div>
     </section>
@@ -888,24 +1010,23 @@
       </button>
       <img src="assets/images/function_hall.jpg" alt="Facility Image" class="modal-facility-img" id="modalFacilityImg">
       <div class="modal-facility-content">
-        <h3 id="modalFacilityTitle" class="section-title" style="margin-bottom: 0.25rem;">Function Hall</h3>
-        <p id="modalFacilityCap" style="color: #2e7d32; font-weight: 700; margin-bottom: 0.75rem;">Up to 250 Persons</p>
-        <p id="modalFacilityDesc" style="color: #4b5e52; font-size: 0.95rem; line-height: 1.6;">Suitable for seminars,
-          meetings, and large events.</p>
+        <h3 id="modalFacilityTitle" class="modal-facility-title">Function Hall</h3>
+        <p id="modalFacilityCap" class="modal-facility-cap">Up to 250 Persons</p>
+        <p id="modalFacilityDesc" class="modal-facility-desc">Suitable for seminars, meetings, and large events.</p>
 
-        <h4 style="margin-top: 1.25rem; font-size: 0.95rem; color: #174227;">Included Amenities & Equipment</h4>
+        <h4 class="modal-facility-section-heading">Included Amenities & Equipment</h4>
         <div class="facility-amenities-list" id="modalFacilityAmenities">
           <!-- Injected via JavaScript -->
         </div>
 
-        <button type="button" class="btn-reserve-slot js-open-login" style="margin-top: 1rem;">
+        <button type="button" class="btn-reserve-slot js-open-login">
           Book this Facility
         </button>
       </div>
     </div>
   </div>
 
-  <script src="js/main.js?v=23"></script>
+  <script src="js/main.js?v=26"></script>
 </body>
 
 </html>

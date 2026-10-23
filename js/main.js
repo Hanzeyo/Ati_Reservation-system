@@ -20,16 +20,21 @@ function initHeroSlider() {
   const slides = document.querySelectorAll('.showcase-slide');
   const dots = document.querySelectorAll('.showcase-dot');
   const pillBadge = document.getElementById('heroPillBadge');
+  const statusBadge = document.getElementById('heroStatusBadge') || document.querySelector('.showcase-status-badge');
+  const statusText = document.getElementById('showcaseStatusText') || (statusBadge ? statusBadge.querySelector('span:last-child') : null);
 
   if (!slides.length) return;
 
-  const hallNames = [
-    'Carandang Hall',
-    'Orosa Hall',
-    'RDEC Training Hall 1',
-    'RDEC Training Hall 2',
-    'Function Hall',
-    'Serrano Hall'
+  const showcaseItems = [
+    { name: 'Carandang Hall', type: 'Featured Facility' },
+    { name: 'Orosa Hall', type: 'Featured Facility' },
+    { name: 'RDEC Training Hall 1', type: 'Featured Facility' },
+    { name: 'RDEC Training Hall 2', type: 'Featured Facility' },
+    { name: 'Function Hall', type: 'Featured Facility' },
+    { name: 'Serrano Hall', type: 'Featured Facility' },
+    { name: 'VIP Suite', type: 'Featured Dormitories' },
+    { name: 'Dormitory Suite 1', type: 'Featured Dormitories' },
+    { name: 'Dormitory Suite 2', type: 'Featured Dormitories' }
   ];
 
   let currentIndex = 0;
@@ -46,8 +51,18 @@ function initHeroSlider() {
       });
     }
 
-    if (pillBadge && hallNames[index]) {
-      pillBadge.textContent = hallNames[index];
+    const currentItem = showcaseItems[index];
+    if (currentItem) {
+      if (pillBadge) {
+        pillBadge.textContent = currentItem.name;
+      }
+      if (statusText) {
+        statusText.textContent = currentItem.type;
+      }
+      if (statusBadge) {
+        const isDorm = currentItem.type.includes('Dorm');
+        statusBadge.classList.toggle('is-dorm', isDorm);
+      }
     }
 
     currentIndex = index;
@@ -352,6 +367,27 @@ function initModals() {
       desc: 'Multi-purpose auditorium setup providing flexible configurations for educational seminars, general assemblies, and institutional events.',
       capacity: 'Up to 80 Persons',
       features: ['Full Stage & Lighting Setup', 'Surround Sound PA System', 'Ergonomic Auditorium Seating', 'High-Definition Laser Projection']
+    },
+    'dorm-vip-suite': {
+      title: 'VIP Suite',
+      image: 'assets/images/dorm_vip_suite.jpg',
+      desc: 'Executive VIP Suite located on the 4th floor equipped with premium wood panel finishes, Queen bed, personal refrigerator, smart HDTV, study workstation, and private ensuite restroom.',
+      capacity: 'Executive Private Suite • ₱1,500 / night',
+      features: ['Full Air-Conditioning & Smart HDTV', 'Private Ensuite Restroom & Hot Shower', 'Mini Refrigerator & Beverage Station', 'Executive Study Workstation & Wi-Fi']
+    },
+    'dorm-suite-1': {
+      title: 'Dormitory Suite 1',
+      image: 'assets/images/dorm_suite_1.png',
+      desc: 'Comfortable trainee dormitory suite located on the 2nd floor, designed with individual secured storage lockers, study workstations, and comprehensive floor amenities.',
+      capacity: 'Air-Conditioned Trainee Suite • ₱500 / night',
+      features: ['Full Air-Conditioning System', 'Individual Secured Steel Lockers', 'Personal Study Desks with Power Outlets', 'Shared Restroom & Common Lounge Access']
+    },
+    'dorm-suite-2': {
+      title: 'Dormitory Suite 2',
+      image: 'assets/images/dorm_suite_2.png',
+      desc: 'Modern trainee dormitory suite located on the 3rd floor offering quiet, air-conditioned accommodations with dedicated study desks and individual secured closets.',
+      capacity: 'Air-Conditioned Trainee Suite • ₱500 / night',
+      features: ['Full Air-Conditioning System', 'Individual Secured Steel Lockers', 'Study Workstations & Reading Lamps', 'High-Speed Wi-Fi & Lounge Access']
     }
   };
 
@@ -383,6 +419,11 @@ function initModals() {
           <span>${f}</span>
         </div>
       `).join('');
+    }
+
+    const bookBtn = facilityModal ? facilityModal.querySelector('.btn-reserve-slot') : null;
+    if (bookBtn) {
+      bookBtn.textContent = facilityKey.startsWith('dorm') ? 'Book this Dormitory' : 'Book this Facility';
     }
 
     openModal(facilityModal);
