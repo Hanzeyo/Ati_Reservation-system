@@ -868,10 +868,34 @@ body.booking-body {
   color: #0c331d;
 }
 
-.category-pill-tab.active {
+.category-pill-tab.active.tab-halls {
   background: #174d2f !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 6px rgba(23, 77, 47, 0.25) !important;
+  box-shadow: 0 2px 8px rgba(23, 77, 47, 0.28) !important;
+}
+
+.category-pill-tab.active.tab-dorms {
+  background: #b45309 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(180, 83, 9, 0.28) !important;
+}
+
+.category-pill-tab.active.tab-guesthouses {
+  background: #0f766e !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.28) !important;
+}
+
+.category-pill-tab.tab-halls svg {
+  color: #174d2f;
+}
+
+.category-pill-tab.tab-dorms svg {
+  color: #b45309;
+}
+
+.category-pill-tab.tab-guesthouses svg {
+  color: #0f766e;
 }
 
 .category-pill-tab.active svg {
@@ -880,13 +904,6 @@ body.booking-body {
 }
 
 .category-pill-tab.active span {
-  color: #ffffff !important;
-}
-
-.category-pill-tab.active.tab-halls,
-.category-pill-tab.active.tab-dorms,
-.category-pill-tab.active.tab-guesthouses {
-  background: #174d2f !important;
   color: #ffffff !important;
 }
 
@@ -1473,11 +1490,52 @@ body.booking-body {
   color: var(--primary-green);
 }
 
+.facility-choice-card.selected {
+  border-color: #174d2f !important;
+  box-shadow: 0 0 0 2px #174d2f, 0 10px 25px rgba(23, 77, 47, 0.18) !important;
+}
+
 .facility-choice-card.selected .btn-select-facility {
-  background: #175432;
-  color: #ffffff;
-  border-color: #175432;
-  box-shadow: 0 4px 12px rgba(23, 84, 50, 0.25);
+  background: #174d2f !important;
+  color: #ffffff !important;
+  border-color: #174d2f !important;
+  box-shadow: 0 4px 12px rgba(23, 77, 47, 0.25) !important;
+}
+
+/* Dormitories Selected State */
+.facility-choice-card.dorm-suite-card.selected,
+.facility-choice-card[data-facility-type="dormitories"].selected {
+  border-color: #b45309 !important;
+  box-shadow: 0 0 0 2px #b45309, 0 10px 25px rgba(180, 83, 9, 0.2) !important;
+}
+
+.facility-choice-card.dorm-suite-card.selected .btn-select-facility,
+.facility-choice-card[data-facility-type="dormitories"].selected .btn-select-facility {
+  background: #b45309 !important;
+  color: #ffffff !important;
+  border-color: #b45309 !important;
+  box-shadow: 0 4px 12px rgba(180, 83, 9, 0.28) !important;
+}
+
+.facility-choice-card.dorm-suite-card.selected .dorm-card-selected-room-badge {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #fcd34d !important;
+}
+
+/* Guesthouses Selected State */
+.facility-choice-card.guesthouse-card.selected,
+.facility-choice-card[data-facility-type="guesthouses"].selected {
+  border-color: #0f766e !important;
+  box-shadow: 0 0 0 2px #0f766e, 0 10px 25px rgba(15, 118, 110, 0.2) !important;
+}
+
+.facility-choice-card.guesthouse-card.selected .btn-select-facility,
+.facility-choice-card[data-facility-type="guesthouses"].selected .btn-select-facility {
+  background: #0f766e !important;
+  color: #ffffff !important;
+  border-color: #0f766e !important;
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.28) !important;
 }
 
 /* ==========================================================================
@@ -3679,4 +3737,4 @@ body.booking-body {
   cursor: not-allowed !important;
   box-shadow: none !important;
   pointer-events: none !important;
-}
+}

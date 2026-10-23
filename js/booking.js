@@ -403,7 +403,6 @@ function selectFacilityCard(card, openModal = true) {
     if (typeof window.refreshLiveAvailabilityForCurrentFacility === 'function') {
       window.refreshLiveAvailabilityForCurrentFacility();
     }
-    scrollScreenAllTheWayDown();
   }
 }
 
@@ -1179,9 +1178,12 @@ function initFacilityFilters() {
       }
     }
 
-    // If current selected card is now hidden, select the first visible card only if a facility was already selected
-    if (!currentSelectedVisible && firstVisibleCard && bookingState.selectedFacility && bookingState.selectedFacility.id && document.querySelector('.facility-choice-card.selected')) {
-      selectFacilityCard(firstVisibleCard, false);
+    // If current selected card belongs to a different category, clear selection so user can browse
+    if (!currentSelectedVisible) {
+      document.querySelectorAll('.facility-choice-card').forEach(c => c.classList.remove('selected'));
+      bookingState.selectedFacility = null;
+      if (step1Summary) step1Summary.style.display = 'none';
+      if (proceedBtn) proceedBtn.style.display = 'none';
     }
 
     // Smooth scroll down to facilities list if requested
@@ -2053,10 +2055,53 @@ function updateReviewSummary() {
   const prevUnitLabel = document.getElementById('summaryPreviewUnitLabel');
   const prevCap = document.getElementById('summaryPreviewCap');
 
-  if (prevBadge) prevBadge.textContent = isGuesthouse ? 'GUESTHOUSE VILLA' : (isDorm ? 'DORMITORY ACCOMMODATION' : 'SELECTED VENUE');
+  if (prevBadge) {
+    if (isGuesthouse) {
+      prevBadge.textContent = 'GUESTHOUSE VILLA';
+      prevBadge.style.background = '#f0fdfa';
+      prevBadge.style.color = '#0f766e';
+      prevBadge.style.borderColor = '#99f6e4';
+    } else if (isDorm) {
+      prevBadge.textContent = 'DORMITORY ACCOMMODATION';
+      prevBadge.style.background = '#fef3c7';
+      prevBadge.style.color = '#92400e';
+      prevBadge.style.borderColor = '#fcd34d';
+    } else {
+      prevBadge.textContent = 'SELECTED VENUE';
+      prevBadge.style.background = '#edf7f0';
+      prevBadge.style.color = '#175432';
+      prevBadge.style.borderColor = '#c6e2cf';
+    }
+  }
   if (prevTitle) prevTitle.textContent = facilityName;
-  if (prevRate) prevRate.textContent = rateText;
+  if (prevRate) {
+    prevRate.textContent = rateText;
+    if (isGuesthouse) {
+      prevRate.style.background = '#0f766e';
+      prevRate.style.color = '#ffffff';
+    } else if (isDorm) {
+      prevRate.style.background = '#b45309';
+      prevRate.style.color = '#ffffff';
+    } else {
+      prevRate.style.background = '#175432';
+      prevRate.style.color = '#ffffff';
+    }
+  }
   if (prevCap) prevCap.textContent = capText;
+
+  const proceedBtnEl = document.getElementById('btnProceedStep');
+  if (proceedBtnEl) {
+    if (isDorm) {
+      proceedBtnEl.style.background = '#b45309';
+      proceedBtnEl.style.boxShadow = '0 4px 16px rgba(180, 83, 9, 0.28)';
+    } else if (isGuesthouse) {
+      proceedBtnEl.style.background = '#0f766e';
+      proceedBtnEl.style.boxShadow = '0 4px 16px rgba(15, 118, 110, 0.28)';
+    } else {
+      proceedBtnEl.style.background = '#175432';
+      proceedBtnEl.style.boxShadow = '0 4px 16px rgba(23, 84, 50, 0.25)';
+    }
+  }
 
   if (prevRoomWrap && prevRoom) {
     if ((isDorm || isGuesthouse) && roomNum) {
