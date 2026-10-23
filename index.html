@@ -12,7 +12,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=60">
+  <link rel="stylesheet" href="css/style.css?v=63">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=8">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
@@ -45,7 +45,6 @@
         <li><a href="#home" class="nav-link active">Home</a></li>
         <li><a href="#facilities" class="nav-link">Facilities</a></li>
         <li><a href="#dormitories" class="nav-link">Dormitories</a></li>
-        <li><a href="#suite-room" class="nav-link">Suite Rooms</a></li>
         <li><a href="#guesthouses" class="nav-link">Guesthouses</a></li>
         <li><a href="#availability" class="nav-link">Availability</a></li>
         <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
@@ -135,19 +134,6 @@
               </svg>
             </div>
             <span class="drawer-link-text">Dormitories</span>
-            <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </a>
-
-          <a href="#suite-room" class="drawer-nav-link js-drawer-link">
-            <div class="drawer-link-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                stroke-linejoin="round">
-                <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
-              </svg>
-            </div>
-            <span class="drawer-link-text">Suite Room</span>
             <svg class="drawer-arrow" viewBox="0 0 24 24" fill="none">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
@@ -565,10 +551,10 @@
         <div class="section-header">
           <h2 class="section-title">Our Dormitories</h2>
           <div class="section-divider"></div>
-          <p class="section-subtitle">Comfortable, fully air-conditioned accommodation for trainees and visiting guests.
+          <p class="section-subtitle">Comfortable, air-conditioned accommodations ranging from executive private suites
+            to dedicated trainee dormitory wings.
           </p>
         </div>
-
         <!-- Vertical Animated Dormitories Showcase -->
         <div class="facilities-vertical-showcase dormitories-vertical-showcase" id="dormitoriesShowcaseWrapper">
 
@@ -576,20 +562,20 @@
           <div class="facilities-vert-viewport" id="dormitoriesViewport" aria-label="Vertical dormitories showcase">
             <div class="facilities-vert-track" id="dormitoriesTrack">
 
-              <!-- Row 1: 3 cards (VIP Suite, Dormitory Suite 1, Dormitory Suite 2) -->
+              <!-- Row 1 (Upfront): 3 Executive Suite Rooms with Distinct Warm Golden Aura & Styling -->
               <div class="facility-row active" data-row="0">
-                <!-- Dorm Card 1: VIP Suite -->
-                <article class="facility-card-item" data-facility="dorm-vip-suite">
+                <!-- Suite 1: VIP Suite -->
+                <article class="facility-card-item suite-room-card" data-facility="dorm-vip-suite">
                   <div class="facility-card-media">
-                    <img src="assets/images/dorm_vip_suite.jpg" alt="VIP Suite" loading="eager">
-                    <span class="facility-badge">Executive Suite</span>
+                    <img src="assets/images/dorm_vip_suite.jpg" alt="Executive VIP Suite" loading="eager">
+                    <span class="facility-badge">Executive VIP Suite</span>
                   </div>
                   <div class="facility-card-body">
                     <h3 class="facility-card-title">VIP Suite</h3>
                     <p class="facility-card-desc">
                       Executive VIP Suite located on the 4th floor featuring elegant wood panel accents, smart HDTV,
                       personal
-                      refrigerator, and private executive amenities.
+                      refrigerator, ensuite hot shower, and private executive amenities.
                     </p>
                     <div class="facility-card-footer">
                       <span class="facility-footer-cap">
@@ -607,7 +593,68 @@
                   </div>
                 </article>
 
-                <!-- Dorm Card 2: Dormitory Suite 1 -->
+                <!-- Suite 2: Executive Suite 101 -->
+                <article class="facility-card-item suite-room-card" data-facility="dorm-suite-101">
+                  <div class="facility-card-media">
+                    <img src="assets/images/dorm_vip_suite.jpg" alt="Executive Suite 101" loading="eager">
+                    <span class="facility-badge">Deluxe Suite</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Executive Suite 101</h3>
+                    <p class="facility-card-desc">
+                      Deluxe executive accommodation with a premium Queen-size bed, private study desk, climate control,
+                      ensuite hot shower, and
+                      complimentary hospitality amenities.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                        </svg>
+                        Executive Suite
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility"
+                        data-facility="dorm-suite-101">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+
+                <!-- Suite 3: Premier Suite 102 -->
+                <article class="facility-card-item suite-room-card" data-facility="dorm-suite-102">
+                  <div class="facility-card-media">
+                    <img src="assets/images/dorm_vip_suite.jpg" alt="Premier Suite 102" loading="eager">
+                    <span class="facility-badge">Twin Executive</span>
+                  </div>
+                  <div class="facility-card-body">
+                    <h3 class="facility-card-title">Premier Suite 102</h3>
+                    <p class="facility-card-desc">
+                      Quiet executive twin suite tailored for visiting specialists, equipped with twin beds,
+                      workstations, smart TV, climate control,
+                      and private ensuite bath.
+                    </p>
+                    <div class="facility-card-footer">
+                      <span class="facility-footer-cap">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                          stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
+                        </svg>
+                        Twin Suite
+                      </span>
+                      <button type="button" class="facility-link-details js-view-facility"
+                        data-facility="dorm-suite-102">
+                        <span>Details &rarr;</span>
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+
+              <!-- Row 2: 3 Trainee Dormitory Suites -->
+              <div class="facility-row" data-row="1">
+                <!-- Dorm Card 1: Dormitory Suite 1 -->
                 <article class="facility-card-item" data-facility="dorm-suite-1">
                   <div class="facility-card-media">
                     <img src="assets/images/dorm_suite_1.png" alt="Dormitory Suite 1" loading="eager">
@@ -634,7 +681,7 @@
                   </div>
                 </article>
 
-                <!-- Dorm Card 3: Dormitory Suite 2 -->
+                <!-- Dorm Card 2: Dormitory Suite 2 -->
                 <article class="facility-card-item" data-facility="dorm-suite-2">
                   <div class="facility-card-media">
                     <img src="assets/images/dorm_suite_2.png" alt="Dormitory Suite 2" loading="eager">
@@ -661,11 +708,8 @@
                     </div>
                   </div>
                 </article>
-              </div>
 
-              <!-- Row 2: 3 cards (Dormitory Suite 3, Male Trainee Dormitory, Female Trainee Dormitory) -->
-              <div class="facility-row" data-row="1">
-                <!-- Dorm Card 4: Dormitory Suite 3 -->
+                <!-- Dorm Card 3: Dormitory Suite 3 -->
                 <article class="facility-card-item" data-facility="dorm-suite-3">
                   <div class="facility-card-media">
                     <img src="assets/images/dormitory.jpg" alt="Dormitory Suite 3" loading="eager">
@@ -692,8 +736,11 @@
                     </div>
                   </div>
                 </article>
+              </div>
 
-                <!-- Dorm Card 5: Male Trainee Dormitory -->
+              <!-- Row 3: 2 Trainee Wings -->
+              <div class="facility-row dorm-row-two" data-row="2">
+                <!-- Dorm Card 4: Male Trainee Dormitory -->
                 <article class="facility-card-item" data-facility="dorm-male">
                   <div class="facility-card-media">
                     <img src="assets/images/dorm_suite_1.png" alt="Male Trainee Dormitory" loading="eager">
@@ -721,7 +768,7 @@
                   </div>
                 </article>
 
-                <!-- Dorm Card 6: Female Trainee Dormitory -->
+                <!-- Dorm Card 5: Female Trainee Dormitory -->
                 <article class="facility-card-item" data-facility="dorm-female">
                   <div class="facility-card-media">
                     <img src="assets/images/dorm_suite_2.png" alt="Female Trainee Dormitory" loading="eager">
@@ -754,102 +801,6 @@
             <div class="facilities-bottom-blur" aria-hidden="true"></div>
           </div>
 
-        </div>
-      </div>
-    </section>
-
-    <!-- Our Suite Rooms Section -->
-    <section class="section suite-room-section" id="suite-room">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">Our Suite Rooms</h2>
-          <div class="section-divider"></div>
-          <p class="section-subtitle">Executive and VIP private suites featuring dedicated amenities, ensuite baths, and
-            premium comfort.</p>
-        </div>
-
-        <div class="facility-cards-grid">
-          <!-- Suite Card 1: VIP Suite -->
-          <article class="facility-card-item" data-facility="dorm-vip-suite">
-            <div class="facility-card-media">
-              <img src="assets/images/dorm_vip_suite.jpg" alt="Executive VIP Suite" loading="eager">
-              <span class="facility-badge">Executive VIP Suite</span>
-            </div>
-            <div class="facility-card-body">
-              <h3 class="facility-card-title">VIP Suite</h3>
-              <p class="facility-card-desc">
-                Executive VIP Suite located on the 4th floor featuring elegant wood panel accents, smart HDTV, personal
-                refrigerator, ensuite hot shower, and private executive amenities.
-              </p>
-              <div class="facility-card-footer">
-                <span class="facility-footer-cap">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
-                  </svg>
-                  Private Suite
-                </span>
-                <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-vip-suite">
-                  <span>Details &rarr;</span>
-                </button>
-              </div>
-            </div>
-          </article>
-
-          <!-- Suite Card 2: Executive Suite 101 -->
-          <article class="facility-card-item" data-facility="dorm-vip-suite">
-            <div class="facility-card-media">
-              <img src="assets/images/dorm_vip_suite.jpg" alt="Executive Suite 101" loading="eager">
-              <span class="facility-badge">Deluxe Suite</span>
-            </div>
-            <div class="facility-card-body">
-              <h3 class="facility-card-title">Executive Suite 101</h3>
-              <p class="facility-card-desc">
-                Deluxe executive accommodation with a premium Queen-size bed, private study desk, climate control, and
-                complimentary hospitality amenities.
-              </p>
-              <div class="facility-card-footer">
-                <span class="facility-footer-cap">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
-                  </svg>
-                  Executive Suite
-                </span>
-                <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-vip-suite">
-                  <span>Details &rarr;</span>
-                </button>
-              </div>
-            </div>
-          </article>
-
-          <!-- Suite Card 3: Premier Suite 102 -->
-          <article class="facility-card-item" data-facility="dorm-vip-suite">
-            <div class="facility-card-media">
-              <img src="assets/images/dorm_vip_suite.jpg" alt="Premier Suite 102" loading="eager">
-              <span class="facility-badge">Twin Executive</span>
-            </div>
-            <div class="facility-card-body">
-              <h3 class="facility-card-title">Premier Suite 102</h3>
-              <p class="facility-card-desc">
-                Quiet executive twin suite tailored for visiting specialists, equipped with twin beds, workstations,
-                smart TV,
-                and private ensuite bath.
-              </p>
-              <div class="facility-card-footer">
-                <span class="facility-footer-cap">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 7v11m0-4h18m0-7v11M3 10h18"></path>
-                  </svg>
-                  Twin Suite
-                </span>
-                <button type="button" class="facility-link-details js-view-facility" data-facility="dorm-vip-suite">
-                  <span>Details &rarr;</span>
-                </button>
-              </div>
-            </div>
-          </article>
         </div>
       </div>
     </section>
@@ -1483,7 +1434,7 @@
     </div>
   </div>
 
-  <script src="js/main.js?v=37"></script>
+  <script src="js/main.js?v=38"></script>
 </body>
 
 </html>

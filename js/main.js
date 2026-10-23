@@ -376,7 +376,21 @@ function initModals() {
       capacity: 'Executive Private Suite • ₱1,500 / night',
       features: ['Full Air-Conditioning & Smart HDTV', 'Private Ensuite Restroom & Hot Shower', 'Mini Refrigerator & Beverage Station', 'Executive Study Workstation & Wi-Fi']
     },
-    'dorm-suite-1': {
+        'dorm-suite-101': {
+      title: 'Executive Suite 101',
+      image: 'assets/images/dorm_vip_suite.jpg',
+      desc: 'Deluxe executive accommodation with a premium Queen-size bed, private study desk, climate control, ensuite hot shower, and complimentary hospitality amenities.',
+      capacity: 'Executive Private Suite • ₱1,500 / night',
+      features: ['Queen-Size Deluxe Bed', 'Private Ensuite Restroom & Hot Shower', 'Executive Study Desk & Wi-Fi', 'Full Air-Conditioning & Smart TV']
+    },
+    'dorm-suite-102': {
+      title: 'Premier Suite 102',
+      image: 'assets/images/dorm_vip_suite.jpg',
+      desc: 'Quiet executive twin suite tailored for visiting specialists, equipped with twin beds, workstations, smart TV, climate control, and private ensuite bath.',
+      capacity: 'Twin Executive Suite • ₱1,500 / night',
+      features: ['Twin Executive Beds', 'Private Ensuite Restroom & Hot Shower', 'Dedicated Study Workstations', 'Climate Control & High-Speed Wi-Fi']
+    },
+'dorm-suite-1': {
       title: 'Dormitory Suite 1',
       image: 'assets/images/dorm_suite_1.png',
       desc: 'Comfortable trainee dormitory suite located on the 2nd floor, designed with individual secured storage lockers, study workstations, and comprehensive floor amenities.',
