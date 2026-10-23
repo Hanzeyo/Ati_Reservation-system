@@ -777,13 +777,13 @@ button {
   contain: layout paint;
 }
 
-/* Progressive gradient frosted preview overlay - suspenseful teaser blur */
+/* Progressive gradient frosted preview overlay - completely covers the upcoming preview */
 .facilities-bottom-blur {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 280px;
+  height: 275px;
   pointer-events: none;
   z-index: 5;
   border-bottom-left-radius: 20px;
@@ -791,60 +791,31 @@ button {
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   contain: paint;
-  /* Deep, clear blur */
-  -webkit-backdrop-filter: blur(30px) saturate(160%);
-  backdrop-filter: blur(30px) saturate(160%);
-  /* Quickly engages right at top edge of preview cards so badges & photos are mysteriously blurred */
+  /* Deep, clear frosted glass blur */
+  -webkit-backdrop-filter: blur(32px) saturate(160%);
+  backdrop-filter: blur(32px) saturate(160%);
+  /* Quickly ramps up so it completely covers the upcoming preview cards */
   -webkit-mask-image: linear-gradient(to bottom,
     rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.45) 4%,
-    rgba(0, 0, 0, 0.70) 14%,
-    rgba(0, 0, 0, 0.88) 35%,
+    rgba(0, 0, 0, 0.40) 6%,
+    rgba(0, 0, 0, 0.82) 15%,
+    rgba(0, 0, 0, 0.96) 28%,
     rgba(0, 0, 0, 1) 100%
   );
   mask-image: linear-gradient(to bottom,
     rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.45) 4%,
-    rgba(0, 0, 0, 0.70) 14%,
-    rgba(0, 0, 0, 0.88) 35%,
+    rgba(0, 0, 0, 0.40) 6%,
+    rgba(0, 0, 0, 0.82) 15%,
+    rgba(0, 0, 0, 0.96) 28%,
     rgba(0, 0, 0, 1) 100%
   );
-  /* 40% frosted tint blending into page surface */
+  /* Progressive frosted white gradient covering the upcoming preview */
   background: linear-gradient(to bottom,
     rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.40) 4%,
-    rgba(255, 255, 255, 0.52) 14%,
-    rgba(255, 255, 255, 0.72) 35%,
-    rgba(255, 255, 255, 0.92) 75%,
-    #ffffff 100%
-  );
-}
-
-/* Dedicated Guesthouses Section Suspense Blur - completely veils the badges & upcoming villa preview */
-.guesthouses-vertical-showcase .facilities-bottom-blur {
-  height: 290px;
-  -webkit-backdrop-filter: blur(32px) saturate(170%);
-  backdrop-filter: blur(32px) saturate(170%);
-  -webkit-mask-image: linear-gradient(to bottom,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.50) 3%,
-    rgba(0, 0, 0, 0.78) 12%,
-    rgba(0, 0, 0, 0.92) 30%,
-    rgba(0, 0, 0, 1) 100%
-  );
-  mask-image: linear-gradient(to bottom,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.50) 3%,
-    rgba(0, 0, 0, 0.78) 12%,
-    rgba(0, 0, 0, 0.92) 30%,
-    rgba(0, 0, 0, 1) 100%
-  );
-  background: linear-gradient(to bottom,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.42) 3%,
-    rgba(255, 255, 255, 0.56) 12%,
-    rgba(255, 255, 255, 0.76) 30%,
-    rgba(255, 255, 255, 0.94) 75%,
+    rgba(255, 255, 255, 0.35) 6%,
+    rgba(255, 255, 255, 0.65) 15%,
+    rgba(255, 255, 255, 0.86) 28%,
+    rgba(255, 255, 255, 0.96) 65%,
     #ffffff 100%
   );
 }
@@ -1028,10 +999,6 @@ button {
   }
 
   .facilities-bottom-blur {
-    height: 255px;
-  }
-
-  .guesthouses-vertical-showcase .facilities-bottom-blur {
     height: 270px;
   }
 }
@@ -1050,13 +1017,9 @@ button {
   }
 
   .facilities-bottom-blur {
-    height: 235px;
+    height: 250px;
     border-bottom-left-radius: 16px;
     border-bottom-right-radius: 16px;
-  }
-
-  .guesthouses-vertical-showcase .facilities-bottom-blur {
-    height: 250px;
   }
 
   .facilities-vert-track {
