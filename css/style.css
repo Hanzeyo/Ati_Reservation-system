@@ -1608,8 +1608,13 @@ button {
   grid-template-columns: 1.25fr 1fr 1fr;
   align-items: start;
   gap: 3rem;
+  row-gap: 1.5rem;
   padding-bottom: 2.25rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.footer-col-about {
+  grid-row: 1 / 3;
 }
 
 .footer-col {
@@ -1898,17 +1903,27 @@ button {
 
 
 /* ----------------------------------------------------
-   Card 1: Office Operational Schedule Card
+   Dual-Card Row (Office Hours on Left, Republic of the Philippines on Right)
    ---------------------------------------------------- */
+.footer-cards-dual-row {
+  grid-column: 2 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: stretch;
+}
+
+/* Card 1: Office Hours Card (Left) */
 .footer-service-hours {
-  margin-top: 1.15rem;
-  padding: 0.85rem 1rem;
+  margin: 0;
+  padding: 0.95rem 1.15rem;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(52, 211, 153, 0.22);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  justify-content: space-between;
+  gap: 0.75rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(8px);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -1930,7 +1945,7 @@ button {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -2005,82 +2020,39 @@ button {
   }
 }
 
-/* Structured Schedule Rows */
-.office-schedule-list {
+/* Office Hours Schedule (Earlier Clean Layout) */
+.office-hours-schedule {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.3rem;
+  line-height: 1.4;
 }
 
-.schedule-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.office-schedule-main {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #ffffff;
+  display: block;
+}
+
+.friday-wfh-badge-text {
+  display: block;
+  color: #7dd3fc;
   font-size: 0.74rem;
-  color: rgba(255, 255, 255, 0.88);
-  padding: 0.3rem 0;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.09);
+  font-weight: 600;
 }
 
-.schedule-row:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.sched-days {
-  font-weight: 700;
-  color: #e2e8f0;
-  width: 72px;
-  flex-shrink: 0;
-}
-
-.sched-time {
-  color: rgba(255, 255, 255, 0.72);
-  flex: 1;
-  font-size: 0.72rem;
-  letter-spacing: 0.01em;
-}
-
-.sched-pill {
-  font-size: 0.64rem;
-  font-weight: 800;
-  padding: 0.12rem 0.45rem;
-  border-radius: 999px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  flex-shrink: 0;
-}
-
-.sched-pill.onsite {
-  color: #34d399;
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.35);
-}
-
-.sched-pill.wfh {
-  color: #38bdf8;
-  background: rgba(14, 165, 233, 0.18);
-  border: 1px solid rgba(56, 189, 248, 0.42);
-}
-
-.sched-pill.weekend {
-  color: rgba(255, 255, 255, 0.55);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-}
-
-/* ----------------------------------------------------
-   Card 2: Official Government Advisory & Holidays Card
-   ---------------------------------------------------- */
+/* Card 2: Official Government Advisory & Holidays Card (Right) */
 .footer-gov-advisory-card {
-  margin-top: 0.75rem;
-  padding: 0.85rem 1rem;
+  margin: 0;
+  padding: 0.95rem 1.15rem;
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.55) 0%, rgba(6, 44, 28, 0.45) 100%);
   border: 1px solid rgba(251, 191, 36, 0.28);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  justify-content: space-between;
+  gap: 0.65rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(8px);
   position: relative;
@@ -2301,6 +2273,12 @@ button {
 
   .footer-col-about {
     grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .footer-cards-dual-row {
+    grid-column: 1 / -1;
+    gap: 1.5rem;
   }
 }
 
@@ -2308,6 +2286,11 @@ button {
   .footer-main-grid {
     grid-template-columns: 1fr;
     gap: 1.85rem;
+  }
+
+  .footer-cards-dual-row {
+    grid-template-columns: 1fr;
+    gap: 1.15rem;
   }
 
   .footer-bottom-inner {
