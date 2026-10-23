@@ -57,7 +57,7 @@ function initHeroSlider() {
     intervalTimer = setInterval(() => {
       let nextIndex = (currentIndex + 1) % slides.length;
       showSlide(nextIndex);
-    }, 2000);
+    }, 4500);
   }
 
   function stopAutoCycle() {
@@ -735,14 +735,14 @@ function initVerticalFacilitiesScroller() {
     goTo(currentIndex - 1, true);
   }
 
-  // Auto-play scrolling (forward one-way loop every 2.2 seconds)
+  // Auto-play scrolling (forward one-way loop every 4.5 seconds)
   function startAuto() {
     stopAuto();
     autoTimer = setInterval(() => {
       if (!isHovered && !isAnimating) {
         next();
       }
-    }, 2200);
+    }, 4500);
   }
 
   function stopAuto() {
