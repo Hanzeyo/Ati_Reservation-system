@@ -754,17 +754,134 @@ function initNavigationScrollSpy() {
 }
 
 /* ==========================================================================
-   6. Real-time Office Hours Status (Auto-updates OPEN / CLOSED)
+   6. Real-time Office Hours Status (Accurate PH Government Calendar & WFH)
    ========================================================================== */
 function initRealtimeOfficeHours() {
   const statusEl = document.getElementById('officeStatusIndicator');
+  const advisoryTagEl = document.getElementById('advisoryStatusTag');
+  const advisoryIconEl = document.getElementById('advisoryIcon');
+  const noteEl = document.getElementById('officeHoursNote');
+  const noteTitleEl = document.getElementById('officeNoteTitle');
+  const noteDescEl = document.getElementById('officeNoteDesc');
   if (!statusEl) return;
 
+  // Calculates Easter Sunday UTC for a given Gregorian year (Meeus/Jones/Butcher algorithm)
+  function getEasterSunday(year) {
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31); // 3=March, 4=April
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(Date.UTC(year, month - 1, day));
+  }
+
+  // Returns Last Monday of August for National Heroes Day
+  function getLastMondayOfAugust(year) {
+    const d = new Date(Date.UTC(year, 7, 31)); // Aug 31
+    const day = d.getUTCDay(); // 0=Sun, 1=Mon, ...
+    const diff = (day >= 1) ? (day - 1) : 6;
+    return 31 - diff;
+  }
+
+  // Check if date is an official Philippine Regular or Special Non-Working Holiday
+  function getPhilippineHoliday(year, month, day) {
+    const mmdd = String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+
+    // 1. Fixed Philippine Regular & Special Non-Working Holidays
+    const fixedHolidays = {
+      '01-01': { name: "New Year's Day", type: 'Regular Holiday' },
+      '01-02': { name: 'Special Non-Working Day', type: 'Special Non-Working Day' },
+      '02-25': { name: 'EDSA People Power Revolution Anniversary', type: 'Special Non-Working Day' },
+      '04-09': { name: 'Araw ng Kagitingan (Day of Valor)', type: 'Regular Holiday' },
+      '05-01': { name: 'Labor Day', type: 'Regular Holiday' },
+      '06-12': { name: 'Independence Day', type: 'Regular Holiday' },
+      '08-21': { name: 'Ninoy Aquino Day', type: 'Special Non-Working Day' },
+      '11-01': { name: "All Saints' Day", type: 'Special Non-Working Day' },
+      '11-02': { name: "All Souls' Day", type: 'Special Non-Working Day' },
+      '11-30': { name: 'Bonifacio Day', type: 'Regular Holiday' },
+      '12-08': { name: 'Feast of the Immaculate Conception', type: 'Special Non-Working Day' },
+      '12-24': { name: 'Christmas Eve', type: 'Special Non-Working Day' },
+      '12-25': { name: 'Christmas Day', type: 'Regular Holiday' },
+      '12-30': { name: 'Rizal Day', type: 'Regular Holiday' },
+      '12-31': { name: 'Last Day of the Year', type: 'Special Non-Working Day' }
+    };
+
+    if (fixedHolidays[mmdd]) {
+      return fixedHolidays[mmdd];
+    }
+
+    // 2. Movable Holy Week (Maundy Thursday, Good Friday, Black Saturday)
+    const easter = getEasterSunday(year);
+    const msInDay = 86400000;
+    const maundyThu = new Date(easter.getTime() - 3 * msInDay);
+    const goodFri = new Date(easter.getTime() - 2 * msInDay);
+    const blackSat = new Date(easter.getTime() - 1 * msInDay);
+
+    const checkMatch = (targetDate) => {
+      return targetDate.getUTCFullYear() === year &&
+             (targetDate.getUTCMonth() + 1) === month &&
+             targetDate.getUTCDate() === day;
+    };
+
+    if (checkMatch(maundyThu)) return { name: 'Maundy Thursday', type: 'Regular Holiday' };
+    if (checkMatch(goodFri)) return { name: 'Good Friday', type: 'Regular Holiday' };
+    if (checkMatch(blackSat)) return { name: 'Black Saturday', type: 'Special Non-Working Day' };
+
+    // 3. National Heroes Day (Last Monday of August)
+    if (month === 8 && day === getLastMondayOfAugust(year)) {
+      return { name: 'National Heroes Day', type: 'Regular Holiday' };
+    }
+
+    // 4. Proclaimed Movable Holidays & Special Working/Non-Working Declarations (2024-2027)
+    const movableProclamations = {
+      2024: {
+        '02-10': "Chinese New Year",
+        '04-10': "Eid'l Fitr",
+        '06-17': "Eid'l Adha"
+      },
+      2025: {
+        '01-29': "Chinese New Year",
+        '03-31': "Eid'l Fitr",
+        '06-06': "Eid'l Adha"
+      },
+      2026: {
+        '02-17': "Chinese New Year",
+        '03-20': "Eid'l Fitr",
+        '05-27': "Eid'l Adha",
+        '10-31': "Special Non-Working Day (All Saints' Eve)"
+      },
+      2027: {
+        '02-06': "Chinese New Year",
+        '03-10': "Eid'l Fitr",
+        '05-16': "Eid'l Adha"
+      }
+    };
+
+    if (movableProclamations[year] && movableProclamations[year][mmdd]) {
+      return { name: movableProclamations[year][mmdd], type: 'Official Declared Holiday' };
+    }
+
+    return null;
+  }
+
+  // Accurate Philippine Standard Time (PST, UTC+8)
   function getPhilippineTime() {
     try {
       const now = new Date();
       const dtf = new Intl.DateTimeFormat('en-US', {
         timeZone: 'Asia/Manila',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
         weekday: 'short',
         hour: 'numeric',
         minute: 'numeric',
@@ -774,6 +891,9 @@ function initRealtimeOfficeHours() {
       const partMap = {};
       parts.forEach(p => partMap[p.type] = p.value);
       return {
+        year: parseInt(partMap.year, 10),
+        month: parseInt(partMap.month, 10),
+        day: parseInt(partMap.day, 10),
         weekday: partMap.weekday,
         hour: parseInt(partMap.hour, 10),
         minute: parseInt(partMap.minute, 10)
@@ -784,6 +904,9 @@ function initRealtimeOfficeHours() {
       const pht = new Date(utc + (3600000 * 8)); // UTC+8
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       return {
+        year: pht.getFullYear(),
+        month: pht.getMonth() + 1,
+        day: pht.getDate(),
         weekday: days[pht.getDay()],
         hour: pht.getHours(),
         minute: pht.getMinutes()
@@ -791,22 +914,130 @@ function initRealtimeOfficeHours() {
     }
   }
 
+  const svgIcons = {
+    holiday: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>',
+    wfh: '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>',
+    open: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>',
+    closed: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>'
+  };
+
+  function setOfficeNote(theme, badgeText, title, desc) {
+    if (noteEl) noteEl.className = 'advisory-body theme-' + theme;
+    if (advisoryTagEl) {
+      advisoryTagEl.textContent = badgeText;
+      advisoryTagEl.className = 'advisory-badge-pill badge-' + theme;
+    }
+    if (advisoryIconEl && svgIcons[theme]) {
+      advisoryIconEl.innerHTML = svgIcons[theme];
+    }
+    if (noteTitleEl) noteTitleEl.textContent = title;
+    if (noteDescEl) noteDescEl.textContent = desc;
+  }
+
   function updateOfficeStatus() {
-    const { weekday, hour, minute } = getPhilippineTime();
-    const isWeekday = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].includes(weekday);
+    const { year, month, day, weekday, hour, minute } = getPhilippineTime();
     const totalMinutes = hour * 60 + minute;
+    const isWorkingHours = (totalMinutes >= 480 && totalMinutes < 1020); // 8:00 AM - 5:00 PM
+    const holiday = getPhilippineHoliday(year, month, day);
 
-    // Regular ATI office hours: Monday to Friday, 8:00 AM (480 mins) to 5:00 PM (1020 mins)
-    const isOpen = isWeekday && (totalMinutes >= 480 && totalMinutes < 1020);
+    // Case 1: Official Philippine Holiday / Government Declared Non-Working Day
+    if (holiday) {
+      statusEl.textContent = 'HOLIDAY';
+      statusEl.className = 'office-status-tag holiday';
+      statusEl.title = `Closed in observance of ${holiday.name} (${holiday.type})`;
+      setOfficeNote(
+        'holiday',
+        'Official Holiday',
+        `Declared Holiday: ${holiday.name}`,
+        `Offices are closed nationwide in observance of ${holiday.name} (${holiday.type}). Online booking requests remain open and will be prioritized when official operations resume on the next business day.`
+      );
+      return;
+    }
 
-    if (isOpen) {
+    // Case 2: Weekend (Saturday / Sunday)
+    if (weekday === 'Sat' || weekday === 'Sun') {
+      statusEl.textContent = 'CLOSED';
+      statusEl.className = 'office-status-tag closed';
+      statusEl.title = 'ATI Central Office is closed on weekends';
+      setOfficeNote(
+        'closed',
+        'Weekend Recess',
+        'Weekend Non-Working Days',
+        'ATI Central Office is closed on weekends. Regular on-site counter operations resume Monday at 8:00 AM (PST). Online reservation requests remain active 24/7.'
+      );
+      return;
+    }
+
+    // Case 3: Friday (Official Government Work-From-Home / Telecommuting Day)
+    if (weekday === 'Fri') {
+      if (isWorkingHours) {
+        statusEl.textContent = 'WORK FROM HOME';
+        statusEl.className = 'office-status-tag wfh';
+        statusEl.title = 'Friday Remote Duty: Personnel are telecommuting under official government policy';
+        setOfficeNote(
+          'wfh',
+          'WFH Active',
+          'Friday Remote Duty (Work-From-Home)',
+          'ATI personnel are telecommuting today under official government hybrid guidelines. Physical on-site service desks are closed, but reservation requests and digital inquiries are actively handled online.'
+        );
+      } else if (totalMinutes < 480) {
+        statusEl.textContent = 'CLOSED';
+        statusEl.className = 'office-status-tag closed';
+        statusEl.title = 'Friday Work-From-Home begins at 8:00 AM PST';
+        setOfficeNote(
+          'closed',
+          'Off-Hours',
+          'Closed (Before Remote Duty Hours)',
+          'Office is closed. Friday Work-From-Home (remote assistance & online processing) begins today at 8:00 AM (PST).'
+        );
+      } else {
+        statusEl.textContent = 'CLOSED';
+        statusEl.className = 'office-status-tag closed';
+        statusEl.title = 'Friday Work-From-Home ended. Resumes Monday at 8:00 AM PST';
+        setOfficeNote(
+          'closed',
+          'Off-Hours',
+          'Friday Remote Hours Ended',
+          'Friday Work-From-Home operations have closed for the weekend. Regular on-site operations resume Monday at 8:00 AM (PST).'
+        );
+      }
+      return;
+    }
+
+    // Case 4: Monday to Thursday (Regular On-Site Working Days)
+    if (isWorkingHours) {
       statusEl.textContent = 'OPEN';
       statusEl.className = 'office-status-tag open';
-      statusEl.title = 'ATI Office is currently OPEN (Regular hours: Mon-Fri 8:00 AM - 5:00 PM PST)';
+      statusEl.title = 'ATI Central Office is currently OPEN for on-site services';
+      setOfficeNote(
+        'open',
+        'Regular Operations',
+        'Currently Open (On-Site Services)',
+        'ATI Central Office counters and reservation processing are active today until 5:00 PM (PST). Walk-ins and inquiries welcome.'
+      );
+    } else if (totalMinutes < 480) {
+      statusEl.textContent = 'CLOSED';
+      statusEl.className = 'office-status-tag closed';
+      statusEl.title = 'Opens today at 8:00 AM PST';
+      setOfficeNote(
+        'closed',
+        'Off-Hours',
+        'Closed Before Working Hours',
+        'The office is currently closed. Official on-site desks and counter services open today at 8:00 AM (PST).'
+      );
     } else {
       statusEl.textContent = 'CLOSED';
       statusEl.className = 'office-status-tag closed';
-      statusEl.title = 'ATI Office is currently CLOSED (Regular hours: Mon-Fri 8:00 AM - 5:00 PM PST)';
+      const nextDayText = (weekday === 'Thu')
+        ? 'Remote duty operations resume tomorrow (Friday Work-From-Home) at 8:00 AM (PST).'
+        : 'Regular on-site services resume tomorrow at 8:00 AM (PST).';
+      statusEl.title = 'Closed for the evening. Opens tomorrow at 8:00 AM PST';
+      setOfficeNote(
+        'closed',
+        'Off-Hours',
+        'Closed for the Evening',
+        `Official counter hours ended at 5:00 PM. ${nextDayText} Online reservation requests remain open 24/7.`
+      );
     }
   }
 

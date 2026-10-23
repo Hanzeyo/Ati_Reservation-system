@@ -1351,8 +1351,8 @@
             </div>
           </div>
 
-          <!-- Office Hours with Real-Time Open/Closed Status -->
-          <div class="footer-service-hours" id="footerOfficeHoursBox">
+          <!-- Card 1: Office Hours & Operational Schedule -->
+          <div class="footer-service-hours footer-schedule-card" id="footerOfficeHoursBox">
             <div class="office-hours-header">
               <div class="hours-title-wrap">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
@@ -1360,12 +1360,63 @@
                   <circle cx="12" cy="12" r="10"></circle>
                   <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                <span>Office Hours</span>
+                <span>Operational Schedule</span>
               </div>
               <span class="office-status-tag" id="officeStatusIndicator">Checking...</span>
             </div>
-            <div class="office-hours-schedule">
-              <span>Monday – Friday, 8:00 AM – 5:00 PM (PST)</span>
+            <div class="office-schedule-list">
+              <div class="schedule-row">
+                <span class="sched-days">Mon – Thu</span>
+                <span class="sched-time">8:00 AM – 5:00 PM</span>
+                <span class="sched-pill onsite">On-site</span>
+              </div>
+              <div class="schedule-row">
+                <span class="sched-days">Friday</span>
+                <span class="sched-time">8:00 AM – 5:00 PM</span>
+                <span class="sched-pill wfh">Work-From-Home</span>
+              </div>
+              <div class="schedule-row">
+                <span class="sched-days">Sat – Sun</span>
+                <span class="sched-time">Closed</span>
+                <span class="sched-pill weekend">Weekend</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Government Advisory & Non-Working Days / Holiday Announcements -->
+          <div class="footer-gov-advisory-card" id="footerGovAdvisoryCard">
+            <div class="gov-advisory-header">
+              <div class="advisory-title-wrap">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <circle cx="12" cy="10" r="2"></circle>
+                </svg>
+                <span>Government Advisory</span>
+              </div>
+              <span class="advisory-badge-pill" id="advisoryStatusTag">Official Schedule</span>
+            </div>
+            
+            <div class="advisory-body" id="officeHoursNote">
+              <div class="advisory-icon-wrap">
+                <svg class="advisory-status-icon" id="advisoryIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <div class="advisory-content">
+                <strong class="advisory-heading" id="officeNoteTitle">Office Status</strong>
+                <p class="advisory-description" id="officeNoteDesc">Checking official government schedule...</p>
+              </div>
+            </div>
+
+            <div class="advisory-footer-meta">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <span>Republic of the Philippines • Official Government Working Hours</span>
             </div>
           </div>
         </div>
