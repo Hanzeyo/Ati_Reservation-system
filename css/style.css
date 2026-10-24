@@ -1754,6 +1754,14 @@ button {
   box-shadow: 0 6px 18px rgba(255, 0, 0, 0.45);
 }
 
+.social-icon-btn.waze:hover,
+.social-icon-btn.waze:focus-visible {
+  background: #33ccff;
+  border-color: #33ccff;
+  color: #000000;
+  box-shadow: 0 6px 18px rgba(51, 204, 255, 0.45);
+}
+
 /* Contact Item Blocks */
 .footer-contact-item {
   display: flex;
