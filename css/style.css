@@ -608,6 +608,12 @@ button {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 12px rgba(250, 204, 21, 0.2);
 }
 
+.showcase-status-badge.is-guesthouse {
+  border-color: rgba(45, 212, 191, 0.6);
+  background: rgba(15, 35, 30, 0.88);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), 0 0 12px rgba(45, 212, 191, 0.25);
+}
+
 .status-pulse-dot {
   width: 6px;
   height: 6px;
@@ -621,6 +627,11 @@ button {
 .showcase-status-badge.is-dorm .status-pulse-dot {
   background-color: #facc15;
   box-shadow: 0 0 8px #fef08a;
+}
+
+.showcase-status-badge.is-guesthouse .status-pulse-dot {
+  background-color: #2dd4bf;
+  box-shadow: 0 0 8px #5eead4;
 }
 
 .showcase-slider {

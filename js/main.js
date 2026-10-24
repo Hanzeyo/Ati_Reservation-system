@@ -35,7 +35,14 @@ function initHeroSlider() {
     { name: 'Serrano Hall', type: 'Featured Facility' },
     { name: 'VIP Suite', type: 'Featured Dormitories' },
     { name: 'Dormitory Suite 1', type: 'Featured Dormitories' },
-    { name: 'Dormitory Suite 2', type: 'Featured Dormitories' }
+    { name: 'Dormitory Suite 2', type: 'Featured Dormitories' },
+    { name: 'Guesthouse 1 (Presidential Villa)', type: 'Featured Guesthouses' },
+    { name: 'Guesthouse 2 (Director’s Lodge)', type: 'Featured Guesthouses' },
+    { name: 'Guesthouse 3 (Senior Cottage)', type: 'Featured Guesthouses' },
+    { name: 'Guesthouse 4 (Resource Residence)', type: 'Featured Guesthouses' },
+    { name: 'Guesthouse 5 (Delegates Home)', type: 'Featured Guesthouses' },
+    { name: 'Guesthouse 6 (Fellows Lodge)', type: 'Featured Guesthouses' },
+    { name: 'Guesthouse 7 (Lecturer Villa)', type: 'Featured Guesthouses' }
   ];
 
   let currentIndex = 0;
@@ -62,7 +69,9 @@ function initHeroSlider() {
       }
       if (statusBadge) {
         const isDorm = currentItem.type.includes('Dorm');
+        const isGuesthouse = currentItem.type.includes('Guesthouse');
         statusBadge.classList.toggle('is-dorm', isDorm);
+        statusBadge.classList.toggle('is-guesthouse', isGuesthouse);
       }
     }
 
