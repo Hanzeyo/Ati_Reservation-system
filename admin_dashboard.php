@@ -31,37 +31,78 @@ $resQuery = "SELECT r.*,
 $stmt = $db->query($resQuery);
 $allReservations = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
-if (!function_exists('calculateReservationUtilization')) {
+if (!function_exists('calculateReservationUtilizationDetails')) {
     /**
-     * Calculates dynamic estimated monetary utilization value for an ATI reservation
-     * based on official facility rates, booked duration, time slot factor, and headcount.
+     * Calculates dynamic estimated monetary utilization value and breakdown details
+     * for an ATI reservation based on official facility rates, booked duration, time slot factor, and headcount.
      */
-    function calculateReservationUtilization(array $res): float {
+    function calculateReservationUtilizationDetails(array $res): array {
         $rawRate = $res['facility_rate'] ?? '';
         $cleanRate = (float) preg_replace('/[^0-9.]/', '', (string)$rawRate);
-        
-        $isDorm = (($res['facility_type'] ?? '') === 'dormitories' || !empty($res['room_number']));
-        
+
+        $isGuesthouse = (($res['facility_type'] ?? '') === 'guesthouses' 
+                         || ($res['facility_type'] ?? '') === 'guesthouse' 
+                         || str_starts_with($res['reference_no'] ?? '', 'ATI-GH') 
+                         || stripos($res['facility_name'] ?? '', 'guesthouse') !== false);
+        $isDorm = !$isGuesthouse && (($res['facility_type'] ?? '') === 'dormitories' || ($res['facility_type'] ?? '') === 'dorms' || !empty($res['room_number']));
+
         // Institutional baseline standard fallback if rate is missing
         if ($cleanRate <= 0) {
-            $cleanRate = $isDorm ? 500.0 : 5000.0;
+            $cleanRate = $isGuesthouse ? 1800.0 : ($isDorm ? 500.0 : 5000.0);
         }
-        
+
         $startTs = !empty($res['start_date']) ? strtotime($res['start_date']) : time();
         $endTs = !empty($res['end_date']) ? strtotime($res['end_date']) : $startTs;
         $days = max(1, round(($endTs - $startTs) / 86400) + 1);
-        
-        if ($isDorm) {
+
+        if ($isGuesthouse) {
+            $nights = max(1, $days - 1);
+            $val = round($cleanRate * $nights, 2);
+            $category = 'guesthouse';
+            $categoryLabel = 'GuestHouse';
+            $rateDisplay = '₱' . number_format($cleanRate) . ' / night';
+            $durationStr = $nights . ($nights > 1 ? ' Nights' : ' Night');
+            $formulaStr = $nights . ' night' . ($nights > 1 ? 's' : '') . ' × ₱' . number_format($cleanRate);
+        } elseif ($isDorm) {
             $nights = max(1, $days - 1);
             $pax = max(1, (int)($res['pax_count'] ?? 1));
-            return $cleanRate <= 1000 ? ($cleanRate * $nights * $pax) : ($cleanRate * $nights);
+            $val = $cleanRate <= 1000 ? round($cleanRate * $nights * $pax, 2) : round($cleanRate * $nights, 2);
+            $category = 'dorm';
+            $categoryLabel = 'Dormitory Suite';
+            $rateDisplay = '₱' . number_format($cleanRate) . ' / night';
+            $durationStr = $nights . ($nights > 1 ? ' Nights' : ' Night') . ' (' . $pax . ' PAX)';
+            $formulaStr = $cleanRate <= 1000 
+                ? ($nights . ' night' . ($nights > 1 ? 's' : '') . ' × ' . $pax . ' beds × ₱' . number_format($cleanRate))
+                : ($nights . ' night' . ($nights > 1 ? 's' : '') . ' × ₱' . number_format($cleanRate));
         } else {
             $slot = strtolower($res['time_slot'] ?? '');
             $isHalfDay = (strpos($slot, 'half') !== false || strpos($slot, 'morning') !== false || strpos($slot, 'afternoon') !== false) 
                          && (strpos($slot, 'full') === false);
             $multiplier = $isHalfDay ? 0.5 : 1.0;
-            return round($cleanRate * $days * $multiplier, 2);
+            $val = round($cleanRate * $days * $multiplier, 2);
+            $category = 'hall';
+            $categoryLabel = 'Function Hall';
+            $rateDisplay = '₱' . number_format($cleanRate) . ' / day';
+            $durationStr = $days . ($days > 1 ? ' Days' : ' Day') . ($isHalfDay ? ' (Half Day)' : '');
+            $formulaStr = $days . ' day' . ($days > 1 ? 's' : '') . ($isHalfDay ? ' × 0.5' : '') . ' × ₱' . number_format($cleanRate);
         }
+
+        return [
+            'value' => $val,
+            'cleanRate' => $cleanRate,
+            'category' => $category,
+            'categoryLabel' => $categoryLabel,
+            'rateDisplay' => $rateDisplay,
+            'durationStr' => $durationStr,
+            'formulaStr' => $formulaStr
+        ];
+    }
+}
+
+if (!function_exists('calculateReservationUtilization')) {
+    function calculateReservationUtilization(array $res): float {
+        $details = calculateReservationUtilizationDetails($res);
+        return $details['value'];
     }
 }
 
@@ -70,8 +111,13 @@ $pendingReservations = 0;
 $approvedReservations = 0;
 $hallsCount = 0;
 $dormsCount = 0;
+$guesthousesCount = 0;
 $totalPaxServed = 0;
 $totalEstimatedUtilization = 0;
+$utilizationHalls = 0;
+$utilizationDorms = 0;
+$utilizationGuesthouses = 0;
+$utilizationReservationsList = [];
 
 $dashboardReservationsData = [];
 
@@ -79,21 +125,26 @@ foreach ($allReservations as $row) {
   $st = $row['status'] ?? 'Pending';
   $isPending = in_array($st, ['Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance']);
   $isApproved = in_array($st, ['Approved', 'Completed']);
-  $resUtil = calculateReservationUtilization($row);
+  $utilInfo = calculateReservationUtilizationDetails($row);
+  $resUtil = $utilInfo['value'];
   $totalEstimatedUtilization += $resUtil;
+
+  if ($utilInfo['category'] === 'guesthouse') {
+    $utilizationGuesthouses += $resUtil;
+    $guesthousesCount++;
+  } elseif ($utilInfo['category'] === 'dorm') {
+    $utilizationDorms += $resUtil;
+    $dormsCount++;
+  } else {
+    $utilizationHalls += $resUtil;
+    $hallsCount++;
+  }
 
   if ($isPending)
     $pendingReservations++;
   if ($isApproved) {
     $approvedReservations++;
     $totalPaxServed += (int) ($row['pax_count'] ?? 0);
-  }
-
-  $isDorm = ($row['facility_type'] === 'dormitories' || !empty($row['room_number']));
-  if ($isDorm) {
-    $dormsCount++;
-  } else {
-    $hallsCount++;
   }
 
   $ref = $row['reference_no'];
@@ -123,10 +174,31 @@ foreach ($allReservations as $row) {
     'equipment' => $row['special_notes'] ?: 'Standard Logistics & Venue Equipment',
     'status' => strtolower($isApproved ? 'approved' : ($st === 'Rejected' ? 'rejected' : 'pending')),
     'rawStatus' => $st,
-    'category' => $isDorm ? 'dorms' : 'halls',
+    'category' => $utilInfo['category'] === 'guesthouse' ? 'guesthouses' : ($utilInfo['category'] === 'dorm' ? 'dorms' : 'halls'),
     'dateFiled' => !empty($row['created_at']) ? date('M d, Y • h:i A', strtotime($row['created_at'])) : date('M d, Y • h:i A')
   ];
+
+  $utilizationReservationsList[] = [
+    'ref' => $ref,
+    'applicant' => $row['applicant_name'] ?: 'Official Guest',
+    'agency' => $row['applicant_agency'] ?: 'ATI Central Office',
+    'venue' => $venueDisplay,
+    'eventTitle' => $row['event_title'] ?: 'Official Institutional Activity',
+    'schedule' => $datesStr . ' (' . ($row['time_slot'] ?: 'Full Day') . ')',
+    'status' => $st,
+    'category' => $utilInfo['category'],
+    'categoryLabel' => $utilInfo['categoryLabel'],
+    'rateDisplay' => $utilInfo['rateDisplay'],
+    'durationStr' => $utilInfo['durationStr'],
+    'formulaStr' => $utilInfo['formulaStr'],
+    'value' => $resUtil,
+    'valueFormatted' => '₱' . number_format($resUtil)
+  ];
 }
+
+$hallsUtilPct = $totalEstimatedUtilization > 0 ? round(($utilizationHalls / $totalEstimatedUtilization) * 100, 1) : 0.0;
+$dormsUtilPct = $totalEstimatedUtilization > 0 ? round(($utilizationDorms / $totalEstimatedUtilization) * 100, 1) : 0.0;
+$ghUtilPct = $totalEstimatedUtilization > 0 ? round(($utilizationGuesthouses / $totalEstimatedUtilization) * 100, 1) : 0.0;
 
 // 2. Fetch User count
 $userCountStmt = $db->query("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
@@ -137,6 +209,21 @@ $today = date('Y-m-d');
 $facStmt = $db->query("SELECT * FROM facilities WHERE deleted_at IS NULL ORDER BY display_order ASC, id ASC");
 $monitoredFacilities = $facStmt ? $facStmt->fetchAll(PDO::FETCH_ASSOC) : [];
 $facilitiesCount = count($monitoredFacilities);
+
+// Group facilities by official categories for filters
+$hallsList = [];
+$dormsList = [];
+$guesthousesList = [];
+foreach ($monitoredFacilities as $f) {
+    $fType = strtolower($f['type'] ?? '');
+    if ($fType === 'guesthouses') {
+        $guesthousesList[] = $f;
+    } elseif ($fType === 'dormitories' || $fType === 'dorms') {
+        $dormsList[] = $f;
+    } else {
+        $hallsList[] = $f;
+    }
+}
 
 // Fetch approved reservations covering today (active)
 $activeResStmt = $db->prepare("SELECT r.facility_id, r.room_id, r.reference_no, r.event_title, r.start_date, r.end_date, r.time_slot, u.full_name AS applicant_name 
@@ -243,17 +330,21 @@ $estimatedUtilization = number_format($totalEstimatedUtilization);
 $totalInstitutionalCapacity = 0;
 $totalHallsCapacity = 0;
 $totalDormsCapacity = 0;
+$totalGuesthousesCapacity = 0;
 
 $facilityOccupancyMap = [];
 foreach ($processedFacilities as $f) {
     $fid = (int)$f['id'];
-    $isDorm = ($f['type'] === 'dorms');
+    $isGuesthouse = (($f['type'] ?? '') === 'guesthouses' || ($f['type'] ?? '') === 'guesthouse' || stripos($f['name'] ?? '', 'guesthouse') !== false);
+    $isDorm = !$isGuesthouse && (($f['type'] ?? '') === 'dorms' || ($f['type'] ?? '') === 'dormitories');
     $cap = (int)preg_replace('/[^0-9]/', '', (string)$f['capacity']);
     if ($cap <= 0) {
-        $cap = $isDorm ? (int)($f['beds'] ?: 2) : 50;
+        $cap = $isDorm ? (int)($f['beds'] ?: 2) : ($isGuesthouse ? 4 : 50);
     }
     
-    if ($isDorm) {
+    if ($isGuesthouse) {
+        $totalGuesthousesCapacity += $cap;
+    } elseif ($isDorm) {
         $totalDormsCapacity += $cap;
     } else {
         $totalHallsCapacity += $cap;
@@ -286,6 +377,7 @@ foreach ($processedFacilities as $f) {
 $liveTotalBookedPax = 0;
 $liveHallsBookedPax = 0;
 $liveDormsBookedPax = 0;
+$liveGuesthousesBookedPax = 0;
 
 $startOfWeek = date('Y-m-d', strtotime('monday this week'));
 $endOfWeek = date('Y-m-d', strtotime('sunday this week'));
@@ -310,14 +402,22 @@ foreach ($allReservations as $res) {
 
     $fid = (int)($res['facility_id'] ?? 0);
     $pax = (int)($res['pax_count'] ?? 0);
-    $isDorm = (($res['facility_type'] ?? '') === 'dormitories' || ($res['facility_type'] ?? '') === 'dorms' || !empty($res['room_number']));
+    $isResGuesthouse = (($res['facility_type'] ?? '') === 'guesthouses' 
+                        || ($res['facility_type'] ?? '') === 'guesthouse' 
+                        || str_starts_with($res['reference_no'] ?? '', 'ATI-GH') 
+                        || stripos($res['facility_name'] ?? '', 'guesthouse') !== false);
+    $isResDorm = !$isResGuesthouse && (($res['facility_type'] ?? '') === 'dormitories' 
+                                       || ($res['facility_type'] ?? '') === 'dorms' 
+                                       || !empty($res['room_number']));
 
     if (isset($facilityOccupancyMap[$fid])) {
         $facilityOccupancyMap[$fid]['booked_pax'] += $pax;
     }
 
     $liveTotalBookedPax += $pax;
-    if ($isDorm) {
+    if ($isResGuesthouse) {
+        $liveGuesthousesBookedPax += $pax;
+    } elseif ($isResDorm) {
         $liveDormsBookedPax += $pax;
     } else {
         $liveHallsBookedPax += $pax;
@@ -349,6 +449,9 @@ $liveHallsOccupancyPct = $totalHallsCapacity > 0
     : 0.0;
 $liveDormsOccupancyPct = $totalDormsCapacity > 0 
     ? min(100, round(($liveDormsBookedPax / $totalDormsCapacity) * 100, 1)) 
+    : 0.0;
+$liveGuesthousesOccupancyPct = $totalGuesthousesCapacity > 0 
+    ? min(100, round(($liveGuesthousesBookedPax / $totalGuesthousesCapacity) * 100, 1)) 
     : 0.0;
 
 $peakDayLabel = date('l, M j');
@@ -531,16 +634,16 @@ $peakDayPct = $totalInstitutionalCapacity > 0
             <div class="stat-content">
               <div class="stat-value-row">
                 <span class="stat-value" id="kpiOccupancy"><?= $liveOverallOccupancyPct ?>%</span>
-                <span class="stat-trend neutral"><?= $approvedReservations ?> Approved</span>
+                <span class="stat-trend <?= $approvedReservations > 0 ? 'positive' : 'neutral' ?>" id="kpiOccupancyTrend"><?= $approvedReservations ?> Approved</span>
               </div>
               <span class="stat-label">Venue & Dorm Occupancy</span>
             </div>
           </div>
 
           <!-- Monthly Revenue / Utilization -->
-          <div class="my-res-stat-card" data-kpi="revenue"
-            onclick="openOccupancyModal()"
-            title="Click to view real-time facility utilization analytics & breakdown">
+          <div class="my-res-stat-card" data-kpi="revenue" id="cardUtilizationKpi"
+            onclick="openUtilizationModal()"
+            title="Click to view estimated facility utilization analytics & financial valuation breakdown">
             <div class="stat-icon-box emerald">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round">
@@ -608,13 +711,127 @@ $peakDayPct = $totalInstitutionalCapacity > 0
               </button>
             </div>
 
-            <div class="select-filter-wrap">
-              <select id="venueFilterSelect" class="venue-filter-select" onchange="handleVenueSelectFilter(this.value)">
-                <option value="all">All Venues &amp; Rooms</option>
-                <?php foreach ($monitoredFacilities as $f): ?>
-                  <option value="<?= htmlspecialchars($f['name']) ?>"><?= htmlspecialchars($f['name']) ?></option>
+            <div class="custom-facility-dropdown" id="venueCustomDropdown">
+              <input type="hidden" id="venueFilterSelect" value="all">
+              <button type="button" class="facility-dropdown-btn venue-filter-btn" id="venueFilterBtn"
+                aria-haspopup="listbox" aria-expanded="false" onclick="toggleVenueDropdown(event)" title="Filter by Facility or Venue">
+                <span class="facility-btn-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  </svg>
+                </span>
+                <span class="facility-btn-label" id="venueFilterLabel">All Venues &amp; Rooms</span>
+                <svg class="facility-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+
+              <div class="facility-dropdown-menu venue-filter-menu" id="venueFilterMenu" role="listbox" aria-label="Filter by Venue">
+                <!-- Option: All Venues & Rooms -->
+                <div class="facility-option active" data-value="all" role="option" aria-selected="true"
+                  onclick="selectAdminVenueOption('all', 'All Venues &amp; Rooms', 'all')">
+                  <span class="opt-bullet all"></span>
+                  <span class="opt-name">All Venues &amp; Rooms</span>
+                  <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+
+                <!-- Category Row 1: Training & Function Halls (Different shade of color: fresh green/mint) -->
+                <div class="dropdown-category-separator category-sep-halls"
+                  onclick="selectAdminVenueOption('category:halls', 'All Halls &amp; Facilities', 'halls')"
+                  title="Filter by Training &amp; Function Halls">
+                  <div class="cat-sep-left">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    </svg>
+                    <span>Training &amp; Function Halls</span>
+                  </div>
+                  <span class="cat-sep-pill halls">All Halls (<?= count($hallsList) ?>)</span>
+                </div>
+
+                <!-- Halls items -->
+                <?php foreach ($hallsList as $fac): ?>
+                  <div class="facility-option sub-opt" data-value="<?= htmlspecialchars($fac['name']) ?>" data-category="halls" role="option"
+                    onclick="selectAdminVenueOption('<?= htmlspecialchars(addslashes($fac['name'])) ?>', '<?= htmlspecialchars(addslashes($fac['name'])) ?>', 'halls')">
+                    <span class="opt-bullet" style="background: #16a34a;"></span>
+                    <span class="opt-name"><?= htmlspecialchars($fac['name']) ?></span>
+                    <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
                 <?php endforeach; ?>
-              </select>
+
+                <!-- Category Row 2: Dormitories & Lodgings (Different shade of color: warm honey amber) -->
+                <div class="dropdown-category-separator category-sep-dorms"
+                  onclick="selectAdminVenueOption('category:dorms', 'All Dormitories &amp; Suites', 'dorms')"
+                  title="Filter by Dormitory Suites">
+                  <div class="cat-sep-left">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                      <path d="M2 4v16"></path>
+                      <path d="M2 8h18a2 2 0 0 1 2 2v10"></path>
+                      <path d="M2 17h20"></path>
+                      <path d="M6 8v9"></path>
+                    </svg>
+                    <span>Dormitories &amp; Suites</span>
+                  </div>
+                  <span class="cat-sep-pill dorms">All Dorms (<?= count($dormsList) ?>)</span>
+                </div>
+
+                <!-- Dorms items -->
+                <?php foreach ($dormsList as $fac): ?>
+                  <div class="facility-option sub-opt" data-value="<?= htmlspecialchars($fac['name']) ?>" data-category="dorms" role="option"
+                    onclick="selectAdminVenueOption('<?= htmlspecialchars(addslashes($fac['name'])) ?>', '<?= htmlspecialchars(addslashes($fac['name'])) ?>', 'dorms')">
+                    <span class="opt-bullet" style="background: #f59e0b;"></span>
+                    <span class="opt-name"><?= htmlspecialchars($fac['name']) ?></span>
+                    <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                <?php endforeach; ?>
+
+                <!-- Category Row 3: Guesthouses & Private Villas (Different shade of color: cool teal/cyan) -->
+                <div class="dropdown-category-separator category-sep-guesthouses"
+                  onclick="selectAdminVenueOption('category:guesthouses', 'All Guesthouses &amp; Villas', 'guesthouses')"
+                  title="Filter by Guesthouses &amp; Villas">
+                  <div class="cat-sep-left">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                      <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    <span>Guesthouses &amp; Villas</span>
+                  </div>
+                  <span class="cat-sep-pill guesthouses">All Villas (<?= count($guesthousesList) ?>)</span>
+                </div>
+
+                <!-- Guesthouses items -->
+                <?php foreach ($guesthousesList as $fac): 
+                  $rawName = $fac['name'];
+                  $villaTitle = $rawName;
+                  $subBadge = '';
+                  if (preg_match('/^(Guesthouse\s*\d+)\s*\(([^)]+)\)/i', $rawName, $m)) {
+                    $subBadge = $m[1];
+                    $villaTitle = $m[2];
+                    if (stripos($villaTitle, 'Executive Villa') !== false) {
+                      $villaTitle = 'Presidential Villa';
+                    }
+                  } elseif (preg_match('/\(([^)]+)\)/', $rawName, $m)) {
+                    $villaTitle = $m[1];
+                  }
+                ?>
+                  <div class="facility-option sub-opt" data-value="<?= htmlspecialchars($rawName) ?>" data-category="guesthouses" role="option"
+                    onclick="selectAdminVenueOption('<?= htmlspecialchars(addslashes($rawName)) ?>', '<?= htmlspecialchars(addslashes($villaTitle)) ?>', 'guesthouses')">
+                    <span class="opt-bullet" style="background: #0f766e;"></span>
+                    <span class="opt-name"><?= htmlspecialchars($villaTitle) ?></span>
+                    <?php if (!empty($subBadge)): ?>
+                      <span class="opt-sub"><?= htmlspecialchars($subBadge) ?></span>
+                    <?php endif; ?>
+                    <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+                <?php endforeach; ?>
+              </div>
             </div>
           </div>
         </div>
@@ -691,8 +908,14 @@ $peakDayPct = $totalInstitutionalCapacity > 0
                     $isStage3 = in_array($st, ['Pending Clearance', 'Awaiting Clearance']);
                     $isPending = ($isStage1 || $isStage2 || $isStage3);
                     $statusKey = $isApproved ? 'approved' : ($isRejected ? 'rejected' : 'pending');
-                    $isDorm = (($row['facility_type'] ?? '') === 'dormitories' || !empty($row['room_number']));
-                    $categoryKey = $isDorm ? 'dorms' : 'halls';
+                    $isGuesthouse = (($row['facility_type'] ?? '') === 'guesthouses' 
+                                     || ($row['facility_type'] ?? '') === 'guesthouse' 
+                                     || str_starts_with($row['reference_no'] ?? '', 'ATI-GH') 
+                                     || stripos($row['facility_name'] ?? '', 'guesthouse') !== false);
+                    $isDorm = !$isGuesthouse && (($row['facility_type'] ?? '') === 'dormitories' 
+                                                 || ($row['facility_type'] ?? '') === 'dorms' 
+                                                 || !empty($row['room_number']));
+                    $categoryKey = $isGuesthouse ? 'guesthouses' : ($isDorm ? 'dorms' : 'halls');
                     $venueName = $row['facility_name'] ?: 'Official Facility';
                     if (!empty($row['room_number'])) {
                       $venueName .= ' (Room ' . $row['room_number'] . ')';
@@ -1180,9 +1403,9 @@ $peakDayPct = $totalInstitutionalCapacity > 0
       </div>
 
       <div class="admin-modal-body occupancy-modal-scroll">
-        <!-- 1. Top Summary Metric Cards (Dynamic Live Data) -->
+        <!-- 1. Top Summary Metric Cards (Dynamic Live Data & Interactive Filters) -->
         <div class="occ-metrics-grid">
-          <div class="occ-metric-card primary">
+          <div class="occ-metric-card primary active" id="occCardAll" onclick="filterOccupancyCategory('all')" role="button" tabindex="0" title="Click to filter breakdown by All Facilities">
             <span class="occ-metric-lbl">Overall Occupancy</span>
             <div class="occ-metric-val"><?= $liveOverallOccupancyPct ?>%</div>
             <div class="occ-metric-sub"><strong><?= $liveTotalBookedPax ?></strong> / <?= $totalInstitutionalCapacity ?> Total PAX</div>
@@ -1191,27 +1414,36 @@ $peakDayPct = $totalInstitutionalCapacity > 0
             </div>
           </div>
 
-          <div class="occ-metric-card">
+          <div class="occ-metric-card" id="occCardHall" onclick="filterOccupancyCategory('hall')" role="button" tabindex="0" title="Click to filter breakdown by Function Halls">
             <span class="occ-metric-lbl">Function Halls</span>
-            <div class="occ-metric-val"><?= $liveHallsOccupancyPct ?>%</div>
+            <div class="occ-metric-val" style="color: #1d4ed8;"><?= $liveHallsOccupancyPct ?>%</div>
             <div class="occ-metric-sub"><strong><?= $liveHallsBookedPax ?></strong> / <?= $totalHallsCapacity ?> Hall PAX</div>
             <div class="occ-bar-track">
               <div class="occ-bar-fill" style="width: <?= min(100, $liveHallsOccupancyPct) ?>%; background: #2563eb;"></div>
             </div>
           </div>
 
-          <div class="occ-metric-card">
+          <div class="occ-metric-card" id="occCardDorm" onclick="filterOccupancyCategory('dorm')" role="button" tabindex="0" title="Click to filter breakdown by Dormitory Suites">
             <span class="occ-metric-lbl">Dormitory Suites</span>
-            <div class="occ-metric-val"><?= $liveDormsOccupancyPct ?>%</div>
+            <div class="occ-metric-val" style="color: #b45309;"><?= $liveDormsOccupancyPct ?>%</div>
             <div class="occ-metric-sub"><strong><?= $liveDormsBookedPax ?></strong> / <?= $totalDormsCapacity ?> Dorm Beds</div>
             <div class="occ-bar-track">
               <div class="occ-bar-fill" style="width: <?= min(100, $liveDormsOccupancyPct) ?>%; background: #d97706;"></div>
             </div>
           </div>
 
-          <div class="occ-metric-card">
+          <div class="occ-metric-card" id="occCardGuesthouse" onclick="filterOccupancyCategory('guesthouse')" role="button" tabindex="0" title="Click to filter breakdown by Guesthouses &amp; Villas">
+            <span class="occ-metric-lbl">Guesthouses &amp; Villas</span>
+            <div class="occ-metric-val" style="color: #0f766e;"><?= $liveGuesthousesOccupancyPct ?>%</div>
+            <div class="occ-metric-sub"><strong><?= $liveGuesthousesBookedPax ?></strong> / <?= $totalGuesthousesCapacity ?> Guest PAX</div>
+            <div class="occ-bar-track">
+              <div class="occ-bar-fill" style="width: <?= min(100, $liveGuesthousesOccupancyPct) ?>%; background: #0d9488;"></div>
+            </div>
+          </div>
+
+          <div class="occ-metric-card" id="occCardPeak" onclick="focusPeakLoadDay()" role="button" tabindex="0" title="Click to view Peak Load Day trend on Line Graph">
             <span class="occ-metric-lbl">Peak Load Day</span>
-            <div class="occ-metric-val" style="color: #b45309;"><?= $peakDayPct ?>%</div>
+            <div class="occ-metric-val" style="color: #dc2626;"><?= $peakDayPct ?>%</div>
             <div class="occ-metric-sub"><?= htmlspecialchars($peakDayLabel) ?> &bull; <?= $peakDayPax ?> PAX</div>
             <div class="occ-bar-track">
               <div class="occ-bar-fill" style="width: <?= min(100, $peakDayPct) ?>%; background: #ef4444;"></div>
@@ -1257,6 +1489,7 @@ $peakDayPct = $totalInstitutionalCapacity > 0
             <div class="occ-chart-caption">
               <span class="occ-legend-pill"><span class="occ-dot hall"></span> Function Halls</span>
               <span class="occ-legend-pill"><span class="occ-dot dorm"></span> Dormitory Suites</span>
+              <span class="occ-legend-pill"><span class="occ-dot" style="background: #0f766e;"></span> Guesthouses &amp; Villas</span>
               <span class="occ-legend-pill"><span class="occ-target-line"></span> Benchmark Target (80%)</span>
             </div>
 
@@ -1296,13 +1529,15 @@ $peakDayPct = $totalInstitutionalCapacity > 0
                   $bHeight = round(($cappedPct / 100.0) * 100);
                   $by = 130 - $bHeight;
                   $bcx = $bx + round($barW / 2);
-                  $isDormFac = ($fItem['type'] === 'dorms');
-                  $barGrad = $isDormFac ? 'url(#gradDorm)' : 'url(#gradHall)';
-                  $barColor = $isDormFac ? '#d97706' : '#174d2f';
-                  $unitLabel = $isDormFac ? 'Beds' : 'PAX';
+                  $isGuesthouseFac = ($fItem['type'] === 'guesthouses' || $fItem['type'] === 'guesthouse' || stripos($fItem['name'], 'guesthouse') !== false);
+                  $isDormFac = !$isGuesthouseFac && ($fItem['type'] === 'dorms' || $fItem['type'] === 'dormitories');
+                  $barGrad = $isGuesthouseFac ? 'url(#gradGuesthouse)' : ($isDormFac ? 'url(#gradDorm)' : 'url(#gradHall)');
+                  $barColor = $isGuesthouseFac ? '#0f766e' : ($isDormFac ? '#d97706' : '#174d2f');
+                  $unitLabel = $isGuesthouseFac ? 'PAX' : ($isDormFac ? 'Beds' : 'PAX');
+                  $itemCategory = $isGuesthouseFac ? 'guesthouse' : ($isDormFac ? 'dorm' : 'hall');
                   $barIdx++;
                 ?>
-                <g class="occ-bar-group" tabindex="0">
+                <g class="occ-bar-group" data-category="<?= $itemCategory ?>" tabindex="0" onclick="filterOccupancyCategory('<?= $itemCategory ?>')">
                   <title><?= htmlspecialchars($fItem['name']) ?>: <?= $fItem['booked_pax'] ?> / <?= $fItem['capacity'] ?> <?= $unitLabel ?> (<?= $pctVal ?>%)</title>
                   <rect x="<?= $bx ?>" y="<?= $by ?>" width="<?= $barW ?>" height="<?= max(2, $bHeight) ?>" rx="4" fill="<?= $barGrad ?>" class="bar-rect"></rect>
                   <text x="<?= $bcx ?>" y="<?= max(18, $by - 4) ?>" font-size="8.5" font-weight="800" fill="<?= $barColor ?>" text-anchor="middle"><?= $pctVal ?>%</text>
@@ -1320,6 +1555,10 @@ $peakDayPct = $totalInstitutionalCapacity > 0
                   <linearGradient id="gradDorm" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stop-color="#d97706"></stop>
                     <stop offset="100%" stop-color="#f59e0b"></stop>
+                  </linearGradient>
+                  <linearGradient id="gradGuesthouse" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#0f766e"></stop>
+                    <stop offset="100%" stop-color="#14b8a6"></stop>
                   </linearGradient>
                 </defs>
               </svg>
@@ -1416,7 +1655,7 @@ $peakDayPct = $totalInstitutionalCapacity > 0
         <div class="occ-breakdown-section">
           <h5 style="margin: 0 0 0.55rem; font-size: 0.88rem; font-weight: 800; color: #174d2f; display: flex; align-items: center; justify-content: space-between;">
             <span>Monitored Facility Utilization Breakdown</span>
-            <span style="font-size: 0.72rem; font-weight: 600; color: #60796b;">Total <?= count($facilityOccupancyMap) ?> Institutional Assets</span>
+            <span id="occBreakdownCount" style="font-size: 0.72rem; font-weight: 600; color: #60796b;">Total <?= count($facilityOccupancyMap) ?> Institutional Assets</span>
           </h5>
 
           <div class="occ-table-wrap">
@@ -1438,10 +1677,23 @@ $peakDayPct = $totalInstitutionalCapacity > 0
                   </tr>
                 <?php else: ?>
                   <?php foreach ($facilityOccupancyMap as $fItem): 
-                    $isDorm = ($fItem['type'] === 'dorms');
+                    $isGuesthouse = ($fItem['type'] === 'guesthouses' || $fItem['type'] === 'guesthouse' || stripos($fItem['name'], 'guesthouse') !== false);
+                    $isDorm = !$isGuesthouse && ($fItem['type'] === 'dorms' || $fItem['type'] === 'dormitories');
+                    
+                    if ($isGuesthouse) {
+                      $tagClass = 'guesthouse';
+                      $tagLabel = 'GuestHouse';
+                    } elseif ($isDorm) {
+                      $tagClass = 'dorm';
+                      $tagLabel = 'Dormitory Suite';
+                    } else {
+                      $tagClass = 'hall';
+                      $tagLabel = 'Function Hall';
+                    }
+
                     $capStr = $isDorm ? ($fItem['capacity'] . ' PAX (' . $fItem['beds'] . ' Beds)') : ($fItem['capacity'] . ' PAX');
                     $bookedStr = $isDorm ? ($fItem['booked_pax'] . ' Beds') : ($fItem['booked_pax'] . ' PAX');
-                    $barFillColor = $isDorm ? '#d97706' : '#174d2f';
+                    $barFillColor = $isGuesthouse ? '#0d9488' : ($isDorm ? '#d97706' : '#174d2f');
                     
                     $statusBadge = '<span class="occ-status-badge active">' . htmlspecialchars($fItem['stateLabel']) . '</span>';
                     if ($fItem['stateKey'] === 'maintenance') {
@@ -1454,9 +1706,9 @@ $peakDayPct = $totalInstitutionalCapacity > 0
                       $statusBadge = '<span class="occ-status-badge" style="background:#fffbeb; color:#b45309; border:1px solid #fde68a;">' . htmlspecialchars($fItem['stateLabel']) . '</span>';
                     }
                   ?>
-                  <tr>
+                  <tr class="occ-breakdown-row" data-category="<?= $tagClass ?>">
                     <td><strong><?= htmlspecialchars($fItem['name']) ?></strong></td>
-                    <td><span class="occ-tag <?= $isDorm ? 'dorm' : 'hall' ?>"><?= $isDorm ? 'Dormitory Suite' : 'Function Hall' ?></span></td>
+                    <td><span class="occ-tag <?= $tagClass ?>"><?= $tagLabel ?></span></td>
                     <td><?= $capStr ?></td>
                     <td><strong><?= $bookedStr ?></strong></td>
                     <td>
@@ -1487,6 +1739,183 @@ $peakDayPct = $totalInstitutionalCapacity > 0
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
           <span>Export Analytics Report</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       REAL-TIME FACILITY UTILIZATION & VALUATION ANALYTICS MODAL
+       ========================================================================== -->
+  <div class="admin-modal-overlay" id="utilizationModal" style="display: none;" onclick="if(event.target === this) closeUtilizationModal()">
+    <div class="admin-modal-card occupancy-modal-wide">
+      <div class="admin-modal-header" style="background: linear-gradient(135deg, #0d3820 0%, #155734 100%);">
+        <div class="modal-header-lead">
+          <div class="modal-header-icon" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M8.5 17V7h4.5a3 3 0 0 1 0 6H8.5"></path>
+              <line x1="6" y1="9.5" x2="15.5" y2="9.5"></line>
+              <line x1="6" y1="12" x2="15.5" y2="12"></line>
+            </svg>
+          </div>
+          <div class="modal-header-title">
+            <h4 style="color: #ffffff;">Estimated Facility Utilization &amp; Value Analytics</h4>
+            <p style="color: #a7f3d0;">Official institutional monetary valuation, category shares, and active reservation breakdown</p>
+          </div>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeUtilizationModal()" aria-label="Close dialog" title="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#173822" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="admin-modal-body occupancy-modal-scroll">
+        <!-- 1. Top Summary Metric Cards -->
+        <div class="occ-metrics-grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+          <div class="occ-metric-card primary active" id="utilCardAll" onclick="filterUtilizationCategory('all')" role="button" tabindex="0" title="Click to view all facility valuations">
+            <span class="occ-metric-lbl">Total Estimated Value</span>
+            <div class="occ-metric-val" style="color: #174d2f;">₱<?= $estimatedUtilization ?></div>
+            <div class="occ-metric-sub">Across <?= count($utilizationReservationsList) ?> Active Requests</div>
+            <div class="occ-bar-track">
+              <div class="occ-bar-fill" style="width: 100%; background: #174d2f;"></div>
+            </div>
+          </div>
+
+          <div class="occ-metric-card" id="utilCardHall" onclick="filterUtilizationCategory('hall')" role="button" tabindex="0" title="Click to filter by Function Halls">
+            <span class="occ-metric-lbl">Function Halls</span>
+            <div class="occ-metric-val" style="color: #1d4ed8;">₱<?= number_format($utilizationHalls) ?></div>
+            <div class="occ-metric-sub"><?= $hallsUtilPct ?>% Portfolio Share</div>
+            <div class="occ-bar-track">
+              <div class="occ-bar-fill" style="width: <?= min(100, $hallsUtilPct) ?>%; background: #2563eb;"></div>
+            </div>
+          </div>
+
+          <div class="occ-metric-card" id="utilCardDorm" onclick="filterUtilizationCategory('dorm')" role="button" tabindex="0" title="Click to filter by Dormitory Suites">
+            <span class="occ-metric-lbl">Dormitory Suites</span>
+            <div class="occ-metric-val" style="color: #b45309;">₱<?= number_format($utilizationDorms) ?></div>
+            <div class="occ-metric-sub"><?= $dormsUtilPct ?>% Portfolio Share</div>
+            <div class="occ-bar-track">
+              <div class="occ-bar-fill" style="width: <?= min(100, $dormsUtilPct) ?>%; background: #d97706;"></div>
+            </div>
+          </div>
+
+          <div class="occ-metric-card" id="utilCardGuesthouse" onclick="filterUtilizationCategory('guesthouse')" role="button" tabindex="0" title="Click to filter by Guesthouses &amp; Villas">
+            <span class="occ-metric-lbl">Guesthouses &amp; Villas</span>
+            <div class="occ-metric-val" style="color: #0f766e;">₱<?= number_format($utilizationGuesthouses) ?></div>
+            <div class="occ-metric-sub"><?= $ghUtilPct ?>% Portfolio Share</div>
+            <div class="occ-bar-track">
+              <div class="occ-bar-fill" style="width: <?= min(100, $ghUtilPct) ?>%; background: #0d9488;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Value Distribution Visual Progress Bar -->
+        <div style="background: #f8faf9; border: 1.5px solid #dce8e0; border-radius: 12px; padding: 0.85rem 1rem; margin-bottom: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.55rem;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: #153823;">Asset Category Valuation Distribution</span>
+            <span style="font-size: 0.75rem; font-weight: 600; color: #587363;">100% Monetized Portfolio Share</span>
+          </div>
+          <div style="height: 12px; background: #e5ede7; border-radius: 9999px; overflow: hidden; display: flex; width: 100%; box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);">
+            <div style="width: <?= $hallsUtilPct ?>%; background: #2563eb; transition: width 0.6s ease;" title="Function Halls: ₱<?= number_format($utilizationHalls) ?> (<?= $hallsUtilPct ?>%)"></div>
+            <div style="width: <?= $dormsUtilPct ?>%; background: #d97706; transition: width 0.6s ease;" title="Dormitories: ₱<?= number_format($utilizationDorms) ?> (<?= $dormsUtilPct ?>%)"></div>
+            <div style="width: <?= $ghUtilPct ?>%; background: #0d9488; transition: width 0.6s ease;" title="Guesthouses: ₱<?= number_format($utilizationGuesthouses) ?> (<?= $ghUtilPct ?>%)"></div>
+          </div>
+          <div style="display: flex; gap: 1.25rem; margin-top: 0.6rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.74rem; font-weight: 600; color: #374151;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #2563eb; display: inline-block;"></span>
+              <span>Function Halls: <strong>₱<?= number_format($utilizationHalls) ?></strong> (<?= $hallsUtilPct ?>%)</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.74rem; font-weight: 600; color: #374151;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #d97706; display: inline-block;"></span>
+              <span>Dormitory Suites: <strong>₱<?= number_format($utilizationDorms) ?></strong> (<?= $dormsUtilPct ?>%)</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.74rem; font-weight: 600; color: #374151;">
+              <span style="width: 8px; height: 8px; border-radius: 50%; background: #0d9488; display: inline-block;"></span>
+              <span>Guesthouses &amp; Villas: <strong>₱<?= number_format($utilizationGuesthouses) ?></strong> (<?= $ghUtilPct ?>%)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Detailed Utilization Breakdown Ledger Table -->
+        <div class="occ-breakdown-section">
+          <h5 style="margin: 0 0 0.55rem; font-size: 0.88rem; font-weight: 800; color: #174d2f; display: flex; align-items: center; justify-content: space-between;">
+            <span>Individual Reservation Valuation Ledger</span>
+            <span id="utilBreakdownCount" style="font-size: 0.72rem; font-weight: 600; color: #60796b;">Total <?= count($utilizationReservationsList) ?> Utilization Records</span>
+          </h5>
+
+          <div class="occ-table-wrap">
+            <table class="occ-breakdown-table">
+              <thead>
+                <tr>
+                  <th>Reference # &amp; Event</th>
+                  <th>Facility &amp; Category</th>
+                  <th>Booking Schedule</th>
+                  <th>Standard Rate</th>
+                  <th>Duration &amp; Formula</th>
+                  <th style="text-align: right;">Estimated Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php if (empty($utilizationReservationsList)): ?>
+                  <tr>
+                    <td colspan="6" style="text-align: center; padding: 2rem; color: #627b6c;">No active reservation utilizations recorded.</td>
+                  </tr>
+                <?php else: ?>
+                  <?php foreach ($utilizationReservationsList as $uItem): 
+                    $tagClass = $uItem['category'];
+                    $tagLabel = $uItem['categoryLabel'];
+                  ?>
+                  <tr class="util-breakdown-row" data-category="<?= $tagClass ?>" data-val="<?= $uItem['value'] ?>">
+                    <td>
+                      <div style="display: flex; flex-direction: column; gap: 0.15rem;">
+                        <strong style="color: #174d2f; font-family: monospace; font-size: 0.84rem;"><?= htmlspecialchars($uItem['ref']) ?></strong>
+                        <span style="color: #4b6354; font-size: 0.76rem;"><?= htmlspecialchars($uItem['eventTitle']) ?></span>
+                        <span style="color: #839b8c; font-size: 0.7rem;"><?= htmlspecialchars($uItem['agency']) ?></span>
+                      </div>
+                    </td>
+                    <td>
+                      <div style="display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start;">
+                        <strong><?= htmlspecialchars($uItem['venue']) ?></strong>
+                        <span class="occ-tag <?= $tagClass ?>"><?= $tagLabel ?></span>
+                      </div>
+                    </td>
+                    <td>
+                      <span style="font-size: 0.78rem; color: #2d4233;"><?= htmlspecialchars($uItem['schedule']) ?></span>
+                    </td>
+                    <td>
+                      <span style="font-weight: 700; color: #174d2f; font-size: 0.8rem;"><?= $uItem['rateDisplay'] ?></span>
+                    </td>
+                    <td>
+                      <div style="display: flex; flex-direction: column; gap: 0.15rem;">
+                        <span style="font-weight: 600; color: #1b4d2e; font-size: 0.78rem;"><?= $uItem['durationStr'] ?></span>
+                        <span style="font-size: 0.7rem; color: #698572; font-family: monospace;"><?= $uItem['formulaStr'] ?></span>
+                      </div>
+                    </td>
+                    <td style="text-align: right;">
+                      <span style="font-size: 0.96rem; font-weight: 800; color: #0f766e;"><?= $uItem['valueFormatted'] ?></span>
+                    </td>
+                  </tr>
+                  <?php endforeach; ?>
+                <?php endif; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-system-secondary" onclick="closeUtilizationModal()" style="padding: 0.45rem 0.85rem; font-size: 0.8rem;">Close Utilization</button>
+        <button type="button" class="btn-export-analytics" onclick="exportUtilizationReport()"
+          style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.95rem; background: #0f766e; color: #ffffff; border: none; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Export Utilization Report</span>
         </button>
       </div>
     </div>

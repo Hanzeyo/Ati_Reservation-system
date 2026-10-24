@@ -20,6 +20,7 @@ let currentDisapproveRef = null;
 document.addEventListener('DOMContentLoaded', function () {
   initRoleFromURL();
   initDateDisplay();
+  initApprovalsVenueDropdown();
   renderApprovalsTable();
   updateKPICounters();
 
@@ -340,9 +341,14 @@ function renderApprovalsTable() {
           </div>
         </td>
         <td>
-          <div style="display: flex; flex-direction: column; gap: 0.15rem;">
+          <div style="display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start;">
             <strong style="color: #153321;">${item.venue}</strong>
-            <span style="color: #637f6f; font-size: 0.78rem;">${item.pax} PAX</span>
+            <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+              <span class="occ-tag ${item.venueCategory === 'guesthouses' ? 'guesthouse' : (item.venueCategory === 'dorms' ? 'dorm' : 'hall')}">
+                ${item.venueCategory === 'guesthouses' ? 'GuestHouse' : (item.venueCategory === 'dorms' ? 'Dormitory Suite' : 'Function Hall')}
+              </span>
+              <span style="color: #637f6f; font-size: 0.78rem;">${item.pax} PAX</span>
+            </div>
           </div>
         </td>
         <td>
@@ -385,7 +391,76 @@ function renderApprovalsTable() {
 
 function applyApprovalsFilterTab(tab) {
   activeFilterTab = tab;
+  if (tab === 'all') {
+    const input = document.getElementById('approvalsVenueFilter');
+    const label = document.getElementById('approvalsVenueLabel');
+    const dropdown = document.getElementById('approvalsVenueDropdown');
+    if (input) input.value = 'all';
+    if (label) label.textContent = 'All Facility Types';
+    if (dropdown) {
+      dropdown.querySelectorAll('.facility-option').forEach(o => {
+        const isAll = (o.dataset.value === 'all');
+        o.classList.toggle('active', isAll);
+        o.setAttribute('aria-selected', isAll ? 'true' : 'false');
+      });
+    }
+  }
   renderApprovalsTable();
+}
+
+/* ==========================================================================
+   CUSTOM VENUE CATEGORY DROPDOWN
+   ========================================================================== */
+function initApprovalsVenueDropdown() {
+  const dropdown = document.getElementById('approvalsVenueDropdown');
+  const btn = document.getElementById('approvalsVenueBtn');
+  const label = document.getElementById('approvalsVenueLabel');
+  const input = document.getElementById('approvalsVenueFilter');
+  if (!dropdown || !btn) return;
+
+  const options = dropdown.querySelectorAll('.facility-option');
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = dropdown.classList.toggle('open');
+    btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  options.forEach(opt => {
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const value = opt.dataset.value;
+      const text = opt.querySelector('.opt-name')?.textContent || opt.textContent.trim();
+
+      options.forEach(o => {
+        o.classList.remove('active');
+        o.setAttribute('aria-selected', 'false');
+      });
+      opt.classList.add('active');
+      opt.setAttribute('aria-selected', 'true');
+
+      if (label) label.textContent = text;
+      if (input) input.value = value;
+      dropdown.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+
+      renderApprovalsTable();
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target)) {
+      dropdown.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && dropdown.classList.contains('open')) {
+      dropdown.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  });
 }
 
 /* ==========================================================================

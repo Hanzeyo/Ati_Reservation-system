@@ -89,7 +89,14 @@ foreach ($rawReservations as $row) {
         $datesStr = $startDateStr;
     }
 
-    $venueCategory = (($row['facility_type'] ?? '') === 'dormitories' || !empty($row['room_number'])) ? 'dorms' : 'halls';
+    $isGuesthouse = (($row['facility_type'] ?? '') === 'guesthouses' 
+                     || ($row['facility_type'] ?? '') === 'guesthouse' 
+                     || str_starts_with($row['reference_no'] ?? '', 'ATI-GH') 
+                     || stripos($row['facility_name'] ?? '', 'guesthouse') !== false);
+    $isDorm = !$isGuesthouse && (($row['facility_type'] ?? '') === 'dormitories' 
+                                 || ($row['facility_type'] ?? '') === 'dorms' 
+                                 || !empty($row['room_number']));
+    $venueCategory = $isGuesthouse ? 'guesthouses' : ($isDorm ? 'dorms' : 'halls');
     $venueDisplay = $row['facility_name'] ?: 'Official Facility';
     if (!empty($row['room_number'])) {
         $venueDisplay .= ' (Room ' . $row['room_number'] . ')';
@@ -418,13 +425,62 @@ $totalUsersCount = $userCountStmt ? (int)$userCountStmt->fetchColumn() : 0;
               View All
             </button>
 
-            <!-- Venue Category Filter -->
-            <select id="approvalsVenueFilter" onchange="renderApprovalsTable()"
-              style="padding: 0.52rem 0.85rem; border: 1.5px solid #dce8e0; border-radius: 10px; font-family: inherit; font-size: 0.82rem; font-weight: 600; color: #172c1f; background: #fff; height: 100%;">
-              <option value="all">All Facility Types</option>
-              <option value="halls">Training & Function Halls</option>
-              <option value="dorms">Dormitory Suites</option>
-            </select>
+            <!-- Venue Category Filter (Custom Themed Dropdown) -->
+            <div class="custom-facility-dropdown" id="approvalsVenueDropdown">
+              <input type="hidden" id="approvalsVenueFilter" value="all">
+              <button type="button" class="facility-dropdown-btn" id="approvalsVenueBtn" aria-haspopup="listbox"
+                aria-expanded="false" title="Filter by Facility Type"
+                style="border-radius: 10px; padding: 0.52rem 0.95rem; font-size: 0.82rem; height: 100%;">
+                <span class="facility-btn-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  </svg>
+                </span>
+                <span class="facility-btn-label" id="approvalsVenueLabel">All Facility Types</span>
+                <svg class="facility-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2.2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </button>
+
+              <div class="facility-dropdown-menu" id="approvalsVenueMenu" role="listbox" aria-label="Filter by Facility Type">
+                <div class="facility-option active" data-value="all" role="option" aria-selected="true">
+                  <span class="opt-bullet all"></span>
+                  <span class="opt-name">All Facility Types</span>
+                  <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+
+                <div class="facility-option" data-value="halls" role="option">
+                  <span class="opt-bullet" style="background:#16a34a;"></span>
+                  <span class="opt-name">Training &amp; Function Halls</span>
+                  <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+
+                <div class="facility-option" data-value="dorms" role="option">
+                  <span class="opt-bullet dorm-bullet" style="background:#f59e0b;"></span>
+                  <span class="opt-name">Dormitory Suites</span>
+                  <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+
+                <div class="facility-option" data-value="guesthouses" role="option">
+                  <span class="opt-bullet" style="background:#0f766e;"></span>
+                  <span class="opt-name">Guesthouses &amp; Villas</span>
+                  <svg class="opt-check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 

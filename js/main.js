@@ -36,13 +36,13 @@ function initHeroSlider() {
     { name: 'VIP Suite', type: 'Featured Dormitories' },
     { name: 'Dormitory Suite 1', type: 'Featured Dormitories' },
     { name: 'Dormitory Suite 2', type: 'Featured Dormitories' },
-    { name: 'Guesthouse 1 (Presidential Villa)', type: 'Featured Guesthouses' },
-    { name: 'Guesthouse 2 (Director’s Lodge)', type: 'Featured Guesthouses' },
-    { name: 'Guesthouse 3 (Senior Cottage)', type: 'Featured Guesthouses' },
-    { name: 'Guesthouse 4 (Resource Residence)', type: 'Featured Guesthouses' },
-    { name: 'Guesthouse 5 (Delegates Home)', type: 'Featured Guesthouses' },
-    { name: 'Guesthouse 6 (Fellows Lodge)', type: 'Featured Guesthouses' },
-    { name: 'Guesthouse 7 (Lecturer Villa)', type: 'Featured Guesthouses' }
+    { name: 'Presidential Villa', type: 'Featured Guesthouses' },
+    { name: 'Director’s Lodge', type: 'Featured Guesthouses' },
+    { name: 'Senior Cottage', type: 'Featured Guesthouses' },
+    { name: 'Resource Residence', type: 'Featured Guesthouses' },
+    { name: 'Delegates Home', type: 'Featured Guesthouses' },
+    { name: 'Fellows Lodge', type: 'Featured Guesthouses' },
+    { name: 'Lecturer Villa', type: 'Featured Guesthouses' }
   ];
 
   let currentIndex = 0;
@@ -435,49 +435,49 @@ function initModals() {
       features: ['Air-Conditioned Trainee Hall', 'Individual Personal Lockers', 'Study Desks & High-Speed Wi-Fi', 'Spacious Common Washrooms']
     },
     'guesthouse-1': {
-      title: 'Guesthouse 1 (Presidential Villa)',
+      title: 'Presidential Villa',
       image: 'assets/images/guesthouse.jpg',
       desc: 'Premier executive guesthouse villa featuring an elegant master bedroom, private ensuite bathroom with hot shower, workstation desk, and direct views of the lush compound gardens.',
       capacity: 'Executive Villa • ₱2,000 / night',
       features: ['Full Air-Conditioning & Smart HDTV', 'Private Ensuite Restroom & Hot Shower', 'Mini Refrigerator & Beverage Bar', 'Executive Workstation & Fast Wi-Fi']
     },
     'guesthouse-2': {
-      title: 'Guesthouse 2 (Director’s Lodge)',
+      title: 'Director’s Lodge',
       image: 'assets/images/guesthouse.jpg',
       desc: 'Spacious residential lodge tailored for senior institutional officials and international delegations, equipped with comfortable seating, study desk, and private veranda.',
       capacity: 'Executive Lodge • ₱2,000 / night',
       features: ['Full Climate Control & Smart TV', 'Ensuite Restroom & Amenities Kit', 'Private Balcony Veranda Access', 'Executive Workstation & Wi-Fi']
     },
     'guesthouse-3': {
-      title: 'Guesthouse 3 (Senior Cottage)',
+      title: 'Senior Cottage',
       image: 'assets/images/guesthouse.jpg',
       desc: 'Peaceful garden cottage equipped with plush bedding, dining nook, hot shower, high-speed Wi-Fi, and climate control in a private grove.',
       capacity: 'Private Cottage • ₱1,800 / night',
       features: ['Full Air-Conditioning', 'Private Restroom with Water Heater', 'Dining Nook & Refrigerator', 'Peaceful Botanical Garden View']
     },
     'guesthouse-4': {
-      title: 'Guesthouse 4 (Resource Residence)',
+      title: 'Resource Residence',
       image: 'assets/images/guesthouse.jpg',
       desc: 'Quiet, secluded accommodation ideal for training resource speakers, guest professors, and visiting technical specialists.',
       capacity: 'Guest Residence • ₱1,800 / night',
       features: ['Air Conditioning & Study Workstation', 'Private Restroom & Hot Shower', 'Smart Television & Wi-Fi', 'Quiet Courtyard Location']
     },
     'guesthouse-5': {
-      title: 'Guesthouse 5 (Delegates Home)',
+      title: 'Delegates Home',
       image: 'assets/images/guesthouse.jpg',
       desc: 'Comfortable multi-guest residential unit featuring two private bedrooms, living hall, personal refrigerator, and smart TV.',
       capacity: 'Residential Unit • ₱1,800 / night',
       features: ['Two Private Bedrooms', 'Shared Lounge & Smart TV', 'Private Bathroom & Hot Shower', 'High-Speed Wi-Fi Access']
     },
     'guesthouse-6': {
-      title: 'Guesthouse 6 (Fellows Lodge)',
+      title: 'Fellows Lodge',
       image: 'assets/images/guesthouse.jpg',
       desc: 'Cozy modern lodge featuring twin beds, private bath, dedicated writing desks, and relaxing views of the botanical landscape.',
       capacity: 'Fellows Lodge • ₱1,500 / night',
       features: ['Twin Bed Accommodation', 'Air-Conditioned Comfort', 'Private Restroom & Shower', 'Dedicated Writing Desks']
     },
     'guesthouse-7': {
-      title: 'Guesthouse 7 (Lecturer Villa)',
+      title: 'Lecturer Villa',
       image: 'assets/images/guesthouse.jpg',
       desc: 'Executive guest villa with serene garden surroundings, Queen bed, modern work desk, and full hospitality amenities.',
       capacity: 'Lecturer Villa • ₱1,500 / night',

@@ -53,10 +53,10 @@ function updateKPIBadges() {
   const tabCountDorms = document.getElementById('tabCountDorms');
   if (tabCountDorms) tabCountDorms.textContent = dorms;
 
-  const kpiOccupancy = document.getElementById('kpiOccupancy');
-  if (kpiOccupancy) {
-    const rate = total > 0 ? ((approved / total) * 100).toFixed(1) : '0';
-    kpiOccupancy.textContent = `${rate}%`;
+  const kpiOccupancyTrend = document.getElementById('kpiOccupancyTrend');
+  if (kpiOccupancyTrend) {
+    kpiOccupancyTrend.textContent = `${approved} Approved`;
+    kpiOccupancyTrend.className = approved > 0 ? 'stat-trend positive' : 'stat-trend neutral';
   }
 }
 
@@ -505,9 +505,47 @@ function clearAdminSearch() {
   if (barInput) barInput.focus();
 }
 
-function handleVenueSelectFilter(venue) {
-  adminFilterState.venue = venue;
+function toggleVenueDropdown(e) {
+  if (e) e.stopPropagation();
+  const dropdown = document.getElementById('venueCustomDropdown');
+  if (dropdown) {
+    const isOpen = dropdown.classList.toggle('open');
+    const btn = document.getElementById('venueFilterBtn');
+    if (btn) btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  }
+}
+
+function selectAdminVenueOption(value, label, category) {
+  adminFilterState.venue = value;
+
+  const hiddenInput = document.getElementById('venueFilterSelect');
+  if (hiddenInput) hiddenInput.value = value;
+
+  const labelEl = document.getElementById('venueFilterLabel');
+  if (labelEl) labelEl.textContent = label;
+
+  const dropdown = document.getElementById('venueCustomDropdown');
+  if (dropdown) {
+    dropdown.classList.remove('open');
+    const btn = document.getElementById('venueFilterBtn');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+
+    dropdown.querySelectorAll('.facility-option').forEach(opt => {
+      if (opt.getAttribute('data-value') === value) {
+        opt.classList.add('active');
+        opt.setAttribute('aria-selected', 'true');
+      } else {
+        opt.classList.remove('active');
+        opt.setAttribute('aria-selected', 'false');
+      }
+    });
+  }
+
   applyCombinedAdminFilters();
+}
+
+function handleVenueSelectFilter(venue) {
+  selectAdminVenueOption(venue, venue, '');
 }
 
 function resetAllAdminFilters() {
@@ -527,6 +565,23 @@ function resetAllAdminFilters() {
 
   const venueSelect = document.getElementById('venueFilterSelect');
   if (venueSelect) venueSelect.value = 'all';
+
+  const venueLabel = document.getElementById('venueFilterLabel');
+  if (venueLabel) venueLabel.textContent = 'All Venues & Rooms';
+
+  const dropdown = document.getElementById('venueCustomDropdown');
+  if (dropdown) {
+    dropdown.classList.remove('open');
+    dropdown.querySelectorAll('.facility-option').forEach(opt => {
+      if (opt.getAttribute('data-value') === 'all') {
+        opt.classList.add('active');
+        opt.setAttribute('aria-selected', 'true');
+      } else {
+        opt.classList.remove('active');
+        opt.setAttribute('aria-selected', 'false');
+      }
+    });
+  }
 
   document.querySelectorAll('.filter-tab-btn').forEach(btn => {
     if (btn.getAttribute('data-filter') === 'all') {
@@ -562,14 +617,31 @@ function applyCombinedAdminFilters() {
       matchesTab = (category === 'halls');
     } else if (adminFilterState.tab === 'dorms') {
       matchesTab = (category === 'dorms');
+    } else if (adminFilterState.tab === 'guesthouses') {
+      matchesTab = (category === 'guesthouses');
     }
 
     // 2. Check Venue Dropdown Filter
     let matchesVenue = false;
     if (adminFilterState.venue === 'all') {
       matchesVenue = true;
-    } else if (rowVenue.includes(adminFilterState.venue.toLowerCase())) {
-      matchesVenue = true;
+    } else if (adminFilterState.venue === 'category:halls') {
+      matchesVenue = (category === 'halls');
+    } else if (adminFilterState.venue === 'category:dorms') {
+      matchesVenue = (category === 'dorms');
+    } else if (adminFilterState.venue === 'category:guesthouses') {
+      matchesVenue = (category === 'guesthouses');
+    } else {
+      const vFilter = adminFilterState.venue.toLowerCase();
+      matchesVenue = rowVenue.includes(vFilter) ||
+                     (vFilter.includes('guesthouse 1') && (rowVenue.includes('guesthouse 1') || rowVenue.includes('presidential'))) ||
+                     (vFilter.includes('presidential') && (rowVenue.includes('presidential') || rowVenue.includes('guesthouse 1'))) ||
+                     (vFilter.includes('guesthouse 2') && (rowVenue.includes('guesthouse 2') || rowVenue.includes('director'))) ||
+                     (vFilter.includes('guesthouse 3') && (rowVenue.includes('guesthouse 3') || rowVenue.includes('senior'))) ||
+                     (vFilter.includes('guesthouse 4') && (rowVenue.includes('guesthouse 4') || rowVenue.includes('resource'))) ||
+                     (vFilter.includes('guesthouse 5') && (rowVenue.includes('guesthouse 5') || rowVenue.includes('delegates'))) ||
+                     (vFilter.includes('guesthouse 6') && (rowVenue.includes('guesthouse 6') || rowVenue.includes('fellows'))) ||
+                     (vFilter.includes('guesthouse 7') && (rowVenue.includes('guesthouse 7') || rowVenue.includes('lecturer')));
     }
 
     // 3. Check Unified Search Query
@@ -1000,11 +1072,180 @@ function exportOccupancyReport() {
   }, 600);
 }
 
-// ESC key listener to close modal
+function filterOccupancyCategory(cat) {
+  // Update active state on cards
+  const cards = document.querySelectorAll('.occ-metric-card');
+  cards.forEach(card => card.classList.remove('active', 'hall', 'dorm', 'guesthouse', 'peak'));
+
+  const cardMap = {
+    'all': document.getElementById('occCardAll'),
+    'hall': document.getElementById('occCardHall'),
+    'dorm': document.getElementById('occCardDorm'),
+    'guesthouse': document.getElementById('occCardGuesthouse')
+  };
+
+  if (cardMap[cat]) {
+    cardMap[cat].classList.add('active');
+    if (cat !== 'all') {
+      cardMap[cat].classList.add(cat);
+    }
+  }
+
+  // Ensure bar graph view is shown when filtering facilities
+  const barView = document.getElementById('occupancyBarGraphView');
+  if (barView && barView.style.display === 'none') {
+    switchOccupancyGraph('bar');
+  }
+
+  // Filter breakdown table rows
+  const rows = document.querySelectorAll('.occ-breakdown-row');
+  let visibleCount = 0;
+  rows.forEach(row => {
+    if (cat === 'all' || row.dataset.category === cat) {
+      row.style.display = '';
+      visibleCount++;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+
+  // Filter/highlight SVG bars
+  const bars = document.querySelectorAll('.occ-bar-group');
+  bars.forEach(bar => {
+    if (cat === 'all' || bar.dataset.category === cat) {
+      bar.style.opacity = '1';
+      bar.style.filter = '';
+    } else {
+      bar.style.opacity = '0.22';
+      bar.style.filter = 'grayscale(80%)';
+    }
+  });
+
+  // Update asset count label
+  const countLabel = document.getElementById('occBreakdownCount');
+  if (countLabel) {
+    const catName = cat === 'all' ? 'Institutional' 
+      : cat === 'hall' ? 'Function Hall' 
+      : cat === 'dorm' ? 'Dormitory' 
+      : 'Guesthouse';
+    countLabel.textContent = `Showing ${visibleCount} ${catName} Assets`;
+  }
+}
+
+function focusPeakLoadDay() {
+  const cards = document.querySelectorAll('.occ-metric-card');
+  cards.forEach(card => card.classList.remove('active', 'hall', 'dorm', 'guesthouse', 'peak'));
+  const peakCard = document.getElementById('occCardPeak');
+  if (peakCard) {
+    peakCard.classList.add('active', 'peak');
+  }
+
+  switchOccupancyGraph('line');
+
+  if (typeof showAdminToast === 'function') {
+    showAdminToast('Switched to Line Graph: Focused on Peak Load Day trend', 'info');
+  }
+}
+
+/* ==========================================================================
+   FACILITY UTILIZATION & VALUATION ANALYTICS MODAL
+   ========================================================================== */
+function openUtilizationModal() {
+  const modal = document.getElementById('utilizationModal');
+  if (modal) {
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    filterUtilizationCategory('all');
+  }
+}
+
+function closeUtilizationModal() {
+  const modal = document.getElementById('utilizationModal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+
+function filterUtilizationCategory(cat) {
+  const modal = document.getElementById('utilizationModal');
+  if (!modal) return;
+
+  const cards = modal.querySelectorAll('.occ-metric-card');
+  cards.forEach(card => card.classList.remove('active', 'hall', 'dorm', 'guesthouse'));
+
+  const cardMap = {
+    'all': document.getElementById('utilCardAll'),
+    'hall': document.getElementById('utilCardHall'),
+    'dorm': document.getElementById('utilCardDorm'),
+    'guesthouse': document.getElementById('utilCardGuesthouse')
+  };
+
+  if (cardMap[cat]) {
+    cardMap[cat].classList.add('active');
+    if (cat !== 'all') {
+      cardMap[cat].classList.add(cat);
+    }
+  }
+
+  const rows = modal.querySelectorAll('.util-breakdown-row');
+  let visibleCount = 0;
+  let visibleTotal = 0;
+
+  rows.forEach(row => {
+    if (cat === 'all' || row.dataset.category === cat) {
+      row.style.display = '';
+      visibleCount++;
+      visibleTotal += parseFloat(row.dataset.val || '0');
+    } else {
+      row.style.display = 'none';
+    }
+  });
+
+  const countLabel = document.getElementById('utilBreakdownCount');
+  if (countLabel) {
+    const catName = cat === 'all' ? 'All' 
+      : cat === 'hall' ? 'Function Hall' 
+      : cat === 'dorm' ? 'Dormitory' 
+      : 'Guesthouse';
+    countLabel.innerHTML = `Showing <strong>${visibleCount}</strong> ${catName} Records &bull; Subtotal: <strong>₱${visibleTotal.toLocaleString('en-US', {minimumFractionDigits: 0, maximumFractionDigits: 2})}</strong>`;
+  }
+}
+
+function exportUtilizationReport() {
+  if (typeof showAdminToast === 'function') {
+    showAdminToast('Generating Official Facility Utilization Valuation Report (PDF)...', 'success');
+  }
+  setTimeout(() => {
+    window.print();
+  }, 600);
+}
+
+// ESC key listener to close modal or dropdown
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
     closeOccupancyModal();
+    closeUtilizationModal();
+    const dropdown = document.getElementById('venueCustomDropdown');
+    if (dropdown) {
+      dropdown.classList.remove('open');
+      const btn = document.getElementById('venueFilterBtn');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
   }
 });
+
+// Close custom venue dropdown when clicking outside
+document.addEventListener('click', function (e) {
+  const dropdown = document.getElementById('venueCustomDropdown');
+  if (dropdown && !dropdown.contains(e.target)) {
+    dropdown.classList.remove('open');
+    const btn = document.getElementById('venueFilterBtn');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+  }
+});
+
+
+
 
 

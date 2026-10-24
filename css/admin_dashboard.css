@@ -1207,6 +1207,287 @@ body.admin-app-body {
 }
 
 /* ==========================================================================
+   Custom Themed Venue Filter Dropdown & Category Separators
+   ========================================================================== */
+.custom-facility-dropdown {
+  position: relative;
+  display: inline-block;
+  user-select: none;
+}
+
+.facility-dropdown-btn.venue-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  height: 35px;
+  padding: 0 0.95rem;
+  background: #ffffff;
+  border: 1.5px solid #d5e2d8;
+  border-radius: 9999px;
+  color: #192b21;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.facility-dropdown-btn.venue-filter-btn:hover {
+  border-color: #1b6138;
+  background: #f7faf8;
+  color: #175432;
+}
+
+.custom-facility-dropdown.open .facility-dropdown-btn.venue-filter-btn {
+  border-color: #1b6138;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(27, 97, 56, 0.12);
+  color: #175432;
+}
+
+.facility-dropdown-btn .facility-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #2e7d32;
+}
+
+.facility-dropdown-btn .facility-btn-label {
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.facility-dropdown-btn .facility-chevron {
+  transition: transform 0.22s ease;
+  color: #5c7566;
+  flex-shrink: 0;
+}
+
+.custom-facility-dropdown.open .facility-chevron {
+  transform: rotate(180deg);
+  color: #1b6138;
+}
+
+.facility-dropdown-menu.venue-filter-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 335px;
+  max-width: 390px;
+  max-height: 400px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #ffffff;
+  border: 1.5px solid #d8e8dc;
+  border-radius: 14px;
+  box-shadow: 0 14px 35px -8px rgba(15, 42, 28, 0.18), 0 4px 12px rgba(0, 0, 0, 0.05);
+  padding: 6px 0;
+  z-index: 120;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px) scale(0.98);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.custom-facility-dropdown.open .facility-dropdown-menu.venue-filter-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+/* Custom sleek scrollbar for dropdown menu */
+.facility-dropdown-menu.venue-filter-menu::-webkit-scrollbar {
+  width: 6px;
+}
+.facility-dropdown-menu.venue-filter-menu::-webkit-scrollbar-track {
+  background: #f8faf9;
+  border-radius: 9999px;
+}
+.facility-dropdown-menu.venue-filter-menu::-webkit-scrollbar-thumb {
+  background: #c3d9cc;
+  border-radius: 9999px;
+}
+.facility-dropdown-menu.venue-filter-menu::-webkit-scrollbar-thumb:hover {
+  background: #8fae9b;
+}
+
+/* Base Option styling */
+.facility-dropdown-menu .facility-option {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.52rem 0.95rem;
+  margin: 1px 6px;
+  border-radius: 8px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  color: #2d4537;
+  cursor: pointer;
+  transition: all 0.14s ease;
+  user-select: none;
+}
+
+.facility-dropdown-menu .facility-option:hover {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.facility-dropdown-menu .facility-option.active {
+  background: #e6f7ec;
+  color: #14532d;
+  font-weight: 700;
+}
+
+.facility-dropdown-menu .opt-bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.facility-dropdown-menu .opt-bullet.all {
+  background: linear-gradient(135deg, #1b6138 0%, #059669 100%);
+  box-shadow: 0 0 0 2px rgba(27, 97, 56, 0.2);
+}
+
+.facility-dropdown-menu .opt-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.facility-dropdown-menu .opt-sub {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-left: auto;
+  padding-left: 0.4rem;
+  flex-shrink: 0;
+}
+
+.facility-dropdown-menu .opt-check {
+  margin-left: 0.4rem;
+  color: #16a34a;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+.facility-dropdown-menu .facility-option.active .opt-check {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   Category Separator Rows (Different Shades of Color)
+   ========================================================================== */
+.dropdown-category-separator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.5rem 0.95rem;
+  margin: 6px 0 3px 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.16s ease;
+  white-space: nowrap;
+}
+
+.dropdown-category-separator .cat-sep-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dropdown-category-separator .cat-sep-left span {
+  white-space: nowrap;
+}
+
+.dropdown-category-separator .cat-sep-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.14rem 0.55rem;
+  border-radius: 9999px;
+  text-transform: none;
+  letter-spacing: normal;
+  transition: all 0.14s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 1. Facilities / Training & Function Halls - Fresh Green / Mint Shade */
+.dropdown-category-separator.category-sep-halls {
+  background: #ecfdf5;
+  border-top: 1px solid #a7f3d0;
+  border-bottom: 1px solid #a7f3d0;
+  color: #065f46;
+}
+.dropdown-category-separator.category-sep-halls:hover {
+  background: #d1fae5;
+  color: #047857;
+}
+.dropdown-category-separator.category-sep-halls .cat-sep-pill {
+  background: #059669;
+  color: #ffffff;
+}
+.dropdown-category-separator.category-sep-halls:hover .cat-sep-pill {
+  background: #047857;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.35);
+}
+
+/* 2. Dormitories & Lodgings - Warm Honey Amber Shade */
+.dropdown-category-separator.category-sep-dorms {
+  background: #fffbeb;
+  border-top: 1px solid #fde68a;
+  border-bottom: 1px solid #fde68a;
+  color: #92400e;
+}
+.dropdown-category-separator.category-sep-dorms:hover {
+  background: #fef3c7;
+  color: #78350f;
+}
+.dropdown-category-separator.category-sep-dorms .cat-sep-pill {
+  background: #d97706;
+  color: #ffffff;
+}
+.dropdown-category-separator.category-sep-dorms:hover .cat-sep-pill {
+  background: #b45309;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.35);
+}
+
+/* 3. Guesthouses & Private Villas - Elegant Cool Teal / Sea Green Shade */
+.dropdown-category-separator.category-sep-guesthouses {
+  background: #f0fdfa;
+  border-top: 1px solid #99f6e4;
+  border-bottom: 1px solid #99f6e4;
+  color: #0f766e;
+}
+.dropdown-category-separator.category-sep-guesthouses:hover {
+  background: #ccfbf1;
+  color: #115e59;
+}
+.dropdown-category-separator.category-sep-guesthouses .cat-sep-pill {
+  background: #0d9488;
+  color: #ffffff;
+}
+.dropdown-category-separator.category-sep-guesthouses:hover .cat-sep-pill {
+  background: #0f766e;
+  box-shadow: 0 2px 6px rgba(13, 148, 136, 0.35);
+}
+
+/* ==========================================================================
    Admin Official Table Card (Screen-Fit Dense Layout)
    ========================================================================== */
 .admin-table-card {
@@ -2300,9 +2581,9 @@ body.admin-app-body {
 }
 
 .admin-modal-close {
-  background: #f1f8f3;
+  background: #ffffff;
   border: 1.5px solid #dce8e0;
-  color: #4b6354;
+  color: #173822;
   width: 34px;
   height: 34px;
   min-width: 34px;
@@ -2320,7 +2601,7 @@ body.admin-app-body {
   box-sizing: border-box !important;
   flex-shrink: 0 !important;
   vertical-align: middle;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
 
 .admin-modal-close svg {
@@ -2330,13 +2611,15 @@ body.admin-app-body {
   margin: 0 auto !important;
   flex-shrink: 0 !important;
   pointer-events: none;
-  stroke: currentColor;
+  stroke: #173822 !important;
+  stroke-width: 2.8 !important;
   transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.25s ease;
 }
 
 .admin-modal-close svg line {
-  stroke: currentColor !important;
-  transition: stroke 0.25s ease;
+  stroke: #173822 !important;
+  stroke-width: 2.8 !important;
+  transition: stroke 0.2s ease;
 }
 
 .admin-modal-close:hover {
@@ -2347,6 +2630,7 @@ body.admin-app-body {
   box-shadow: 0 4px 14px rgba(220, 38, 38, 0.28) !important;
 }
 
+.admin-modal-close:hover svg,
 .admin-modal-close:hover svg line {
   stroke: #dc2626 !important;
 }
@@ -2723,7 +3007,9 @@ body.admin-modal-open {
 
   .admin-search-wrap,
   .select-filter-wrap,
-  .venue-filter-select {
+  .venue-filter-select,
+  .custom-facility-dropdown,
+  .facility-dropdown-btn.venue-filter-btn {
     max-width: 100%;
     width: 100%;
   }
@@ -2976,9 +3262,21 @@ body.admin-modal-open {
 
 .occ-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.55rem;
   margin-bottom: 0.85rem;
+}
+
+@media (max-width: 992px) {
+  .occ-metrics-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .occ-metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .occ-metric-card {
@@ -2988,11 +3286,65 @@ body.admin-modal-open {
   padding: 0.55rem 0.65rem;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+  position: relative;
+}
+
+.occ-metric-card:hover {
+  transform: translateY(-2px);
+  border-color: #2e7d32;
+  box-shadow: 0 4px 12px rgba(23, 77, 47, 0.08);
+}
+
+.occ-metric-card.active {
+  border-color: #1b5e20;
+  box-shadow: 0 0 0 2.5px rgba(27, 94, 32, 0.2), 0 4px 14px rgba(27, 94, 32, 0.1);
+  background: #f0fdf4;
+}
+
+.occ-metric-card.active.dorm {
+  border-color: #d97706;
+  box-shadow: 0 0 0 2.5px rgba(217, 119, 6, 0.25), 0 4px 14px rgba(217, 119, 6, 0.1);
+  background: #fffbeb;
+}
+
+.occ-metric-card.active.guesthouse {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 2.5px rgba(15, 118, 110, 0.25), 0 4px 14px rgba(15, 118, 110, 0.1);
+  background: #f0fdfa;
+}
+
+.occ-metric-card.active.hall {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2.5px rgba(37, 99, 235, 0.25), 0 4px 14px rgba(37, 99, 235, 0.1);
+  background: #eff6ff;
+}
+
+.occ-metric-card.active.peak {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2.5px rgba(239, 68, 68, 0.25), 0 4px 14px rgba(239, 68, 68, 0.1);
+  background: #fef2f2;
 }
 
 .occ-metric-card.primary {
   background: #edf7f1;
   border-color: #badfc4;
+}
+
+.occ-bar-group {
+  transition: opacity 0.2s ease, filter 0.2s ease;
+  cursor: pointer;
+}
+
+.occ-breakdown-row,
+.util-breakdown-row {
+  transition: background-color 0.15s ease;
+}
+
+.util-breakdown-row:hover {
+  background-color: #f0fdf4 !important;
 }
 
 .occ-metric-lbl {
@@ -3237,6 +3589,11 @@ body.admin-modal-open {
 .occ-tag.dorm {
   background: #fef3c7;
   color: #b45309;
+}
+
+.occ-tag.guesthouse {
+  background: #ccfbf1;
+  color: #0f766e;
 }
 
 .occ-tbl-rate {
