@@ -927,8 +927,63 @@ function initRealtimeOfficeHours() {
     holiday: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>',
     wfh: '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>',
     open: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>',
-    closed: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>'
+    closed: '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>',
+    suspended: '<path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path><polyline points="13 11 9 17 15 17 11 23"></polyline>'
   };
+
+  // Additional element references for dual cards & top banner
+  const scheduleHeadingEl = document.getElementById('officeScheduleHeading');
+  const scheduleDescEl = document.getElementById('officeScheduleDesc');
+  const scheduleSubEl = document.getElementById('officeScheduleSubnote');
+  const officeHoursMetaEl = document.getElementById('officeHoursMetaText');
+  const advisoryMetaEl = document.getElementById('officeAdvisoryMetaText');
+  const bannerEl = document.getElementById('weatherSuspensionBanner');
+  const bannerBadgeTextEl = document.getElementById('weatherBannerBadgeText');
+  const bannerHeadingEl = document.getElementById('weatherBannerHeading');
+  const bannerMsgEl = document.getElementById('weatherBannerMessage');
+
+  let currentWeatherSuspension = null;
+
+  // Check URL parameters for immediate preview/testing (?weather_suspension=1 or ?pagasa=1)
+  const urlParams = new URLSearchParams(window.location.search);
+  const testSuspensionParam = urlParams.get('weather_suspension') || urlParams.get('pagasa') || urlParams.get('test_pagasa');
+  if (testSuspensionParam === '1' || testSuspensionParam === 'true') {
+    currentWeatherSuspension = {
+      is_weather_suspension: true,
+      title: 'Work Suspended: Typhoon Pepito (PAGASA TCWS No. 2)',
+      description: 'Pursuant to PAGASA Severe Weather Bulletin and Malacañang / NDRRMC directives, government office work and counter operations at the ATI Central Office are suspended today due to inclement weather conditions. Online facility and dormitory booking requests remain open 24/7.',
+      typhoon_name: 'Typhoon Pepito',
+      signal_level: 'TCWS Signal No. 2',
+      badge_text: 'PAGASA SUSPENSION',
+      directive_source: 'PAGASA-DOST • NDRRMC • Presidential Directive EO 66',
+      memo_ref: 'Executive Order No. 66 (s. 2012) / NDRRMC Memo'
+    };
+  }
+
+  function fetchLiveOfficeAdvisory() {
+    if (testSuspensionParam === '1' || testSuspensionParam === 'true') {
+      updateOfficeStatus();
+      return;
+    }
+
+    fetch('ajax/get_office_advisory.php', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.success && data.is_weather_suspension && data.advisory) {
+          currentWeatherSuspension = {
+            is_weather_suspension: true,
+            ...data.advisory
+          };
+        } else {
+          currentWeatherSuspension = null;
+        }
+        updateOfficeStatus();
+      })
+      .catch(err => {
+        // Keep standard calculations if offline or purely static
+        updateOfficeStatus();
+      });
+  }
 
   function setOfficeNote(theme, badgeText, title, desc) {
     if (noteEl) noteEl.className = 'advisory-body theme-' + theme;
@@ -948,6 +1003,64 @@ function initRealtimeOfficeHours() {
     const totalMinutes = hour * 60 + minute;
     const isWorkingHours = (totalMinutes >= 480 && totalMinutes < 1020); // 8:00 AM - 5:00 PM
     const holiday = getPhilippineHoliday(year, month, day);
+
+    // Case 0: PAGASA Bad Weather / Tropical Cyclone Suspension (Highest Priority)
+    if (currentWeatherSuspension && currentWeatherSuspension.is_weather_suspension) {
+      const adv = currentWeatherSuspension;
+      statusEl.textContent = 'SUSPENDED';
+      statusEl.className = 'office-status-tag suspended';
+      statusEl.title = `Office operations suspended: ${adv.typhoon_name || 'Inclement Weather'} (${adv.signal_level || 'PAGASA Bulletin'})`;
+
+      if (scheduleHeadingEl) scheduleHeadingEl.textContent = 'Inclement Weather Suspension';
+      if (scheduleDescEl) {
+        scheduleDescEl.textContent = adv.typhoon_name
+          ? `${adv.typhoon_name} (${adv.signal_level || 'PAGASA Bulletin'})`
+          : 'On-site operations suspended per PAGASA advisory';
+      }
+      if (scheduleSubEl) {
+        scheduleSubEl.textContent = '• Physical counter services suspended (EO 66 / NDRRMC Directive)';
+        scheduleSubEl.style.color = '#fdba74';
+      }
+      if (officeHoursMetaEl) {
+        officeHoursMetaEl.textContent = 'Agricultural Training Institute • Operations Suspended';
+      }
+
+      setOfficeNote(
+        'suspended',
+        adv.badge_text || 'PAGASA SUSPENSION',
+        adv.title || 'Work Suspended • PAGASA Weather Advisory',
+        adv.description || 'Pursuant to PAGASA Severe Weather Bulletin and Malacañang / NDRRMC directives, government office work and counter operations at the ATI Central Office are suspended today due to inclement weather conditions. Online facility and dormitory booking requests remain open 24/7.'
+      );
+
+      if (advisoryMetaEl) {
+        advisoryMetaEl.textContent = adv.directive_source || 'PAGASA-DOST • NDRRMC • Presidential Directive EO 66';
+      }
+
+      if (bannerEl) {
+        bannerEl.style.display = 'block';
+        if (bannerBadgeTextEl) bannerBadgeTextEl.textContent = adv.badge_text || 'PAGASA Advisory';
+        if (bannerHeadingEl) bannerHeadingEl.textContent = adv.title ? `${adv.title}:` : 'Office Operations Suspended:';
+        if (bannerMsgEl) bannerMsgEl.textContent = adv.description || 'Pursuant to PAGASA Weather Bulletin, ATI Central Office on-site operations are suspended.';
+      }
+      return;
+    } else {
+      // Restore standard elements if not suspended
+      if (scheduleHeadingEl) scheduleHeadingEl.textContent = 'Standard Operations';
+      if (scheduleDescEl) scheduleDescEl.textContent = 'Monday – Friday, 8:00 AM – 5:00 PM (PST)';
+      if (scheduleSubEl) {
+        scheduleSubEl.textContent = '• Work from home during Fridays';
+        scheduleSubEl.style.color = '';
+      }
+      if (officeHoursMetaEl) {
+        officeHoursMetaEl.textContent = 'Agricultural Training Institute • Regular Working Hours';
+      }
+      if (advisoryMetaEl) {
+        advisoryMetaEl.textContent = 'Civil Service Commission & Government Holiday Directives';
+      }
+      if (bannerEl && !testSuspensionParam) {
+        bannerEl.style.display = 'none';
+      }
+    }
 
     // Case 1: Official Philippine Holiday / Government Declared Non-Working Day
     if (holiday) {
@@ -1050,12 +1163,14 @@ function initRealtimeOfficeHours() {
     }
   }
 
-  // Initial check
-  updateOfficeStatus();
+  // Initial live check & status computation
+  fetchLiveOfficeAdvisory();
 
-  // Real-time interval check every 15 seconds
+  // Periodic refresh: re-check advisory every 30 seconds and update office clock every 15 seconds
   setInterval(updateOfficeStatus, 15000);
+  setInterval(fetchLiveOfficeAdvisory, 30000);
 }
+
 
 /* ==========================================================================
    7. Vertical Animated Facilities & Guesthouses Scroller (Silky Smooth Loop)

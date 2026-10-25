@@ -2033,6 +2033,25 @@ button {
   font-weight: 800;
 }
 
+.office-status-tag.suspended {
+  color: #ffffff;
+  background: #ea580c;
+  border: 1.2px solid #f97316;
+  box-shadow: 0 0 14px rgba(234, 88, 12, 0.65);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  animation: weatherSuspensionPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes weatherSuspensionPulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(234, 88, 12, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.95);
+  }
+}
+
 @keyframes closedPulse {
   0%, 100% {
     box-shadow: 0 0 10px rgba(220, 38, 38, 0.5);
@@ -2214,6 +2233,23 @@ button {
   border: 1px solid rgba(239, 68, 68, 0.42);
 }
 
+.advisory-badge-pill.badge-suspended {
+  color: #ffedd5;
+  background: rgba(234, 88, 12, 0.32);
+  border: 1px solid rgba(249, 115, 22, 0.75);
+  box-shadow: 0 0 12px rgba(234, 88, 12, 0.45);
+  animation: weatherBadgePulse 2s infinite ease-in-out;
+}
+
+@keyframes weatherBadgePulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(234, 88, 12, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(249, 115, 22, 0.75);
+  }
+}
+
 @keyframes holidayBadgePulse {
   0%, 100% {
     box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
@@ -2309,6 +2345,15 @@ button {
   color: #f87171;
 }
 
+.advisory-body.theme-suspended {
+  background: rgba(234, 88, 12, 0.16);
+  border-color: rgba(249, 115, 22, 0.55);
+}
+.advisory-body.theme-suspended .advisory-status-icon,
+.advisory-body.theme-suspended .advisory-heading {
+  color: #fb923c;
+}
+
 /* Advisory Footer Meta */
 .advisory-footer-meta {
   display: flex;
@@ -2326,7 +2371,138 @@ button {
   flex-shrink: 0;
 }
 
+/* ==========================================================================
+   PAGASA BAD WEATHER SUSPENSION ALERT BANNER (TOP OF PAGE)
+   ========================================================================== */
+.weather-suspension-alert-banner {
+  background: linear-gradient(90deg, #7c2d12 0%, #c2410c 50%, #9a3412 100%);
+  color: #ffffff;
+  border-bottom: 2px solid #fb923c;
+  box-shadow: 0 4px 18px rgba(124, 45, 18, 0.45);
+  position: relative;
+  z-index: 1000;
+  animation: bannerSlideDown 0.4s ease-out;
+}
+
+@keyframes bannerSlideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.weather-banner-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.65rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.weather-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.weather-banner-badge {
+  background: #ffffff;
+  color: #c2410c;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.weather-banner-badge svg {
+  color: #ea580c;
+}
+
+.weather-banner-text {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.weather-banner-text strong {
+  color: #fed7aa;
+  font-weight: 700;
+}
+
+.weather-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.btn-banner-details {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.btn-banner-details:hover {
+  background: #ffffff;
+  color: #c2410c;
+}
+
+.btn-banner-close {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-banner-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+  .weather-banner-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.6rem 1rem;
+  }
+  .weather-banner-actions {
+    align-self: flex-end;
+  }
+}
+
 /* Footer Bottom Bar */
+
 .footer-bottom {
   padding-top: 1.35rem;
   font-size: 0.82rem;

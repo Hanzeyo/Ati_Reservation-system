@@ -3,7 +3,20 @@
  * SystemSetting - Manages dynamic system configurations and official form templates
  */
 class SystemSetting extends BaseModel {
-    protected $table_name = "system_settings";
+    private static $tableInitialized = false;
+
+    private static function ensureTable($conn) {
+        if (self::$tableInitialized || !$conn) return;
+        try {
+            $conn->exec("CREATE TABLE IF NOT EXISTS system_settings (
+                setting_key VARCHAR(100) PRIMARY KEY,
+                setting_value LONGTEXT,
+                updated_by INT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )");
+            self::$tableInitialized = true;
+        } catch (Throwable $e) {}
+    }
 
     public static function get($key, $default = null) {
         try {
@@ -13,6 +26,7 @@ class SystemSetting extends BaseModel {
                 $conn = (new Database())->getConnection();
             }
             if (!$conn) return $default;
+            self::ensureTable($conn);
 
             $stmt = $conn->prepare("SELECT setting_value FROM system_settings WHERE setting_key = ? LIMIT 1");
             $stmt->execute([$key]);
@@ -37,6 +51,7 @@ class SystemSetting extends BaseModel {
                 $conn = (new Database())->getConnection();
             }
             if (!$conn) return false;
+            self::ensureTable($conn);
 
             $storeVal = is_array($value) || is_object($value) ? json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) : (string)$value;
             $uid = $userId ?: ($_SESSION['user_id'] ?? null);

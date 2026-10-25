@@ -577,6 +577,15 @@ $peakDayPct = $totalInstitutionalCapacity > 0
             <p>Review and act on pending institutional requests, oversee auditorium & dormitory occupancy, and maintain
               live facility schedules for ATI Central Office.</p>
           </div>
+          <div class="admin-header-actions" style="display: flex; align-items: center; gap: 0.65rem;">
+            <button type="button" class="btn-weather-control" onclick="openWeatherSuspensionModal()" style="background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%); color: #ffffff; border: 1px solid #9a3412; border-radius: 8px; padding: 0.6rem 1.1rem; font-weight: 700; font-size: 0.84rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.45rem; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.3); transition: all 0.2s ease;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                <path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path>
+                <polyline points="13 11 9 17 15 17 11 23"></polyline>
+              </svg>
+              <span>PAGASA Weather Suspension</span>
+            </button>
+          </div>
         </section>
 
         <!-- ==========================================================================
@@ -1924,6 +1933,9 @@ $peakDayPct = $totalInstitutionalCapacity > 0
        TOAST NOTIFICATION CONTAINER
        ========================================================================== -->
     <div class="admin-toast-container" id="adminToastContainer"></div>
+
+    <!-- PAGASA Weather Suspension Modal Component -->
+    <?php include __DIR__ . '/includes/admin_weather_modal.php'; ?>
 
     <!-- Scripts -->
     <script>
