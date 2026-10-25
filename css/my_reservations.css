@@ -469,6 +469,17 @@ body.my-res-body {
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
+body.admin-app-body .my-res-header-text h2 {
+  color: #142a1d !important;
+  text-shadow: none !important;
+}
+
+body.admin-app-body .my-res-header-text p {
+  color: #4b6354 !important;
+  text-shadow: none !important;
+  font-weight: 500 !important;
+}
+
 .btn-new-res-action {
   background-color: var(--primary-green);
   color: #ffffff;
