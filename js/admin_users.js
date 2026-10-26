@@ -39,6 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
       syncRolePermissionsCheckboxes(this.value);
     });
   }
+
+  // Check URL query parameters for direct filtering (e.g. ?filter=resets)
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialFilter = urlParams.get('filter');
+  if (initialFilter === 'resets' || initialFilter === 'reset_pending') {
+    filterUsersByRole('resets');
+  }
 });
 
 /* ==========================================================================
@@ -178,6 +185,8 @@ function applyUserFilters() {
       matchesRole = (role === 'super_admin');
     } else if (rbacFilterState.role === 'user') {
       matchesRole = (role === 'user' || role === 'staff' || role === 'external');
+    } else if (rbacFilterState.role === 'resets') {
+      matchesRole = (row.getAttribute('data-user-reset') === '1');
     }
 
     // 2. Status Filter Match
@@ -221,12 +230,17 @@ function updateUserCounts() {
   let superAdmin = 0;
   let requestors = 0;
   let archived = 0;
+  let resets = 0;
 
   rows.forEach(row => {
     const isArchived = (row.getAttribute('data-user-archived') === '1');
     if (isArchived) {
       archived++;
       return;
+    }
+
+    if (row.getAttribute('data-user-reset') === '1') {
+      resets++;
     }
 
     totalActive++;
@@ -270,6 +284,7 @@ function updateUserCounts() {
   const pillClear = document.getElementById('pillCountClear');
   const pillSuper = document.getElementById('pillCountSuper');
   const pillStaff = document.getElementById('pillCountStaff');
+  const pillResets = document.getElementById('pillCountResets');
   const pillArchived = document.getElementById('pillCountArchived');
 
   if (pillTotal) pillTotal.textContent = totalActive;
@@ -279,6 +294,11 @@ function updateUserCounts() {
   if (pillSuper) pillSuper.textContent = superAdmin;
   if (pillStaff) pillStaff.textContent = requestors;
   if (pillArchived) pillArchived.textContent = archived;
+  if (pillResets) {
+    pillResets.textContent = resets;
+    pillResets.style.background = resets > 0 ? '#d97706' : '';
+    pillResets.style.color = resets > 0 ? '#ffffff' : '';
+  }
 
   // Sidebar count badge
   const sidebarCount = document.getElementById('sidebarUsersCount');
@@ -456,6 +476,14 @@ async function saveRoleChanges(e) {
           }
           if (privCell) privCell.innerHTML = `<span class="privilege-summary-tag">Submit Reservations & Track Clearance Status</span>`;
         }
+
+        // Update edit button's onclick attributes for next modal open
+        const editBtn = row.querySelector('.btn-user-action.edit');
+        if (editBtn) {
+          const currentName = row.querySelector('.user-name-title')?.textContent?.trim() || '';
+          const currentEmail = row.querySelector('.user-email-text')?.textContent?.trim() || '';
+          editBtn.setAttribute('onclick', `openEditRoleModal(${activeUserEditId}, ${JSON.stringify(currentName)}, ${JSON.stringify(currentEmail)}, ${JSON.stringify(newRole)}, ${JSON.stringify(newDept)})`);
+        }
       }
 
       updateUserCounts();
@@ -502,7 +530,6 @@ async function toggleUserStatus(userId) {
       row.setAttribute('data-user-status', newStatus);
       const statusCell = row.children[4];
       const toggleBtn = row.querySelector('.btn-user-action.status-toggle');
-      const dot = row.querySelector('.user-online-dot');
 
       if (newStatus === 'suspended') {
         if (statusCell) {
@@ -521,7 +548,6 @@ async function toggleUserStatus(userId) {
           toggleBtn.classList.add('activate');
           toggleBtn.title = 'Reactivate access';
         }
-        if (dot) dot.classList.add('offline');
         showUserToast(`Access suspended for ${name}.`, 'decline');
       } else {
         if (statusCell) {
@@ -540,7 +566,6 @@ async function toggleUserStatus(userId) {
           toggleBtn.classList.remove('activate');
           toggleBtn.title = 'Suspend access';
         }
-        if (dot) dot.classList.remove('offline');
         showUserToast(`Account restored to Active status for ${name}.`, 'success');
       }
 
@@ -745,6 +770,158 @@ async function confirmPermanentDeleteUser(userId, name) {
     }
   } catch (err) {
     showUserToast('Server error while purging user.', 'decline');
+  }
+}
+
+/* ==========================================================================
+   RESET USER PASSWORD MODAL & AJAX SUBMIT
+   ========================================================================== */
+function openResetPasswordModal(userId, name, email) {
+  const modal = document.getElementById('resetPasswordModal');
+  if (!modal) return;
+
+  const idInput = document.getElementById('resetPassUserId');
+  const nameEl = document.getElementById('resetPassUserName');
+  const emailEl = document.getElementById('resetPassUserEmail');
+  const avatarEl = document.getElementById('resetPassUserAvatar');
+  const passInput = document.getElementById('resetPassNewInput');
+
+  if (idInput) idInput.value = userId;
+  if (nameEl) nameEl.textContent = name;
+  if (emailEl) emailEl.textContent = email;
+  if (passInput) {
+    passInput.value = '';
+    passInput.type = 'password';
+  }
+
+  const eyeIcon = document.getElementById('resetPassEyeIcon');
+  if (eyeIcon) {
+    eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+  }
+
+  if (avatarEl) {
+    const parts = name.trim().split(/\s+/);
+    const initials = parts.length > 1
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : name.slice(0, 2).toUpperCase();
+    avatarEl.textContent = initials;
+  }
+
+  modal.style.display = 'flex';
+  setTimeout(() => {
+    if (passInput) passInput.focus();
+  }, 100);
+}
+
+function closeResetPasswordModal() {
+  const modal = document.getElementById('resetPasswordModal');
+  if (modal) modal.style.display = 'none';
+  const form = document.getElementById('resetPasswordForm');
+  if (form) form.reset();
+}
+
+function generateDefaultPassword() {
+  const passInput = document.getElementById('resetPassNewInput');
+  if (passInput) {
+    passInput.value = 'AtiPass2026!';
+    passInput.type = 'text';
+    const eyeIcon = document.getElementById('resetPassEyeIcon');
+    if (eyeIcon) {
+      eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+    }
+    passInput.focus();
+    passInput.select();
+  }
+}
+
+function toggleResetPasswordVisibility() {
+  const passInput = document.getElementById('resetPassNewInput');
+  const eyeIcon = document.getElementById('resetPassEyeIcon');
+  if (!passInput) return;
+
+  if (passInput.type === 'password') {
+    passInput.type = 'text';
+    if (eyeIcon) {
+      eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+    }
+  } else {
+    passInput.type = 'password';
+    if (eyeIcon) {
+      eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+    }
+  }
+}
+
+async function submitResetPassword(e) {
+  if (e) e.preventDefault();
+
+  const idInput = document.getElementById('resetPassUserId');
+  const passInput = document.getElementById('resetPassNewInput');
+  const nameEl = document.getElementById('resetPassUserName');
+
+  const userId = idInput ? idInput.value : '';
+  const newPassword = passInput ? passInput.value.trim() : '';
+  const userName = nameEl ? nameEl.textContent : 'user';
+
+  if (!userId || !newPassword) {
+    showUserToast('Please provide a valid password.', 'decline');
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    showUserToast('Password must be at least 6 characters long.', 'decline');
+    return;
+  }
+
+  const submitBtn = e ? e.target.querySelector('button[type="submit"]') : null;
+  const originalText = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Updating...';
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'reset_password');
+    formData.append('user_id', userId);
+    formData.append('new_password', newPassword);
+
+    const response = await fetch('ajax/user_actions.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      showUserToast(result.message || `Password reset successfully for ${userName}.`, 'success');
+      closeResetPasswordModal();
+
+      // Clear pending reset indicator from table row
+      const targetRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+      if (targetRow) {
+        targetRow.setAttribute('data-user-reset', '0');
+        targetRow.classList.remove('row-user-reset');
+        const resetFlag = targetRow.querySelector('.user-reset-flag');
+        if (resetFlag) resetFlag.remove();
+        const resetBtn = targetRow.querySelector('.btn-user-action.reset-pass');
+        if (resetBtn) {
+          resetBtn.classList.remove('has-request');
+          resetBtn.title = 'Reset account password';
+        }
+        updateUserCounts();
+        applyUserFilters();
+      }
+    } else {
+      showUserToast(result.message || 'Failed to reset password.', 'decline');
+    }
+  } catch (err) {
+    showUserToast('Server error while resetting password.', 'decline');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
   }
 }
 

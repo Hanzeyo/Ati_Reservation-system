@@ -323,8 +323,7 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
               <span>Remember this device</span>
             </label>
             <a href="javascript:void(0)"
-              onclick="alert('Please contact the ATI ICT / Administrative Officer to reset your official credentials.');"
-              class="forgot-link">Forgot password?</a>
+              class="forgot-link js-open-forgot" id="forgotPasswordLink">Forgot password?</a>
           </div>
 
           <!-- Submit Button -->
@@ -342,6 +341,90 @@ $initialTab = isset($_GET['tab']) && $_GET['tab'] === 'login' ? 'login' : 'regis
           <span>Don't have an account?</span>
           <button type="button" class="auth-switch-link js-switch-to-register">Create Account</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div class="modal-overlay" id="forgotPasswordModal">
+    <div class="modal-card" style="max-width: 480px;">
+      <button class="modal-close-btn js-close-modal" aria-label="Close modal">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <div class="modal-header-banner">
+        <div style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.18); margin-bottom: 0.65rem;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h3 style="margin: 0; font-size: 1.25rem;">Account Password Assistance</h3>
+        <p style="margin: 0.25rem 0 0 0; opacity: 0.9; font-size: 0.85rem;">Agricultural Training Institute &bull; Central Office</p>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem; font-size: 0.9rem; color: #3b5044;">
+        <!-- Alert Banner inside modal -->
+        <div id="forgotAlert" class="auth-alert-banner" style="display: none; margin-bottom: 1.15rem;">
+          <svg class="auth-alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span class="auth-alert-text" id="forgotAlertText"></span>
+        </div>
+
+        <p style="margin: 0 0 1.15rem 0; font-size: 0.86rem; color: #4b6354; line-height: 1.55;">
+          Pursuant to institutional IT security guidelines, credentials are reset and issued by the <strong>ATI ICT Support / Administrative Division</strong> or authorized Division Officers.
+        </p>
+
+        <form id="forgotPasswordForm" onsubmit="handleForgotPasswordSubmit(event)">
+          <div class="auth-field-group" style="margin-bottom: 1.25rem;">
+            <label class="auth-field-label" for="forgotEmailInput">Enter Your Registered Official Email</label>
+            <div class="auth-input-wrapper">
+              <input type="email" id="forgotEmailInput" class="auth-input" placeholder="e.g. employee@ati.da.gov.ph" required>
+              <svg class="auth-input-icon" viewBox="0 0 24 24" fill="none">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <span style="display: block; font-size: 0.76rem; color: #6e8879; margin-top: 0.35rem;">
+              We will verify your record and log your reset assistance ticket.
+            </span>
+          </div>
+
+          <button type="submit" class="btn-auth-primary" id="btnForgotSubmit" style="width: 100%; height: 44px; margin-bottom: 1.25rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 2L11 13"></path>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            <span>Submit Reset Request</span>
+          </button>
+        </form>
+
+        <!-- Helpdesk Direct Contacts -->
+        <div style="background: #f4f8f5; border: 1.5px solid #d8e6dc; border-radius: 12px; padding: 0.95rem 1.1rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.3">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <strong style="font-size: 0.84rem; color: #143823;">Need Immediate Assistance?</strong>
+          </div>
+          <div style="font-size: 0.8rem; color: #476352; display: flex; flex-direction: column; gap: 0.35rem; line-height: 1.45;">
+            <div>🏛️ <strong>Office:</strong> Administrative & Finance Unit, ATI Central Office</div>
+            <div>✉️ <strong>Support Email:</strong> <a href="mailto:support@ati.da.gov.ph" style="color: #15803d; font-weight: 600; text-decoration: underline;">support@ati.da.gov.ph</a></div>
+            <div>📞 <strong>Trunkline:</strong> (02) 8929-8541 to 49 (Loc. 250 / 251)</div>
+          </div>
+        </div>
+
+        <button type="button" class="btn-system-secondary js-close-modal" style="width: 100%; margin-top: 1.25rem; height: 40px; font-size: 0.85rem; font-weight: 700; border-radius: 10px; cursor: pointer; border: 1.5px solid #d0ded4; background: #ffffff; color: #2a4c37;">
+          Back to Sign In
+        </button>
       </div>
     </div>
   </div>

@@ -333,11 +333,12 @@ function initPasswordStrengthAndMatch() {
 }
 
 /* ==========================================================================
-   5. Modals for Terms and Privacy Policy
+   5. Modals for Terms, Privacy Policy & Forgot Password
    ========================================================================== */
 function initAuthModals() {
   const termsModal = document.getElementById('termsModal');
   const privacyModal = document.getElementById('privacyModal');
+  const forgotModal = document.getElementById('forgotPasswordModal');
   const closeButtons = document.querySelectorAll('.js-close-modal');
 
   document.querySelectorAll('.js-open-terms').forEach(el => {
@@ -354,14 +355,31 @@ function initAuthModals() {
     });
   });
 
+  document.querySelectorAll('.js-open-forgot').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Auto-prefill email if user already entered something in login email field
+      const loginEmail = document.getElementById('loginEmailInput')?.value?.trim() || '';
+      const forgotEmailInput = document.getElementById('forgotEmailInput');
+      if (forgotEmailInput && loginEmail && !forgotEmailInput.value) {
+        forgotEmailInput.value = loginEmail;
+      }
+      const forgotAlert = document.getElementById('forgotAlert');
+      if (forgotAlert) forgotAlert.style.display = 'none';
+
+      if (forgotModal) forgotModal.classList.add('active');
+    });
+  });
+
   closeButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       if (termsModal) termsModal.classList.remove('active');
       if (privacyModal) privacyModal.classList.remove('active');
+      if (forgotModal) forgotModal.classList.remove('active');
     });
   });
 
-  [termsModal, privacyModal].forEach(modal => {
+  [termsModal, privacyModal, forgotModal].forEach(modal => {
     if (!modal) return;
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
@@ -369,6 +387,69 @@ function initAuthModals() {
       }
     });
   });
+}
+
+async function handleForgotPasswordSubmit(event) {
+  event.preventDefault();
+
+  const emailInput = document.getElementById('forgotEmailInput');
+  const alertBox = document.getElementById('forgotAlert');
+  const alertText = document.getElementById('forgotAlertText');
+  const submitBtn = document.getElementById('btnForgotSubmit');
+
+  const email = emailInput ? emailInput.value.trim() : '';
+  if (!email) return;
+
+  if (alertBox) alertBox.style.display = 'none';
+
+  const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 1s linear infinite;">
+        <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+        <path d="M12 2a10 10 0 0 1 10 10"></path>
+      </svg>
+      <span>Submitting Request...</span>
+    `;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'forgot_password');
+    formData.append('email', email);
+
+    const response = await fetch('ajax/auth_action.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (alertBox && alertText) {
+      alertBox.style.display = 'flex';
+      if (result.status === 'success') {
+        alertBox.className = 'auth-alert-banner auth-alert-success';
+        alertText.innerHTML = result.message || 'Password reset request acknowledged.';
+        if (emailInput) emailInput.disabled = true;
+        if (submitBtn) submitBtn.style.display = 'none';
+      } else {
+        alertBox.className = 'auth-alert-banner auth-alert-error';
+        alertText.textContent = result.message || 'No registered account found matching this email.';
+      }
+    }
+  } catch (err) {
+    if (alertBox && alertText) {
+      alertBox.style.display = 'flex';
+      alertBox.className = 'auth-alert-banner auth-alert-error';
+      alertText.textContent = 'Server connection error. Please try again or contact ICT directly.';
+    }
+  } finally {
+    if (submitBtn && submitBtn.style.display !== 'none') {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = origBtnHtml;
+    }
+  }
 }
 
 function handleRegistrationSubmit(event) {

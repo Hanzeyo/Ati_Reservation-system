@@ -34,6 +34,16 @@ if (!isset($sidebarUsersCount) && !empty($canManageUsers)) {
     }
 }
 
+// Fetch pending password reset requests for super_admin
+if (!isset($sidebarResetCount) && !empty($canManageUsers)) {
+    try {
+        $resetStmt = $db->query("SELECT COUNT(*) FROM users WHERE password_reset_requested_at IS NOT NULL AND deleted_at IS NULL");
+        $sidebarResetCount = (int)$resetStmt->fetchColumn();
+    } catch (Exception $e) {
+        $sidebarResetCount = 0;
+    }
+}
+
 // Generate initials for avatar
 $sidebarUserInitials = getUserInitials($_SESSION['full_name'] ?? 'Admin');
 $sidebarUserFullName = htmlspecialchars($_SESSION['full_name'] ?? 'Authorized Officer');
@@ -125,7 +135,11 @@ if (!empty($_SESSION['user_id'])) {
             </svg>
           </div>
           <span class="menu-label">User &amp; Role Access</span>
-          <span class="sidebar-count-badge green"><?= $sidebarUsersCount ?? 0 ?></span>
+          <?php if (!empty($sidebarResetCount)): ?>
+            <span class="sidebar-count-badge" id="sidebarUsersCount" style="background: #d97706; color: #ffffff; font-weight: 800; font-size: 0.72rem; padding: 2px 7px; border-radius: 9999px; box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.25);" title="<?= $sidebarResetCount ?> Password Reset Request(s) Pending"><?= $sidebarResetCount ?> Reset</span>
+          <?php else: ?>
+            <span class="sidebar-count-badge green" id="sidebarUsersCount"><?= $sidebarUsersCount ?? 0 ?></span>
+          <?php endif; ?>
         </a>
         <?php endif; ?>
 

@@ -287,6 +287,51 @@ try {
     }
 
     // =========================================================================
+    // ACTION: RESET USER PASSWORD
+    // =========================================================================
+    if ($action === 'reset_password') {
+        $userId = (int)($_POST['user_id'] ?? 0);
+        $newPassword = trim($_POST['new_password'] ?? '');
+
+        if ($userId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Invalid user ID.']);
+            exit;
+        }
+
+        if (strlen($newPassword) < 6) {
+            echo json_encode(['success' => false, 'message' => 'Password must be at least 6 characters long.']);
+            exit;
+        }
+
+        $fetchStmt = $db->prepare("SELECT full_name, email FROM users WHERE id = ?");
+        $fetchStmt->execute([$userId]);
+        $targetUser = $fetchStmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$targetUser) {
+            echo json_encode(['success' => false, 'message' => 'User not found.']);
+            exit;
+        }
+
+        $passwordHash = password_hash($newPassword, PASSWORD_BCRYPT);
+        $updateStmt = $db->prepare("UPDATE users SET password_hash = :hash, password_reset_requested_at = NULL, updated_at = NOW() WHERE id = :id");
+        $updateStmt->execute([
+            ':hash' => $passwordHash,
+            ':id' => $userId
+        ]);
+
+        $auditLog->action = 'USER_PASSWORD_RESET';
+        $auditLog->details = "Administrative password reset for {$targetUser['full_name']} (ID: {$userId}, {$targetUser['email']}) by {$currentAdminName}.";
+        $auditLog->log();
+
+        echo json_encode([
+            'success' => true,
+            'message' => "Password for {$targetUser['full_name']} has been successfully updated.",
+            'user_id' => $userId
+        ]);
+        exit;
+    }
+
+    // =========================================================================
     // ACTION: PERMANENTLY PURGE USER (HARD DELETE - SUPER ADMIN ONLY)
     // =========================================================================
     if ($action === 'permanent_delete_user') {

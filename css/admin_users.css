@@ -205,21 +205,6 @@
   border: 1px solid #ddd6fe;
 }
 
-.user-online-dot {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #22c55e;
-  border: 2px solid #ffffff;
-}
-
-.user-online-dot.offline {
-  background: #94a3b8;
-}
-
 .user-name-title {
   font-weight: 700;
   color: #142a1d;
@@ -358,6 +343,52 @@
   background: #174d2f;
   color: #ffffff;
   border-color: #174d2f;
+}
+
+.btn-user-action.reset-pass {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.btn-user-action.reset-pass:hover {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fcd34d;
+}
+
+.btn-user-action.reset-pass.has-request {
+  background: #f59e0b;
+  color: #ffffff;
+  border-color: #d97706;
+  font-weight: 800;
+  box-shadow: 0 0 0 2.5px rgba(245, 158, 11, 0.4);
+}
+
+.btn-user-action.reset-pass.has-request:hover {
+  background: #d97706;
+  color: #ffffff;
+}
+
+.row-user-reset {
+  background: #fffdf5 !important;
+}
+
+.user-filter-pill.tab-resets {
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.user-filter-pill.tab-resets:hover,
+.user-filter-pill.tab-resets.active {
+  background: #d97706 !important;
+  color: #ffffff !important;
+  border-color: #d97706 !important;
+}
+
+.user-filter-pill.tab-resets.active .tab-count-pill {
+  background: #ffffff !important;
+  color: #d97706 !important;
 }
 
 .btn-user-action.status-toggle {

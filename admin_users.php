@@ -6,17 +6,14 @@ require_once __DIR__ . '/includes/admin_guard.php';
  * Agriculture Training Institute - Facility and Dormitory Reservation System
  * Super Administrator: Role-Based Access Control (RBAC) & User Management Portal
  */
-$currentRole = isset($_GET['role']) && $_GET['role'] === 'recommendation' ? 'recommendation' : 'clearance';
-$isRecommendation = ($currentRole === 'recommendation');
-
 $db = (new Database())->getConnection();
 
 // Dynamic sidebar count
 $pendingStmt = $db->query("SELECT COUNT(*) FROM reservations WHERE status IN ('Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance', 'Awaiting Endorsement', 'Awaiting Recommendation', 'Awaiting Clearance')");
 $sidebarPendingCount = (int)($pendingStmt ? $pendingStmt->fetchColumn() : 0);
 
-// Fetch dynamic users from MySQL database
-$stmt = $db->query("SELECT id, full_name, email, contact_number, office_agency, category, role, status, created_at, deleted_at FROM users ORDER BY id ASC");
+// Fetch dynamic users from MySQL database (order users with pending reset requests first)
+$stmt = $db->query("SELECT id, full_name, email, contact_number, office_agency, category, role, status, password_reset_requested_at, created_at, deleted_at FROM users ORDER BY (password_reset_requested_at IS NOT NULL) DESC, id ASC");
 $usersList = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
 // Dynamic KPI metrics for 3-Stage Governance
@@ -28,6 +25,7 @@ $clearanceCount = 0;
 $superAdminCount = 0;
 $requestorCount = 0;
 $archivedCount = 0;
+$resetRequestedCount = 0;
 
 foreach ($usersList as $u) {
     if (!empty($u['deleted_at'])) {
@@ -36,6 +34,7 @@ foreach ($usersList as $u) {
     }
     $totalActiveUsers++;
     if ($u['status'] === 'active') $activeUsers++;
+    if (!empty($u['password_reset_requested_at'])) $resetRequestedCount++;
     
     $r = strtolower($u['role']);
     if (in_array($r, ['endorsement', 'endorser', 'division_chief'])) {
@@ -242,7 +241,7 @@ function getRolePresentation($role) {
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiTotalUsers"><?= $totalUsers ?></span>
+                <span class="stat-value" id="kpiTotalUsers"><?= $totalActiveUsers ?></span>
                 <span class="stat-trend positive" id="kpiActiveUsers"><?= $activeUsers ?> Active</span>
               </div>
               <span class="stat-label">Total System Accounts</span>
@@ -346,6 +345,11 @@ function getRolePresentation($role) {
               <span>Requestors / Staff</span>
               <span class="tab-count-pill" id="pillCountStaff"><?= $requestorCount ?></span>
             </button>
+            <button type="button" class="user-filter-pill tab-resets" data-role="resets" onclick="filterUsersByRole('resets')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              <span>Reset Requests</span>
+              <span class="tab-count-pill" id="pillCountResets" style="<?= $resetRequestedCount > 0 ? 'background: #d97706; color: #ffffff;' : '' ?>"><?= $resetRequestedCount ?></span>
+            </button>
             <button type="button" class="user-filter-pill tab-archived" data-role="archived" onclick="filterUsersByRole('archived')">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
               <span>Archived / Trash</span>
@@ -400,12 +404,12 @@ function getRolePresentation($role) {
             <table class="admin-data-table" id="usersTable">
               <thead>
                 <tr>
-                  <th style="width: 22%;">User & Official Email</th>
-                  <th style="width: 18%;">Office / Division</th>
-                  <th style="width: 20%;">Assigned Clearance Role</th>
+                  <th style="width: 21%;">User & Official Email</th>
+                  <th style="width: 17%;">Office / Division</th>
+                  <th style="width: 18%;">Assigned Clearance Role</th>
                   <th style="width: 16%;">Privilege Scope</th>
                   <th style="width: 8%;">Status</th>
-                  <th style="width: 16%; text-align: right;">Action</th>
+                  <th style="width: 20%; text-align: right;">Action</th>
                 </tr>
               </thead>
               <tbody id="usersTableBody">
@@ -435,19 +439,25 @@ function getRolePresentation($role) {
                     data-user-role="<?= htmlspecialchars($pres['filterKey']) ?>" 
                     data-user-status="<?= htmlspecialchars($u['status']) ?>"
                     data-user-archived="<?= $isArchived ? '1' : '0' ?>"
-                    class="<?= $isArchived ? 'row-user-archived' : '' ?>"
+                    data-user-reset="<?= !empty($u['password_reset_requested_at']) ? '1' : '0' ?>"
+                    class="<?= $isArchived ? 'row-user-archived' : (!empty($u['password_reset_requested_at']) ? 'row-user-reset' : '') ?>"
                     style="<?= $isArchived ? 'display: none;' : '' ?>">
                   <td>
                     <div class="user-avatar-cell">
                       <div class="user-avatar-badge <?= $isArchived ? 'archived' : $pres['avatarClass'] ?>">
                         <?= htmlspecialchars($initials) ?>
-                        <span class="user-online-dot <?= ($isActive && !$isArchived) ? '' : 'offline' ?>"></span>
                       </div>
                       <div>
                         <div class="user-name-title" style="<?= $isArchived ? 'text-decoration: line-through; color: #6b7280;' : '' ?>">
                           <?= htmlspecialchars($u['full_name']) ?>
                         </div>
                         <span class="user-email-text"><?= htmlspecialchars($u['email']) ?></span>
+                        <?php if (!empty($u['password_reset_requested_at'])): ?>
+                          <span class="user-reset-flag" style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; color: #92400e; background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; padding: 1px 6px; font-weight: 700; margin-top: 3px;" title="Reset requested on <?= date('M d, Y h:i A', strtotime($u['password_reset_requested_at'])) ?>">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            Reset Requested (<?= date('M d, g:i A', strtotime($u['password_reset_requested_at'])) ?>)
+                          </span>
+                        <?php endif; ?>
                         <?php if ($isArchived): ?>
                           <span style="display: block; font-size: 0.72rem; color: #dc2626; font-weight: 600; margin-top: 2px;">
                             Archived on <?= date('M d, Y h:i A', strtotime($u['deleted_at'])) ?>
@@ -497,6 +507,10 @@ function getRolePresentation($role) {
                         <button type="button" class="btn-user-action edit" onclick="openEditRoleModal(<?= $u['id'] ?>, '<?= addslashes(htmlspecialchars($u['full_name'])) ?>', '<?= addslashes(htmlspecialchars($u['email'])) ?>', '<?= addslashes(htmlspecialchars($pres['filterKey'])) ?>', '<?= addslashes(htmlspecialchars($u['office_agency'] ?: '')) ?>')" title="Configure clearance role">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
                           <span>Role</span>
+                        </button>
+                        <button type="button" class="btn-user-action reset-pass <?= !empty($u['password_reset_requested_at']) ? 'has-request' : '' ?>" onclick="openResetPasswordModal(<?= $u['id'] ?>, '<?= addslashes(htmlspecialchars($u['full_name'])) ?>', '<?= addslashes(htmlspecialchars($u['email'])) ?>')" title="<?= !empty($u['password_reset_requested_at']) ? 'Password reset requested by user!' : 'Reset account password' ?>">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                          <span>Reset</span>
                         </button>
                         <button type="button" class="btn-user-action status-toggle <?= $isActive ? '' : 'activate' ?>" onclick="toggleUserStatus(<?= $u['id'] ?>)" title="<?= $isActive ? 'Suspend access' : 'Reactivate access' ?>">
                           <?= $isActive 
@@ -617,6 +631,77 @@ function getRolePresentation($role) {
           <div class="admin-modal-footer" style="padding-top: 1.5rem; margin-top: 1.5rem; border-top: 1px solid #edf3ef;">
             <button type="button" class="btn-system-secondary" onclick="closeEditRoleModal()">Cancel</button>
             <button type="submit" class="btn-approve-modal">Save Role Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: RESET USER PASSWORD (SECURITY OVERRIDE)
+       ========================================================================== -->
+  <div class="admin-modal-overlay" id="resetPasswordModal" style="display: none;">
+    <div class="admin-modal-card sm" style="max-width: 480px;">
+      <div class="admin-modal-header">
+        <div class="modal-title-wrap">
+          <span class="modal-badge-ref" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a;">Security Override</span>
+          <h4>Reset Personnel Password</h4>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeResetPasswordModal()" aria-label="Close dialog">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="admin-modal-body">
+        <div class="modal-applicant-summary" style="margin-bottom: 1.25rem;">
+          <div class="user-avatar-circle" id="resetPassUserAvatar" style="background: linear-gradient(135deg, #d97706, #f59e0b);">JD</div>
+          <div class="applicant-meta">
+            <h5 id="resetPassUserName">Personnel Name</h5>
+            <span class="applicant-contact" id="resetPassUserEmail">email@ati.da.gov.ph</span>
+          </div>
+        </div>
+
+        <form id="resetPasswordForm" onsubmit="submitResetPassword(event)">
+          <input type="hidden" id="resetPassUserId" value="">
+          
+          <div style="margin-bottom: 1.15rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <label style="font-size: 0.82rem; font-weight: 700; color: #153321;">New Password</label>
+              <button type="button" onclick="generateDefaultPassword()" style="background: none; border: none; font-size: 0.75rem; font-weight: 700; color: #15803d; cursor: pointer; text-decoration: underline;">Use Default (AtiPass2026!)</button>
+            </div>
+            <div style="position: relative;">
+              <input type="password" id="resetPassNewInput" placeholder="Min 6 characters" required minlength="6"
+                style="width: 100%; height: 42px; padding: 0 2.5rem 0 1rem; border: 1.5px solid #dce8e0; border-radius: 8px; font-family: inherit; font-size: 0.88rem; box-sizing: border-box;">
+              <button type="button" onclick="toggleResetPasswordVisibility()" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #64748b; padding: 6px; display: flex; align-items: center;" title="Show/Hide Password">
+                <svg id="resetPassEyeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+            <span style="display: block; font-size: 0.74rem; color: #64748b; margin-top: 0.4rem;">
+              The personnel can immediately log in with this password once saved.
+            </span>
+          </div>
+
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem 0.95rem; margin-bottom: 1.25rem;">
+            <p style="margin: 0; font-size: 0.76rem; color: #475569; line-height: 1.45;">
+              <strong style="color: #0f172a;">Audit Trail:</strong> This password update will be logged in the system audit logs under your administrative user account.
+            </p>
+          </div>
+
+          <div class="admin-modal-footer" style="padding-top: 1.25rem; margin-top: 1.25rem; border-top: 1px solid #edf3ef; display: flex; justify-content: flex-end; gap: 0.65rem;">
+            <button type="button" class="btn-system-secondary" onclick="closeResetPasswordModal()">Cancel</button>
+            <button type="submit" class="btn-approve-modal" style="background: #d97706; border-color: #b45309;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px; vertical-align: -2px;">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+              <span>Update Password</span>
+            </button>
           </div>
         </form>
       </div>

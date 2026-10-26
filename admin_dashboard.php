@@ -31,6 +31,16 @@ $resQuery = "SELECT r.*,
 $stmt = $db->query($resQuery);
 $allReservations = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
 
+$pendingResetsCount = 0;
+if (!empty($canManageUsers)) {
+    try {
+        $pResStmt = $db->query("SELECT COUNT(*) FROM users WHERE password_reset_requested_at IS NOT NULL AND deleted_at IS NULL");
+        $pendingResetsCount = (int)($pResStmt ? $pResStmt->fetchColumn() : 0);
+    } catch (Exception $e) {
+        $pendingResetsCount = 0;
+    }
+}
+
 if (!function_exists('calculateReservationUtilizationDetails')) {
     /**
      * Calculates dynamic estimated monetary utilization value and breakdown details
@@ -587,6 +597,33 @@ $peakDayPct = $totalInstitutionalCapacity > 0
             </button>
           </div>
         </section>
+
+        <?php if (!empty($canManageUsers) && !empty($pendingResetsCount)): ?>
+        <!-- Pending Password Reset Requests Alert Banner for Super Admin -->
+        <div class="admin-notice-banner" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #fffbeb, #fef3c7); border: 1.5px solid #fde68a; border-radius: 12px; padding: 0.85rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 4px 14px rgba(217, 119, 6, 0.08);">
+          <div style="display: flex; align-items: center; gap: 0.85rem;">
+            <div style="width: 38px; height: 38px; border-radius: 10px; background: #fef3c7; border: 1px solid #fde68a; display: flex; align-items: center; justify-content: center; color: #b45309; flex-shrink: 0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <strong style="color: #92400e; font-size: 0.92rem;">Pending Password Reset Request(s)</strong>
+                <span style="background: #d97706; color: #ffffff; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 9999px;"><?= $pendingResetsCount ?> Pending</span>
+              </div>
+              <span style="color: #78350f; font-size: 0.82rem; margin-top: 2px; display: block;">
+                Personnel requested credential assistance from the login portal. Review and set new temporary passwords in User Management.
+              </span>
+            </div>
+          </div>
+          <a href="admin_users.php?filter=resets" style="background: #d97706; color: #ffffff; font-size: 0.82rem; font-weight: 700; padding: 0.5rem 1.15rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25); white-space: nowrap;">
+            <span>Review Requests</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </a>
+        </div>
+        <?php endif; ?>
 
         <!-- ==========================================================================
              KPI STAT CARDS (TERNO WITH SYSTEM DESIGN)

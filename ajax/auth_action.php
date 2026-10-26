@@ -50,6 +50,39 @@ if ($action == 'register') {
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Invalid email or password.']);
     }
+} elseif ($action == 'forgot_password') {
+    $email = trim($_POST['email'] ?? '');
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['status' => 'error', 'message' => 'Please provide a valid official email address.']);
+        exit();
+    }
+
+    $user->email = $email;
+    if ($user->emailExists()) {
+        try {
+            $db->prepare("UPDATE users SET password_reset_requested_at = NOW() WHERE id = ?")->execute([$user->id]);
+
+            $auditLog = new AuditLog($db);
+            $auditLog->user_id = $user->id;
+            $auditLog->action = 'PASSWORD_RESET_REQUEST';
+            $auditLog->details = "User {$user->full_name} ({$email}) submitted a password assistance request from login portal.";
+            $auditLog->ip_address = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+            $auditLog->log();
+        } catch (Exception $e) {
+            // Ignore audit log error
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => "Password reset request acknowledged for {$user->full_name}. Please coordinate with your Division Chief or contact the ATI ICT Unit to obtain your temporary credentials."
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'error',
+            'message' => "No registered account found matching '{$email}'. Please verify your email or register a new personnel account."
+        ]);
+    }
+    exit();
 } else {
     echo json_encode(['status' => 'error', 'message' => 'Invalid action.']);
 }
