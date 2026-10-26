@@ -1172,12 +1172,7 @@ function initRealtimeOfficeHours() {
         scheduleSubEl.style.color = '';
       }
       if (officeHoursMetaEl) {
-        const confirmedEvents = (currentMasterSchedule && currentMasterSchedule.today_stats) ? currentMasterSchedule.today_stats.confirmed_events : 0;
-        if (confirmedEvents > 0) {
-          officeHoursMetaEl.textContent = `Agricultural Training Institute • Master Schedule (${confirmedEvents} Active Event${confirmedEvents > 1 ? 's' : ''})`;
-        } else {
-          officeHoursMetaEl.textContent = 'Agricultural Training Institute • Connected to Master Schedule';
-        }
+        officeHoursMetaEl.textContent = 'Agricultural Training Institute • Official Operating Hours';
       }
       if (advisoryMetaEl) {
         advisoryMetaEl.textContent = 'Civil Service Commission & Government Holiday Directives';
@@ -1192,19 +1187,19 @@ function initRealtimeOfficeHours() {
       const hold = currentMasterSchedule.administrative_hold;
       statusEl.textContent = 'CLOSED';
       statusEl.className = 'office-status-tag closed';
-      statusEl.title = `Master Schedule Hold: ${hold.title} (${hold.memo_ref || 'Official Directive'})`;
+      statusEl.title = `Administrative Hold: ${hold.title} (${hold.memo_ref || 'Official Directive'})`;
 
-      if (scheduleHeadingEl) scheduleHeadingEl.textContent = 'Master Schedule Hold';
+      if (scheduleHeadingEl) scheduleHeadingEl.textContent = 'Administrative Hold';
       if (scheduleDescEl) scheduleDescEl.textContent = `${hold.title}`;
       if (scheduleSubEl) {
         scheduleSubEl.textContent = `• ${hold.reason || 'Administrative Hold'} (${hold.memo_ref || hold.ref || 'Directive'})`;
         scheduleSubEl.style.color = '#fde047';
       }
       if (officeHoursMetaEl) {
-        officeHoursMetaEl.textContent = 'Agricultural Training Institute • Master Schedule Hold Active';
+        officeHoursMetaEl.textContent = 'Agricultural Training Institute • Administrative Hold Active';
       }
 
-      setDynamicModeBadge('mode-holiday', 'Master Schedule Hold');
+      setDynamicModeBadge('mode-holiday', 'Administrative Hold');
 
       setOfficeNote(
         'closed',
@@ -1411,12 +1406,7 @@ function initRealtimeOfficeHours() {
       const countdownStr = formatDurationMinutes(remainingMinutes);
       statusEl.textContent = 'OPEN';
       statusEl.className = 'office-status-tag open';
-      if (currentMasterSchedule && currentMasterSchedule.today_stats && currentMasterSchedule.today_stats.confirmed_events > 0) {
-        const count = currentMasterSchedule.today_stats.confirmed_events;
-        setDynamicModeBadge('mode-onsite', `${count} Master Event${count > 1 ? 's' : ''} Active`);
-      } else {
-        setDynamicModeBadge('mode-onsite', 'Master Schedule Active');
-      }
+      setDynamicModeBadge('mode-onsite', 'Regular On-Site Day');
       setOfficeNote(
         'open',
         'Open Now',
