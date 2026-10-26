@@ -801,34 +801,83 @@ function initRealtimeOfficeHours() {
     return 31 - diff;
   }
 
-  // Check if date is an official Philippine Regular or Special Non-Working Holiday
+  // Check if date is an official Philippine Regular, Special Non-Working, or Special Working Holiday
   function getPhilippineHoliday(year, month, day) {
     const mmdd = String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+    const yyyymmdd = `${year}-${mmdd}`;
 
-    // 1. Fixed Philippine Regular & Special Non-Working Holidays
-    const fixedHolidays = {
-      '01-01': { name: "New Year's Day", type: 'Regular Holiday' },
-      '01-02': { name: 'Special Non-Working Day', type: 'Special Non-Working Day' },
-      '02-25': { name: 'EDSA People Power Revolution Anniversary', type: 'Special Non-Working Day' },
-      '04-09': { name: 'Araw ng Kagitingan (Day of Valor)', type: 'Regular Holiday' },
-      '05-01': { name: 'Labor Day', type: 'Regular Holiday' },
-      '06-12': { name: 'Independence Day', type: 'Regular Holiday' },
-      '08-21': { name: 'Ninoy Aquino Day', type: 'Special Non-Working Day' },
-      '11-01': { name: "All Saints' Day", type: 'Special Non-Working Day' },
-      '11-02': { name: "All Souls' Day", type: 'Special Non-Working Day' },
-      '11-30': { name: 'Bonifacio Day', type: 'Regular Holiday' },
-      '12-08': { name: 'Feast of the Immaculate Conception', type: 'Special Non-Working Day' },
-      '12-24': { name: 'Christmas Eve', type: 'Special Non-Working Day' },
-      '12-25': { name: 'Christmas Day', type: 'Regular Holiday' },
-      '12-30': { name: 'Rizal Day', type: 'Regular Holiday' },
-      '12-31': { name: 'Last Day of the Year', type: 'Special Non-Working Day' }
-    };
-
-    if (fixedHolidays[mmdd]) {
-      return fixedHolidays[mmdd];
+    // Prefer live server-evaluated holiday directive if loaded
+    if (currentServerHoliday && currentServerHoliday.is_holiday) {
+      if (!currentServerHoliday.date || currentServerHoliday.date === yyyymmdd || urlParams.get('test_date') || urlParams.get('test_holiday') || urlParams.get('test_working_holiday')) {
+        return {
+          name: currentServerHoliday.name,
+          type: currentServerHoliday.type,
+          isWorking: Boolean(currentServerHoliday.is_working),
+          isNonWorking: Boolean(currentServerHoliday.is_non_working),
+          legalBasis: currentServerHoliday.legal_basis || 'Government Directive'
+        };
+      }
     }
 
-    // 2. Movable Holy Week (Maundy Thursday, Good Friday, Black Saturday)
+    // 1. Fixed Philippine Regular Holidays (Offices Closed Nationwide)
+    const fixedRegularHolidays = {
+      '01-01': "New Year's Day",
+      '04-09': 'Araw ng Kagitingan (Day of Valor)',
+      '05-01': 'Labor Day',
+      '06-12': 'Independence Day',
+      '11-30': 'Bonifacio Day',
+      '12-25': 'Christmas Day',
+      '12-30': 'Rizal Day'
+    };
+    if (fixedRegularHolidays[mmdd]) {
+      return {
+        name: fixedRegularHolidays[mmdd],
+        type: 'Regular Holiday',
+        isWorking: false,
+        isNonWorking: true,
+        legalBasis: 'Proclamation No. 727 / CSC Directive'
+      };
+    }
+
+    // 2. Fixed Philippine Special Non-Working Holidays (Offices Closed Nationwide)
+    const fixedSpecialNonWorking = {
+      '01-02': 'Special Non-Working Day',
+      '02-25': 'EDSA People Power Revolution Anniversary',
+      '08-21': 'Ninoy Aquino Day',
+      '11-01': "All Saints' Day",
+      '11-02': "All Souls' Day",
+      '12-08': 'Feast of the Immaculate Conception',
+      '12-24': 'Christmas Eve',
+      '12-31': 'Last Day of the Year'
+    };
+    if (fixedSpecialNonWorking[mmdd]) {
+      return {
+        name: fixedSpecialNonWorking[mmdd],
+        type: 'Special Non-Working Holiday',
+        isWorking: false,
+        isNonWorking: true,
+        legalBasis: 'Presidential Proclamation / CSC Directive'
+      };
+    }
+
+    // 3. Fixed Philippine Special Working Holidays (Offices & On-Site Desks Remain OPEN)
+    const fixedSpecialWorking = {
+      '07-27': 'Iglesia ni Cristo Day (RA 9645)',
+      '08-18': 'Jesse Robredo Day (RA 10669)',
+      '09-08': 'Feast of the Nativity of the Blessed Virgin Mary (RA 11370)',
+      '11-17': "National Students' Day (RA 11369)"
+    };
+    if (fixedSpecialWorking[mmdd]) {
+      return {
+        name: fixedSpecialWorking[mmdd],
+        type: 'Special Working Holiday',
+        isWorking: true,
+        isNonWorking: false,
+        legalBasis: 'Republic Act / Presidential Directive'
+      };
+    }
+
+    // 4. Movable Holy Week (Maundy Thursday, Good Friday, Black Saturday)
     const easter = getEasterSunday(year);
     const msInDay = 86400000;
     const maundyThu = new Date(easter.getTime() - 3 * msInDay);
@@ -841,51 +890,66 @@ function initRealtimeOfficeHours() {
              targetDate.getUTCDate() === day;
     };
 
-    if (checkMatch(maundyThu)) return { name: 'Maundy Thursday', type: 'Regular Holiday' };
-    if (checkMatch(goodFri)) return { name: 'Good Friday', type: 'Regular Holiday' };
-    if (checkMatch(blackSat)) return { name: 'Black Saturday', type: 'Special Non-Working Day' };
+    if (checkMatch(maundyThu)) return { name: 'Maundy Thursday', type: 'Regular Holiday', isWorking: false, isNonWorking: true, legalBasis: 'Presidential Proclamation' };
+    if (checkMatch(goodFri)) return { name: 'Good Friday', type: 'Regular Holiday', isWorking: false, isNonWorking: true, legalBasis: 'Presidential Proclamation' };
+    if (checkMatch(blackSat)) return { name: 'Black Saturday', type: 'Special Non-Working Holiday', isWorking: false, isNonWorking: true, legalBasis: 'Presidential Proclamation' };
 
-    // 3. National Heroes Day (Last Monday of August)
+    // 5. National Heroes Day (Last Monday of August - Regular Holiday)
     if (month === 8 && day === getLastMondayOfAugust(year)) {
-      return { name: 'National Heroes Day', type: 'Regular Holiday' };
+      return { name: 'National Heroes Day', type: 'Regular Holiday', isWorking: false, isNonWorking: true, legalBasis: 'Republic Act No. 9492' };
     }
 
-    // 4. Proclaimed Movable Holidays & Special Working/Non-Working Declarations (2024-2027)
+    // 6. Proclaimed Movable Holidays & Special Working/Non-Working Declarations (2024-2028)
     const movableProclamations = {
       2024: {
-        '02-10': "Chinese New Year",
-        '04-10': "Eid'l Fitr",
-        '06-17': "Eid'l Adha"
+        '02-10': { name: "Chinese New Year", type: 'Special Non-Working Holiday', isWorking: false, isNonWorking: true },
+        '04-10': { name: "Eid'l Fitr", type: 'Regular Holiday', isWorking: false, isNonWorking: true },
+        '06-17': { name: "Eid'l Adha", type: 'Regular Holiday', isWorking: false, isNonWorking: true }
       },
       2025: {
-        '01-29': "Chinese New Year",
-        '03-31': "Eid'l Fitr",
-        '06-06': "Eid'l Adha"
+        '01-29': { name: "Chinese New Year", type: 'Special Non-Working Holiday', isWorking: false, isNonWorking: true },
+        '03-31': { name: "Eid'l Fitr", type: 'Regular Holiday', isWorking: false, isNonWorking: true },
+        '06-06': { name: "Eid'l Adha", type: 'Regular Holiday', isWorking: false, isNonWorking: true }
       },
       2026: {
-        '02-17': "Chinese New Year",
-        '03-20': "Eid'l Fitr",
-        '05-27': "Eid'l Adha",
-        '10-31': "Special Non-Working Day (All Saints' Eve)"
+        '02-17': { name: "Chinese New Year", type: 'Special Non-Working Holiday', isWorking: false, isNonWorking: true },
+        '03-20': { name: "Eid'l Fitr", type: 'Regular Holiday', isWorking: false, isNonWorking: true },
+        '05-27': { name: "Eid'l Adha", type: 'Regular Holiday', isWorking: false, isNonWorking: true },
+        '10-31': { name: "Special Non-Working Day (All Saints' Eve)", type: 'Special Non-Working Holiday', isWorking: false, isNonWorking: true }
       },
       2027: {
-        '02-06': "Chinese New Year",
-        '03-10': "Eid'l Fitr",
-        '05-16': "Eid'l Adha"
+        '02-06': { name: "Chinese New Year", type: 'Special Non-Working Holiday', isWorking: false, isNonWorking: true },
+        '03-10': { name: "Eid'l Fitr", type: 'Regular Holiday', isWorking: false, isNonWorking: true },
+        '05-16': { name: "Eid'l Adha", type: 'Regular Holiday', isWorking: false, isNonWorking: true }
+      },
+      2028: {
+        '01-26': { name: "Chinese New Year", type: 'Special Non-Working Holiday', isWorking: false, isNonWorking: true },
+        '02-28': { name: "Eid'l Fitr", type: 'Regular Holiday', isWorking: false, isNonWorking: true },
+        '05-05': { name: "Eid'l Adha", type: 'Regular Holiday', isWorking: false, isNonWorking: true }
       }
     };
 
     if (movableProclamations[year] && movableProclamations[year][mmdd]) {
-      return { name: movableProclamations[year][mmdd], type: 'Official Declared Holiday' };
+      const item = movableProclamations[year][mmdd];
+      return {
+        name: item.name,
+        type: item.type,
+        isWorking: item.isWorking,
+        isNonWorking: item.isNonWorking,
+        legalBasis: 'Presidential Proclamation / NCMF'
+      };
     }
 
     return null;
   }
 
   // Accurate Philippine Standard Time (PST, UTC+8)
+  let serverTimeOffsetMs = 0; // Sync delta between server timestamp and client local clock
+
   function getPhilippineTime() {
+    const targetMs = Date.now() + serverTimeOffsetMs;
+    const now = new Date(targetMs);
     try {
-      const now = new Date();
       const dtf = new Intl.DateTimeFormat('en-US', {
         timeZone: 'Asia/Manila',
         year: 'numeric',
@@ -894,6 +958,7 @@ function initRealtimeOfficeHours() {
         weekday: 'short',
         hour: 'numeric',
         minute: 'numeric',
+        second: 'numeric',
         hour12: false
       });
       const parts = dtf.formatToParts(now);
@@ -905,11 +970,11 @@ function initRealtimeOfficeHours() {
         day: parseInt(partMap.day, 10),
         weekday: partMap.weekday,
         hour: parseInt(partMap.hour, 10),
-        minute: parseInt(partMap.minute, 10)
+        minute: parseInt(partMap.minute, 10),
+        second: parseInt(partMap.second, 10)
       };
     } catch (e) {
-      const now = new Date();
-      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const utc = targetMs + (now.getTimezoneOffset() * 60000);
       const pht = new Date(utc + (3600000 * 8)); // UTC+8
       const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       return {
@@ -918,9 +983,20 @@ function initRealtimeOfficeHours() {
         day: pht.getDate(),
         weekday: days[pht.getDay()],
         hour: pht.getHours(),
-        minute: pht.getMinutes()
+        minute: pht.getMinutes(),
+        second: pht.getSeconds()
       };
     }
+  }
+
+  function formatDurationMinutes(totalMinutes) {
+    if (totalMinutes <= 0) return 'less than a minute';
+    if (totalMinutes < 60) {
+      return `${totalMinutes} minute${totalMinutes === 1 ? '' : 's'}`;
+    }
+    const h = Math.floor(totalMinutes / 60);
+    const m = totalMinutes % 60;
+    return m > 0 ? `${h} hr${h > 1 ? 's' : ''} ${m} min${m > 1 ? 's' : ''}` : `${h} hr${h > 1 ? 's' : ''}`;
   }
 
   const svgIcons = {
@@ -932,6 +1008,9 @@ function initRealtimeOfficeHours() {
   };
 
   // Additional element references for dual cards & top banner
+  const liveClockTimeEl = document.getElementById('liveClockTime');
+  const liveDatePillEl = document.getElementById('liveDatePill');
+  const scheduleDynamicBadgeEl = document.getElementById('scheduleDynamicBadge');
   const scheduleHeadingEl = document.getElementById('officeScheduleHeading');
   const scheduleDescEl = document.getElementById('officeScheduleDesc');
   const scheduleSubEl = document.getElementById('officeScheduleSubnote');
@@ -943,6 +1022,8 @@ function initRealtimeOfficeHours() {
   const bannerMsgEl = document.getElementById('weatherBannerMessage');
 
   let currentWeatherSuspension = null;
+  let currentServerHoliday = null;
+  let currentMasterSchedule = null;
 
   // Check URL parameters for immediate preview/testing (?weather_suspension=1 or ?pagasa=1)
   const urlParams = new URLSearchParams(window.location.search);
@@ -950,12 +1031,12 @@ function initRealtimeOfficeHours() {
   if (testSuspensionParam === '1' || testSuspensionParam === 'true') {
     currentWeatherSuspension = {
       is_weather_suspension: true,
-      title: 'Work Suspended: Typhoon Pepito (PAGASA TCWS No. 2)',
-      description: 'Pursuant to PAGASA Severe Weather Bulletin and Malacañang / NDRRMC directives, government office work and counter operations at the ATI Central Office are suspended today due to inclement weather conditions. Online facility and dormitory booking requests remain open 24/7.',
+      title: 'Work Suspended: Typhoon Pepito (TCWS No. 2 — NDRRMC / DOST-PAGASA)',
+      description: 'Pursuant to NDRRMC / DOST-PAGASA Severe Weather Bulletin and Malacañang / NDRRMC directives, government office work and counter operations at the ATI Central Office are suspended today due to inclement weather conditions. Online facility and dormitory booking requests remain open 24/7.',
       typhoon_name: 'Typhoon Pepito',
       signal_level: 'TCWS Signal No. 2',
-      badge_text: 'PAGASA SUSPENSION',
-      directive_source: 'PAGASA-DOST • NDRRMC • Presidential Directive EO 66',
+      badge_text: 'WEATHER SUSPENSION',
+      directive_source: 'NDRRMC • DOST-PAGASA • CSC • Presidential Directive EO 66',
       memo_ref: 'Executive Order No. 66 (s. 2012) / NDRRMC Memo'
     };
   }
@@ -966,9 +1047,26 @@ function initRealtimeOfficeHours() {
       return;
     }
 
-    fetch('ajax/get_office_advisory.php', { cache: 'no-store' })
+    const advisoryUrl = window.location.search 
+      ? 'ajax/get_office_advisory.php' + window.location.search 
+      : 'ajax/get_office_advisory.php';
+
+    fetch(advisoryUrl, { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
+        if (data && typeof data.server_timestamp_ms === 'number') {
+          serverTimeOffsetMs = data.server_timestamp_ms - Date.now();
+        }
+        if (data && data.holiday && data.holiday.is_holiday) {
+          currentServerHoliday = data.holiday;
+        } else {
+          currentServerHoliday = null;
+        }
+        if (data && data.master_schedule && data.master_schedule.connected) {
+          currentMasterSchedule = data.master_schedule;
+        } else {
+          currentMasterSchedule = null;
+        }
         if (data && data.success && data.is_weather_suspension && data.advisory) {
           currentWeatherSuspension = {
             is_weather_suspension: true,
@@ -985,7 +1083,13 @@ function initRealtimeOfficeHours() {
       });
   }
 
-  function setOfficeNote(theme, badgeText, title, desc) {
+  function setDynamicModeBadge(themeClass, text) {
+    if (!scheduleDynamicBadgeEl) return;
+    scheduleDynamicBadgeEl.className = 'schedule-dynamic-badge ' + themeClass;
+    scheduleDynamicBadgeEl.textContent = text;
+  }
+
+  function setOfficeNote(theme, badgeText, title, descHtml) {
     if (noteEl) noteEl.className = 'advisory-body theme-' + theme;
     if (advisoryTagEl) {
       advisoryTagEl.textContent = badgeText;
@@ -995,27 +1099,41 @@ function initRealtimeOfficeHours() {
       advisoryIconEl.innerHTML = svgIcons[theme];
     }
     if (noteTitleEl) noteTitleEl.textContent = title;
-    if (noteDescEl) noteDescEl.textContent = desc;
+    if (noteDescEl) noteDescEl.innerHTML = descHtml;
   }
 
   function updateOfficeStatus() {
-    const { year, month, day, weekday, hour, minute } = getPhilippineTime();
+    const { year, month, day, weekday, hour, minute, second } = getPhilippineTime();
     const totalMinutes = hour * 60 + minute;
     const isWorkingHours = (totalMinutes >= 480 && totalMinutes < 1020); // 8:00 AM - 5:00 PM
     const holiday = getPhilippineHoliday(year, month, day);
 
-    // Case 0: PAGASA Bad Weather / Tropical Cyclone Suspension (Highest Priority)
+    // 1. Update Live Clock (seconds ticking in real time)
+    if (liveClockTimeEl) {
+      const hour12 = (hour % 12 === 0) ? 12 : (hour % 12);
+      const ampm = (hour >= 12) ? 'PM' : 'AM';
+      const formattedClock = `${String(hour12).padStart(2, '0')}:${String(minute).padStart(2, '0')}:${String(second).padStart(2, '0')} ${ampm}`;
+      liveClockTimeEl.textContent = formattedClock;
+    }
+
+    // 2. Update Live Date Pill (e.g. Mon, Oct 26, 2026)
+    if (liveDatePillEl) {
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      liveDatePillEl.textContent = `${weekday}, ${monthNames[month - 1]} ${day}, ${year}`;
+    }
+
+    // Case 0: Inclement Weather / Tropical Cyclone Suspension (Highest Priority)
     if (currentWeatherSuspension && currentWeatherSuspension.is_weather_suspension) {
       const adv = currentWeatherSuspension;
       statusEl.textContent = 'SUSPENDED';
       statusEl.className = 'office-status-tag suspended';
-      statusEl.title = `Office operations suspended: ${adv.typhoon_name || 'Inclement Weather'} (${adv.signal_level || 'PAGASA Bulletin'})`;
+      statusEl.title = `Office operations suspended: ${adv.typhoon_name || 'Inclement Weather'} (${adv.signal_level || 'Weather Bulletin'})`;
 
       if (scheduleHeadingEl) scheduleHeadingEl.textContent = 'Inclement Weather Suspension';
       if (scheduleDescEl) {
         scheduleDescEl.textContent = adv.typhoon_name
-          ? `${adv.typhoon_name} (${adv.signal_level || 'PAGASA Bulletin'})`
-          : 'On-site operations suspended per PAGASA advisory';
+          ? `${adv.typhoon_name} (${adv.signal_level || 'Weather Bulletin'})`
+          : 'On-site operations suspended per Weather Advisory';
       }
       if (scheduleSubEl) {
         scheduleSubEl.textContent = '• Physical counter services suspended (EO 66 / NDRRMC Directive)';
@@ -1025,22 +1143,24 @@ function initRealtimeOfficeHours() {
         officeHoursMetaEl.textContent = 'Agricultural Training Institute • Operations Suspended';
       }
 
+      setDynamicModeBadge('mode-suspended', 'Operations Suspended');
+
       setOfficeNote(
         'suspended',
-        adv.badge_text || 'PAGASA SUSPENSION',
-        adv.title || 'Work Suspended • PAGASA Weather Advisory',
-        adv.description || 'Pursuant to PAGASA Severe Weather Bulletin and Malacañang / NDRRMC directives, government office work and counter operations at the ATI Central Office are suspended today due to inclement weather conditions. Online facility and dormitory booking requests remain open 24/7.'
+        adv.badge_text || 'WEATHER SUSPENSION',
+        adv.title || 'Work Suspended • Inclement Weather Advisory',
+        adv.description || 'Pursuant to NDRRMC / DOST-PAGASA Severe Weather Bulletin and Malacañang / NDRRMC directives, government office work and counter operations at the ATI Central Office are suspended today due to inclement weather conditions. Online facility and dormitory booking requests remain open 24/7.'
       );
 
       if (advisoryMetaEl) {
-        advisoryMetaEl.textContent = adv.directive_source || 'PAGASA-DOST • NDRRMC • Presidential Directive EO 66';
+        advisoryMetaEl.textContent = adv.directive_source || 'NDRRMC • DOST-PAGASA • CSC • Presidential Directive EO 66';
       }
 
       if (bannerEl) {
         bannerEl.style.display = 'block';
-        if (bannerBadgeTextEl) bannerBadgeTextEl.textContent = adv.badge_text || 'PAGASA Advisory';
+        if (bannerBadgeTextEl) bannerBadgeTextEl.textContent = adv.badge_text || 'Weather Advisory';
         if (bannerHeadingEl) bannerHeadingEl.textContent = adv.title ? `${adv.title}:` : 'Office Operations Suspended:';
-        if (bannerMsgEl) bannerMsgEl.textContent = adv.description || 'Pursuant to PAGASA Weather Bulletin, ATI Central Office on-site operations are suspended.';
+        if (bannerMsgEl) bannerMsgEl.textContent = adv.description || 'Pursuant to NDRRMC / DOST-PAGASA Weather Bulletin, ATI Central Office on-site operations are suspended.';
       }
       return;
     } else {
@@ -1052,7 +1172,12 @@ function initRealtimeOfficeHours() {
         scheduleSubEl.style.color = '';
       }
       if (officeHoursMetaEl) {
-        officeHoursMetaEl.textContent = 'Agricultural Training Institute • Regular Working Hours';
+        const confirmedEvents = (currentMasterSchedule && currentMasterSchedule.today_stats) ? currentMasterSchedule.today_stats.confirmed_events : 0;
+        if (confirmedEvents > 0) {
+          officeHoursMetaEl.textContent = `Agricultural Training Institute • Master Schedule (${confirmedEvents} Active Event${confirmedEvents > 1 ? 's' : ''})`;
+        } else {
+          officeHoursMetaEl.textContent = 'Agricultural Training Institute • Connected to Master Schedule';
+        }
       }
       if (advisoryMetaEl) {
         advisoryMetaEl.textContent = 'Civil Service Commission & Government Holiday Directives';
@@ -1062,18 +1187,164 @@ function initRealtimeOfficeHours() {
       }
     }
 
-    // Case 1: Official Philippine Holiday / Government Declared Non-Working Day
-    if (holiday) {
-      statusEl.textContent = 'HOLIDAY';
-      statusEl.className = 'office-status-tag holiday';
-      statusEl.title = `Closed in observance of ${holiday.name} (${holiday.type})`;
+    // Case 0.5: Master Schedule Administrative Hold (Institution-Wide Blackout / Closure)
+    if (currentMasterSchedule && currentMasterSchedule.has_administrative_hold && currentMasterSchedule.administrative_hold) {
+      const hold = currentMasterSchedule.administrative_hold;
+      statusEl.textContent = 'CLOSED';
+      statusEl.className = 'office-status-tag closed';
+      statusEl.title = `Master Schedule Hold: ${hold.title} (${hold.memo_ref || 'Official Directive'})`;
+
+      if (scheduleHeadingEl) scheduleHeadingEl.textContent = 'Master Schedule Hold';
+      if (scheduleDescEl) scheduleDescEl.textContent = `${hold.title}`;
+      if (scheduleSubEl) {
+        scheduleSubEl.textContent = `• ${hold.reason || 'Administrative Hold'} (${hold.memo_ref || hold.ref || 'Directive'})`;
+        scheduleSubEl.style.color = '#fde047';
+      }
+      if (officeHoursMetaEl) {
+        officeHoursMetaEl.textContent = 'Agricultural Training Institute • Master Schedule Hold Active';
+      }
+
+      setDynamicModeBadge('mode-holiday', 'Master Schedule Hold');
+
       setOfficeNote(
-        'holiday',
-        'Official Holiday',
-        `Declared Holiday: ${holiday.name}`,
-        `Offices are closed nationwide in observance of ${holiday.name} (${holiday.type}). Online booking requests remain open and will be prioritized when official operations resume on the next business day.`
+        'closed',
+        'Master Schedule Hold',
+        `Master Schedule Directive: ${hold.title}`,
+        `Pursuant to the official Master Schedule administrative hold (<strong>${hold.memo_ref || hold.ref}</strong>), physical on-site counter operations and facility transactions are on administrative hold today (${hold.reason || 'Institution-wide directive'}). Reservation processing will resume once the administrative hold lifts.`
       );
       return;
+    }
+
+    // Case 1: Official Philippine Holiday / Government Declared Non-Working or Working Day
+    if (holiday) {
+      if (holiday.isWorking) {
+        // SPECIAL WORKING HOLIDAY (e.g. Iglesia ni Cristo Day, Jesse Robredo Day, Feast of Nativity, National Students' Day)
+        // Under Philippine Republic Act directives, government offices and on-site counters REMAIN OPEN during regular hours.
+        if (weekday === 'Sat' || weekday === 'Sun') {
+          statusEl.textContent = 'CLOSED';
+          statusEl.className = 'office-status-tag closed';
+          statusEl.title = `${holiday.name} falls on a weekend`;
+          setDynamicModeBadge('mode-weekend', 'Weekend Recess');
+          setOfficeNote(
+            'closed',
+            'Weekend',
+            `Special Working Holiday: ${holiday.name}`,
+            `Today is <strong>${holiday.name}</strong> (${holiday.type}), falling on a weekend. Regular on-site counter operations resume <strong>Monday at 8:00 AM (PST)</strong>. Online reservation requests remain active 24/7.`
+          );
+          return;
+        }
+
+        if (weekday === 'Fri') {
+          if (isWorkingHours) {
+            const remainingMinutes = 1020 - totalMinutes;
+            const countdownStr = formatDurationMinutes(remainingMinutes);
+            statusEl.textContent = 'WORK FROM HOME';
+            statusEl.className = 'office-status-tag wfh';
+            statusEl.title = `Friday Remote Duty • ${holiday.name} (Special Working Day)`;
+            setDynamicModeBadge('mode-wfh', 'WFH Active (Special Working Day)');
+            setOfficeNote(
+              'wfh',
+              'Special Working Day',
+              `Special Working Holiday: ${holiday.name}`,
+              `Pursuant to government directives (${holiday.legalBasis || 'Republic Act'}), today is an official <strong>Special Working Holiday</strong>. Personnel are telecommuting under official Friday hybrid guidelines. Active online processing closing today in <strong class="countdown-highlight">${countdownStr}</strong> (at 5:00 PM PST).`
+            );
+          } else {
+            statusEl.textContent = 'CLOSED';
+            statusEl.className = 'office-status-tag closed';
+            statusEl.title = 'Office closed outside operating hours';
+            setDynamicModeBadge('mode-wfh', 'Off-Hours');
+            setOfficeNote(
+              'closed',
+              'Off-Hours',
+              `Special Working Holiday: ${holiday.name}`,
+              `The office is closed outside working hours. Regular services resume at 8:00 AM PST.`
+            );
+          }
+          return;
+        }
+
+        // Monday to Thursday on Special Working Holiday: ON-SITE COUNTERS ARE OPEN!
+        if (isWorkingHours) {
+          const remainingMinutes = 1020 - totalMinutes;
+          const countdownStr = formatDurationMinutes(remainingMinutes);
+          statusEl.textContent = 'OPEN';
+          statusEl.className = 'office-status-tag open';
+          statusEl.title = `ATI Central Office is OPEN on-site (${holiday.name} - Special Working Holiday)`;
+          if (scheduleHeadingEl) scheduleHeadingEl.textContent = `Standard Operations (${holiday.name})`;
+          if (scheduleSubEl) {
+            scheduleSubEl.textContent = `• On-site desks active for ${holiday.name} (Special Working Day)`;
+            scheduleSubEl.style.color = '#86efac';
+          }
+          if (officeHoursMetaEl) {
+            officeHoursMetaEl.textContent = 'Agricultural Training Institute • Special Working Holiday';
+          }
+          if (advisoryMetaEl) {
+            advisoryMetaEl.textContent = holiday.legalBasis || 'Republic Act Directives • Civil Service Commission';
+          }
+          setDynamicModeBadge('mode-onsite', 'Special Working Day (Open)');
+          setOfficeNote(
+            'open',
+            'Special Working Day',
+            `Special Working Holiday: ${holiday.name}`,
+            `Pursuant to government directives (${holiday.legalBasis || 'Republic Act'}), today is an official <strong>Special Working Holiday</strong>. ATI Central Office counters and on-site reservation desks are <strong>fully operational and OPEN</strong> to the public until 5:00 PM PST (closing in <strong class="countdown-highlight">${countdownStr}</strong>). Walk-ins and inquiries welcome.`
+          );
+          return;
+        } else if (totalMinutes < 480) {
+          const minutesUntil = 480 - totalMinutes;
+          const countdownStr = formatDurationMinutes(minutesUntil);
+          statusEl.textContent = 'CLOSED';
+          statusEl.className = 'office-status-tag closed';
+          statusEl.title = `Opens today at 8:00 AM PST (${holiday.name})`;
+          if (scheduleHeadingEl) scheduleHeadingEl.textContent = `Standard Operations (${holiday.name})`;
+          setDynamicModeBadge('mode-onsite', 'Opens in ' + countdownStr);
+          setOfficeNote(
+            'closed',
+            'Special Working Day',
+            `Special Working Holiday: ${holiday.name}`,
+            `Today is declared an official <strong>Special Working Holiday</strong>. Official on-site desks and counter services open today in <strong class="countdown-highlight">${countdownStr}</strong> (at 8:00 AM PST). Online reservation requests remain active 24/7.`
+          );
+          return;
+        } else {
+          statusEl.textContent = 'CLOSED';
+          statusEl.className = 'office-status-tag closed';
+          statusEl.title = `Closed for the evening (${holiday.name})`;
+          setDynamicModeBadge('mode-onsite', 'Closed for Evening');
+          setOfficeNote(
+            'closed',
+            'Off-Hours',
+            `Special Working Holiday: ${holiday.name}`,
+            `Official counter hours for today (${holiday.name}) ended at 5:00 PM. Regular services resume tomorrow at 8:00 AM (PST). Online reservation requests remain open 24/7.`
+          );
+          return;
+        }
+      } else {
+        // NON-WORKING HOLIDAY (Regular Holiday or Special Non-Working Day)
+        // Government offices and physical on-site desks are strictly CLOSED!
+        statusEl.textContent = 'CLOSED';
+        statusEl.className = 'office-status-tag closed';
+        statusEl.title = `Office is closed in observance of ${holiday.name} (${holiday.type})`;
+        if (scheduleHeadingEl) scheduleHeadingEl.textContent = `Closed: ${holiday.name}`;
+        if (scheduleDescEl) scheduleDescEl.textContent = `Official ${holiday.type} • Non-Working Day`;
+        if (scheduleSubEl) {
+          scheduleSubEl.textContent = `• Physical on-site desks closed today (${holiday.legalBasis || 'Presidential Proclamation'})`;
+          scheduleSubEl.style.color = '#fde047';
+        }
+        if (officeHoursMetaEl) {
+          officeHoursMetaEl.textContent = `Agricultural Training Institute • ${holiday.type}`;
+        }
+        if (advisoryMetaEl) {
+          advisoryMetaEl.textContent = holiday.legalBasis || 'Presidential Proclamation • CSC Directives';
+        }
+        setDynamicModeBadge('mode-holiday', 'Holiday: ' + holiday.name);
+        const badgeLabel = holiday.type && holiday.type.toLowerCase().includes('regular') ? 'Regular Holiday' : 'Non-Working Day';
+        setOfficeNote(
+          'holiday',
+          badgeLabel,
+          `Declared Holiday: ${holiday.name} (${holiday.type})`,
+          `Pursuant to Presidential Proclamation and Civil Service Commission directives, physical on-site desks and counter operations at the ATI Central Office are <strong>closed today</strong> in observance of <strong>${holiday.name}</strong>. Online facility and dormitory booking requests remain active 24/7 and will be prioritized on the next official business day.`
+        );
+        return;
+      }
     }
 
     // Case 2: Weekend (Saturday / Sunday)
@@ -1081,11 +1352,12 @@ function initRealtimeOfficeHours() {
       statusEl.textContent = 'CLOSED';
       statusEl.className = 'office-status-tag closed';
       statusEl.title = 'ATI Central Office is closed on weekends';
+      setDynamicModeBadge('mode-weekend', 'Weekend Recess');
       setOfficeNote(
         'closed',
-        'Weekend Recess',
+        'Weekend',
         'Weekend Non-Working Days',
-        'ATI Central Office is closed on weekends. Regular on-site counter operations resume Monday at 8:00 AM (PST). Online reservation requests remain active 24/7.'
+        'ATI Central Office is closed on weekends. Regular on-site counter operations resume <strong>Monday at 8:00 AM (PST)</strong>. Online reservation requests remain active 24/7.'
       );
       return;
     }
@@ -1093,34 +1365,41 @@ function initRealtimeOfficeHours() {
     // Case 3: Friday (Official Government Work-From-Home / Telecommuting Day)
     if (weekday === 'Fri') {
       if (isWorkingHours) {
+        const remainingMinutes = 1020 - totalMinutes;
+        const countdownStr = formatDurationMinutes(remainingMinutes);
         statusEl.textContent = 'WORK FROM HOME';
         statusEl.className = 'office-status-tag wfh';
         statusEl.title = 'Friday Remote Duty: Personnel are telecommuting under official government policy';
+        setDynamicModeBadge('mode-wfh', 'Telecommuting (WFH Active)');
         setOfficeNote(
           'wfh',
           'WFH Active',
           'Friday Remote Duty (Work-From-Home)',
-          'ATI personnel are telecommuting today under official government hybrid guidelines. Physical on-site service desks are closed, but reservation requests and digital inquiries are actively handled online.'
+          `ATI personnel are telecommuting today under official government hybrid guidelines. Active online processing closing today in <strong class="countdown-highlight">${countdownStr}</strong> (at 5:00 PM PST). Physical counter services resume Monday.`
         );
       } else if (totalMinutes < 480) {
+        const minutesUntil = 480 - totalMinutes;
+        const countdownStr = formatDurationMinutes(minutesUntil);
         statusEl.textContent = 'CLOSED';
         statusEl.className = 'office-status-tag closed';
         statusEl.title = 'Friday Work-From-Home begins at 8:00 AM PST';
+        setDynamicModeBadge('mode-wfh', 'Opens in ' + countdownStr);
         setOfficeNote(
           'closed',
           'Off-Hours',
           'Closed (Before Remote Duty Hours)',
-          'Office is closed. Friday Work-From-Home (remote assistance & online processing) begins today at 8:00 AM (PST).'
+          `The office is currently closed. Friday Work-From-Home (remote assistance & online processing) begins today in <strong class="countdown-highlight">${countdownStr}</strong> (at 8:00 AM PST).`
         );
       } else {
         statusEl.textContent = 'CLOSED';
         statusEl.className = 'office-status-tag closed';
         statusEl.title = 'Friday Work-From-Home ended. Resumes Monday at 8:00 AM PST';
+        setDynamicModeBadge('mode-weekend', 'Weekend Recess');
         setOfficeNote(
           'closed',
           'Off-Hours',
-          'Friday Remote Hours Ended',
-          'Friday Work-From-Home operations have closed for the weekend. Regular on-site operations resume Monday at 8:00 AM (PST).'
+          'Friday Remote Duty Ended',
+          'Friday Work-From-Home operations have closed for the weekend. Regular on-site counter operations resume <strong>Monday at 8:00 AM (PST)</strong>. Online reservation requests remain open 24/7.'
         );
       }
       return;
@@ -1128,24 +1407,34 @@ function initRealtimeOfficeHours() {
 
     // Case 4: Monday to Thursday (Regular On-Site Working Days)
     if (isWorkingHours) {
+      const remainingMinutes = 1020 - totalMinutes;
+      const countdownStr = formatDurationMinutes(remainingMinutes);
       statusEl.textContent = 'OPEN';
       statusEl.className = 'office-status-tag open';
-      statusEl.title = 'ATI Central Office is currently OPEN for on-site services';
+      if (currentMasterSchedule && currentMasterSchedule.today_stats && currentMasterSchedule.today_stats.confirmed_events > 0) {
+        const count = currentMasterSchedule.today_stats.confirmed_events;
+        setDynamicModeBadge('mode-onsite', `${count} Master Event${count > 1 ? 's' : ''} Active`);
+      } else {
+        setDynamicModeBadge('mode-onsite', 'Master Schedule Active');
+      }
       setOfficeNote(
         'open',
-        'Regular Operations',
+        'Open Now',
         'Currently Open (On-Site Services)',
-        'ATI Central Office counters and reservation processing are active today until 5:00 PM (PST). Walk-ins and inquiries welcome.'
+        `ATI Central Office counters and reservation processing are active now. On-site desk services close today in <strong class="countdown-highlight">${countdownStr}</strong> (at 5:00 PM PST). Walk-ins and inquiries welcome.`
       );
     } else if (totalMinutes < 480) {
+      const minutesUntil = 480 - totalMinutes;
+      const countdownStr = formatDurationMinutes(minutesUntil);
       statusEl.textContent = 'CLOSED';
       statusEl.className = 'office-status-tag closed';
       statusEl.title = 'Opens today at 8:00 AM PST';
+      setDynamicModeBadge('mode-onsite', 'Opens in ' + countdownStr);
       setOfficeNote(
         'closed',
         'Off-Hours',
         'Closed Before Working Hours',
-        'The office is currently closed. Official on-site desks and counter services open today at 8:00 AM (PST).'
+        `The office is currently closed. Official on-site desks and counter services open today in <strong class="countdown-highlight">${countdownStr}</strong> (at 8:00 AM PST). Online reservation requests remain active 24/7.`
       );
     } else {
       statusEl.textContent = 'CLOSED';
@@ -1154,6 +1443,7 @@ function initRealtimeOfficeHours() {
         ? 'Remote duty operations resume tomorrow (Friday Work-From-Home) at 8:00 AM (PST).'
         : 'Regular on-site services resume tomorrow at 8:00 AM (PST).';
       statusEl.title = 'Closed for the evening. Opens tomorrow at 8:00 AM PST';
+      setDynamicModeBadge('mode-onsite', 'Closed for Evening');
       setOfficeNote(
         'closed',
         'Off-Hours',
@@ -1165,9 +1455,11 @@ function initRealtimeOfficeHours() {
 
   // Initial live check & status computation
   fetchLiveOfficeAdvisory();
+  updateOfficeStatus();
 
-  // Periodic refresh: re-check advisory every 30 seconds and update office clock every 15 seconds
-  setInterval(updateOfficeStatus, 15000);
+  // 1-second continuous tick for real-time clock and live countdowns
+  setInterval(updateOfficeStatus, 1000);
+  // Periodic refresh: re-check weather suspension advisory every 30 seconds
   setInterval(fetchLiveOfficeAdvisory, 30000);
 }
 

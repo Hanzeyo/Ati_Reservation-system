@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once __DIR__ . '/includes/init.php';
 require_once __DIR__ . '/includes/admin_guard.php';
 /**
@@ -333,7 +333,7 @@ foreach ($facilitiesList as $fac) {
                 <path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"></path>
                 <polyline points="13 11 9 17 15 17 11 23"></polyline>
               </svg>
-              <span>PAGASA Weather Suspension</span>
+              <span>Inclement Weather Suspension</span>
             </button>
             <button type="button" class="btn-system-primary" onclick="openDateBlockModal()">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -745,7 +745,7 @@ foreach ($facilitiesList as $fac) {
   <!-- Toast Notification Container -->
   <div class="admin-toast-container" id="adminToastContainer"></div>
 
-  <!-- PAGASA Weather Suspension Modal Component -->
+  <!-- Inclement Weather Suspension Modal Component -->
   <?php include __DIR__ . '/includes/admin_weather_modal.php'; ?>
 
   <!-- Scripts -->
@@ -756,3 +756,4 @@ foreach ($facilitiesList as $fac) {
 </body>
 
 </html>
+

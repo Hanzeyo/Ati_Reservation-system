@@ -204,10 +204,10 @@ $guesthousesCount = $ghStmt ? (int)$ghStmt->fetchColumn() : 7;
 
       <div class="drawer-body">
         <div class="drawer-profile-card">
-          <div class="drawer-avatar">JD</div>
+          <div class="drawer-avatar"><?= getUserInitials($_SESSION['full_name'] ?? 'User') ?></div>
           <div class="drawer-profile-info">
-            <h5>Juan Dela Cruz</h5>
-            <p>ATI Staff (CDD)</p>
+            <h5><?= htmlspecialchars($_SESSION['full_name'] ?? 'Authorized Officer') ?></h5>
+            <p><?= htmlspecialchars(ucfirst(str_replace('_', ' ', $_SESSION['role'] ?? 'Personnel'))) ?></p>
             <span class="drawer-badge">Verified Personnel</span>
           </div>
         </div>
@@ -1286,6 +1286,47 @@ $guesthousesCount = $ghStmt ? (int)$ghStmt->fetchColumn() : 7;
       if (modal) modal.style.display = 'none';
       document.body.style.overflow = '';
     }
+
+    function toggleMobileDrawer(open) {
+      var overlay = document.getElementById('mobileDrawerOverlay');
+      var toggleBtn = document.getElementById('mobileMenuToggle');
+      if (!overlay) return;
+
+      if (open) {
+        overlay.style.display = 'block';
+        void overlay.offsetHeight; // trigger reflow
+        overlay.classList.add('show');
+        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      } else {
+        overlay.classList.remove('show');
+        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+        setTimeout(function () {
+          if (!overlay.classList.contains('show')) {
+            overlay.style.display = 'none';
+          }
+        }, 280);
+      }
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        var overlay = document.getElementById('mobileDrawerOverlay');
+        if (overlay && overlay.classList.contains('show')) {
+          toggleMobileDrawer(false);
+        }
+      }
+    });
+
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 900) {
+        var overlay = document.getElementById('mobileDrawerOverlay');
+        if (overlay && overlay.classList.contains('show')) {
+          toggleMobileDrawer(false);
+        }
+      }
+    });
   </script>
 </body>
 

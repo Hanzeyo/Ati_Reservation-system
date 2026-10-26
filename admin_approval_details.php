@@ -406,15 +406,144 @@ if (!empty($res['room_number'])) {
       box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.22) !important;
       background: #fef2f2 !important;
     }
+
+    /* Responsive Styling for All Device Formats */
+    .review-topbar {
+      background: #ffffff;
+      border-bottom: 1.5px solid #dce8e0;
+      padding: 0.85rem 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .review-topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .review-topbar-divider {
+      height: 24px;
+      width: 1.5px;
+      background: #dce8e0;
+    }
+
+    .review-topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .review-page-container {
+      max-width: 980px;
+      margin: 1.75rem auto 3.5rem;
+      padding: 0 1.25rem;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .review-topbar {
+        padding: 0.75rem 1rem;
+        gap: 0.75rem;
+      }
+
+      .review-topbar-left {
+        width: 100%;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      .review-topbar-divider {
+        display: none;
+      }
+
+      .review-topbar-status {
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+      }
+
+      .review-page-container {
+        padding: 0 0.75rem;
+        margin: 1rem auto 2.5rem;
+      }
+
+      .review-main-card {
+        padding: 1.25rem 1rem !important;
+        border-radius: 14px !important;
+      }
+
+      .review-header-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .review-header-title h2 {
+        font-size: 1.35rem !important;
+      }
+
+      .review-section-box {
+        padding: 1rem !important;
+      }
+
+      .review-buttons-row {
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 0.65rem !important;
+      }
+
+      .btn-act-large {
+        width: 100% !important;
+        justify-content: center !important;
+      }
+
+      .btn-back-link {
+        font-size: 0.82rem;
+        padding: 0.5rem 0.85rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .review-topbar-brand img {
+        height: 28px !important;
+      }
+
+      .review-topbar-brand h4 {
+        font-size: 0.88rem !important;
+      }
+
+      .review-topbar-brand span {
+        display: none;
+      }
+
+      .review-grid-2 {
+        grid-template-columns: 1fr !important;
+        gap: 0.85rem;
+      }
+
+      .admin-modal-card {
+        width: 95vw !important;
+        margin: 0.5rem !important;
+      }
+    }
   </style>
 </head>
 
 <body
   style="background: #f4f8f5; min-height: 100vh; margin: 0; padding: 0; font-family: var(--font-sans); color: var(--text-main);">
-  <!-- Simple Official Header Bar -->
-  <header
-    style="background: #ffffff; border-bottom: 1.5px solid #dce8e0; padding: 0.85rem 1.75rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
-    <div style="display: flex; align-items: center; gap: 1rem;">
+  <!-- Official Responsive Header Bar -->
+  <header class="review-topbar">
+    <div class="review-topbar-left">
       <a href="admin_approvals.php" class="btn-back-link"
         style="background: #f0f7f2; border-color: #c4ded0; color: #174d2f;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
@@ -423,8 +552,8 @@ if (!empty($res['room_number'])) {
         </svg>
         <span>Back to Approvals</span>
       </a>
-      <div style="height: 24px; width: 1.5px; background: #dce8e0;"></div>
-      <div style="display: flex; align-items: center; gap: 0.65rem;">
+      <div class="review-topbar-divider"></div>
+      <div class="review-topbar-brand">
         <img src="assets/images/ATI_Logo.png" alt="ATI Logo" style="height: 34px; width: auto;">
         <div>
           <h4 style="margin: 0; font-size: 0.98rem; font-weight: 800; color: #174d2f; line-height: 1.1;">ATI Reservation
@@ -433,7 +562,7 @@ if (!empty($res['room_number'])) {
         </div>
       </div>
     </div>
-    <div>
+    <div class="review-topbar-status">
       <span class="review-status-pill <?= htmlspecialchars($stage) ?>">
         Status: <?= htmlspecialchars($st) ?>
       </span>
@@ -441,7 +570,7 @@ if (!empty($res['room_number'])) {
   </header>
 
   <!-- Main Content Page (Full Width, Centered, Spacious) -->
-  <main class="review-page-container" style="max-width: 980px; margin: 1.75rem auto 3.5rem; padding: 0 1.25rem;">
+  <main class="review-page-container">
     <!-- Master Reservation Card -->
     <div class="review-main-card">
       <div class="review-header-title">

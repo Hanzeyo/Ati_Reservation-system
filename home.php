@@ -685,10 +685,10 @@ $totalFacilities = count($allFacilities);
       <div class="drawer-body">
         <!-- User Profile Card -->
         <div class="drawer-profile-card">
-          <div class="drawer-avatar">JD</div>
+          <div class="drawer-avatar"><?= getUserInitials($_SESSION['full_name'] ?? 'User') ?></div>
           <div class="drawer-profile-info">
-            <h5>Juan Dela Cruz</h5>
-            <p>ATI Staff (CDD)</p>
+            <h5><?= htmlspecialchars($_SESSION['full_name'] ?? 'Authorized Officer') ?></h5>
+            <p><?= htmlspecialchars(ucfirst(str_replace('_', ' ', $_SESSION['role'] ?? 'Personnel'))) ?></p>
             <span class="drawer-badge">Verified Personnel</span>
           </div>
         </div>

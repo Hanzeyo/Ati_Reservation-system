@@ -2220,6 +2220,19 @@ body.booking-body {
   }
 }
 
+@media (max-width: 991px) and (min-width: 769px) {
+  .step-tab-btn {
+    padding: 0.65rem 0.35rem;
+    font-size: 0.78rem;
+    gap: 0.35rem;
+  }
+  .step-tab-btn span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
 @media (max-width: 900px) {
   .booking-main-wrapper {
     padding: 1.5rem 1rem 3.5rem;

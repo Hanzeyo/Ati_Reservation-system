@@ -559,6 +559,17 @@ body.admin-app-body .admin-gold-badge {
     justify-content: space-between;
   }
 
+  .admin-calendar-board {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+  }
+
+  .board-weekdays-row,
+  .board-days-grid {
+    min-width: 640px;
+  }
+
   .board-weekdays-row {
     font-size: 0.7rem;
   }
