@@ -60,20 +60,20 @@ if (!function_exists('calculateReservationUtilizationDetails')) {
             $val = round($cleanRate * $nights, 2);
             $category = 'guesthouse';
             $categoryLabel = 'GuestHouse';
-            $rateDisplay = 'â‚±' . number_format($cleanRate) . ' / night';
+            $rateDisplay = '₱' . number_format($cleanRate) . ' / night';
             $durationStr = $nights . ($nights > 1 ? ' Nights' : ' Night');
-            $formulaStr = $nights . ' night' . ($nights > 1 ? 's' : '') . ' Ã— â‚±' . number_format($cleanRate);
+            $formulaStr = $nights . ' night' . ($nights > 1 ? 's' : '') . ' × ₱' . number_format($cleanRate);
         } elseif ($isDorm) {
             $nights = max(1, $days - 1);
             $pax = max(1, (int)($res['pax_count'] ?? 1));
             $val = $cleanRate <= 1000 ? round($cleanRate * $nights * $pax, 2) : round($cleanRate * $nights, 2);
             $category = 'dorm';
             $categoryLabel = 'Dormitory Suite';
-            $rateDisplay = 'â‚±' . number_format($cleanRate) . ' / night';
+            $rateDisplay = '₱' . number_format($cleanRate) . ' / night';
             $durationStr = $nights . ($nights > 1 ? ' Nights' : ' Night') . ' (' . $pax . ' PAX)';
             $formulaStr = $cleanRate <= 1000 
-                ? ($nights . ' night' . ($nights > 1 ? 's' : '') . ' Ã— ' . $pax . ' beds Ã— â‚±' . number_format($cleanRate))
-                : ($nights . ' night' . ($nights > 1 ? 's' : '') . ' Ã— â‚±' . number_format($cleanRate));
+                ? ($nights . ' night' . ($nights > 1 ? 's' : '') . ' × ' . $pax . ' beds × ₱' . number_format($cleanRate))
+                : ($nights . ' night' . ($nights > 1 ? 's' : '') . ' × ₱' . number_format($cleanRate));
         } else {
             $slot = strtolower($res['time_slot'] ?? '');
             $isHalfDay = (strpos($slot, 'half') !== false || strpos($slot, 'morning') !== false || strpos($slot, 'afternoon') !== false) 
@@ -82,9 +82,9 @@ if (!function_exists('calculateReservationUtilizationDetails')) {
             $val = round($cleanRate * $days * $multiplier, 2);
             $category = 'hall';
             $categoryLabel = 'Function Hall';
-            $rateDisplay = 'â‚±' . number_format($cleanRate) . ' / day';
+            $rateDisplay = '₱' . number_format($cleanRate) . ' / day';
             $durationStr = $days . ($days > 1 ? ' Days' : ' Day') . ($isHalfDay ? ' (Half Day)' : '');
-            $formulaStr = $days . ' day' . ($days > 1 ? 's' : '') . ($isHalfDay ? ' Ã— 0.5' : '') . ' Ã— â‚±' . number_format($cleanRate);
+            $formulaStr = $days . ' day' . ($days > 1 ? 's' : '') . ($isHalfDay ? ' × 0.5' : '') . ' × ₱' . number_format($cleanRate);
         }
 
         return [
@@ -151,7 +151,7 @@ foreach ($allReservations as $row) {
   $startDateTimestamp = strtotime($row['start_date']);
   $startDateStr = date('M d, Y', $startDateTimestamp);
   if (!empty($row['end_date']) && $row['end_date'] !== $row['start_date']) {
-    $datesStr = date('M d', $startDateTimestamp) . ' â€“ ' . date('M d, Y', strtotime($row['end_date']));
+    $datesStr = date('M d', $startDateTimestamp) . ' – ' . date('M d, Y', strtotime($row['end_date']));
   } else {
     $datesStr = $startDateStr;
   }
@@ -175,7 +175,7 @@ foreach ($allReservations as $row) {
     'status' => strtolower($isApproved ? 'approved' : ($st === 'Rejected' ? 'rejected' : 'pending')),
     'rawStatus' => $st,
     'category' => $utilInfo['category'] === 'guesthouse' ? 'guesthouses' : ($utilInfo['category'] === 'dorm' ? 'dorms' : 'halls'),
-    'dateFiled' => !empty($row['created_at']) ? date('M d, Y â€¢ h:i A', strtotime($row['created_at'])) : date('M d, Y â€¢ h:i A')
+    'dateFiled' => !empty($row['created_at']) ? date('M d, Y • h:i A', strtotime($row['created_at'])) : date('M d, Y • h:i A')
   ];
 
   $utilizationReservationsList[] = [
@@ -192,7 +192,7 @@ foreach ($allReservations as $row) {
     'durationStr' => $utilInfo['durationStr'],
     'formulaStr' => $utilInfo['formulaStr'],
     'value' => $resUtil,
-    'valueFormatted' => 'â‚±' . number_format($resUtil)
+    'valueFormatted' => '₱' . number_format($resUtil)
   ];
 }
 
@@ -292,7 +292,7 @@ foreach ($monitoredFacilities as $fac) {
         $stateBadgeClass = 'state-occupied';
         $upRes = $facilityUpcoming[$fid];
         $upStart = date('M d', strtotime($upRes['start_date']));
-        $upEnd = (!empty($upRes['end_date']) && $upRes['end_date'] !== $upRes['start_date']) ? 'â€“' . date('d', strtotime($upRes['end_date'])) : '';
+        $upEnd = (!empty($upRes['end_date']) && $upRes['end_date'] !== $upRes['start_date']) ? '–' . date('d', strtotime($upRes['end_date'])) : '';
         $stateLabel = 'Reserved (' . $upStart . $upEnd . ')';
         $totalAvailableFacilities++;
     } else {
@@ -381,7 +381,7 @@ $liveGuesthousesBookedPax = 0;
 
 $startOfWeek = date('Y-m-d', strtotime('monday this week'));
 $endOfWeek = date('Y-m-d', strtotime('sunday this week'));
-$timelineLabel = 'Current Week (' . date('M j', strtotime($startOfWeek)) . ' â€“ ' . date('M j, Y', strtotime($endOfWeek)) . ')';
+$timelineLabel = 'Current Week (' . date('M j', strtotime($startOfWeek)) . ' – ' . date('M j, Y', strtotime($endOfWeek)) . ')';
 
 $dailyPaxTrend = [];
 for ($i = 0; $i < 7; $i++) {
@@ -664,7 +664,7 @@ $peakDayPct = $totalInstitutionalCapacity > 0
             </div>
             <div class="stat-content">
               <div class="stat-value-row">
-                <span class="stat-value" id="kpiRevenue">â‚±<?= $estimatedUtilization ?></span>
+                <span class="stat-value" id="kpiRevenue">₱<?= $estimatedUtilization ?></span>
                 <span class="stat-trend positive">Live Est.</span>
               </div>
               <span class="stat-label">Estimated Facility Utilization</span>
@@ -934,11 +934,11 @@ $peakDayPct = $totalInstitutionalCapacity > 0
                     $startDateTimestamp = strtotime($row['start_date'] ?? 'now');
                     $startDateStr = date('M d, Y', $startDateTimestamp);
                     if (!empty($row['end_date']) && $row['end_date'] !== $row['start_date']) {
-                      $datesStr = date('M d', $startDateTimestamp) . ' â€“ ' . date('M d, Y', strtotime($row['end_date']));
+                      $datesStr = date('M d', $startDateTimestamp) . ' – ' . date('M d, Y', strtotime($row['end_date']));
                     } else {
                       $datesStr = $startDateStr;
                     }
-                    $createdStr = !empty($row['created_at']) ? date('M d, Y â€¢ h:i A', strtotime($row['created_at'])) : date('M d, Y â€¢ h:i A');
+                    $createdStr = !empty($row['created_at']) ? date('M d, Y • h:i A', strtotime($row['created_at'])) : date('M d, Y • h:i A');
                     $timeSlotStr = htmlspecialchars($row['time_slot'] ?: 'Full Day');
                     $pax = (int) ($row['pax_count'] ?? 0);
                     ?>
@@ -1213,7 +1213,7 @@ $peakDayPct = $totalInstitutionalCapacity > 0
                     $logColor = 'amber';
                   elseif (strpos($logAction, 'REJECT') !== false || strpos($logAction, 'CANCEL') !== false)
                     $logColor = 'amber';
-                  $logTimeStr = date('M d, Y â€¢ h:i A', strtotime($log['created_at']));
+                  $logTimeStr = date('M d, Y • h:i A', strtotime($log['created_at']));
                   ?>
                   <div class="audit-item">
                     <div class="audit-dot <?= $logColor ?>"></div>
@@ -1274,7 +1274,7 @@ $peakDayPct = $totalInstitutionalCapacity > 0
           </div>
           <div class="modal-data-box">
             <label>Schedule & Duration</label>
-            <span id="modalSchedule">October 12 â€“ 14, 2026 (3 Days)</span>
+            <span id="modalSchedule">October 12 – 14, 2026 (3 Days)</span>
           </div>
           <div class="modal-data-box">
             <label>Expected Headcount</label>
@@ -1786,7 +1786,7 @@ $peakDayPct = $totalInstitutionalCapacity > 0
         <div class="occ-metrics-grid" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
           <div class="occ-metric-card primary active" id="utilCardAll" onclick="filterUtilizationCategory('all')" role="button" tabindex="0" title="Click to view all facility valuations">
             <span class="occ-metric-lbl">Total Estimated Value</span>
-            <div class="occ-metric-val" style="color: #174d2f;">â‚±<?= $estimatedUtilization ?></div>
+            <div class="occ-metric-val" style="color: #174d2f;">₱<?= $estimatedUtilization ?></div>
             <div class="occ-metric-sub">Across <?= count($utilizationReservationsList) ?> Active Requests</div>
             <div class="occ-bar-track">
               <div class="occ-bar-fill" style="width: 100%; background: #174d2f;"></div>
@@ -1795,7 +1795,7 @@ $peakDayPct = $totalInstitutionalCapacity > 0
 
           <div class="occ-metric-card" id="utilCardHall" onclick="filterUtilizationCategory('hall')" role="button" tabindex="0" title="Click to filter by Function Halls">
             <span class="occ-metric-lbl">Function Halls</span>
-            <div class="occ-metric-val" style="color: #1d4ed8;">â‚±<?= number_format($utilizationHalls) ?></div>
+            <div class="occ-metric-val" style="color: #1d4ed8;">₱<?= number_format($utilizationHalls) ?></div>
             <div class="occ-metric-sub"><?= $hallsUtilPct ?>% Portfolio Share</div>
             <div class="occ-bar-track">
               <div class="occ-bar-fill" style="width: <?= min(100, $hallsUtilPct) ?>%; background: #2563eb;"></div>
@@ -1804,7 +1804,7 @@ $peakDayPct = $totalInstitutionalCapacity > 0
 
           <div class="occ-metric-card" id="utilCardDorm" onclick="filterUtilizationCategory('dorm')" role="button" tabindex="0" title="Click to filter by Dormitory Suites">
             <span class="occ-metric-lbl">Dormitory Suites</span>
-            <div class="occ-metric-val" style="color: #b45309;">â‚±<?= number_format($utilizationDorms) ?></div>
+            <div class="occ-metric-val" style="color: #b45309;">₱<?= number_format($utilizationDorms) ?></div>
             <div class="occ-metric-sub"><?= $dormsUtilPct ?>% Portfolio Share</div>
             <div class="occ-bar-track">
               <div class="occ-bar-fill" style="width: <?= min(100, $dormsUtilPct) ?>%; background: #d97706;"></div>
@@ -1813,7 +1813,7 @@ $peakDayPct = $totalInstitutionalCapacity > 0
 
           <div class="occ-metric-card" id="utilCardGuesthouse" onclick="filterUtilizationCategory('guesthouse')" role="button" tabindex="0" title="Click to filter by Guesthouses &amp; Villas">
             <span class="occ-metric-lbl">Guesthouses &amp; Villas</span>
-            <div class="occ-metric-val" style="color: #0f766e;">â‚±<?= number_format($utilizationGuesthouses) ?></div>
+            <div class="occ-metric-val" style="color: #0f766e;">₱<?= number_format($utilizationGuesthouses) ?></div>
             <div class="occ-metric-sub"><?= $ghUtilPct ?>% Portfolio Share</div>
             <div class="occ-bar-track">
               <div class="occ-bar-fill" style="width: <?= min(100, $ghUtilPct) ?>%; background: #0d9488;"></div>
@@ -1828,22 +1828,22 @@ $peakDayPct = $totalInstitutionalCapacity > 0
             <span style="font-size: 0.75rem; font-weight: 600; color: #587363;">100% Monetized Portfolio Share</span>
           </div>
           <div style="height: 12px; background: #e5ede7; border-radius: 9999px; overflow: hidden; display: flex; width: 100%; box-shadow: inset 0 1px 2px rgba(0,0,0,0.06);">
-            <div style="width: <?= $hallsUtilPct ?>%; background: #2563eb; transition: width 0.6s ease;" title="Function Halls: â‚±<?= number_format($utilizationHalls) ?> (<?= $hallsUtilPct ?>%)"></div>
-            <div style="width: <?= $dormsUtilPct ?>%; background: #d97706; transition: width 0.6s ease;" title="Dormitories: â‚±<?= number_format($utilizationDorms) ?> (<?= $dormsUtilPct ?>%)"></div>
-            <div style="width: <?= $ghUtilPct ?>%; background: #0d9488; transition: width 0.6s ease;" title="Guesthouses: â‚±<?= number_format($utilizationGuesthouses) ?> (<?= $ghUtilPct ?>%)"></div>
+            <div style="width: <?= $hallsUtilPct ?>%; background: #2563eb; transition: width 0.6s ease;" title="Function Halls: ₱<?= number_format($utilizationHalls) ?> (<?= $hallsUtilPct ?>%)"></div>
+            <div style="width: <?= $dormsUtilPct ?>%; background: #d97706; transition: width 0.6s ease;" title="Dormitories: ₱<?= number_format($utilizationDorms) ?> (<?= $dormsUtilPct ?>%)"></div>
+            <div style="width: <?= $ghUtilPct ?>%; background: #0d9488; transition: width 0.6s ease;" title="Guesthouses: ₱<?= number_format($utilizationGuesthouses) ?> (<?= $ghUtilPct ?>%)"></div>
           </div>
           <div style="display: flex; gap: 1.25rem; margin-top: 0.6rem; flex-wrap: wrap;">
             <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.74rem; font-weight: 600; color: #374151;">
               <span style="width: 8px; height: 8px; border-radius: 50%; background: #2563eb; display: inline-block;"></span>
-              <span>Function Halls: <strong>â‚±<?= number_format($utilizationHalls) ?></strong> (<?= $hallsUtilPct ?>%)</span>
+              <span>Function Halls: <strong>₱<?= number_format($utilizationHalls) ?></strong> (<?= $hallsUtilPct ?>%)</span>
             </div>
             <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.74rem; font-weight: 600; color: #374151;">
               <span style="width: 8px; height: 8px; border-radius: 50%; background: #d97706; display: inline-block;"></span>
-              <span>Dormitory Suites: <strong>â‚±<?= number_format($utilizationDorms) ?></strong> (<?= $dormsUtilPct ?>%)</span>
+              <span>Dormitory Suites: <strong>₱<?= number_format($utilizationDorms) ?></strong> (<?= $dormsUtilPct ?>%)</span>
             </div>
             <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.74rem; font-weight: 600; color: #374151;">
               <span style="width: 8px; height: 8px; border-radius: 50%; background: #0d9488; display: inline-block;"></span>
-              <span>Guesthouses &amp; Villas: <strong>â‚±<?= number_format($utilizationGuesthouses) ?></strong> (<?= $ghUtilPct ?>%)</span>
+              <span>Guesthouses &amp; Villas: <strong>₱<?= number_format($utilizationGuesthouses) ?></strong> (<?= $ghUtilPct ?>%)</span>
             </div>
           </div>
         </div>
