@@ -22,23 +22,56 @@
 }
 
 body.schedule-body {
-  background:
-    radial-gradient(ellipse at 18% 12%, rgba(34, 197, 94, 0.16) 0%, transparent 55%),
-    radial-gradient(ellipse at 82% 85%, rgba(16, 185, 129, 0.10) 0%, transparent 50%),
-    linear-gradient(180deg, #0b2416 0%, #0f3320 50%, #081a10 100%);
+  background-color: #f6f8f6;
+  background-image:
+    radial-gradient(ellipse at 18% 12%, rgba(22, 101, 52, 0.04) 0%, transparent 55%),
+    radial-gradient(ellipse at 82% 85%, rgba(46, 125, 50, 0.03) 0%, transparent 50%),
+    linear-gradient(180deg, #f7f9f7 0%, #f4f7f4 50%, #eff4f0 100%);
   background-attachment: fixed;
   color: var(--text-main);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+/* Ensure Topbar always takes 100% full width */
+.booking-topbar {
+  width: 100% !important;
+  left: 0;
+  right: 0;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.96) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(220, 232, 224, 0.85);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.booking-topbar-container {
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0.65rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-sizing: border-box;
 }
 
 .schedule-main-wrapper {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
+  padding: 2.25rem 1.5rem 4rem;
   flex-grow: 1;
   width: 100%;
+  box-sizing: border-box;
 }
 
 /* Header Section */
@@ -55,17 +88,18 @@ body.schedule-body {
   font-family: var(--font-serif);
   font-size: 2.25rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #123820;
   letter-spacing: -0.02em;
-  margin-bottom: 0.35rem;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  margin-bottom: 0.4rem;
+  text-shadow: none;
 }
 
 .schedule-header-text p {
   font-size: 0.98rem;
-  color: #c2e3ce;
+  color: #4a6354;
   max-width: 720px;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  line-height: 1.5;
+  text-shadow: none;
 }
 
 .schedule-top-badge {
@@ -74,14 +108,18 @@ body.schedule-body {
   gap: 0.45rem;
   font-size: 0.78rem;
   font-weight: 700;
-  color: #86efac;
-  background: rgba(255, 255, 255, 0.12);
-  padding: 0.3rem 0.85rem;
+  color: #175432;
+  background: #eaf4ed;
+  padding: 0.35rem 0.85rem;
   border-radius: 9999px;
   margin-bottom: 0.65rem;
-  border: 1px solid rgba(134, 239, 172, 0.32);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid #cce2d3;
+  box-shadow: 0 1px 4px rgba(23, 84, 50, 0.06);
   backdrop-filter: blur(8px);
+}
+
+.schedule-top-badge svg {
+  stroke: #175432;
 }
 
 .btn-book-from-schedule {
@@ -94,7 +132,7 @@ body.schedule-body {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  box-shadow: 0 4px 14px rgba(23, 84, 50, 0.25);
+  box-shadow: 0 4px 14px rgba(23, 84, 50, 0.22);
   text-decoration: none;
   transition: var(--transition);
 }
@@ -102,7 +140,7 @@ body.schedule-body {
 .btn-book-from-schedule:hover {
   background-color: #0f3f24;
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(23, 84, 50, 0.35);
+  box-shadow: 0 6px 18px rgba(23, 84, 50, 0.32);
 }
 
 /* Stats Ribbon - Clean & Simple (4 metric cards) */
@@ -118,13 +156,13 @@ body.schedule-body {
   border: 1.5px solid #dce8e0;
   border-radius: 14px;
   padding: 1.15rem 1.35rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 16px rgba(18, 56, 32, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
   display: flex;
   align-items: center;
   gap: 1.1rem;
   cursor: pointer;
   position: relative;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
   user-select: none;
 }
 
@@ -670,7 +708,7 @@ body.schedule-body {
   border-top: none;
   border-radius: 0 0 16px 16px;
   overflow: hidden;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 8px 30px rgba(18, 56, 32, 0.06), 0 1px 4px rgba(0, 0, 0, 0.03);
 }
 
 /* Day Names Header */

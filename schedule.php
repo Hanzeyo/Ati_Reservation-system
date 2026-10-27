@@ -32,9 +32,9 @@ if (!empty($_SESSION['full_name'])) {
   <title>Master Schedule - Agricultural Training Institute</title>
   <meta name="description"
     content="Official institution-wide master schedule and facility reservation calendar for ATI halls, meeting rooms, and dormitory suites.">
-  <link rel="stylesheet" href="css/style.css?v=2">
-  <link rel="stylesheet" href="css/booking.css?v=2">
-  <link rel="stylesheet" href="css/schedule.css?v=2">
+  <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
+  <link rel="stylesheet" href="css/booking.css?v=<?php echo time(); ?>">
+  <link rel="stylesheet" href="css/schedule.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=<?php echo time(); ?>">
   <link rel="icon" type="image/png" href="assets/images/ATI_Logo.png">
 </head>
@@ -66,7 +66,7 @@ if (!empty($_SESSION['full_name'])) {
 
         <!-- New Reservation -->
         <a href="booking.php" class="booking-nav-item">
-          <svg viewBox="0 0 24 24" fill="none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
           </svg>
@@ -76,8 +76,10 @@ if (!empty($_SESSION['full_name'])) {
         <!-- My Reservations -->
         <a href="my_reservations.php" class="booking-nav-item" title="My Reservations">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"></path>
+            <rect x="9" y="3" width="6" height="4" rx="2"></rect>
+            <line x1="9" y1="12" x2="11" y2="12"></line>
+            <line x1="9" y1="16" x2="15" y2="16"></line>
           </svg>
           <span>My Reservations</span>
           <span class="nav-badge-count"><?= $currentUserResCount ?></span>
@@ -561,10 +563,12 @@ if (!empty($_SESSION['full_name'])) {
         </div>
       </div>
     </div>
-    <!-- ==========================================================================
+  </div>
+
+  <!-- ==========================================================================
        MONTHLY SCHEDULED EVENTS LIST MODAL (Activated by Card 1)
        ========================================================================== -->
-    <div class="modal-overlay" id="monthlyEventsModal" role="dialog" aria-modal="true">
+  <div class="modal-overlay" id="monthlyEventsModal" role="dialog" aria-modal="true">
       <div class="modal-card modal-lg" style="max-width: 820px;">
         <button type="button" class="modal-close-btn js-close-modal" aria-label="Close modal">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"

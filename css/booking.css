@@ -33,6 +33,10 @@ body.booking-body {
    Topbar Navigation
    ========================================================================== */
 .booking-topbar {
+  width: 100%;
+  left: 0;
+  right: 0;
+  flex-shrink: 0;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
@@ -40,7 +44,7 @@ body.booking-body {
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 }
 
 .booking-topbar-container {
