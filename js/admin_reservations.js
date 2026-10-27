@@ -769,6 +769,8 @@ function applyCombinedAdminFilters() {
         matchesTab = (status === 'pending');
       } else if (adminFilterState.tab === 'approved') {
         matchesTab = (status === 'approved');
+      } else if (adminFilterState.tab === 'checkedin' || adminFilterState.tab === 'checked_in') {
+        matchesTab = (status === 'checked_in' || status === 'checkedin');
       } else if (adminFilterState.tab === 'completed') {
         matchesTab = (status === 'completed');
       } else if (adminFilterState.tab === 'halls') {
@@ -886,6 +888,7 @@ function updateKPIBadges() {
   let allCount = 0;
   let pendingCount = 0;
   let approvedCount = 0;
+  let checkedInCount = 0;
   let completedCount = 0;
   let hallsCount = 0;
   let dormsCount = 0;
@@ -903,6 +906,7 @@ function updateKPIBadges() {
     const cat = row.getAttribute('data-category');
     if (st === 'pending') pendingCount++;
     if (st === 'approved') approvedCount++;
+    if (st === 'checked_in' || st === 'checkedin') checkedInCount++;
     if (st === 'completed') completedCount++;
     if (cat === 'halls') hallsCount++;
     if (cat === 'dorms') dormsCount++;
@@ -911,6 +915,7 @@ function updateKPIBadges() {
   const tabAll = document.getElementById('tabCountAll');
   const tabPending = document.getElementById('tabCountPending');
   const tabApproved = document.getElementById('tabCountApproved');
+  const tabCheckedIn = document.getElementById('tabCountCheckedIn');
   const tabCompleted = document.getElementById('tabCountCompleted');
   const tabHalls = document.getElementById('tabCountHalls');
   const tabDorms = document.getElementById('tabCountDorms');
@@ -920,6 +925,7 @@ function updateKPIBadges() {
   if (tabAll) tabAll.textContent = allCount;
   if (tabPending) tabPending.textContent = pendingCount;
   if (tabApproved) tabApproved.textContent = approvedCount;
+  if (tabCheckedIn) tabCheckedIn.textContent = checkedInCount;
   if (tabCompleted) tabCompleted.textContent = completedCount;
   if (tabHalls) tabHalls.textContent = hallsCount;
   if (tabDorms) tabDorms.textContent = dormsCount;
@@ -1681,6 +1687,7 @@ function exportUtilizationReport() {
 // ESC listener to close any open admin modals or dropdown
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') {
+    closeQuickCheckInModal();
     closeReservationModal();
     closeDeclineModal();
     closeOccupancyModal();
@@ -1703,6 +1710,488 @@ document.addEventListener('click', function (e) {
     if (btn) btn.setAttribute('aria-expanded', 'false');
   }
 });
+
+/* ==========================================================================
+   FRONT DESK CLIENT QUICK CHECK-IN CONTROLLER (PARAAN 1: MANUAL ENTRY)
+   ========================================================================== */
+function openQuickCheckInModal(optionalRef) {
+  const modal = document.getElementById('quickCheckInModal');
+  const input = document.getElementById('quickCheckInInput');
+  const defaultPrompt = document.getElementById('checkinDefaultPrompt');
+  const loadingState = document.getElementById('checkinLoadingState');
+  const foundCard = document.getElementById('checkinFoundCard');
+  const notFoundState = document.getElementById('checkinNotFoundState');
+
+  if (!modal) return;
+
+  // Reset display states
+  if (defaultPrompt) defaultPrompt.style.display = 'block';
+  if (loadingState) loadingState.style.display = 'none';
+  if (foundCard) {
+    foundCard.style.display = 'none';
+    foundCard.innerHTML = '';
+  }
+  if (notFoundState) notFoundState.style.display = 'none';
+
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  if (optionalRef && typeof optionalRef === 'string') {
+    if (input) input.value = optionalRef.trim();
+    executeQuickCheckInLookup();
+  } else {
+    if (input) {
+      input.value = '';
+      setTimeout(() => input.focus(), 150);
+    }
+  }
+}
+
+function closeQuickCheckInModal() {
+  const modal = document.getElementById('quickCheckInModal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+
+async function executeQuickCheckInLookup() {
+  const input = document.getElementById('quickCheckInInput');
+  const query = input ? input.value.trim() : '';
+
+  const defaultPrompt = document.getElementById('checkinDefaultPrompt');
+  const loadingState = document.getElementById('checkinLoadingState');
+  const foundCard = document.getElementById('checkinFoundCard');
+  const notFoundState = document.getElementById('checkinNotFoundState');
+  const notFoundMsg = document.getElementById('checkinNotFoundMsg');
+
+  if (!query) {
+    if (input) input.focus();
+    showAdminToast('Please enter a reference code to search.', 'decline');
+    return;
+  }
+
+  // Switch to loading state
+  if (defaultPrompt) defaultPrompt.style.display = 'none';
+  if (notFoundState) notFoundState.style.display = 'none';
+  if (foundCard) foundCard.style.display = 'none';
+  if (loadingState) loadingState.style.display = 'block';
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'lookup_reservation');
+    formData.append('ref', query);
+
+    const response = await fetch('ajax/reservation_actions.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+    if (loadingState) loadingState.style.display = 'none';
+
+    if (result.success && result.reservation) {
+      renderQuickCheckInResult(result.reservation);
+    } else {
+      if (notFoundState) notFoundState.style.display = 'block';
+      if (notFoundMsg) {
+        notFoundMsg.textContent = result.message || `No reservation found matching "${query}".`;
+      }
+    }
+  } catch (err) {
+    console.error('Quick check-in lookup error:', err);
+    if (loadingState) loadingState.style.display = 'none';
+    if (notFoundState) notFoundState.style.display = 'block';
+    if (notFoundMsg) {
+      notFoundMsg.textContent = 'A network error occurred while looking up the reservation.';
+    }
+  }
+}
+
+function renderQuickCheckInResult(res) {
+  const foundCard = document.getElementById('checkinFoundCard');
+  if (!foundCard) return;
+
+  const st = res.status || 'Pending';
+  let statusBadgeHtml = '';
+  let calloutHtml = '';
+  let actionsHtml = '';
+
+  const cleanRef = res.reference_no;
+  const resId = res.id;
+  const applicantSafe = (res.applicant_name || 'Client').replace(/'/g, "\\'");
+
+  if (res.is_checked_in) {
+    statusBadgeHtml = `
+      <span class="status-pill status-checkedin">
+        <span class="status-dot"></span>
+        Checked In
+      </span>
+    `;
+    calloutHtml = `
+      <div class="checkin-callout-banner checkedin">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" style="flex-shrink:0;">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <div>
+          <strong>Client Already Checked In</strong>
+          <div style="font-size: 0.81rem; margin-top: 2px;">
+            Arrival recorded on <strong>${res.check_in_at || 'earlier'}</strong>${res.checked_in_by_name ? ` by <strong>${res.checked_in_by_name}</strong>` : ''}.
+          </div>
+        </div>
+      </div>
+    `;
+    actionsHtml = `
+      <button type="button" class="btn-system-secondary" style="font-size:0.86rem; padding: 0.55rem 1.15rem;" onclick="closeQuickCheckInModal(); viewReservationDetails('${cleanRef}');">
+        View Full Booking Form
+      </button>
+      <button type="button" class="btn-system-secondary" style="font-size:0.86rem; padding: 0.55rem 1.15rem;" onclick="closeQuickCheckInModal()">
+        Close
+      </button>
+    `;
+  } else if (res.is_approved) {
+    statusBadgeHtml = `
+      <span class="status-pill status-approved">
+        <span class="status-dot"></span>
+        Approved &amp; Cleared
+      </span>
+    `;
+    calloutHtml = `
+      <div class="checkin-callout-banner approved">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" style="flex-shrink:0;">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <div>
+          <strong>Officially Approved (Cleared for Check-In)</strong>
+          <div style="font-size: 0.81rem; margin-top: 2px;">
+            Institutional clearances and endorsements are complete. Click "Confirm Check-In" below to record client arrival.
+          </div>
+        </div>
+      </div>
+    `;
+    actionsHtml = `
+      <button type="button" class="btn-mark-noshow-secondary" onclick="confirmQuickNoShow('${cleanRef}', ${resId}, '${applicantSafe}')" title="Mark as No-Show if client failed to arrive">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <span>Mark as No-Show</span>
+      </button>
+      <button type="button" class="btn-confirm-checkin-primary" id="btnConfirmCheckIn" onclick="confirmQuickCheckIn('${cleanRef}', ${resId}, '${applicantSafe}')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Confirm Check-In</span>
+      </button>
+    `;
+  } else if (res.is_no_show) {
+    statusBadgeHtml = `
+      <span class="status-pill status-noshow">
+        <span class="status-dot"></span>
+        No-Show
+      </span>
+    `;
+    calloutHtml = `
+      <div class="checkin-callout-banner noshow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" style="flex-shrink:0;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+        <div>
+          <strong>Marked as No-Show</strong>
+          <div style="font-size: 0.81rem; margin-top: 2px;">
+            If the client arrived late, you may still check them in to activate facility access.
+          </div>
+        </div>
+      </div>
+    `;
+    actionsHtml = `
+      <button type="button" class="btn-system-secondary" style="font-size:0.86rem; padding: 0.55rem 1.15rem;" onclick="closeQuickCheckInModal()">
+        Close
+      </button>
+      <button type="button" class="btn-confirm-checkin-primary" onclick="confirmQuickCheckIn('${cleanRef}', ${resId}, '${applicantSafe}')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span>Check-In Client (Late Arrival)</span>
+      </button>
+    `;
+  } else if (res.is_completed) {
+    statusBadgeHtml = `
+      <span class="status-pill status-completed">
+        <span class="status-dot"></span>
+        Completed &amp; Concluded
+      </span>
+    `;
+    calloutHtml = `
+      <div class="checkin-callout-banner pending" style="background: #f1f5f9; border-color: #cbd5e1; color: #475569;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 14 14"></polyline>
+        </svg>
+        <div>
+          <strong>Activity Concluded</strong>
+          <div style="font-size: 0.81rem; margin-top: 2px;">
+            This booking has ended and is archived under Completed records.
+          </div>
+        </div>
+      </div>
+    `;
+    actionsHtml = `
+      <button type="button" class="btn-system-secondary" style="font-size:0.86rem; padding: 0.55rem 1.15rem;" onclick="closeQuickCheckInModal(); viewReservationDetails('${cleanRef}');">
+        View Booking Form
+      </button>
+      <button type="button" class="btn-system-secondary" style="font-size:0.86rem; padding: 0.55rem 1.15rem;" onclick="closeQuickCheckInModal()">
+        Close
+      </button>
+    `;
+  } else {
+    statusBadgeHtml = `
+      <span class="status-pill status-pending">
+        <span class="status-dot"></span>
+        ${st}
+      </span>
+    `;
+    calloutHtml = `
+      <div class="checkin-callout-banner pending">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink:0;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <div>
+          <strong>Not Yet Cleared for Check-In</strong>
+          <div style="font-size: 0.81rem; margin-top: 2px;">
+            Current Status: <strong>${st}</strong>. Institutional routing approvals (Endorsement, Recommendation, Clearance) must be granted before check-in.
+          </div>
+        </div>
+      </div>
+    `;
+    actionsHtml = `
+      <button type="button" class="btn-system-secondary" style="font-size:0.86rem; padding: 0.55rem 1.15rem;" onclick="closeQuickCheckInModal(); viewReservationDetails('${cleanRef}');">
+        View Status in Routing Queue
+      </button>
+      <button type="button" class="btn-system-secondary" style="font-size:0.86rem; padding: 0.55rem 1.15rem;" onclick="closeQuickCheckInModal()">
+        Close
+      </button>
+    `;
+  }
+
+  foundCard.innerHTML = `
+    <div class="checkin-result-card">
+      <div class="checkin-result-header">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <span class="checkin-ref-badge">${cleanRef}</span>
+          <span style="font-size: 0.82rem; font-weight: 600; color: #64748b;">${res.pax_count} Attendees</span>
+        </div>
+        ${statusBadgeHtml}
+      </div>
+
+      <div class="checkin-card-body">
+        <div class="checkin-info-grid">
+          <div class="checkin-info-item">
+            <span class="checkin-info-label">Applicant Name</span>
+            <span class="checkin-info-val" style="font-size: 1rem; color: #0f172a;">${res.applicant_name}</span>
+          </div>
+          <div class="checkin-info-item">
+            <span class="checkin-info-label">Office / Agency</span>
+            <span class="checkin-info-val">${res.applicant_agency}</span>
+          </div>
+          <div class="checkin-info-item">
+            <span class="checkin-info-label">Contact / Phone</span>
+            <span class="checkin-info-val">${res.applicant_phone || 'N/A'}</span>
+          </div>
+          <div class="checkin-info-item">
+            <span class="checkin-info-label">Email Address</span>
+            <span class="checkin-info-val" style="font-size: 0.84rem; word-break: break-all;">${res.applicant_email || 'N/A'}</span>
+          </div>
+          <div class="checkin-info-item" style="grid-column: 1 / -1;">
+            <span class="checkin-info-label">Facility / Room &amp; Event</span>
+            <span class="checkin-info-val" style="color: #166534; font-weight: 700;">
+              ${res.facility_name} — <em>"${res.event_title}"</em>
+            </span>
+          </div>
+          <div class="checkin-info-item" style="grid-column: 1 / -1;">
+            <span class="checkin-info-label">Scheduled Date &amp; Time</span>
+            <span class="checkin-info-val">
+              📅 ${res.schedule_dates} &bull; ⏰ ${res.time_slot}
+            </span>
+          </div>
+        </div>
+
+        ${calloutHtml}
+
+        <div class="checkin-actions-bar">
+          ${actionsHtml}
+        </div>
+      </div>
+    </div>
+  `;
+
+  foundCard.style.display = 'block';
+}
+
+async function confirmQuickCheckIn(ref, resId, applicantName) {
+  const btn = document.getElementById('btnConfirmCheckIn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span>Processing...</span>`;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'check_in_reservation');
+    formData.append('ref', ref);
+    formData.append('reservation_id', resId);
+
+    const response = await fetch('ajax/reservation_actions.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      showAdminToast(result.message || `Client check-in confirmed for ${ref}!`, 'success');
+
+      // Update table row if present
+      const row = document.querySelector(`tr[data-ref="${ref}"]`);
+      if (row) {
+        row.setAttribute('data-status', 'checked_in');
+        row.setAttribute('data-stage', 'checked_in');
+
+        // Status cell
+        const statusCell = row.cells[5];
+        if (statusCell) {
+          statusCell.innerHTML = `
+            <span class="status-pill status-checkedin">
+              <span class="status-dot"></span>
+              Checked In
+            </span>
+            <span style="display: block; font-size: 0.71rem; color: #059669; font-weight: 600; margin-top: 3px;">
+              ${result.check_in_at || 'Just Now'}
+            </span>
+          `;
+        }
+
+        // Actions cell
+        const actionsWrap = row.querySelector('.action-buttons-wrap');
+        if (actionsWrap) {
+          actionsWrap.innerHTML = `
+            <button type="button" class="btn-table-action complete" onclick="confirmCompleteReservation('${ref}', '${applicantName.replace(/'/g, "\\'")}')" title="Conclude and Mark as Completed">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Complete</span>
+            </button>
+            <span style="font-size:0.75rem; font-weight:700; color:#047857; background:#ecfdf5; padding:0.25rem 0.55rem; border-radius:9999px; border:1px solid #a7f3d0;">Checked In</span>
+            <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${ref}')" title="View Booking Form">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+            <button type="button" class="btn-table-action delete-res" onclick="confirmDeleteReservation('${ref}', '${applicantName.replace(/'/g, "\\'")}')" title="Move Reservation to Trash (Soft Delete)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          `;
+        }
+      }
+
+      if (reservationsData[ref]) {
+        reservationsData[ref].status = 'checked_in';
+        reservationsData[ref].stage = 'checked_in';
+        reservationsData[ref].checkInAt = result.check_in_at || 'Just Now';
+      }
+
+      updateKPIBadges();
+      applyCombinedAdminFilters();
+
+      // Refresh card in modal to show verified checked-in state
+      executeQuickCheckInLookup();
+    } else {
+      showAdminToast(result.message || 'Failed to complete check-in.', 'decline');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Confirm Check-In</span>`;
+      }
+    }
+  } catch (err) {
+    console.error('Confirm check in error:', err);
+    showAdminToast('Server error while checking in.', 'decline');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = `<span>Confirm Check-In</span>`;
+    }
+  }
+}
+
+async function confirmQuickNoShow(ref, resId, applicantName) {
+  if (!confirm(`Mark reservation "${ref}" (${applicantName}) as NO-SHOW?\n\nThis indicates the client did not arrive on their scheduled reservation date.`)) {
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'no_show_reservation');
+    formData.append('ref', ref);
+    formData.append('reservation_id', resId);
+
+    const response = await fetch('ajax/reservation_actions.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      showAdminToast(result.message || `Reservation ${ref} marked as No-Show.`, 'decline');
+
+      // Update table row if present
+      const row = document.querySelector(`tr[data-ref="${ref}"]`);
+      if (row) {
+        row.setAttribute('data-status', 'no_show');
+        row.setAttribute('data-stage', 'no_show');
+
+        // Status cell
+        const statusCell = row.cells[5];
+        if (statusCell) {
+          statusCell.innerHTML = `
+            <span class="status-pill status-noshow">
+              <span class="status-dot"></span>
+              No-Show
+            </span>
+          `;
+        }
+
+        // Actions cell
+        const actionsWrap = row.querySelector('.action-buttons-wrap');
+        if (actionsWrap) {
+          actionsWrap.innerHTML = `
+            <span style="font-size:0.75rem; font-weight:700; color:#b91c1c; background:#fef2f2; padding:0.25rem 0.55rem; border-radius:9999px; border:1px solid #fecaca;">No-Show</span>
+            <button type="button" class="btn-table-action view" onclick="viewReservationDetails('${ref}')" title="View Booking Form">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
+            <button type="button" class="btn-table-action delete-res" onclick="confirmDeleteReservation('${ref}', '${applicantName.replace(/'/g, "\\'")}')" title="Move Reservation to Trash (Soft Delete)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          `;
+        }
+      }
+
+      if (reservationsData[ref]) {
+        reservationsData[ref].status = 'no_show';
+        reservationsData[ref].stage = 'no_show';
+      }
+
+      updateKPIBadges();
+      applyCombinedAdminFilters();
+
+      // Refresh card in modal
+      executeQuickCheckInLookup();
+    } else {
+      showAdminToast(result.message || 'Failed to mark reservation as No-Show.', 'decline');
+    }
+  } catch (err) {
+    console.error('Mark no show error:', err);
+    showAdminToast('Server error while marking as No-Show.', 'decline');
+  }
+}
+
 
 
 

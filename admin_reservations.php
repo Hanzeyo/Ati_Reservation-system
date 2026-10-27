@@ -22,7 +22,8 @@ $resQuery = "SELECT r.*,
                     u.office_agency AS applicant_agency,
                     u_end.full_name AS endorser_name,
                     u_rec.full_name AS recommender_name,
-                    u_clr.full_name AS clearer_name
+                    u_clr.full_name AS clearer_name,
+                    u_chk.full_name AS checked_in_by_name
              FROM reservations r
              LEFT JOIN facilities f ON r.facility_id = f.id
              LEFT JOIN rooms rm ON r.room_id = rm.id
@@ -30,6 +31,7 @@ $resQuery = "SELECT r.*,
              LEFT JOIN users u_end ON r.endorsed_by = u_end.id
              LEFT JOIN users u_rec ON r.recommended_by = u_rec.id
              LEFT JOIN users u_clr ON r.cleared_by = u_clr.id
+             LEFT JOIN users u_chk ON r.check_in_by = u_chk.id
              ORDER BY r.id DESC";
 
 $stmt = $db->query($resQuery);
@@ -113,6 +115,8 @@ if (!function_exists('calculateReservationUtilization')) {
 $totalActiveReservations = 0;
 $pendingReservations = 0;
 $approvedReservations = 0;
+$checkedInReservations = 0;
+$noShowReservations = 0;
 $completedReservations = 0;
 $hallsCount = 0;
 $dormsCount = 0;
@@ -133,6 +137,8 @@ foreach ($allReservations as $row) {
     $st = $row['status'] ?? 'Pending';
     $isPending = in_array($st, ['Pending', 'Pending Endorsement', 'Pending Recommendation', 'Pending Clearance']);
     $isApproved = ($st === 'Approved');
+    $isCheckedIn = ($st === 'Checked In');
+    $isNoShow = ($st === 'No-Show');
     $isCompleted = ($st === 'Completed');
     $isRejected = in_array($st, ['Rejected', 'Cancelled']);
 
@@ -162,6 +168,14 @@ foreach ($allReservations as $row) {
             $confirmedUtilization += $resUtil;
             $totalPaxServed += (int)($row['pax_count'] ?? 0);
         }
+        if ($isCheckedIn) {
+            $checkedInReservations++;
+            $confirmedUtilization += $resUtil;
+            $totalPaxServed += (int)($row['pax_count'] ?? 0);
+        }
+        if ($isNoShow) {
+            $noShowReservations++;
+        }
         if ($isCompleted) {
             $completedReservations++;
             $confirmedUtilization += $resUtil;
@@ -186,9 +200,9 @@ foreach ($allReservations as $row) {
     $isStage1 = in_array($st, ['Pending', 'Pending Endorsement', 'Awaiting Endorsement']);
     $isStage2 = in_array($st, ['Pending Recommendation', 'Awaiting Recommendation']);
     $isStage3 = in_array($st, ['Pending Clearance', 'Awaiting Clearance']);
-    $stageKey = $isCompleted ? 'completed' : ($isApproved ? 'approved' : ($isRejected ? 'rejected' : ($isStage1 ? 'stage1' : ($isStage2 ? 'stage2' : 'stage3'))));
+    $stageKey = $isCompleted ? 'completed' : ($isCheckedIn ? 'checked_in' : ($isNoShow ? 'no_show' : ($isApproved ? 'approved' : ($isRejected ? 'rejected' : ($isStage1 ? 'stage1' : ($isStage2 ? 'stage2' : 'stage3'))))));
 
-    $normalizedStatus = $isCompleted ? 'completed' : ($isApproved ? 'approved' : ($isRejected ? 'rejected' : 'pending'));
+    $normalizedStatus = $isCompleted ? 'completed' : ($isCheckedIn ? 'checked_in' : ($isNoShow ? 'no_show' : ($isApproved ? 'approved' : ($isRejected ? 'rejected' : 'pending'))));
 
     $reservationsData[$ref] = [
         'id' => (int)$row['id'],
@@ -217,6 +231,9 @@ foreach ($allReservations as $row) {
         'clearerName' => $row['clearer_name'] ?? '',
         'clearedAt' => !empty($row['cleared_at']) ? date('M d, Y • h:i A', strtotime($row['cleared_at'])) : '',
         'clearanceRemarks' => $row['clearance_remarks'] ?? '',
+        'checkInAt' => !empty($row['check_in_at']) ? date('M d, Y • h:i A', strtotime($row['check_in_at'])) : '',
+        'checkInAtTime' => !empty($row['check_in_at']) ? date('h:i A', strtotime($row['check_in_at'])) : '',
+        'checkedInByName' => $row['checked_in_by_name'] ?? '',
         'status' => $normalizedStatus,
         'stage' => $stageKey,
         'rawStatus' => $st,
@@ -250,7 +267,7 @@ foreach ($allReservations as $row) {
 }
 $totalReservations = $totalActiveReservations;
 $occupancyRate = ($totalActiveReservations > 0) 
-    ? round((($approvedReservations + $completedReservations) / $totalActiveReservations) * 100, 1) 
+    ? round((($approvedReservations + $checkedInReservations + $completedReservations) / $totalActiveReservations) * 100, 1) 
     : 0;
 $estimatedUtilization = number_format($totalEstimatedUtilization);
 $hallsUtilPct = $totalEstimatedUtilization > 0 ? round(($utilizationHalls / $totalEstimatedUtilization) * 100, 1) : 0.0;
@@ -596,6 +613,15 @@ $peakDayPct = $totalInstitutionalCapacity > 0
             <h2>All Reservations</h2>
             <p>Complete master list of all reservation requests across ATI Central Office facilities and dormitories.</p>
           </div>
+          <div class="admin-header-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+            <button type="button" class="btn-frontdesk-checkin" onclick="openQuickCheckInModal()" title="Manual Entry / Quick Client Check-In">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 11l3 3L22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+              <span>Client Check-In / Pass Lookup</span>
+            </button>
+          </div>
         </section>
 
         <!-- ==========================================================================
@@ -701,6 +727,10 @@ $peakDayPct = $totalInstitutionalCapacity > 0
             <button type="button" class="filter-tab-btn" data-filter="approved" onclick="applyTabFilter('approved')">
               <span>Approved</span>
               <span class="tab-count-pill" id="tabCountApproved"><?= $approvedReservations ?></span>
+            </button>
+            <button type="button" class="filter-tab-btn" data-filter="checkedin" onclick="applyTabFilter('checkedin')">
+              <span>Checked In</span>
+              <span class="tab-count-pill" id="tabCountCheckedIn"><?= $checkedInReservations ?></span>
             </button>
             <button type="button" class="filter-tab-btn" data-filter="completed" onclick="applyTabFilter('completed')">
               <span>Completed</span>
@@ -989,6 +1019,21 @@ $peakDayPct = $totalInstitutionalCapacity > 0
                         <span class="status-dot"></span>
                         Completed &amp; Concluded
                       </span>
+                    <?php elseif ($item['stage'] === 'checked_in' || $item['rawStatus'] === 'Checked In'): ?>
+                      <span class="status-pill status-checkedin">
+                        <span class="status-dot"></span>
+                        Checked In
+                      </span>
+                      <?php if (!empty($item['checkInAt'])): ?>
+                        <span style="display: block; font-size: 0.71rem; color: #059669; font-weight: 600; margin-top: 3px;">
+                          <?= htmlspecialchars($item['checkInAt']) ?>
+                        </span>
+                      <?php endif; ?>
+                    <?php elseif ($item['stage'] === 'no_show' || $item['rawStatus'] === 'No-Show'): ?>
+                      <span class="status-pill status-noshow">
+                        <span class="status-dot"></span>
+                        No-Show
+                      </span>
                     <?php elseif ($item['stage'] === 'approved'): ?>
                       <span class="status-pill status-approved">
                         <span class="status-dot"></span>
@@ -1076,7 +1121,19 @@ $peakDayPct = $totalInstitutionalCapacity > 0
                           <?php endif; ?>
                         <?php elseif ($item['stage'] === 'completed' || $item['rawStatus'] === 'Completed'): ?>
                           <span class="badge-completed-note">Completed</span>
+                        <?php elseif ($item['stage'] === 'checked_in' || $item['rawStatus'] === 'Checked In'): ?>
+                          <button type="button" class="btn-table-action complete" onclick="confirmCompleteReservation('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Conclude and Mark as Completed">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Complete</span>
+                          </button>
+                          <span style="font-size:0.75rem; font-weight:700; color:#047857; background:#ecfdf5; padding:0.25rem 0.55rem; border-radius:9999px; border:1px solid #a7f3d0;">Checked In</span>
+                        <?php elseif ($item['stage'] === 'no_show' || $item['rawStatus'] === 'No-Show'): ?>
+                          <span style="font-size:0.75rem; font-weight:700; color:#b91c1c; background:#fef2f2; padding:0.25rem 0.55rem; border-radius:9999px; border:1px solid #fecaca;">No-Show</span>
                         <?php elseif ($item['stage'] === 'approved'): ?>
+                          <button type="button" class="btn-table-action checkin-btn" onclick="openQuickCheckInModal('<?= htmlspecialchars($item['ref']) ?>')" title="Check In Client at Front Desk">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                            <span>Check-In</span>
+                          </button>
                           <button type="button" class="btn-table-action complete" onclick="confirmCompleteReservation('<?= htmlspecialchars($item['ref']) ?>', '<?= htmlspecialchars(addslashes($item['applicant'])) ?>')" title="Mark Reservation as Completed &amp; Concluded">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
                             <span>Complete</span>
@@ -1106,6 +1163,84 @@ $peakDayPct = $totalInstitutionalCapacity > 0
 
 
       </main>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       MODAL: FRONT DESK QUICK CHECK-IN & LOOKUP (MANUAL REFERENCE ENTRY)
+       ========================================================================== -->
+  <div class="admin-modal-overlay" id="quickCheckInModal" style="display: none;" onclick="if(event.target===this) closeQuickCheckInModal()">
+    <div class="admin-modal-card" style="max-width: 620px;">
+      <div class="admin-modal-header" style="background: linear-gradient(135deg, #15803d 0%, #166534 100%); color: #ffffff; padding: 1.1rem 1.4rem;">
+        <div class="modal-title-wrap">
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+            <span style="background: rgba(255,255,255,0.2); color: #ffffff; font-size: 0.72rem; font-weight: 800; padding: 0.2rem 0.55rem; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">Front Desk Action</span>
+            <span style="color: #bbf7d0; font-size: 0.8rem; font-weight: 600;">Manual Reference Entry</span>
+          </div>
+          <h4 style="margin: 0; color: #ffffff; font-size: 1.25rem; font-weight: 700;">Client Quick Check-In</h4>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeQuickCheckInModal()" aria-label="Close dialog" style="color: #ffffff; background: rgba(255,255,255,0.15); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="admin-modal-body" style="padding: 1.4rem;">
+        <!-- Search Bar Section -->
+        <div style="margin-bottom: 1.1rem;">
+          <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 0.45rem;">
+            Reference Code (From Gate Pass or Booking Slip)
+          </label>
+          <div class="checkin-search-bar">
+            <input type="text" id="quickCheckInInput" class="checkin-search-input" placeholder="e.g. ATI-2026-0042 or last digits (0042)..." autocomplete="off" onkeydown="if(event.key==='Enter') executeQuickCheckInLookup()">
+            <button type="button" class="btn-checkin-search" id="btnExecuteLookup" onclick="executeQuickCheckInLookup()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <span>Search</span>
+            </button>
+          </div>
+          <div style="font-size: 0.77rem; color: #64748b; margin-top: 0.4rem; display: flex; align-items: center; gap: 0.35rem;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            <span>Tip: You can paste the full reference number or enter the trailing digits only.</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Results Container -->
+        <div id="quickCheckInResultsArea">
+          <!-- Initial Default State Card -->
+          <div id="checkinDefaultPrompt" style="text-align: center; padding: 2.2rem 1.5rem; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: #dcfce7; margin-bottom: 0.85rem; color: #15803d;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <h5 style="margin: 0 0 0.35rem 0; font-size: 1rem; font-weight: 700; color: #1e293b;">Ready for Client Check-In Verification</h5>
+            <p style="margin: 0; font-size: 0.84rem; color: #64748b; max-width: 440px; margin-inline: auto;">Enter the client's reference code above to review reservation details and confirm arrival at the facility.</p>
+          </div>
+
+          <!-- Loading State -->
+          <div id="checkinLoadingState" style="display: none; text-align: center; padding: 2.5rem 1rem;">
+            <div style="display: inline-block; width: 36px; height: 36px; border: 3px solid #e2e8f0; border-top-color: #15803d; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 0.75rem;"></div>
+            <div style="font-size: 0.9rem; font-weight: 600; color: #334155;">Verifying reservation records...</div>
+          </div>
+
+          <!-- Found Reservation Card Template -->
+          <div id="checkinFoundCard" style="display: none;"></div>
+
+          <!-- Not Found Alert State -->
+          <div id="checkinNotFoundState" style="display: none; padding: 1.5rem; background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: 12px; text-align: center;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: #fee2e2; margin-bottom: 0.65rem; color: #dc2626;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+            </div>
+            <h5 style="margin: 0 0 0.35rem 0; font-size: 0.98rem; font-weight: 700; color: #991b1b;">Reservation Not Found</h5>
+            <p id="checkinNotFoundMsg" style="margin: 0; font-size: 0.84rem; color: #b91c1c;">No active reservation matched the provided reference number.</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
