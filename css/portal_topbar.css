@@ -1,0 +1,363 @@
+/* ==========================================================================
+   ATI Reservation System - Unified Portal Topbar & Navigation Styles
+   ========================================================================== */
+
+/* Eliminate layout shift when vertical scrollbar appears/disappears */
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* 1. Sticky Topbar Container */
+.booking-topbar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border-bottom: 1px solid rgba(220, 232, 224, 0.85) !important;
+  position: sticky !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  z-index: 1000 !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  display: flex !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+}
+
+.booking-topbar-container {
+  max-width: 1440px !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  padding: 0 1.25rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.85rem !important;
+  box-sizing: border-box !important;
+  height: 100% !important;
+}
+
+/* 2. Brand Seal & Identity */
+.booking-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  flex-shrink: 0 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  transition: opacity 0.2s ease, transform 0.2s ease !important;
+}
+
+.booking-brand:hover {
+  opacity: 0.92 !important;
+}
+
+.booking-brand-logo {
+  height: 42px !important;
+  width: 42px !important;
+  object-fit: contain !important;
+  flex-shrink: 0 !important;
+  display: block !important;
+}
+
+.booking-brand-text {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+.booking-brand-text h1 {
+  font-family: var(--font-serif, "Playfair Display", Georgia, serif) !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  color: #174d2f !important;
+  line-height: 1.18 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: nowrap !important;
+}
+
+.booking-brand-text p {
+  font-size: 0.72rem !important;
+  color: #4a6354 !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+}
+
+/* 3. Center Navigation Links */
+.booking-nav-center {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  flex-shrink: 1 !important;
+}
+
+.booking-nav-item {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.38rem !important;
+  padding: 0.45rem 0.65rem !important;
+  border-radius: 8px !important;
+  font-size: 0.83rem !important;
+  font-weight: 600 !important;
+  color: #44594c !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  line-height: 1.2 !important;
+}
+
+.booking-nav-item span {
+  white-space: nowrap !important;
+}
+
+.booking-nav-item svg {
+  width: 15px !important;
+  height: 15px !important;
+  stroke: currentColor !important;
+  stroke-width: 1.8 !important;
+  flex-shrink: 0 !important;
+  display: block !important;
+}
+
+.booking-nav-item:hover {
+  background: #f0f5f1 !important;
+  color: #174d2f !important;
+}
+
+.booking-nav-item.active {
+  background: #ebf5ee !important;
+  color: #174d2f !important;
+  border-color: #cde2d3 !important;
+  font-weight: 700 !important;
+}
+
+.nav-badge-count {
+  background-color: #174d2f !important;
+  color: #ffffff !important;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  padding: 0 4px !important;
+  border-radius: 9999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+  margin-left: 0.25rem !important;
+  letter-spacing: 0 !important;
+  vertical-align: middle !important;
+}
+
+.booking-nav-item.active .nav-badge-count {
+  background-color: #174d2f !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 4px rgba(23, 77, 47, 0.25) !important;
+}
+
+.drawer-badge-count {
+  background-color: #174d2f !important;
+  color: #ffffff !important;
+  font-family: var(--font-sans, 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  min-width: 20px !important;
+  height: 20px !important;
+  padding: 0 4px !important;
+  border-radius: 9999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  flex-shrink: 0 !important;
+}
+
+/* 4. User Profile Badge & Dropdown */
+.user-profile-menu {
+  position: relative !important;
+  margin-left: 0.5rem !important;
+}
+
+.user-profile-badge {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.55rem !important;
+  padding: 0.28rem 0.65rem 0.28rem 0.32rem !important;
+  border-radius: 9999px !important;
+  background: #ffffff !important;
+  border: 1.5px solid #dce8e0 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  user-select: none !important;
+  box-sizing: border-box !important;
+}
+
+.user-profile-badge:hover {
+  border-color: #175432 !important;
+  background: #fbfdfc !important;
+  box-shadow: 0 2px 6px rgba(23, 84, 50, 0.1) !important;
+}
+
+.user-avatar-circle {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 50% !important;
+  background: linear-gradient(135deg, #175432 0%, #2e7d32 100%) !important;
+  color: #ffffff !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  letter-spacing: 0.02em !important;
+  box-shadow: 0 1px 4px rgba(23, 84, 50, 0.25) !important;
+  flex-shrink: 0 !important;
+}
+
+.user-details {
+  display: flex !important;
+  flex-direction: column !important;
+  text-align: left !important;
+  line-height: 1.15 !important;
+}
+
+.user-name {
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  color: #182c20 !important;
+  max-width: 130px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.user-role {
+  font-size: 0.65rem !important;
+  color: #5c7466 !important;
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 130px !important;
+}
+
+.profile-dropdown {
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+  right: 0 !important;
+  width: 210px !important;
+  background: #ffffff !important;
+  border: 1px solid #dce8e0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.04) !important;
+  padding: 0.5rem !important;
+  z-index: 1001 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(8px) !important;
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.2s !important;
+}
+
+.profile-dropdown.show,
+.profile-dropdown.active {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
+}
+
+.dropdown-header-info {
+  padding: 0.45rem 0.65rem 0.6rem !important;
+  border-bottom: 1px solid #eef3f0 !important;
+  margin-bottom: 0.35rem !important;
+}
+
+.dropdown-user-name {
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  color: #182c20 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.dropdown-user-email {
+  font-size: 0.7rem !important;
+  color: #647d6f !important;
+  margin-top: 1px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+}
+
+.user-verified-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: #10b981 !important;
+  display: inline-block !important;
+}
+
+.dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.55rem !important;
+  padding: 0.48rem 0.65rem !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  color: #3b5043 !important;
+  border-radius: 7px !important;
+  text-decoration: none !important;
+  transition: all 0.15s ease !important;
+}
+
+.dropdown-item:hover {
+  background: #f1f7f3 !important;
+  color: #175432 !important;
+}
+
+.dropdown-item.danger {
+  color: #b91c1c !important;
+}
+
+.dropdown-item.danger:hover {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+}
+
+/* 5. Mobile & Responsive Queries */
+@media (max-width: 992px) {
+  .booking-nav-center {
+    display: none !important;
+  }
+
+  .mobile-menu-toggle {
+    display: flex !important;
+  }
+}

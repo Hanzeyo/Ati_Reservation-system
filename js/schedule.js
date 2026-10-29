@@ -19,7 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
  * Fetch approved reservations directly from MySQL database via AJAX
  */
 function fetchLiveDatabaseEvents() {
-  fetch('ajax/get_events.php')
+  const eventsUrl = window.EVENTS_AJAX_URL || '/ajax/get_events.php';
+  fetch(eventsUrl)
     .then(res => res.json())
     .then(data => {
       if (data && data.status === 'success' && Array.isArray(data.events)) {
@@ -961,14 +962,18 @@ function initProfileDropdown() {
   syncGlobalProfileHeader();
 
   if (!badge || !dropdown) return;
+  if (badge.dataset.topbarBound) return;
+  badge.dataset.topbarBound = 'true';
 
   badge.addEventListener('click', (e) => {
     e.stopPropagation();
     dropdown.classList.toggle('show');
+    dropdown.classList.toggle('active');
   });
 
   document.addEventListener('click', () => {
     dropdown.classList.remove('show');
+    dropdown.classList.remove('active');
   });
 }
 

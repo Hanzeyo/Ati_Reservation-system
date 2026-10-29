@@ -18,14 +18,18 @@ function initProfileDropdown() {
   const badge = document.getElementById('userProfileBadge');
   const dropdown = document.getElementById('profileDropdown');
   if (!badge || !dropdown) return;
+  if (badge.dataset.topbarBound) return;
+  badge.dataset.topbarBound = 'true';
 
   badge.addEventListener('click', (e) => {
     e.stopPropagation();
     dropdown.classList.toggle('show');
+    dropdown.classList.toggle('active');
   });
 
   document.addEventListener('click', () => {
     dropdown.classList.remove('show');
+    dropdown.classList.remove('active');
   });
 }
 
@@ -53,13 +57,18 @@ function loadSavedAvatar() {
       heroImg.style.display = 'block';
     }
     if (heroInitials) heroInitials.style.display = 'none';
-    if (topCircle) topCircle.innerHTML = `<img src="${savedAvatar}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
-    if (drawCircle) drawCircle.innerHTML = `<img src="${savedAvatar}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    document.querySelectorAll('.user-avatar-circle, .drawer-avatar, #topbarAvatarCircle, #drawerAvatarCircle').forEach(c => {
+      c.innerHTML = `<img src="${savedAvatar}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    });
     if (btnRemove) btnRemove.style.display = 'inline-flex';
   } else {
     if (heroImg) heroImg.style.display = 'none';
     if (heroInitials) heroInitials.style.display = 'flex';
     if (btnRemove) btnRemove.style.display = 'none';
+    const init = heroInitials ? heroInitials.textContent.trim() : 'AO';
+    document.querySelectorAll('.user-avatar-circle, .drawer-avatar, #topbarAvatarCircle, #drawerAvatarCircle').forEach(c => {
+      c.textContent = init;
+    });
   }
 }
 
@@ -173,7 +182,7 @@ function submitProfileForm() {
   const saveBtns = [document.getElementById('btnSaveProfile'), document.getElementById('btnBannerSave')];
   saveBtns.forEach(b => { if (b) b.disabled = true; });
 
-  fetch('ajax/update_profile.php', {
+  fetch('/ajax/update_profile.php', {
     method: 'POST',
     body: formData
   })
@@ -219,6 +228,13 @@ function submitProfileForm() {
         if (topCircle) topCircle.textContent = newInitials;
         if (drawCircle) drawCircle.textContent = newInitials;
       }
+
+      localStorage.setItem('ati_user_profile', JSON.stringify({
+        fullName: fullName,
+        email: email,
+        phone: phone,
+        division: agency
+      }));
 
       document.body.classList.remove('is-editing');
       const editIndicator = document.getElementById('editModeIndicator');
@@ -367,7 +383,7 @@ function handlePasswordSubmit(e) {
     btnSubmit.textContent = 'Updating...';
   }
 
-  fetch('ajax/update_profile.php', {
+  fetch('/ajax/update_profile.php', {
     method: 'POST',
     body: formData
   })

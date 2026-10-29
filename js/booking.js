@@ -3026,14 +3026,18 @@ function initProfileDropdown() {
   syncGlobalProfileHeader();
 
   if (!badge || !dropdown) return;
+  if (badge.dataset.topbarBound) return;
+  badge.dataset.topbarBound = 'true';
 
   badge.addEventListener('click', (e) => {
     e.stopPropagation();
     dropdown.classList.toggle('show');
+    dropdown.classList.toggle('active');
   });
 
   document.addEventListener('click', () => {
     dropdown.classList.remove('show');
+    dropdown.classList.remove('active');
   });
 }
 

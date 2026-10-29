@@ -85,6 +85,7 @@ $statsArchive = $statsCompleted;
 
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/portal_topbar.css?v=1793090510">
   <link rel="stylesheet" href="css/my_reservations.css?v=<?php echo time(); ?>">
   <link rel="stylesheet" href="css/mobile-drawer.css?v=<?php echo time(); ?>">
 </head>
